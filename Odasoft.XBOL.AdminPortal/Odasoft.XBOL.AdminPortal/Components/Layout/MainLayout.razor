@@ -11,23 +11,96 @@
 <MudSnackbarProvider />
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
+  <div class="sidebar">
+    <NavMenu />
+  </div>
+
+  <main>
+    <div class="top-row px-4">
+      <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    <article class="content px-4">
+      @Body
+    </article>
+  </main>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+  An unhandled error has occurred.
+  <a href="." class="reload">Reload</a>
+  <span class="dismiss">🗙</span>
 </div>
+
+@code {
+  private readonly MudTheme _theme = new()
+  {
+    PaletteLight = new PaletteLight
+    {
+      Primary = "#FFAB00",
+      PrimaryDarken = "#FF8F00",
+      PrimaryLighten = "#FFF8E1",
+      Secondary = "#546E7A",
+      SecondaryDarken = "#37474F",
+      SecondaryLighten = "#ECEFF1",
+      Tertiary = "#00BFA5",
+      TertiaryDarken = "#00695C",
+      TertiaryLighten = "#E0F2F1",
+      AppbarBackground = "#FFFFFF",
+      Background = "#FAFAFA",
+      Surface = "#FFFFFF",
+      DrawerBackground = "#FFFFFF",
+    },
+    Typography = new Typography
+    {
+      Default = new DefaultTypography
+      {
+        FontFamily = new[] { "Open Sans", "Helvetica", "Arial", "sans-serif" }
+      },
+      H1 = new H1Typography
+      {
+        FontWeight = "300",
+      },
+      H2 = new H2Typography
+      {
+        FontWeight = "300",
+      },
+      H3 = new H3Typography
+      {
+        FontWeight = "400"
+      },
+      H4 = new H4Typography
+      {
+        FontWeight = "400"
+      },
+      H5 = new H5Typography
+      {
+        FontWeight = "400"
+      },
+      H6 = new H6Typography
+      {
+        FontWeight = "400"
+      },
+      Body1 = new Body1Typography
+      {
+        FontWeight = "400"
+      },
+      Body2 = new Body2Typography
+      {
+        FontWeight = "400"
+      },
+      Subtitle1 = new Subtitle1Typography
+      {
+        FontWeight = "400"
+      },
+      Subtitle2 = new Subtitle2Typography
+      {
+        FontWeight = "600"
+      },
+      Caption = new CaptionTypography
+      {
+        FontWeight = "400"
+      },
+    }
+  };
+}
