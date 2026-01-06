@@ -1,4 +1,5 @@
 using MudBlazor.Services;
+using Odasoft.XBOL.AdminPortal;
 using Odasoft.XBOL.AdminPortal.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,12 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddMudServices();
 
+builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(
+    (provider, client) =>
+    {
+        client.BaseAddress = new Uri(builder.Configuration.GetValue(
+            "AdminApiClientBaseAddress", "https://localhost:7014/"));
+    });
 builder.Services.AddHealthChecks();
 // Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
