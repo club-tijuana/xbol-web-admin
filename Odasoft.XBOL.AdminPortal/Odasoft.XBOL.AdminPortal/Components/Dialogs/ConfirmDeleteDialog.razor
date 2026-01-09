@@ -1,0 +1,26 @@
+<BaseDialog Title="@Title">
+    <ChildContent>
+        <MudText Typo="Typo.body2">@Message</MudText>
+    </ChildContent>
+    <Actions>
+        <MudButton OnClick="Cancel">CANCELAR</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete"
+            OnClick="Confirm">BORRAR</MudButton>
+    </Actions>
+</BaseDialog>
+
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Confirm() => MudDialog.Close(DialogResult.Ok(true));
+}

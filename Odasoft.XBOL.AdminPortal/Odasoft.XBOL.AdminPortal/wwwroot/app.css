@@ -83,3 +83,17 @@ h1:focus {
 .mud-typography-subtitle2 {
   color: var(--mud-palette-secondary-darken);
 }
+
+/* Snackbar styling */
+.mud-snackbar-content-message {
+  color: var(--mud-palette-secondary);
+  font-family: var(--mud-typography-body2-family);
+  font-size: var(--mud-typography-caption-size);
+  line-height: var(--mud-typography-body2-lineheight);
+  letter-spacing: var(--mud-typography-body2-letterspacing);
+  text-transform: var(--mud-typography-body2-text-transform);
+}
+
+.mud-snackbar-content-action {
+  color: var(--mud-palette-secondary);
+}
