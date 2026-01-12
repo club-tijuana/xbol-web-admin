@@ -3,6 +3,7 @@ using MudBlazor.Translations;
 using Odasoft.XBOL.AdminPortal;
 using Odasoft.XBOL.AdminPortal.Components;
 using Odasoft.XBOL.AdminPortal.Services;
+using Odasoft.XBOL.AdminPortal.States;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,14 +17,6 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.MaxDisplayedSnackbars = 5;
 });
 
-builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(
-    (provider, client) =>
-    {
-        client.BaseAddress = new Uri(
-            builder.Configuration.GetValue("AdminApiClientBaseAddress", "https://localhost:7014/")
-        );
-    }
-);
 builder.Services.AddHealthChecks();
 
 // Localization
@@ -45,6 +38,17 @@ builder.Services.AddScoped<IEventService, MockEventService>();
 // {
 //     client.BaseAddress = new Uri("https://api.xbol.com/");
 // });
+
+builder.Services.AddScoped<GeneralService>();
+builder.Services.AddSingleton<CartState>();
+
+builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(
+    (provider, client) =>
+    {
+        client.BaseAddress = new Uri(builder.Configuration.GetValue(
+            "AdminApiClientBaseAddress", "https://localhost:7241/"));
+    });
+
 
 var app = builder.Build();
 

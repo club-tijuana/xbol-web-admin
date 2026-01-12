@@ -1,0 +1,80 @@
+﻿@using Microsoft.JSInterop
+@using Odasoft.XBOL.AdminPortal.States
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+@inject CartState CartState
+
+<div id="@ChartId" style="height: 750px"></div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string WorkspaceKey { get; set; }
+    [Parameter]
+    [EditorRequired]
+    public string EventKey { get; set; }
+
+    [Parameter] public string[]? Channels { get; set; }
+
+    private string ChartId = $"chart-{Guid.NewGuid()}";
+
+    private DotNetObjectReference<SeatingChart>? _objRef;
+
+    protected override void OnInitialized()
+    {
+        CartState.OnChange += StateHasChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+
+
+            // TODO: Get prices from backend
+            var prices = new object[]
+                {
+                    new { category = 3, price = 30 },
+                    new { category = 4, price = 20 },
+                    new { category = 5, price = 50 }
+                };
+
+            var config = new
+            {
+                workspaceKey = WorkspaceKey,
+                @event = EventKey,
+                session = "continue",
+                pricing = prices,
+                channels = Channels
+            };
+
+            await JSRuntime.InvokeVoidAsync("renderSeatsioChart", ChartId, config, _objRef);
+        }
+    }    
+
+    [JSInvokable]
+    public void HandleSeatSelected(string seatId, int price, string? category = null)
+    {
+        SeatInfo seat = new SeatInfo
+            {
+                SeatId = seatId,
+                Price = price,
+                Category = category
+            };
+
+        CartState.AddSelectedSeat(seat);
+    }
+
+    [JSInvokable]
+    public void HandleSeatDeselected(string seatId)
+    {
+        CartState.RemoveSelectedSeat(seatId);
+    }
+
+    public void Dispose()
+    {
+        _objRef?.Dispose();
+        CartState.OnChange -= StateHasChanged;
+    }
+}

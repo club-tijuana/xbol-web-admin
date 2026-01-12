@@ -6,6 +6,7 @@
     <!-- Docker configuration for Visual Studio -->
     <DockerfileContext>..\..</DockerfileContext>
     <DockerfilePath>..\Dockerfile</DockerfilePath>
+    <UserSecretsId>a6ec05fd-b2bb-4d25-8c38-bed99a0d1177</UserSecretsId>
   </PropertyGroup>
   <!-- Production optimizations -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -21,7 +22,7 @@
       Include="OpenAPIs\swagger.json"
       Options="/UseBaseUrl:false /GenerateClientInterfaces:true"
     >
-      <SourceUri>https://localhost:7014/swagger/v1/swagger.json</SourceUri>
+      <SourceUri>https://localhost:7241/swagger/v1/swagger.json</SourceUri>
     </OpenApiReference>
   </ItemGroup>
   <ItemGroup>

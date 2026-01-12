@@ -1,0 +1,32 @@
+﻿@using Odasoft.XBOL.AdminPortal.States
+@using System.Globalization
+
+@implements IDisposable
+@inject CartState CartState
+
+@* TODO: Configure strings CultureInfo globally to a default or by user *@
+<div class="order-summary">
+    <div class="d-flex justify-space-between summary-item summary-total">
+        <span>TOTAL</span>
+        <span>@CartState.TotalPrice.ToString("C", new CultureInfo("en-US"))</span>
+    </div>
+    @foreach (var item in CartState.SelectedSeats)
+    {
+        <div class="d-flex justify-space-between summary-item">
+            <span>@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</span>
+            <span>@item.Price.ToString("C", new CultureInfo("en-US"))</span>
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        CartState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+}

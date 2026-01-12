@@ -1,7 +1,91 @@
 ﻿@page "/"
+@using Odasoft.XBOL.AdminPortal.States
 
-<PageTitle>Home</PageTitle>
+@implements IDisposable
+@inject CartState CartState
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IConfiguration Configuration
+@inject IAdminApiClient AdminApiClient
 
-<h1>Hello, world!</h1>
+@rendermode InteractiveServer
 
-Welcome to your new app.
+<PageTitle>@EventName</PageTitle>
+
+<MudContainer>
+    <MudGrid>
+        <MudItem xs="7">
+            <SeatingChart WorkspaceKey="@WorkspaceKey"
+                          EventKey="@EventKey" />
+        </MudItem>
+        <MudItem xs="5">
+            <div class="d-flex flex-column">
+                <OrderSummary />
+                <MudButton Variant="Variant.Filled"
+                           DropShadow="false"
+                           StartIcon="@Icons.Material.Outlined.Save"
+                           Color="Color.Tertiary"
+                           @onclick="Submit">
+                    Comprar
+                </MudButton>
+            </div>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code{
+    private string WorkspaceKey;
+    private string EventKey;
+    private string EventName = "Shakira";
+
+    protected override void OnInitialized()
+    {
+        // TODO: Get from database based on event
+        WorkspaceKey = Configuration["Seatsio:WorkspaceKey"];
+        EventKey = Configuration["Seatsio:EventKey"];
+
+        CartState.OnChange += StateHasChanged;
+    }
+
+    private async Task Submit()
+    {
+        var token = await JSRuntime.InvokeAsync<string>("getHoldToken");
+
+        if (string.IsNullOrEmpty(token))
+        {
+            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
+            Console.WriteLine("Error: Could not retrieve hold token.");
+            return;
+        }
+
+        var request = new BookingRequest
+        {
+            Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList(),
+            HoldToken = token,
+            EventId = EventKey
+        };
+
+        try
+        {
+            var result = await AdminApiClient.BookingsAsync(request);
+
+            Snackbar.Add("Pagado con éxito.", configure: c =>
+            {
+                c.SnackbarVariant = Variant.Text;
+                c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
+                c.IconColor = Color.Success;
+            });
+
+            // TODO: Redirect to events page
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+}
