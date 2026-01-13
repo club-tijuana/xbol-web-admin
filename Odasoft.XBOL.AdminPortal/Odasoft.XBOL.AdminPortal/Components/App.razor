@@ -3,182 +3,40 @@
 @using Odasoft.XBOL.AdminPortal.Components.Shared
 
 
-@* Required *@
-<MudThemeProvider Theme="_theme" />
-<MudPopoverProvider />
-
-@* Needed for dialogs *@
-<MudDialogProvider />
-
-@* Needed for snackbars *@
-<MudSnackbarProvider />
 
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <base href="/" />
-  <ResourcePreloader />
-  <link rel="stylesheet" href="@Assets["app.css"]" />
-  <link rel="stylesheet" href="@Assets["Odasoft.XBOL.AdminPortal.styles.css"]" />
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" />
-  <link rel="stylesheet" href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" />
-  <ImportMap />
-  <link rel="icon" type="image/png" href="favicon.png" />
-  <HeadOutlet @rendermode="InteractiveServer" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <ResourcePreloader />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["Odasoft.XBOL.AdminPortal.styles.css"]" />
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
+
+
+ 
 <body>
-  <CascadingAuthenticationState>
+
+      
+    <CascadingAuthenticationState>
         <Routes @rendermode="InteractiveServer" />
     </CascadingAuthenticationState>
-
-   @*  <CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(Program).Assembly">
-        <Found Context="routeData">
-            <AuthorizeRouteView RouteData="routeData"
-                                DefaultLayout="@typeof(MainLayout)">
-                <NotAuthorized>
-                    <RedirectToLogin />
-                </NotAuthorized>
-            </AuthorizeRouteView>
-        </Found>
-
-        <NotFound>
-            <RedirectToLogin />
-        </NotFound>
-    </Router>
-</CascadingAuthenticationState> *@
-  <ReconnectModal />
-  <script src="@Assets["_framework/blazor.web.js"]"></script>
-  <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
 </body>
 
 </html>
 @code {
-    private readonly MudTheme _theme = new()
-    {
-        PaletteLight = new PaletteLight
-        {
-            Primary = "#FFAB00",
-            PrimaryDarken = "#FF8F00",
-            PrimaryLighten = "#FFF8E1",
-            Secondary = "#546E7A",
-            SecondaryDarken = "#37474F",
-            SecondaryLighten = "#ECEFF1",
-            Tertiary = "#00BFA5",
-            TertiaryDarken = "#00695C",
-            TertiaryLighten = "#E0F2F1",
-            AppbarBackground = "#FFFFFF",
-            Background = "#FAFAFA",
-            Surface = "#FFFFFF",
-            DrawerBackground = "#FFFFFF",
-        },
-        Typography = new Typography
-        {
-            Default = new DefaultTypography
-            {
-                FontFamily = new[] { "Open Sans", "Helvetica", "Arial", "sans-serif" },
-                FontWeight = "400",
-                FontSize = "0.875rem",
-                LineHeight = "1.43",
-                LetterSpacing = ".01071em"
-            },
-            H1 = new H1Typography
-            {
-                FontWeight = "300",
-                FontSize = "6rem",
-                LineHeight = "1.36",
-                LetterSpacing = "0"
-            },
-            H2 = new H2Typography
-            {
-                FontWeight = "300",
-                FontSize = "3.75rem",
-                LineHeight = "1.37",
-                LetterSpacing = "0"
-            },
-            H3 = new H3Typography
-            {
-                FontWeight = "400",
-                FontSize = "3rem",
-                LineHeight = "1.35",
-                LetterSpacing = "0"
-            },
-            H4 = new H4Typography
-            {
-                FontWeight = "400",
-                FontSize = "2.125rem",
-                LineHeight = "1.35",
-                LetterSpacing = "0"
-            },
-            H5 = new H5Typography
-            {
-                FontWeight = "400",
-                FontSize = "1.5rem",
-                LineHeight = "1.38",
-                LetterSpacing = "0"
-            },
-            H6 = new H6Typography
-            {
-                FontWeight = "400",
-                FontSize = "1.25rem",
-                LineHeight = "1.6",
-                LetterSpacing = ".0075em"
-            },
-            Body1 = new Body1Typography
-            {
-                FontWeight = "400",
-                FontSize = "1rem",
-                LineHeight = "1.38",
-                LetterSpacing = "0"
-            },
-            Body2 = new Body2Typography
-            {
-                FontWeight = "400",
-                FontSize = "0.875rem",
-                LineHeight = "1.36",
-                LetterSpacing = "0"
-            },
-            Subtitle1 = new Subtitle1Typography
-            {
-                FontWeight = "400",
-                FontSize = "1rem",
-                LineHeight = "1.38",
-                LetterSpacing = "0"
-            },
-            Subtitle2 = new Subtitle2Typography
-            {
-                FontWeight = "600",
-                FontSize = "0.875rem",
-                LineHeight = "1.36",
-                LetterSpacing = "0"
-            },
-            Button = new ButtonTypography
-            {
-                FontWeight = "600",
-                FontSize = "0.875rem",
-                LineHeight = "1.8",
-                LetterSpacing = "0"
-            },
-            Caption = new CaptionTypography
-            {
-                FontWeight = "400",
-                FontSize = "0.75rem",
-                LineHeight = "1.42",
-                LetterSpacing = "0"
-            },
-            Overline = new OverlineTypography
-            {
-                FontWeight = "400",
-                FontSize = "0.75rem",
-                LineHeight = "2.66",
-                LetterSpacing = ".08333em"
-            }
-        }
-    };
+
 }

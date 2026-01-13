@@ -1,13 +1,16 @@
 ﻿@page "/logout"
 @using Microsoft.AspNetCore.Authentication
-@inject IHttpContextAccessor HttpContextAccessor
+@using Microsoft.AspNetCore.Authorization
+@using Odasoft.XBOL.AdminPortal.Services.Contracts
+@inject IAuthService AuthService
 @inject NavigationManager Navigation
+@attribute [Authorize]
 
 
 @code {
     protected override async Task OnInitializedAsync()
     {
-        await HttpContextAccessor.HttpContext!.SignOutAsync();
+        await AuthService.LogoutAsync();
         Navigation.NavigateTo("/login", true);
     }
 }

@@ -5,11 +5,13 @@
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authentication.Cookies
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using System.Security.Claims
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject IHttpContextAccessor HttpContextAccessor
+@inject AuthenticationStateProvider AuthProvider
 
 
 <div class="login-page">
@@ -24,7 +26,7 @@
 
                 <MudTextField @bind-Value="password" Class="pb-6"
                               Label="Contraseña" Variant="Variant.Outlined" InputType="@passwordInput"
-                              Adornment="Adornment.End" AdornmentIcon="@passwordInputIcon" 
+                              Adornment="Adornment.End" AdornmentIcon="@passwordInputIcon" AdornmentColor="Color.Info"
                               OnAdornmentClick="TogglePasswordVisibility" AdornmentAriaLabel="Show Password"
                               Required="true" Margin="Margin.Dense"
                               Immediate="true" RequiredError="" />
@@ -34,7 +36,7 @@
                            Color="Color.Primary"
                            Class="mt-4 text-uppercase"
                            FullWidth="true"
-                           OnClick="LoginAsync">
+                           OnClick="@LoginAsync">
                     Iniciar sesión
                 </MudButton>
 
@@ -59,6 +61,7 @@
     private bool isShow = false;
     private InputType passwordInput = InputType.Password;
 
+
     private async Task LoginAsync()
     {
         bool success = await AuthService.LoginAsync(email, password);
@@ -68,7 +71,6 @@
             errorMessage = "Credenciales inválidas";
             return;
         }
-
         Navigation.NavigateTo("/");
     }
 

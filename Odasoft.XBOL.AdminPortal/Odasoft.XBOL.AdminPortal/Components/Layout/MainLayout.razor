@@ -1,23 +1,108 @@
-﻿@inherits LayoutComponentBase
+﻿@using Odasoft.XBOL.AdminPortal.Services
+@using Odasoft.XBOL.AdminPortal.Services.Contracts
+@inherits LayoutComponentBase
+@layout ThemeLayout
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject AuthStateProvider AuthStateProvider
 
-<div class="page">
-  <div class="sidebar">
-    <NavMenu />
-  </div>
-
-  <main>
-    <div class="top-row px-4">
-      <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+<MudLayout>
+    <!-- TOP BAR -->
+    <div style="width:100%">
+        <MudAppBar Elevation="1" Class="bg-secondary-darken">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                           Color="Color.Inherit"
+                           Edge="Edge.Start"
+                           OnClick="ToggleDrawer" />
+            <MudSpacer />
+            <!-- Notifications -->
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications"
+                           Color="Color.Inherit" />
+            <!-- User / Logout -->
+            <MudMenu AnchorOrigin="Origin.BottomRight"
+                     TransformOrigin="Origin.TopRight">
+                <ActivatorContent>
+                    <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
+                                   Color="Color.Inherit" />
+                </ActivatorContent>
+                <ChildContent>
+                    <MudMenuItem Label="Cerrar Sesión" OnClick="Logout" />
+                </ChildContent>
+            </MudMenu>
+        </MudAppBar>
     </div>
 
-    <article class="content px-4">
-      @Body
-    </article>
-  </main>
-</div>
+    <!-- LEFT NAV DRAWER -->
+    <MudDrawer Open="@_drawerOpen"
+               Elevation="1"
+               ClipMode="DrawerClipMode.Always"
+               Variant="DrawerVariant.Responsive"
+               Anchor="Anchor.Start"
+               Class="white-drawer pa-5">
+        <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All" IconColor="Color.Primary"
+                        Icon="@Icons.Material.Filled.Dashboard" Class="nav-link pt-5">
+                Dashboard
+            </MudNavLink>
+            <MudNavLink Href="/seasons" IconColor="Color.Primary" Class="nav-link pt-5"
+                        Icon="@Icons.Material.Filled.SportsSoccer">
+                Torneos
+            </MudNavLink>
+            <MudNavLink Href="/events" IconColor="Color.Primary" Class="nav-link pt-5"
+                        Icon="@Icons.Material.Filled.ConfirmationNumber">
+                Eventos
+            </MudNavLink>
+            <MudNavLink Href="/xolopass" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
+                        Icon="@Icons.Material.Filled.EventSeat">
+                Xolopass
+            </MudNavLink>
+            <MudNavLink Href="/clients" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
+                        Icon="@Icons.Material.Filled.Badge">
+                Clientes
+            </MudNavLink>
+            <MudNavLink Href="/venues" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
+                        Icon="@Icons.Material.Filled.Stadium">
+                Recintos
+            </MudNavLink>
+            <MudNavLink Href="/reports" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
+                        Icon="@Icons.Material.Filled.InsertChart">
+                Reportes
+            </MudNavLink>
+            <MudNavGroup Title="Configuración"
+                         Icon="@Icons.Material.Filled.Settings"
+                         IconColor="Color.Primary" 
+                         Class="nav-link-rounded pt-5">
+                         
+                <MudNavLink Href="/settings/users" Class="pt-5">
+                    Usuarios
+                </MudNavLink>
 
-<div id="blazor-error-ui" data-nosnippet>
-  An unhandled error has occurred.
-  <a href="." class="reload">Reload</a>
-  <span class="dismiss">🗙</span>
-</div>
+                <MudNavLink Href="/settings/security" Class="pt-5">
+                    Roles
+                </MudNavLink>
+
+            </MudNavGroup>
+        </MudNavMenu>
+    </MudDrawer>
+    <!-- MAIN CONTENT -->
+    <MudMainContent Class="pt-20 px-10 pb-10">
+        <div class="pt-3">
+            @Body
+        </div>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true; // En desktop inicia abierto
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+}
