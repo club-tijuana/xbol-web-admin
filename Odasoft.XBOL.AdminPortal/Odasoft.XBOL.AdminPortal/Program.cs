@@ -45,8 +45,7 @@ builder.Services.AddSingleton<CartState>();
 builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(
     (provider, client) =>
     {
-        client.BaseAddress = new Uri(builder.Configuration.GetValue(
-            "AdminApiClientBaseAddress", "https://localhost:7241/"));
+        client.BaseAddress = new Uri(builder.Configuration.GetValue("AdminApiClientBaseAddress", "https://localhost:7241/"));
     });
 
 

@@ -17,11 +17,7 @@
     <MudAllowedAttributePattern>LowerCase</MudAllowedAttributePattern>
   </PropertyGroup>
   <ItemGroup>
-    <OpenApiReference
-      ClassName="AdminApiClient"
-      Include="OpenAPIs\swagger.json"
-      Options="/UseBaseUrl:false /GenerateClientInterfaces:true"
-    >
+    <OpenApiReference ClassName="AdminApiClient" Include="OpenAPIs\swagger.json" Options="/UseBaseUrl:false /GenerateClientInterfaces:true">
       <SourceUri>https://localhost:7241/swagger/v1/swagger.json</SourceUri>
     </OpenApiReference>
   </ItemGroup>
@@ -44,5 +40,8 @@
   <ItemGroup>
     <ContainerEnvironmentVariable Include="ASPNETCORE_HTTP_PORTS" Value="8080" />
     <ContainerEnvironmentVariable Include="ASPNETCORE_URLS" Value="http://+:8080" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Odasoft.XBOL.Models\Odasoft.XBOL.Models.csproj" />
   </ItemGroup>
 </Project>

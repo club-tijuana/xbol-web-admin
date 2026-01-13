@@ -3,6 +3,7 @@
 @implements IDisposable
 @inject IJSRuntime JSRuntime
 @inject CartState CartState
+@inject IAdminApiClient AdminApiClient
 
 <div id="@ChartId" style="height: 750px"></div>
 
@@ -10,6 +11,7 @@
     [Parameter]
     [EditorRequired]
     public string WorkspaceKey { get; set; }
+
     [Parameter]
     [EditorRequired]
     public string EventKey { get; set; }
@@ -31,14 +33,15 @@
         {
             _objRef = DotNetObjectReference.Create(this);
 
+            ICollection<SeatPriceDTO> seatPrices = await AdminApiClient.SeatPricesAsync(1);
 
-            // TODO: Get prices from backend
-            var prices = new object[]
-                {
-                    new { category = 3, price = 30 },
-                    new { category = 4, price = 20 },
-                    new { category = 5, price = 50 }
-                };
+            var prices = seatPrices
+                            .GroupBy(item => item.Price)
+                            .Select(group => new
+                            {
+                                objects = group.Select(x => x.SeatKey).ToList(),
+                                prices = group.Key
+                            }).ToList();
 
             var config = new
             {
