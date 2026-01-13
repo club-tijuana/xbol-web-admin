@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using Odasoft.XBOL.AdminPortal.States
+@using Microsoft.AspNetCore.Authorization
 
 @implements IDisposable
 @inject CartState CartState
@@ -7,6 +8,7 @@
 @inject ISnackbar Snackbar
 @inject IConfiguration Configuration
 @inject IAdminApiClient AdminApiClient
+@attribute [Authorize]
 
 @rendermode InteractiveServer
 
