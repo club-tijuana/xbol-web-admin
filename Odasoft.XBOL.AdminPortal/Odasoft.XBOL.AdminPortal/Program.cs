@@ -1,11 +1,20 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 using MudBlazor.Translations;
 using Odasoft.XBOL.AdminPortal;
 using Odasoft.XBOL.AdminPortal.Components;
+using Odasoft.XBOL.AdminPortal.Configs;
+using Odasoft.XBOL.AdminPortal.Services;
+using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.States;
 
 var builder = WebApplication.CreateBuilder(args);
+
+#region AppSettings
+Authentication authenticationConfig = builder.Configuration.GetSection("Authentication").Get<Authentication>()!;
+#endregion
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -19,7 +28,7 @@ builder.Services.AddMudServices(config =>
 
 builder.Services.AddHealthChecks();
 
-// Localization
+#region Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
@@ -28,6 +37,37 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.AddSupportedCultures(supportedCultures);
     options.AddSupportedUICultures(supportedCultures);
 });
+#endregion
+
+#region Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+.AddCookie(options =>
+{
+    options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+    options.AccessDeniedPath = "/login";
+});
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+builder.Services.AddScoped<AuthStateProvider>();
+#endregion
+
+#region Services
+builder.Services.AddScoped<IAuthService, AuthService>();
+#endregion
+
+#region Configs DI
+builder.Services.AddSingleton(authenticationConfig);
+#endregion
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddServerSideBlazor()
+    .AddCircuitOptions(options =>
+    {
+        options.DetailedErrors = true;
+    });
 builder.Services.AddMudTranslations();
 
 // Services
@@ -77,6 +117,9 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Map health check endpoint for container health monitoring
 app.MapHealthChecks("/healthz");

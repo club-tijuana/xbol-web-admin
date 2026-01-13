@@ -46,6 +46,11 @@
 
         CartState.OnChange += StateHasChanged;
     }
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
 
     private async Task Submit()
     {
