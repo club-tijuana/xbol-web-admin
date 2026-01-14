@@ -7,7 +7,6 @@ using Odasoft.XBOL.AdminPortal.Components;
 using Odasoft.XBOL.AdminPortal.Configs;
 using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
-using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.States;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -89,6 +88,11 @@ builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(
             "AdminApiClientBaseAddress", "https://localhost:7241/"));
     });
 
+// Services (External)
+builder.Services.AddOptions<SeatsIo>()
+    .BindConfiguration("SeatsIo")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 var app = builder.Build();
 
