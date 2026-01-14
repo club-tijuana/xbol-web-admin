@@ -2,7 +2,7 @@ namespace Odasoft.XBOL.AdminPortal.ViewModels;
 
 public record EventFilterParameters(
     List<string> Venues,
-    List<string> Types,
+    List<string> Categories,
     DateTime? DateFrom,
     DateTime? DateTo
 )
@@ -10,5 +10,5 @@ public record EventFilterParameters(
     public static EventFilterParameters Empty => new([], [], null, null);
 
     public bool HasAnyFilter() =>
-        Venues.Count > 0 || Types.Count > 0 || DateFrom.HasValue || DateTo.HasValue;
+        Venues.Count > 0 || Categories.Count > 0 || DateFrom.HasValue || DateTo.HasValue;
 }

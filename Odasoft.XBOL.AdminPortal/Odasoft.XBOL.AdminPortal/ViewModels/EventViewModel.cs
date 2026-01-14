@@ -1,11 +1,11 @@
 namespace Odasoft.XBOL.AdminPortal.ViewModels;
 
 public record EventViewModel(
-    Guid Id,
+    long Id,
     DateTime DateTime,
     string TicketId,
     string EventName,
-    string Type,
+    string Category,
     string Venue,
     int Available,
     int Total

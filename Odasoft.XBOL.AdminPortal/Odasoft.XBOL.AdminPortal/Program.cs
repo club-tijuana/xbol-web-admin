@@ -70,13 +70,7 @@ builder.Services.AddServerSideBlazor()
 builder.Services.AddMudTranslations();
 
 // Services
-builder.Services.AddScoped<IEventService, MockEventService>();
-
-// TODO: Replace with actual event service
-// builder.Services.AddHttpClient<IEventService, HttpEventService>(client =>
-// {
-//     client.BaseAddress = new Uri("https://api.xbol.com/");
-// });
+builder.Services.AddScoped<IEventService, ApiEventService>();
 
 builder.Services.AddScoped<GeneralService>();
 builder.Services.AddSingleton<CartState>();
