@@ -44,14 +44,14 @@
                                         }
                                     </MudSelect>
 
-                                    <!-- Event Type multi-select -->
-                                    <MudSelect T="string" Label="@L["FilterType"]" MultiSelection="true"
-                                        Margin="Margin.Dense" @bind-SelectedValues="_selectedTypes"
+                                    <!-- Event Category multi-select -->
+                                    <MudSelect T="string" Label="@L["FilterCategory"]" MultiSelection="true"
+                                        Margin="Margin.Dense" @bind-SelectedValues="_selectedCategories"
                                         Variant="Variant.Outlined" ShrinkLabel>
-                                        @foreach (var type in _availableTypes)
+                                        @foreach (var category in _availableCategories)
                                         {
-                                            <MudSelectItem T="string" Value="@type">
-                                                <MudText Typo="Typo.body2">@type</MudText>
+                                            <MudSelectItem T="string" Value="@category">
+                                                <MudText Typo="Typo.body2">@category</MudText>
                                             </MudSelectItem>
                                         }
                                     </MudSelect>
@@ -116,10 +116,10 @@
                     </CellTemplate>
                 </TemplateColumn>
 
-                <TemplateColumn Title="@L["ColumnType"]" Sortable="false" Filterable="false">
+                <TemplateColumn Title="@L["ColumnCategory"]" Sortable="false" Filterable="false">
                     <CellTemplate>
                         <MudText Typo="Typo.body2">
-                            @context.Item.Type
+                            @context.Item.Category
                         </MudText>
                     </CellTemplate>
                 </TemplateColumn>
@@ -146,10 +146,6 @@
                             <MudTooltip Text="@L["ActionBoletos"]" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium" />
                             </MudTooltip>
-                            <MudTooltip Text="@L["ActionCancelar"]" Placement="Placement.Top">
-                                <MudIconButton Icon="@Icons.Material.Outlined.EventBusy" Size="Size.Medium"
-                                    OnClick="@(() => HandleCancelEvent(context.Item))" />
-                            </MudTooltip>
                         </MudStack>
                     </CellTemplate>
                 </TemplateColumn>
@@ -166,7 +162,6 @@
 @code {
     private bool _loading;
     private string searchString = "";
-    private List<EventViewModel> _cachedServerData = new();
     private MudDataGrid<EventViewModel> _dataGrid = default!;
 
     private EventFilterParameters _filters = EventFilterParameters.Empty;
@@ -174,15 +169,22 @@
     private List<string> _availableVenues = new();
     private IEnumerable<string> _selectedVenues = new HashSet<string>();
 
-    private List<string> _availableTypes = new();
-    private IEnumerable<string> _selectedTypes = new HashSet<string>();
+    private List<string> _availableCategories = new();
+    private IEnumerable<string> _selectedCategories = new HashSet<string>();
 
     private DateRange? _dateRange = null;
 
     protected override async Task OnInitializedAsync()
     {
-        _availableVenues = await EventService.GetVenuesAsync();
-        _availableTypes = await EventService.GetEventTypesAsync();
+        try
+        {
+            _availableVenues = await EventService.GetVenuesAsync();
+            _availableCategories = await EventService.GetCategoriesAsync();
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
+        }
     }
 
     private async Task<GridData<EventViewModel>> ServerReload(GridState<EventViewModel> state)
@@ -190,18 +192,12 @@
         _loading = true;
         try
         {
-            // Client-side search only when no server filters active
-            if (HasSearchFilter() && !_filters.HasAnyFilter())
-                return SearchCachedData(state);
-
-            // Fetch filtered data from server
-            var result = await FetchFromServer(state);
-
-            // Apply client-side search to fresh data if needed
-            if (HasSearchFilter())
-                return SearchCachedData(state);
-
-            return result;
+            return await FetchFromServer(state);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
+            return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
         finally
         {
@@ -211,13 +207,6 @@
 
     private bool HasSearchFilter() => !string.IsNullOrWhiteSpace(searchString);
 
-    private bool MatchesSearch(EventViewModel e) =>
-    (e.EventName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true) ||
-    (e.TicketId?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true);
-
-    private GridData<EventViewModel> SearchCachedData(GridState<EventViewModel> state) =>
-    _cachedServerData.ToClientSideGridData(state, MatchesSearch);
-
     private async Task<GridData<EventViewModel>> FetchFromServer(GridState<EventViewModel> state)
     {
         var sortDefinition = state.SortDefinitions.FirstOrDefault();
@@ -226,9 +215,9 @@
         state.PageSize,
         sortDefinition?.SortBy,
         sortDefinition?.Descending ?? false,
+        searchString,
         _filters.HasAnyFilter() ? _filters : null);
 
-        _cachedServerData = result.Items.ToList();
         return result;
     }
 
@@ -236,7 +225,7 @@
     {
         _filters = new EventFilterParameters(
         _selectedVenues.ToList(),
-        _selectedTypes.ToList(),
+        _selectedCategories.ToList(),
         _dateRange?.Start,
         _dateRange?.End
         );
@@ -247,34 +236,11 @@
     private async Task ClearFilters()
     {
         _selectedVenues = new HashSet<string>();
-        _selectedTypes = new HashSet<string>();
+        _selectedCategories = new HashSet<string>();
         _dateRange = null;
         _filters = EventFilterParameters.Empty;
 
         await _dataGrid.ReloadServerData();
     }
 
-    private async Task HandleCancelEvent(EventViewModel eventItem)
-    {
-        var title = string.Format(L["ConfirmDeleteTitle"], eventItem.EventName);
-        var message = $"{L["ConfirmDeleteQuestion"]} {L["ConfirmDeleteMessage"]}";
-
-        var confirmed = await DialogService.ShowConfirmDeleteAsync(title, message);
-
-        if (confirmed)
-        {
-            var success = await EventService.CancelEventAsync(eventItem.Id);
-            if (success)
-            {
-                _cachedServerData.RemoveAll(e => e.Id == eventItem.Id);
-
-                Snackbar.Add(string.Format(L["CancelSuccess"], eventItem.EventName), Severity.Success);
-                await _dataGrid.ReloadServerData();
-            }
-            else
-            {
-                Snackbar.Add(string.Format(L["CancelError"], eventItem.EventName), Severity.Error);
-            }
-        }
-    }
 }

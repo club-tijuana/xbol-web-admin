@@ -10,10 +10,10 @@ public interface IEventService
         int pageSize,
         string? sortColumn,
         bool sortDescending,
+        string? search = null,
         EventFilterParameters? filters = null
     );
 
     Task<List<string>> GetVenuesAsync();
-    Task<List<string>> GetEventTypesAsync();
-    Task<bool> CancelEventAsync(Guid eventId);
+    Task<List<string>> GetCategoriesAsync();
 }

@@ -51,8 +51,8 @@
   <data name="ColumnEventName" xml:space="preserve">
     <value>Evento</value>
   </data>
-  <data name="ColumnType" xml:space="preserve">
-    <value>Tipo</value>
+  <data name="ColumnCategory" xml:space="preserve">
+    <value>Categoría</value>
   </data>
   <data name="ColumnAvailability" xml:space="preserve">
     <value>Disponibilidad</value>
@@ -69,8 +69,8 @@
   <data name="FilterVenue" xml:space="preserve">
     <value>Recinto</value>
   </data>
-  <data name="FilterType" xml:space="preserve">
-    <value>Tipo de evento</value>
+  <data name="FilterCategory" xml:space="preserve">
+    <value>Categoría de evento</value>
   </data>
   <data name="FilterDateRange" xml:space="preserve">
     <value>Rango de fecha</value>
@@ -87,22 +87,10 @@
   <data name="ActionBoletos" xml:space="preserve">
     <value>Boletos</value>
   </data>
-  <data name="ActionCancelar" xml:space="preserve">
-    <value>Cancelar</value>
+  <data name="ErrorLoadingFilters" xml:space="preserve">
+    <value>Error al cargar los filtros.</value>
   </data>
-  <data name="ConfirmDeleteTitle" xml:space="preserve">
-    <value>Borrar: {0}</value>
-  </data>
-  <data name="ConfirmDeleteMessage" xml:space="preserve">
-    <value>Esta accion no se puede revertir.</value>
-  </data>
-  <data name="ConfirmDeleteQuestion" xml:space="preserve">
-    <value>Desea borrar esta informacion?</value>
-  </data>
-  <data name="CancelSuccess" xml:space="preserve">
-    <value>"{0}" cancelado exitosamente.</value>
-  </data>
-  <data name="CancelError" xml:space="preserve">
-    <value>Error al cancelar "{0}".</value>
+  <data name="ErrorLoadingEvents" xml:space="preserve">
+    <value>Error al cargar los eventos.</value>
   </data>
 </root>

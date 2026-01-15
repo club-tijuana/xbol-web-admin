@@ -53,19 +53,115 @@
         }
       }
     },
-    "/api/events/{eventId}": {
+    "/api/Categories": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events": {
       "get": {
         "tags": [
           "Events"
         ],
         "parameters": [
           {
-            "name": "eventId",
-            "in": "path",
-            "required": true,
+            "name": "venues",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categories",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
             "schema": {
               "type": "integer",
-              "format": "int64"
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -75,17 +171,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/Event"
+                  "$ref": "#/components/schemas/PagedResponseOfEventListItem"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Event"
+                  "$ref": "#/components/schemas/PagedResponseOfEventListItem"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Event"
+                  "$ref": "#/components/schemas/PagedResponseOfEventListItem"
                 }
               }
             }
@@ -134,6 +230,44 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/SeatPriceDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Venues": {
+      "get": {
+        "tags": [
+          "Venues"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
                   }
                 }
               }
@@ -235,96 +369,88 @@
         },
         "additionalProperties": false
       },
-      "Event": {
+      "EventListItem": {
         "type": "object",
         "properties": {
           "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int64"
           },
-          "venueMapId": {
-            "type": "integer",
-            "format": "int64"
+          "dateTime": {
+            "type": "string",
+            "format": "date-time"
           },
-          "organizerId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "seasonId": {
-            "type": "integer",
-            "format": "int64",
+          "ticketIdentifier": {
+            "type": "string",
             "nullable": true
           },
           "name": {
             "type": "string",
             "nullable": true
           },
-          "subtitle": {
-            "type": "string",
-            "nullable": true
-          },
           "category": {
-            "$ref": "#/components/schemas/EventCategory"
-          },
-          "shortDescription": {
             "type": "string",
             "nullable": true
           },
-          "longDescription": {
+          "venueName": {
             "type": "string",
             "nullable": true
           },
-          "bannerImageUrl": {
-            "type": "string",
+          "availableSeats": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalSeats": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
+            "format": "int32"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            },
             "nullable": true
-          },
-          "posterImageUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "landingUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "$ref": "#/components/schemas/EventStatus"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "updatedBy": {
-            "type": "string",
-            "format": "uuid"
           }
         },
         "additionalProperties": false
       },
-      "EventCategory": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "EventStatus": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
-        "type": "integer",
-        "format": "int32"
+      "PagedResponseOfEventListItem": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventListItem"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
+            "format": "int32"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "SeatPriceDTO": {
         "type": "object",
@@ -370,10 +496,16 @@
       "name": "Bookings"
     },
     {
+      "name": "Categories"
+    },
+    {
       "name": "Events"
     },
     {
       "name": "EventSeats"
+    },
+    {
+      "name": "Venues"
     },
     {
       "name": "WeatherForecast"
