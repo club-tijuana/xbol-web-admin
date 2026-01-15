@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.AdminPortal.Configs
 @using Microsoft.AspNetCore.Authorization
@@ -43,7 +43,7 @@
 
     protected override void OnInitialized()
     {
-        var options = SeatsOptions.Value; 
+        var options = SeatsOptions.Value;
         WorkspaceKey = options.WorkspaceKey ?? string.Empty;
         EventKey = options.EventKey ?? string.Empty;
         EventName = options.EventName ?? string.Empty;

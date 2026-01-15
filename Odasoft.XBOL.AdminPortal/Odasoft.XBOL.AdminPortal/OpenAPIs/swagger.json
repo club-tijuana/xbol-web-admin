@@ -5,7 +5,7 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/Bookings": {
+    "/api/bookings": {
       "post": {
         "tags": [
           "Bookings"
@@ -91,7 +91,7 @@
         }
       }
     },
-    "/api/Events": {
+    "/api/events": {
       "get": {
         "tags": [
           "Events"
@@ -182,6 +182,55 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PagedResponseOfEventListItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/event-seats/{eventId}/seat-prices": {
+      "get": {
+        "tags": [
+          "EventSeats"
+        ],
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeatPriceDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeatPriceDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeatPriceDTO"
+                  }
                 }
               }
             }
@@ -403,6 +452,20 @@
         },
         "additionalProperties": false
       },
+      "SeatPriceDTO": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "seatKey": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "WeatherForecast": {
         "type": "object",
         "properties": {
@@ -437,6 +500,9 @@
     },
     {
       "name": "Events"
+    },
+    {
+      "name": "EventSeats"
     },
     {
       "name": "Venues"
