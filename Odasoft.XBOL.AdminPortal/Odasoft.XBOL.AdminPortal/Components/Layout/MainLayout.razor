@@ -1,4 +1,4 @@
-﻿@using Odasoft.XBOL.AdminPortal.Services
+@using Odasoft.XBOL.AdminPortal.Services
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @inherits LayoutComponentBase
 @layout ThemeLayout
@@ -45,7 +45,7 @@
                 Dashboard
             </MudNavLink>
             <MudNavLink Href="/seasons" IconColor="Color.Primary" Class="nav-link pt-5"
-                        Icon="@Icons.Material.Filled.SportsSoccer">
+                        Disabled Icon="@Icons.Material.Filled.SportsSoccer">
                 Torneos
             </MudNavLink>
             <MudNavLink Href="/events" IconColor="Color.Primary" Class="nav-link pt-5"
@@ -53,31 +53,31 @@
                 Eventos
             </MudNavLink>
             <MudNavLink Href="/xolopass" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Icon="@Icons.Material.Filled.EventSeat">
+                        Disabled Icon="@Icons.Material.Filled.EventSeat">
                 Xolopass
             </MudNavLink>
             <MudNavLink Href="/clients" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Icon="@Icons.Material.Filled.Badge">
+                        Disabled Icon="@Icons.Material.Filled.Badge">
                 Clientes
             </MudNavLink>
             <MudNavLink Href="/venues" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Icon="@Icons.Material.Filled.Stadium">
+                        Disabled Icon="@Icons.Material.Filled.Stadium">
                 Recintos
             </MudNavLink>
             <MudNavLink Href="/reports" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Icon="@Icons.Material.Filled.InsertChart">
+                        Disabled Icon="@Icons.Material.Filled.InsertChart">
                 Reportes
             </MudNavLink>
             <MudNavGroup Title="Configuración"
                          Icon="@Icons.Material.Filled.Settings"
-                         IconColor="Color.Primary" 
-                         Class="nav-link-rounded pt-5">
-                         
+                         IconColor="Color.Primary"
+                         Class="nav-link-rounded pt-5"
+                         Disabled>
                 <MudNavLink Href="/settings/users" Class="pt-5">
                     Usuarios
                 </MudNavLink>
 
-                <MudNavLink Href="/settings/security" Class="pt-5">
+                <MudNavLink Href="/settings/security" Class="pt-5" Disabled>
                     Roles
                 </MudNavLink>
 

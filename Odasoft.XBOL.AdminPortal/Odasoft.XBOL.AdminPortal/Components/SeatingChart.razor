@@ -1,4 +1,4 @@
-﻿@using Microsoft.JSInterop
+@using Microsoft.JSInterop
 @using Odasoft.XBOL.AdminPortal.States
 @implements IDisposable
 @inject IJSRuntime JSRuntime
@@ -18,6 +18,10 @@
 
     [Parameter] public string[]? Channels { get; set; }
 
+    [Parameter]
+    [EditorRequired]
+    public long EventId { get; set; }
+
     private string ChartId = $"chart-{Guid.NewGuid()}";
 
     private DotNetObjectReference<SeatingChart>? _objRef;
@@ -33,15 +37,15 @@
         {
             _objRef = DotNetObjectReference.Create(this);
 
-            ICollection<SeatPriceDTO> seatPrices = await AdminApiClient.SeatPricesAsync(1);
+            ICollection<SeatPriceDTO> seatPrices = await AdminApiClient.GetEventSeatPricesAsync(EventId);
 
             var prices = seatPrices
-                            .GroupBy(item => item.Price)
-                            .Select(group => new
-                            {
-                                objects = group.Select(x => x.SeatKey).ToList(),
-                                prices = group.Key
-                            }).ToList();
+            .GroupBy(item => item.Price)
+            .Select(group => new
+            {
+                objects = group.Select(x => x.SeatKey).ToList(),
+                price = group.Key
+            }).ToList();
 
             var config = new
             {
@@ -54,17 +58,17 @@
 
             await JSRuntime.InvokeVoidAsync("renderSeatsioChart", ChartId, config, _objRef);
         }
-    }    
+    }
 
     [JSInvokable]
     public void HandleSeatSelected(string seatId, int price, string? category = null)
     {
         SeatInfo seat = new SeatInfo
-            {
-                SeatId = seatId,
-                Price = price,
-                Category = category
-            };
+        {
+            SeatId = seatId,
+            Price = price,
+            Category = category
+        };
 
         CartState.AddSelectedSeat(seat);
     }

@@ -4,8 +4,28 @@
     {
         private List<SeatInfo> selectedSeats = [];
         private decimal totalPrice;
+        private long? currentEventId;
 
         public event Action? OnChange;
+
+        public long? CurrentEventId => currentEventId;
+
+        public void SetEvent(long eventId)
+        {
+            if (currentEventId != eventId)
+            {
+                ClearCart();
+                currentEventId = eventId;
+            }
+        }
+
+        public void ClearCart()
+        {
+            selectedSeats.Clear();
+            totalPrice = 0;
+            NotifyStateChanged();
+        }
+
         public List<SeatInfo> SelectedSeats
         {
             get => selectedSeats;

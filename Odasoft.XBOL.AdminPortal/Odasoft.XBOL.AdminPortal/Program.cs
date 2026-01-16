@@ -81,7 +81,6 @@ builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(
         client.BaseAddress = new Uri(builder.Configuration.GetValue("AdminApiClientBaseAddress", "https://localhost:7241/"));
     });
 
-// Services (External)
 builder.Services.AddOptions<SeatsIo>()
     .BindConfiguration("SeatsIo")
     .ValidateDataAnnotations()

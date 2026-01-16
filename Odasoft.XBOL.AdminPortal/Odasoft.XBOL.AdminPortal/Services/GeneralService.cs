@@ -11,7 +11,7 @@
                 EventId = eventId
             };
 
-            return await apiClient.BookingsAsync(request);
+            return await apiClient.CreateBookingAsync(request);
         }
     }
 }

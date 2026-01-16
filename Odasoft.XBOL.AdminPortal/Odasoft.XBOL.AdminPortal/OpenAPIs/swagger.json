@@ -10,6 +10,7 @@
         "tags": [
           "Bookings"
         ],
+        "operationId": "CreateBooking",
         "requestBody": {
           "content": {
             "application/json": {
@@ -53,11 +54,12 @@
         }
       }
     },
-    "/api/Categories": {
+    "/api/categories": {
       "get": {
         "tags": [
           "Categories"
         ],
+        "operationId": "GetCategories",
         "responses": {
           "200": {
             "description": "OK",
@@ -96,6 +98,7 @@
         "tags": [
           "Events"
         ],
+        "operationId": "GetEvents",
         "parameters": [
           {
             "name": "venues",
@@ -189,11 +192,53 @@
         }
       }
     },
+    "/api/events/{id}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "GetEvent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/event-seats/{eventId}/seat-prices": {
       "get": {
         "tags": [
           "EventSeats"
         ],
+        "operationId": "GetEventSeatPrices",
         "parameters": [
           {
             "name": "eventId",
@@ -238,11 +283,12 @@
         }
       }
     },
-    "/api/Venues": {
+    "/api/venue-maps": {
       "get": {
         "tags": [
-          "Venues"
+          "VenueMaps"
         ],
+        "operationId": "GetVenueMaps",
         "responses": {
           "200": {
             "description": "OK",
@@ -251,7 +297,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/VenueMapListItem"
                   }
                 }
               },
@@ -259,7 +305,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/VenueMapListItem"
                   }
                 }
               },
@@ -267,7 +313,87 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/VenueMapListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/venue-maps/{id}": {
+      "get": {
+        "tags": [
+          "VenueMaps"
+        ],
+        "operationId": "GetVenueMap",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueMapListItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueMapListItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueMapListItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/venues": {
+      "get": {
+        "tags": [
+          "Venues"
+        ],
+        "operationId": "GetVenues",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueListItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueListItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueListItem"
                   }
                 }
               }
@@ -336,13 +462,6 @@
           },
           "eventId": {
             "type": "string"
-          },
-          "additionalProperties": {
-            "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -377,13 +496,9 @@
             "type": "integer",
             "format": "int64"
           },
-          "dateTime": {
+          "scheduledStartDate": {
             "type": "string",
             "format": "date-time"
-          },
-          "ticketIdentifier": {
-            "type": "string",
-            "nullable": true
           },
           "name": {
             "type": "string",
@@ -393,7 +508,16 @@
             "type": "string",
             "nullable": true
           },
+          "venueMapId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
+            "format": "int64"
+          },
           "venueName": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalEventKey": {
             "type": "string",
             "nullable": true
           },
@@ -406,13 +530,6 @@
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int32"
-          },
-          "additionalProperties": {
-            "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -441,13 +558,6 @@
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int32"
-          },
-          "additionalProperties": {
-            "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -460,6 +570,45 @@
             "format": "double"
           },
           "seatKey": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueMapListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
+            "format": "int64"
+          },
+          "venueId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalMapKey": {
             "type": "string",
             "nullable": true
           }
@@ -503,6 +652,9 @@
     },
     {
       "name": "EventSeats"
+    },
+    {
+      "name": "VenueMaps"
     },
     {
       "name": "Venues"

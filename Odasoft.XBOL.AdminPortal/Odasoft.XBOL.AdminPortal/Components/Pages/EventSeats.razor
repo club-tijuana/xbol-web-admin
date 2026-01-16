@@ -1,0 +1,137 @@
+@page "/events/{Id:long}/seats"
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.AdminPortal.Configs
+@using Microsoft.Extensions.Options
+
+@implements IDisposable
+@inject CartState CartState
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IAdminApiClient AdminApiClient
+@inject NavigationManager Navigation
+@inject IOptions<SeatsIo> SeatsOptions
+
+<PageTitle>@_eventName</PageTitle>
+
+@if (_loading)
+{
+    <MudContainer Class="d-flex justify-center align-center" Style="height: 400px;">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+    </MudContainer>
+}
+else if (_error)
+{
+    <MudContainer Class="d-flex flex-column justify-center align-center gap-4" Style="height: 400px;">
+        <MudText Typo="Typo.h6" Color="Color.Error">Error al cargar el evento</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadEventData">
+            Reintentar
+        </MudButton>
+    </MudContainer>
+}
+else
+{
+    <MudContainer>
+        <MudGrid>
+            <MudItem xs="7">
+                <SeatingChart WorkspaceKey="@_workspaceKey" EventKey="@_eventKey" EventId="Id" />
+            </MudItem>
+            <MudItem xs="5">
+                <div class="d-flex flex-column">
+                    <OrderSummary />
+                    <MudButton Variant="Variant.Filled"
+                               DropShadow="false"
+                               StartIcon="@Icons.Material.Outlined.Save"
+                               Color="Color.Tertiary"
+                               @onclick="Submit">
+                        Comprar
+                    </MudButton>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+}
+
+@code {
+    [Parameter]
+    public long Id { get; set; }
+
+    private string _workspaceKey = string.Empty;
+    private string _eventKey = string.Empty;
+    private string _eventName = string.Empty;
+    private bool _loading = true;
+    private bool _error = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartState.OnChange += StateHasChanged;
+        await LoadEventData();
+    }
+
+    private async Task LoadEventData()
+    {
+        _loading = true;
+        _error = false;
+        StateHasChanged();
+
+        try
+        {
+            var eventData = await AdminApiClient.GetEventAsync(Id);
+            _eventName = eventData.Name ?? string.Empty;
+            _eventKey = eventData.ExternalEventKey ?? string.Empty;
+            _workspaceKey = SeatsOptions.Value.PublicWorkspaceKey;
+
+            CartState.SetEvent(Id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading event data: {ex.Message}");
+            _error = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task Submit()
+    {
+        var token = await JSRuntime.InvokeAsync<string>("getHoldToken");
+
+        if (string.IsNullOrEmpty(token))
+        {
+            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
+            Console.WriteLine("Error: Could not retrieve hold token.");
+            return;
+        }
+
+        var request = new BookingRequest
+        {
+            Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList(),
+            HoldToken = token,
+            EventId = _eventKey
+        };
+
+        try
+        {
+            var result = await AdminApiClient.CreateBookingAsync(request);
+
+            Snackbar.Add("Pagado con exito.", configure: c =>
+            {
+                c.SnackbarVariant = Variant.Text;
+                c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
+                c.IconColor = Color.Success;
+            });
+
+            Navigation.NavigateTo("/events");
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+}

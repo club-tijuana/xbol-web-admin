@@ -1,95 +1,12 @@
 @page "/"
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.AdminPortal.Configs
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.Extensions.Options;
-
-@implements IDisposable
-@inject CartState CartState
-@inject IJSRuntime JSRuntime
-@inject ISnackbar Snackbar
-@inject IAdminApiClient AdminApiClient
-@inject IOptions<SeatsIo> SeatsOptions
 @attribute [Authorize]
 
 @rendermode InteractiveServer
 
-<PageTitle>@EventName</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<MudContainer>
-    <MudGrid>
-        <MudItem xs="7">
-            <SeatingChart WorkspaceKey="@WorkspaceKey" EventKey="@EventKey" />
-        </MudItem>
-        <MudItem xs="5">
-            <div class="d-flex flex-column">
-                <OrderSummary />
-                <MudButton Variant="Variant.Filled"
-                           DropShadow="false"
-                           StartIcon="@Icons.Material.Outlined.Save"
-                           Color="Color.Tertiary"
-                           @onclick="Submit">
-                    Comprar
-                </MudButton>
-            </div>
-        </MudItem>
-    </MudGrid>
+<MudContainer Class="d-flex flex-column justify-center align-center" Style="height: 400px;">
+    <MudText Typo="Typo.h4" Class="mb-4">Bienvenido al Portal de Administracion</MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary">Dashboard en construccion</MudText>
 </MudContainer>
-
-@code {
-    private string WorkspaceKey = string.Empty;
-    private string EventKey = string.Empty;
-    private string EventName = string.Empty;
-
-    protected override void OnInitialized()
-    {
-        var options = SeatsOptions.Value;
-        WorkspaceKey = options.WorkspaceKey ?? string.Empty;
-        EventKey = options.EventKey ?? string.Empty;
-        EventName = options.EventName ?? string.Empty;
-
-        CartState.OnChange += StateHasChanged;
-    }
-
-    private async Task Submit()
-    {
-        var token = await JSRuntime.InvokeAsync<string>("getHoldToken");
-
-        if (string.IsNullOrEmpty(token))
-        {
-            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
-            Console.WriteLine("Error: Could not retrieve hold token.");
-            return;
-        }
-
-        var request = new BookingRequest
-        {
-            Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList(),
-            HoldToken = token,
-            EventId = EventKey
-        };
-
-        try
-        {
-            var result = await AdminApiClient.BookingsAsync(request);
-
-            Snackbar.Add("Pagado con éxito.", configure: c =>
-            {
-                c.SnackbarVariant = Variant.Text;
-                c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
-                c.IconColor = Color.Success;
-            });
-
-            // TODO: Redirect to events page
-        }
-        catch (Exception)
-        {
-            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
-        }
-    }
-
-    public void Dispose()
-    {
-        CartState.OnChange -= StateHasChanged;
-    }
-}

@@ -13,7 +13,7 @@ public class ApiEventService(IAdminApiClient apiClient) : IEventService
         string? search = null,
         EventFilterParameters? filters = null)
     {
-        var response = await apiClient.EventsAsync(
+        var response = await apiClient.GetEventsAsync(
             venues: filters?.Venues != null && filters.Venues.Count > 0 ? string.Join(",", filters.Venues) : null,
             categories: filters?.Categories != null && filters.Categories.Count > 0 ? string.Join(",", filters.Categories) : null,
             startDate: filters?.DateFrom,
@@ -27,8 +27,7 @@ public class ApiEventService(IAdminApiClient apiClient) : IEventService
 
         var items = response.Items?.Select(e => new EventViewModel(
             e.Id,
-            e.DateTime.DateTime,
-            e.TicketIdentifier ?? "",
+            e.ScheduledStartDate.DateTime,
             e.Name ?? "",
             e.Category ?? "",
             e.VenueName ?? "",
@@ -43,15 +42,15 @@ public class ApiEventService(IAdminApiClient apiClient) : IEventService
         };
     }
 
-    public async Task<List<string>> GetVenuesAsync()
+    public async Task<List<VenueListItem>> GetVenuesAsync()
     {
-        var result = await apiClient.VenuesAsync();
+        var result = await apiClient.GetVenuesAsync();
         return result.ToList();
     }
 
     public async Task<List<string>> GetCategoriesAsync()
     {
-        var result = await apiClient.CategoriesAsync();
+        var result = await apiClient.GetCategoriesAsync();
         return result.ToList();
     }
 }

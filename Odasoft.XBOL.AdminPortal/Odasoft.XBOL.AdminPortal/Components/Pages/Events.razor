@@ -4,6 +4,7 @@
 @inject IEventService EventService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject NavigationManager Navigation
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -36,10 +37,10 @@
                                     <MudSelect T="string" Label="@L["FilterVenue"]" MultiSelection="true"
                                         Margin="Margin.Dense" @bind-SelectedValues="_selectedVenues"
                                         Variant="Variant.Outlined" ShrinkLabel>
-                                        @foreach (var venue in _availableVenues)
+                                        @foreach (var venue in _venues)
                                         {
-                                            <MudSelectItem T="string" Value="@venue">
-                                                <MudText Typo="Typo.body2">@venue</MudText>
+                                            <MudSelectItem T="string" Value="@venue.Name">
+                                                <MudText Typo="Typo.body2">@venue.Name</MudText>
                                             </MudSelectItem>
                                         }
                                     </MudSelect>
@@ -98,12 +99,6 @@
                     </CellTemplate>
                 </PropertyColumn>
 
-                <TemplateColumn Title="@L["ColumnTicketId"]" Sortable="false" Filterable="false">
-                    <CellTemplate>
-                        <MudHighlighter Text="@context.Item.TicketId" HighlightedText="@searchString" />
-                    </CellTemplate>
-                </TemplateColumn>
-
                 <TemplateColumn Title="@L["ColumnEventName"]" Sortable="false" Filterable="false">
                     <CellTemplate>
                         <MudText Typo="Typo.subtitle2">
@@ -144,7 +139,8 @@
                     <CellTemplate>
                         <MudStack Row Spacing="2">
                             <MudTooltip Text="@L["ActionBoletos"]" Placement="Placement.Top">
-                                <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium" />
+                                <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium"
+                                    OnClick="@(() => Navigation.NavigateTo($"/events/{context.Item.Id}/seats"))" />
                             </MudTooltip>
                         </MudStack>
                     </CellTemplate>
@@ -166,10 +162,10 @@
 
     private EventFilterParameters _filters = EventFilterParameters.Empty;
 
-    private List<string> _availableVenues = new();
+    private List<VenueListItem> _venues = [];
     private IEnumerable<string> _selectedVenues = new HashSet<string>();
 
-    private List<string> _availableCategories = new();
+    private List<string> _availableCategories = [];
     private IEnumerable<string> _selectedCategories = new HashSet<string>();
 
     private DateRange? _dateRange = null;
@@ -178,7 +174,7 @@
     {
         try
         {
-            _availableVenues = await EventService.GetVenuesAsync();
+            _venues = await EventService.GetVenuesAsync();
             _availableCategories = await EventService.GetCategoriesAsync();
         }
         catch (Exception)
@@ -211,12 +207,12 @@
     {
         var sortDefinition = state.SortDefinitions.FirstOrDefault();
         var result = await EventService.GetEventsAsync(
-        state.Page,
-        state.PageSize,
-        sortDefinition?.SortBy,
-        sortDefinition?.Descending ?? false,
-        searchString,
-        _filters.HasAnyFilter() ? _filters : null);
+            state.Page,
+            state.PageSize,
+            sortDefinition?.SortBy,
+            sortDefinition?.Descending ?? false,
+            searchString,
+            _filters.HasAnyFilter() ? _filters : null);
 
         return result;
     }
