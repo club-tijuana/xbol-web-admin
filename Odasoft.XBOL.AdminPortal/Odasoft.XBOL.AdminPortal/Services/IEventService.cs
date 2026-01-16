@@ -1,5 +1,6 @@
 using MudBlazor;
 using Odasoft.XBOL.AdminPortal.ViewModels;
+using Odasoft.XBOL.Business;
 
 namespace Odasoft.XBOL.AdminPortal.Services;
 
@@ -15,5 +16,6 @@ public interface IEventService
     );
 
     Task<List<VenueListItem>> GetVenuesAsync();
+
     Task<List<string>> GetCategoriesAsync();
 }

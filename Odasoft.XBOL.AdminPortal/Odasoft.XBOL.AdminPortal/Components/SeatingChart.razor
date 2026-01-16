@@ -1,9 +1,10 @@
 @using Microsoft.JSInterop
 @using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.Business
 @implements IDisposable
 @inject IJSRuntime JSRuntime
 @inject CartState CartState
-@inject IAdminApiClient AdminApiClient
+@inject IAdminClient AdminClient
 
 <div id="@ChartId" style="height: 750px"></div>
 
@@ -37,7 +38,7 @@
         {
             _objRef = DotNetObjectReference.Create(this);
 
-            ICollection<SeatPriceDTO> seatPrices = await AdminApiClient.GetEventSeatPricesAsync(EventId);
+            ICollection<SeatPriceDTO> seatPrices = await AdminClient.GetSeatPricesByEventIdAsync(EventId);
 
             var prices = seatPrices
             .GroupBy(item => item.Price)

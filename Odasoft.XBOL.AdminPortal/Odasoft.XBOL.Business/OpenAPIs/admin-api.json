@@ -1,17 +1,71 @@
 {
   "openapi": "3.0.4",
   "info": {
-    "title": "Odasoft.XBOL.AdminAPI",
-    "version": "1.0"
+    "title": "XBOL Admin API",
+    "version": "v1"
   },
   "paths": {
-    "/api/bookings": {
+    "/api/accounts": {
+      "post": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "Registers a new user account using the specified registration details.",
+        "description": "This method creates a new user account with the provided credentials. The\r\n            registration may fail if the user name or email address is already in use, or if the password does not meet\r\n            the required criteria. The response does not include detailed error information; for more granular feedback,\r\n            consider extending the response model.",
+        "operationId": "CreateUserAsync",
+        "requestBody": {
+          "description": "An object containing the user registration information, including user name, email address, and password.\r\n            Cannot be null.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/book-seats": {
       "post": {
         "tags": [
           "Bookings"
         ],
-        "operationId": "CreateBooking",
+        "summary": "Books the specified seat selection for the event and returns the identifiers of the booked seats.",
+        "operationId": "BookSeatsAsync",
         "requestBody": {
+          "description": "The booking request containing event and seat selection details. Cannot be null.",
           "content": {
             "application/json": {
               "schema": {
@@ -54,12 +108,12 @@
         }
       }
     },
-    "/api/categories": {
+    "/api/categories/names": {
       "get": {
         "tags": [
           "Categories"
         ],
-        "operationId": "GetCategories",
+        "operationId": "GetCategoriesNamesAsync",
         "responses": {
           "200": {
             "description": "OK",
@@ -98,7 +152,7 @@
         "tags": [
           "Events"
         ],
-        "operationId": "GetEvents",
+        "operationId": "GetEventsAsync",
         "parameters": [
           {
             "name": "venues",
@@ -174,17 +228,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfEventListItem"
+                  "$ref": "#/components/schemas/EventListItemPagedResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfEventListItem"
+                  "$ref": "#/components/schemas/EventListItemPagedResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfEventListItem"
+                  "$ref": "#/components/schemas/EventListItemPagedResponse"
                 }
               }
             }
@@ -192,15 +246,15 @@
         }
       }
     },
-    "/api/events/{id}": {
+    "/api/events/{eventId}": {
       "get": {
         "tags": [
           "Events"
         ],
-        "operationId": "GetEvent",
+        "operationId": "GetEventByIdAsync",
         "parameters": [
           {
-            "name": "id",
+            "name": "eventId",
             "in": "path",
             "required": true,
             "schema": {
@@ -238,11 +292,13 @@
         "tags": [
           "EventSeats"
         ],
-        "operationId": "GetEventSeatPrices",
+        "summary": "Retrieves the list of seat prices for the specified event.",
+        "operationId": "GetSeatPricesByEventIdAsync",
         "parameters": [
           {
             "name": "eventId",
             "in": "path",
+            "description": "The unique identifier of the event for which to retrieve seat prices.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -288,7 +344,7 @@
         "tags": [
           "VenueMaps"
         ],
-        "operationId": "GetVenueMaps",
+        "operationId": "GetVenueMapsAsync",
         "responses": {
           "200": {
             "description": "OK",
@@ -322,15 +378,15 @@
         }
       }
     },
-    "/api/venue-maps/{id}": {
+    "/api/venue-maps/{venueMapId}": {
       "get": {
         "tags": [
           "VenueMaps"
         ],
-        "operationId": "GetVenueMap",
+        "operationId": "GetVenueMapsByIdAsync",
         "parameters": [
           {
-            "name": "id",
+            "name": "venueMapId",
             "in": "path",
             "required": true,
             "schema": {
@@ -368,7 +424,7 @@
         "tags": [
           "Venues"
         ],
-        "operationId": "GetVenues",
+        "operationId": "GetVenuesAsync",
         "responses": {
           "200": {
             "description": "OK",
@@ -394,44 +450,6 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/VenueListItem"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/WeatherForecast": {
-      "get": {
-        "tags": [
-          "WeatherForecast"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
                   }
                 }
               }
@@ -444,24 +462,22 @@
   "components": {
     "schemas": {
       "BookingRequest": {
-        "required": [
-          "eventId",
-          "holdToken",
-          "seats"
-        ],
         "type": "object",
         "properties": {
           "seats": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "nullable": true
           },
           "holdToken": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "eventId": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -488,11 +504,28 @@
         },
         "additionalProperties": false
       },
+      "CreateUserRequest": {
+        "type": "object",
+        "properties": {
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "EventListItem": {
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int64"
           },
@@ -509,7 +542,6 @@
             "nullable": true
           },
           "venueMapId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int64"
           },
@@ -522,19 +554,17 @@
             "nullable": true
           },
           "availableSeats": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int32"
           },
           "totalSeats": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int32"
           }
         },
         "additionalProperties": false
       },
-      "PagedResponseOfEventListItem": {
+      "EventListItemPagedResponse": {
         "type": "object",
         "properties": {
           "items": {
@@ -545,17 +575,14 @@
             "nullable": true
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int32"
           },
           "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int32"
           }
@@ -580,7 +607,6 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int64"
           },
@@ -595,12 +621,10 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int64"
           },
           "venueId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": "integer",
             "format": "int64"
           },
@@ -614,33 +638,13 @@
           }
         },
         "additionalProperties": false
-      },
-      "WeatherForecast": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "temperatureC": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "temperatureF": {
-            "type": "integer",
-            "format": "int32",
-            "readOnly": true
-          },
-          "summary": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
       }
     }
   },
   "tags": [
+    {
+      "name": "Accounts"
+    },
     {
       "name": "Bookings"
     },
@@ -658,9 +662,6 @@
     },
     {
       "name": "Venues"
-    },
-    {
-      "name": "WeatherForecast"
     }
   ]
 }

@@ -1,9 +1,10 @@
 using MudBlazor;
 using Odasoft.XBOL.AdminPortal.ViewModels;
+using Odasoft.XBOL.Business;
 
 namespace Odasoft.XBOL.AdminPortal.Services;
 
-public class ApiEventService(IAdminApiClient apiClient) : IEventService
+public class ApiEventService(IAdminClient adminClient) : IEventService
 {
     public async Task<GridData<EventViewModel>> GetEventsAsync(
         int page,
@@ -13,7 +14,7 @@ public class ApiEventService(IAdminApiClient apiClient) : IEventService
         string? search = null,
         EventFilterParameters? filters = null)
     {
-        var response = await apiClient.GetEventsAsync(
+        var response = await adminClient.GetEventsAsync(
             venues: filters?.Venues != null && filters.Venues.Count > 0 ? string.Join(",", filters.Venues) : null,
             categories: filters?.Categories != null && filters.Categories.Count > 0 ? string.Join(",", filters.Categories) : null,
             startDate: filters?.DateFrom,
@@ -44,13 +45,13 @@ public class ApiEventService(IAdminApiClient apiClient) : IEventService
 
     public async Task<List<VenueListItem>> GetVenuesAsync()
     {
-        var result = await apiClient.GetVenuesAsync();
+        var result = await adminClient.GetVenuesAsync();
         return result.ToList();
     }
 
     public async Task<List<string>> GetCategoriesAsync()
     {
-        var result = await apiClient.GetCategoriesAsync();
+        var result = await adminClient.GetCategoriesNamesAsync();
         return result.ToList();
     }
 }

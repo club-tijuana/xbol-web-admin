@@ -2,12 +2,13 @@
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.AdminPortal.Configs
 @using Microsoft.Extensions.Options
+@using Odasoft.XBOL.Business
 
 @implements IDisposable
 @inject CartState CartState
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
-@inject IAdminApiClient AdminApiClient
+@inject IAdminClient AdminClient
 @inject NavigationManager Navigation
 @inject IOptions<SeatsIo> SeatsOptions
 
@@ -75,7 +76,7 @@ else
 
         try
         {
-            var eventData = await AdminApiClient.GetEventAsync(Id);
+            var eventData = await AdminClient.GetEventByIdAsync(Id);
             _eventName = eventData.Name ?? string.Empty;
             _eventKey = eventData.ExternalEventKey ?? string.Empty;
             _workspaceKey = SeatsOptions.Value.PublicWorkspaceKey;
@@ -113,7 +114,7 @@ else
 
         try
         {
-            var result = await AdminApiClient.CreateBookingAsync(request);
+            var result = await AdminClient.BookSeatsAsync(request);
 
             Snackbar.Add("Pagado con exito.", configure: c =>
             {

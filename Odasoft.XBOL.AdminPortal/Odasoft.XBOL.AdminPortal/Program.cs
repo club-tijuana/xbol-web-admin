@@ -2,18 +2,20 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 using MudBlazor.Translations;
-using Odasoft.XBOL.AdminPortal;
 using Odasoft.XBOL.AdminPortal.Components;
 using Odasoft.XBOL.AdminPortal.Configs;
 using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.AdminPortal.States;
+using Odasoft.XBOL.Business;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region AppSettings
+
 Authentication authenticationConfig = builder.Configuration.GetSection("Authentication").Get<Authentication>()!;
-#endregion
+
+#endregion AppSettings
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -28,6 +30,7 @@ builder.Services.AddMudServices(config =>
 builder.Services.AddHealthChecks();
 
 #region Localization
+
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
@@ -36,9 +39,11 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.AddSupportedCultures(supportedCultures);
     options.AddSupportedUICultures(supportedCultures);
 });
-#endregion
+
+#endregion Localization
 
 #region Authentication
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 .AddCookie(options =>
 {
@@ -51,15 +56,20 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 builder.Services.AddScoped<AuthStateProvider>();
-#endregion
+
+#endregion Authentication
 
 #region Services
+
 builder.Services.AddScoped<IAuthService, AuthService>();
-#endregion
+
+#endregion Services
 
 #region Configs DI
+
 builder.Services.AddSingleton(authenticationConfig);
-#endregion
+
+#endregion Configs DI
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddServerSideBlazor()
@@ -75,7 +85,7 @@ builder.Services.AddScoped<IEventService, ApiEventService>();
 builder.Services.AddScoped<GeneralService>();
 builder.Services.AddSingleton<CartState>();
 
-builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(
+builder.Services.AddHttpClient<IAdminClient, AdminClient>(
     (provider, client) =>
     {
         client.BaseAddress = new Uri(builder.Configuration.GetValue("AdminApiClientBaseAddress", "https://localhost:7241/"));
