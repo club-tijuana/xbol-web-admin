@@ -85,7 +85,7 @@ else
     }
 
     [JSInvokable]
-    public async Task HandleSeatSelected(string seatId, int price, string? category = null)
+    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null)
     {
         SeatInfo seat = new SeatInfo
         {
