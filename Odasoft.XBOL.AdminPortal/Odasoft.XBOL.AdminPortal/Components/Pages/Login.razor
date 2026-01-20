@@ -24,9 +24,9 @@
                               Immediate="true" />
 
 
-                <MudTextField @bind-Value="password" Class="pb-6"
+                <MudTextField @bind-Value="password" Class="@PasswordInputClass"
                               Label="Contraseña" Variant="Variant.Outlined" InputType="@passwordInput"
-                              Adornment="Adornment.End" AdornmentIcon="@passwordInputIcon" AdornmentColor="Color.Info"
+                              Adornment="Adornment.End" AdornmentIcon="@passwordInputIcon"
                               OnAdornmentClick="TogglePasswordVisibility" AdornmentAriaLabel="Show Password"
                               Required="true" Margin="Margin.Dense"
                               Immediate="true" RequiredError="" />
@@ -61,6 +61,7 @@
     private bool isShow = false;
     private InputType passwordInput = InputType.Password;
 
+    private string PasswordInputClass => isShow ? "pb-6 login-password-input show" : "pb-6 login-password-input";
 
     private async Task LoginAsync()
     {
