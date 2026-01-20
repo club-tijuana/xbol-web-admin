@@ -35,6 +35,7 @@ export async function renderChart(containerId, config, dotNetHelper) {
       multiSelect: true,
       zoomOnSelect: true
     },
+    language: 'es',
     priceFormatter: price => '$' + price,
     onObjectSelected: obj => {
       dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, obj.pricing?.price ?? 0, obj.category?.label);
