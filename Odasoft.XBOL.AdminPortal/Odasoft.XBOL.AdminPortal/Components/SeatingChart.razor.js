@@ -28,6 +28,13 @@ export async function renderChart(containerId, config, dotNetHelper) {
     session: config.session,
     pricing: config.pricing,
     channels: config.channels,
+    // TODO: Add this config to component parameters
+    multiSelectEnabled: true,
+    categoryFilter: {
+      enabled: true,
+      multiSelect: true,
+      zoomOnSelect: true
+    },
     priceFormatter: price => '$' + price,
     onObjectSelected: obj => {
       dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, obj.pricing?.price ?? 0, obj.category?.label);
