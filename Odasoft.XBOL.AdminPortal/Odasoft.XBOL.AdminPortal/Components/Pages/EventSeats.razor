@@ -5,7 +5,6 @@
 
 @implements IDisposable
 @inject CartState CartState
-@inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
 @inject IAdminApiClient AdminApiClient
 @inject NavigationManager Navigation
@@ -33,7 +32,7 @@ else
     <MudContainer>
         <MudGrid>
             <MudItem xs="7">
-                <SeatingChart WorkspaceKey="@_workspaceKey" EventKey="@_eventKey" EventId="Id" />
+                <SeatingChart @ref="_seatingChart" WorkspaceKey="@_workspaceKey" EventKey="@_eventKey" EventId="Id" />
             </MudItem>
             <MudItem xs="5">
                 <div class="d-flex flex-column">
@@ -55,6 +54,7 @@ else
     [Parameter]
     public long Id { get; set; }
 
+    private SeatingChart? _seatingChart;
     private string _workspaceKey = string.Empty;
     private string _eventKey = string.Empty;
     private string _eventName = string.Empty;
@@ -95,7 +95,9 @@ else
 
     private async Task Submit()
     {
-        var token = await JSRuntime.InvokeAsync<string>("getHoldToken");
+        var token = _seatingChart is not null
+            ? await _seatingChart.GetHoldTokenAsync()
+            : null;
 
         if (string.IsNullOrEmpty(token))
         {

@@ -1,11 +1,18 @@
 @using Microsoft.JSInterop
 @using Odasoft.XBOL.AdminPortal.States
-@implements IDisposable
+@implements IAsyncDisposable
 @inject IJSRuntime JSRuntime
 @inject CartState CartState
 @inject IAdminApiClient AdminApiClient
 
-<div id="@ChartId" style="height: 750px"></div>
+@if (_error)
+{
+    <MudAlert Severity="Severity.Error" Class="ma-4">@_errorMessage</MudAlert>
+}
+else
+{
+    <div id="@ChartId" style="height: 750px"></div>
+}
 
 @code {
     [Parameter]
@@ -25,6 +32,10 @@
     private string ChartId = $"chart-{Guid.NewGuid()}";
 
     private DotNetObjectReference<SeatingChart>? _objRef;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _chart;
+    private bool _error;
+    private string? _errorMessage;
 
     protected override void OnInitialized()
     {
@@ -35,33 +46,45 @@
     {
         if (firstRender)
         {
-            _objRef = DotNetObjectReference.Create(this);
-
-            ICollection<SeatPriceDTO> seatPrices = await AdminApiClient.GetEventSeatPricesAsync(EventId);
-
-            var prices = seatPrices
-            .GroupBy(item => item.Price)
-            .Select(group => new
+            try
             {
-                objects = group.Select(x => x.SeatKey).ToList(),
-                price = group.Key
-            }).ToList();
+                _objRef = DotNetObjectReference.Create(this);
+                _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "./Components/SeatingChart.razor.js");
 
-            var config = new
+                ICollection<SeatPriceDTO> seatPrices = await AdminApiClient.GetEventSeatPricesAsync(EventId);
+
+                var prices = seatPrices
+                .GroupBy(item => item.Price)
+                .Select(group => new
+                {
+                    objects = group.Select(x => x.SeatKey).ToList(),
+                    price = group.Key
+                }).ToList();
+
+                var config = new
+                {
+                    workspaceKey = WorkspaceKey,
+                    @event = EventKey,
+                    session = "continue",
+                    pricing = prices,
+                    channels = Channels
+                };
+
+                _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
+            }
+            catch (Exception ex)
             {
-                workspaceKey = WorkspaceKey,
-                @event = EventKey,
-                session = "continue",
-                pricing = prices,
-                channels = Channels
-            };
-
-            await JSRuntime.InvokeVoidAsync("renderSeatsioChart", ChartId, config, _objRef);
+                _error = true;
+                _errorMessage = "Error al cargar el mapa de asientos";
+                Console.WriteLine($"SeatingChart error: {ex.Message}");
+                StateHasChanged();
+            }
         }
     }
 
     [JSInvokable]
-    public void HandleSeatSelected(string seatId, int price, string? category = null)
+    public async Task HandleSeatSelected(string seatId, int price, string? category = null)
     {
         SeatInfo seat = new SeatInfo
         {
@@ -71,16 +94,50 @@
         };
 
         CartState.AddSelectedSeat(seat);
+        await InvokeAsync(StateHasChanged);
     }
 
     [JSInvokable]
-    public void HandleSeatDeselected(string seatId)
+    public async Task HandleSeatDeselected(string seatId)
     {
         CartState.RemoveSelectedSeat(seatId);
+        await InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose()
+    public async ValueTask<string?> GetHoldTokenAsync()
     {
+        if (_module is null || _chart is null)
+            return null;
+
+        return await _module.InvokeAsync<string?>("getHoldToken", _chart);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null && _chart is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("destroyChart", _chart);
+            }
+            catch (JSDisconnectedException)
+            {
+                // Ignore - circuit is already disconnected
+            }
+        }
+
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Ignore - circuit is already disconnected
+            }
+        }
+
         _objRef?.Dispose();
         CartState.OnChange -= StateHasChanged;
     }
