@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
+using Microsoft.Extensions.Options;
 using MudBlazor.Services;
 using MudBlazor.Translations;
 using Odasoft.XBOL.AdminPortal.Components;
@@ -8,18 +10,15 @@ using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.AdminPortal.States;
 using Odasoft.XBOL.Business;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
-
-#region AppSettings
-
-Authentication authenticationConfig = builder.Configuration.GetSection("Authentication").Get<Authentication>()!;
-
-#endregion AppSettings
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
+builder.Services.AddHealthChecks();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.TopCenter;
@@ -29,20 +28,20 @@ builder.Services.AddMudServices(config =>
 
 builder.Services.AddHealthChecks();
 
-#region Localization
-
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
-    string[] supportedCultures = ["es"];
-    options.SetDefaultCulture("es");
+    string[] supportedCultures = ["es-MX"];
+    options.SetDefaultCulture("es-MX");
     options.AddSupportedCultures(supportedCultures);
     options.AddSupportedUICultures(supportedCultures);
 });
 
-#endregion Localization
-
-#region Authentication
+builder.Services.Configure<CircuitOptions>(options =>
+{
+    options.DetailedErrors = true;
+});
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 .AddCookie(options =>
@@ -52,44 +51,36 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     options.AccessDeniedPath = "/login";
 });
 
+var mexicoCulture = new CultureInfo("es-MX");
+CultureInfo.DefaultThreadCurrentCulture = mexicoCulture;
+CultureInfo.DefaultThreadCurrentUICulture = mexicoCulture;
+builder.Services.AddMudTranslations();
 builder.Services.AddAuthorization();
 builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
-builder.Services.AddScoped<AuthStateProvider>();
-
-#endregion Authentication
-
-#region Services
-
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-#endregion Services
-
-#region Configs DI
-
-builder.Services.AddSingleton(authenticationConfig);
-
-#endregion Configs DI
-
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddServerSideBlazor()
-    .AddCircuitOptions(options =>
-    {
-        options.DetailedErrors = true;
-    });
-builder.Services.AddMudTranslations();
 
 // Services
-builder.Services.AddScoped<IEventService, ApiEventService>();
 
+builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+builder.Services.AddScoped<AuthStateProvider>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEventService, ApiEventService>();
 builder.Services.AddScoped<GeneralService>();
-builder.Services.AddSingleton<CartState>();
+builder.Services.AddScoped<CartState>();
 
 builder.Services.AddHttpClient<IAdminClient, AdminClient>(
     (provider, client) =>
     {
-        client.BaseAddress = new Uri(builder.Configuration.GetValue("AdminApiClientBaseAddress", "https://localhost:7241/"));
+        var config = provider.GetRequiredService<IOptions<AdminApiClientConfig>>().Value;
+        client.BaseAddress = new Uri(config.BaseAddress);
     });
+
+builder.Services.AddOptions<Authentication>()
+    .BindConfiguration("Authentication");
+
+builder.Services.AddOptions<AdminApiClientConfig>()
+    .BindConfiguration("AdminApiClient")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddOptions<SeatsIo>()
     .BindConfiguration("SeatsIo")
@@ -102,23 +93,22 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
 }
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 
 // Only use HTTPS redirection when running directly (Visual Studio, dotnet run)
 // Containers handle TLS at load balancer/reverse proxy level
-if (
-    !app.Environment.IsProduction()
-    || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"))
-)
+if (!app.Environment.IsProduction()
+    || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")))
 {
     app.UseHttpsRedirection();
 }
 
 app.UseRequestLocalization();
+// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+app.UseHsts();
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();
