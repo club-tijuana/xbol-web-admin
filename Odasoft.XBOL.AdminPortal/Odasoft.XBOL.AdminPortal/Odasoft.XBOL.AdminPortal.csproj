@@ -1,47 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <!-- Docker configuration for Visual Studio -->
-    <DockerfileContext>..\..</DockerfileContext>
-    <DockerfilePath>..\Dockerfile</DockerfilePath>
-    <UserSecretsId>a6ec05fd-b2bb-4d25-8c38-bed99a0d1177</UserSecretsId>
-  </PropertyGroup>
-  <!-- Production optimizations -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <ContainerUser>app</ContainerUser>
-    <PublishReadyToRun>true</PublishReadyToRun>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <MudAllowedAttributePattern>LowerCase</MudAllowedAttributePattern>
-  </PropertyGroup>
-  <ItemGroup>
-    <OpenApiReference ClassName="AdminApiClient" Include="OpenAPIs\swagger.json" Options="/UseBaseUrl:false /GenerateClientInterfaces:true">
-      <SourceUri>https://localhost:7241/swagger/v1/swagger.json</SourceUri>
-    </OpenApiReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Bogus" Version="35.6.5" />
-    <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="10.0.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
-    <PackageReference Include="MudBlazor" Version="8.15.0" />
-    <PackageReference Include="MudBlazor.Translations" Version="2.7.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="NSwag.ApiDescription.Client" Version="14.6.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ContainerEnvironmentVariable Include="ASPNETCORE_HTTP_PORTS" Value="8080" />
-    <ContainerEnvironmentVariable Include="ASPNETCORE_URLS" Value="http://+:8080" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Odasoft.XBOL.Models\Odasoft.XBOL.Models.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);1591</NoWarn>
+
+        <!-- Docker configuration for Visual Studio -->
+        <DockerfileContext>..\..</DockerfileContext>
+        <DockerfilePath>..\Dockerfile</DockerfilePath>
+        <UserSecretsId>a6ec05fd-b2bb-4d25-8c38-bed99a0d1177</UserSecretsId>
+    </PropertyGroup>
+    <!-- Production optimizations -->
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <ContainerUser>app</ContainerUser>
+        <PublishReadyToRun>true</PublishReadyToRun>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <MudAllowedAttributePattern>LowerCase</MudAllowedAttributePattern>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Bogus" Version="35.6.5" />
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+        <PackageReference Include="MudBlazor" Version="8.15.0" />
+        <PackageReference Include="MudBlazor.Translations" Version="2.7.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <ContainerEnvironmentVariable Include="ASPNETCORE_HTTP_PORTS" Value="8080" />
+        <ContainerEnvironmentVariable Include="ASPNETCORE_URLS" Value="http://+:8080" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Odasoft.XBOL.Business\Odasoft.XBOL.Business.csproj" />
+        <ProjectReference Include="..\Odasoft.XBOL.Models\Odasoft.XBOL.Models.csproj" />
+    </ItemGroup>
 </Project>

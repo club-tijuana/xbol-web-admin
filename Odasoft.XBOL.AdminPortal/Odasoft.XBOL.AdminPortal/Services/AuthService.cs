@@ -1,4 +1,5 @@
-﻿using Odasoft.XBOL.AdminPortal.Configs;
+using Microsoft.Extensions.Options;
+using Odasoft.XBOL.AdminPortal.Configs;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 
 namespace Odasoft.XBOL.AdminPortal.Services
@@ -7,9 +8,10 @@ namespace Odasoft.XBOL.AdminPortal.Services
     {
         private readonly Authentication _authenticationConfig;
         private readonly AuthStateProvider _authStateProvider;
-        public AuthService(Authentication authenticationConfig, AuthStateProvider authStateProvider)
+
+        public AuthService(IOptions<Authentication> authenticationConfig, AuthStateProvider authStateProvider)
         {
-            _authenticationConfig = authenticationConfig;
+            _authenticationConfig = authenticationConfig.Value;
             _authStateProvider = authStateProvider;
         }
 
@@ -19,7 +21,6 @@ namespace Odasoft.XBOL.AdminPortal.Services
             {
                 return false;
             }
-
 
             return _authenticationConfig.AllowedUsers.Any(user =>
             string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase)
@@ -43,6 +44,5 @@ namespace Odasoft.XBOL.AdminPortal.Services
         {
             await _authStateProvider.SignOutAsync();
         }
-
     }
 }

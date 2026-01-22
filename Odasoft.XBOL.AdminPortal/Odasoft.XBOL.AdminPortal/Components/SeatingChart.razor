@@ -1,9 +1,13 @@
 @using Microsoft.JSInterop
+@using Odasoft.XBOL.AdminPortal.Components.Pages
 @using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.Business
 @implements IAsyncDisposable
 @inject IJSRuntime JSRuntime
 @inject CartState CartState
-@inject IAdminApiClient AdminApiClient
+@inject IAdminClient AdminClient
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<Events> Localizer
 
 @if (_error)
 {
@@ -29,6 +33,8 @@ else
     [EditorRequired]
     public long EventId { get; set; }
 
+    private const string SESSION_CONTINUE = "continue";
+
     private string ChartId = $"chart-{Guid.NewGuid()}";
 
     private DotNetObjectReference<SeatingChart>? _objRef;
@@ -36,6 +42,8 @@ else
     private IJSObjectReference? _chart;
     private bool _error;
     private string? _errorMessage;
+
+    private static long? _lastRenderedEventId;
 
     protected override void OnInitialized()
     {
@@ -52,7 +60,14 @@ else
                 _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
                     "import", "./Components/SeatingChart.razor.js");
 
-                ICollection<SeatPriceDTO> seatPrices = await AdminApiClient.GetEventSeatPricesAsync(EventId);
+                // Clear Seats.io session if switching events
+                if (_lastRenderedEventId.HasValue && _lastRenderedEventId.Value != EventId)
+                {
+                    await _module.InvokeVoidAsync("clearSession");
+                }
+                _lastRenderedEventId = EventId;
+
+                ICollection<SeatPriceDTO> seatPrices = await AdminClient.GetSeatPricesByEventIdAsync(EventId);
 
                 var prices = seatPrices
                 .GroupBy(item => item.Price)
@@ -66,7 +81,7 @@ else
                 {
                     workspaceKey = WorkspaceKey,
                     @event = EventKey,
-                    session = "continue",
+                    session = SESSION_CONTINUE,
                     pricing = prices,
                     channels = Channels
                 };
@@ -84,7 +99,7 @@ else
     }
 
     [JSInvokable]
-    public async Task HandleSeatSelected(string seatId, int price, string? category = null)
+    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null)
     {
         SeatInfo seat = new SeatInfo
         {
@@ -104,12 +119,75 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
+    [JSInvokable]
+    public void HandleHoldSucceeded(List<string> objects, object ticketTypes)
+    {
+        // Valid holds confirmed by Seats.io
+        CartState.SetHoldBusyState(false);
+    }
+
+    [JSInvokable]
+    public void HandleHoldFailed(List<string> objects, object ticketTypes)
+    {
+        CartState.SetHoldBusyState(false);
+        InvokeAsync(() => Snackbar.Add(Localizer["Seats_HoldFailed"], Severity.Error));
+    }
+
+    [JSInvokable]
+    public void HandleSessionExpired()
+    {
+        CartState.ClearCart();
+        CartState.ClearToken();
+    }
+
+    [JSInvokable]
+    public void HandleSessionInitialized(string holdToken, int expiresInSeconds)
+    {
+        CartState.SetHoldToken(holdToken, expiresInSeconds);
+    }
+
+    [JSInvokable]
+    public void HandleHoldCallsInProgress()
+    {
+        CartState.SetHoldBusyState(true);
+    }
+
+    [JSInvokable]
+    public void HandleHoldCallsComplete()
+    {
+        CartState.SetHoldBusyState(false);
+    }
+
     public async ValueTask<string?> GetHoldTokenAsync()
     {
         if (_module is null || _chart is null)
             return null;
 
         return await _module.InvokeAsync<string?>("getHoldToken", _chart);
+    }
+
+    public async ValueTask FocusSeatAsync(string seatId)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("focusSeat", _chart, seatId);
+    }
+
+    public async ValueTask UnfocusSeatAsync(string seatId)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("unfocusSeat", _chart, seatId);
+    }
+
+    public async ValueTask DeselectSeatAsync(string seatId)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("deselectSeat", _chart, seatId);
     }
 
     public async ValueTask DisposeAsync()

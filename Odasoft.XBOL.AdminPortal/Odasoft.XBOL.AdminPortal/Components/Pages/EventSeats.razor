@@ -2,13 +2,15 @@
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.AdminPortal.Configs
 @using Microsoft.Extensions.Options
+@using Odasoft.XBOL.Business
 
 @implements IDisposable
 @inject CartState CartState
 @inject ISnackbar Snackbar
-@inject IAdminApiClient AdminApiClient
+@inject IAdminClient AdminClient
 @inject NavigationManager Navigation
 @inject IOptions<SeatsIo> SeatsOptions
+@inject IStringLocalizer<Events> Localizer
 
 <PageTitle>@_eventName</PageTitle>
 
@@ -35,16 +37,17 @@ else
                 <SeatingChart @ref="_seatingChart" WorkspaceKey="@_workspaceKey" EventKey="@_eventKey" EventId="Id" />
             </MudItem>
             <MudItem xs="5">
-                <div class="d-flex flex-column">
-                    <OrderSummary />
+                <MudStack Spacing="4">
+                    <OrderSummary Chart="_seatingChart" />
                     <MudButton Variant="Variant.Filled"
                                DropShadow="false"
                                StartIcon="@Icons.Material.Outlined.Save"
                                Color="Color.Tertiary"
+                               Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
                                @onclick="Submit">
-                        Comprar
+                        @(_holdProcessing? Localizer["Seats_HoldProcessing"] : Localizer["Seats_Buy"])
                     </MudButton>
-                </div>
+                </MudStack>
             </MudItem>
         </MudGrid>
     </MudContainer>
@@ -59,6 +62,7 @@ else
     private string _eventKey = string.Empty;
     private string _eventName = string.Empty;
     private bool _loading = true;
+    private bool _holdProcessing => CartState.IsHoldCallsInProgress;
     private bool _error = false;
 
     protected override async Task OnInitializedAsync()
@@ -75,7 +79,7 @@ else
 
         try
         {
-            var eventData = await AdminApiClient.GetEventAsync(Id);
+            var eventData = await AdminClient.GetEventByIdAsync(Id);
             _eventName = eventData.Name ?? string.Empty;
             _eventKey = eventData.ExternalEventKey ?? string.Empty;
             _workspaceKey = SeatsOptions.Value.PublicWorkspaceKey;
@@ -95,14 +99,17 @@ else
 
     private async Task Submit()
     {
-        var token = _seatingChart is not null
-            ? await _seatingChart.GetHoldTokenAsync()
-            : null;
+        if (CartState.IsHoldCallsInProgress)
+        {
+            Snackbar.Add(Localizer["Seats_ConfirmingStatus"], Severity.Warning);
+            return;
+        }
+
+        var token = CartState.HoldToken;
 
         if (string.IsNullOrEmpty(token))
         {
-            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
-            Console.WriteLine("Error: Could not retrieve hold token.");
+            Snackbar.Add(Localizer["Seats_SessionExpired"], Severity.Error);
             return;
         }
 
@@ -115,9 +122,9 @@ else
 
         try
         {
-            var result = await AdminApiClient.CreateBookingAsync(request);
+            var result = await AdminClient.BookSeatsAsync(request);
 
-            Snackbar.Add("Pagado con exito.", configure: c =>
+            Snackbar.Add(Localizer["Seats_PaymentSuccess"], configure: c =>
             {
                 c.SnackbarVariant = Variant.Text;
                 c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
@@ -128,7 +135,7 @@ else
         }
         catch (Exception)
         {
-            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
+            Snackbar.Add(Localizer["Seats_PaymentError"], Severity.Error);
         }
     }
 
