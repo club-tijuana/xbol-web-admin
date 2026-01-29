@@ -33,6 +33,13 @@ else
     [EditorRequired]
     public long EventId { get; set; }
 
+    [Parameter]
+    [EditorRequired]
+    public List<string> SelectedSeats { get; set; } = [];
+
+    [Parameter]
+    public EventCallback OnChartRendered { get; set; }
+
     private const string SESSION_CONTINUE = "continue";
 
     private string ChartId = $"chart-{Guid.NewGuid()}";
@@ -83,7 +90,8 @@ else
                     @event = EventKey,
                     session = SESSION_CONTINUE,
                     pricing = prices,
-                    channels = Channels
+                    channels = Channels,
+                    selectedObjects = SelectedSeats
                 };
 
                 _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);

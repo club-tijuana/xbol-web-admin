@@ -28,6 +28,7 @@ export async function renderChart(containerId, config, dotNetHelper) {
     session: config.session,
     pricing: config.pricing,
     channels: config.channels,
+    selectedObjects: config.selectedObjects,
     // TODO: Add this config to component parameters
     multiSelectEnabled: true,
     categoryFilter: {

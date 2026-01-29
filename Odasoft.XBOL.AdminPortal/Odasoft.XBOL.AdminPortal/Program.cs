@@ -14,10 +14,13 @@ using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#region AppSettings
+Authentication authenticationConfig = builder.Configuration.GetSection("Authentication").Get<Authentication>()!;
+#endregion
+
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices(config =>
 {
@@ -66,6 +69,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEventService, ApiEventService>();
 builder.Services.AddScoped<GeneralService>();
 builder.Services.AddScoped<CartState>();
+builder.Services.AddScoped<ISeasonPassService, SeasonPassService>();
+builder.Services.AddScoped<ISeasonService, SeasonService>();
 
 builder.Services.AddHttpClient<IAdminClient, AdminClient>(
     (provider, client) =>

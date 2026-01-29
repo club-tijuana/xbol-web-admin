@@ -8,7 +8,6 @@
 
 <MudLayout>
     <!-- TOP BAR -->
-    <div style="width:100%">
         <MudAppBar Elevation="1" Class="bg-secondary-darken">
             <MudIconButton Icon="@Icons.Material.Filled.Menu"
                            Color="Color.Inherit"
@@ -30,7 +29,6 @@
                 </ChildContent>
             </MudMenu>
         </MudAppBar>
-    </div>
 
     <!-- LEFT NAV DRAWER -->
     <MudDrawer Open="@_drawerOpen"
@@ -53,7 +51,7 @@
                 Eventos
             </MudNavLink>
             <MudNavLink Href="/xolopass" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Disabled Icon="@Icons.Material.Filled.EventSeat">
+                        Icon="@Icons.Material.Filled.EventSeat">
                 Xolopass
             </MudNavLink>
             <MudNavLink Href="/clients" IconColor="Color.Primary" Class="nav-link-rounded pt-5"

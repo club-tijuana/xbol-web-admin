@@ -105,7 +105,9 @@ h1:focus {
 .bg-secondary-darken {
     background-color: var(--mud-palette-secondary-darken) !important;
 }
-
+.bg-default {
+    background-color: var(--mud-palette-background);
+}
 .bg-primary-darken {
     background-color: var(--mud-palette-primary-darken) !important;
 }
@@ -117,6 +119,10 @@ h1:focus {
 .text-secondary-darken {
     color: var(--mud-palette-secondary-darken) !important;
 }
+.bg-secondary-lighten {
+    background-color: var(--mud-palette-secondary-lighten) !important;
+}
+
 
 .mud-nav-link, .mud-nav-group > .mud-nav-link > .mud-nav-link-text {
     font-weight: var(--mud-typography-subtitle2-weight) !important;
