@@ -20,7 +20,7 @@
     <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Dense="true" NoIcon="true" Class="rounded-0">
         <MudStack Row="true" Justify="Justify.SpaceBetween">
             <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">TOTAL</MudText>
-            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">@CartState.TotalPrice.ToString("C", CultureInfo.CurrentCulture)</MudText>
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">@CartState.TotalPrice.ToString("C")</MudText>
         </MudStack>
     </MudAlert>
     <MudList T="string" Dense="true" Gutters="false">
@@ -30,7 +30,7 @@
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Price.ToString("C", CultureInfo.CurrentCulture)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Price.ToString("C")</MudText>
                         <MudTooltip Text="@Localizer["Seats_RemoveSeat"]">
                             <MudIconButton Icon="@Icons.Material.Filled.Close"
                                            Size="Size.Small"

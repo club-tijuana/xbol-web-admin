@@ -1,7 +1,11 @@
 @using Microsoft.JSInterop
 @using Odasoft.XBOL.AdminPortal.Components.Pages
+@using Odasoft.XBOL.AdminPortal.Components.Shared
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Models.DTO
+@using System.Text.Json
+@using System.Text.Json.Serialization
 @implements IAsyncDisposable
 @inject IJSRuntime JSRuntime
 @inject CartState CartState
@@ -9,19 +13,18 @@
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Events> Localizer
 
-@if (_error)
-{
-    <MudAlert Severity="Severity.Error" Class="ma-4">@_errorMessage</MudAlert>
-}
-else
-{
-    <div id="@ChartId" style="height: 750px"></div>
-}
+<LoadingContainer HasError="_error" ErrorMessage="_errorMessage" IsLoading="_loading">
+    <PriceFilter Chart="this" Categories="Prices.Where(x => x.Category is not null)" />
+</LoadingContainer>
+<div id="@ChartId" style="height: 700px"></div>
 
 @code {
     [Parameter]
+    public IEnumerable<SeatsIoPriceDTO> Prices { get; set; } = [];
+
+    [Parameter]
     [EditorRequired]
-    public string WorkspaceKey { get; set; }
+    public string SecretKey { get; set; }
 
     [Parameter]
     [EditorRequired]
@@ -34,7 +37,6 @@ else
     public long EventId { get; set; }
 
     [Parameter]
-    [EditorRequired]
     public List<string> SelectedSeats { get; set; } = [];
 
     [Parameter]
@@ -42,11 +44,12 @@ else
 
     private const string SESSION_CONTINUE = "continue";
 
-    private string ChartId = $"chart-{Guid.NewGuid()}";
+    private string ChartId = "event-manager";
 
     private DotNetObjectReference<SeatingChart>? _objRef;
     private IJSObjectReference? _module;
     private IJSObjectReference? _chart;
+    private bool _loading = true;
     private bool _error;
     private string? _errorMessage;
 
@@ -61,6 +64,7 @@ else
     {
         if (firstRender)
         {
+            _loading = true;
             try
             {
                 _objRef = DotNetObjectReference.Create(this);
@@ -74,23 +78,32 @@ else
                 }
                 _lastRenderedEventId = EventId;
 
-                ICollection<SeatPriceDTO> seatPrices = await AdminClient.GetSeatPricesByEventIdAsync(EventId);
-
-                var prices = seatPrices
-                .GroupBy(item => item.Price)
-                .Select(group => new
+                var options = new JsonSerializerOptions
                 {
-                    objects = group.Select(x => x.SeatKey).ToList(),
-                    price = group.Key
-                }).ToList();
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+
+                var jsonElement = JsonSerializer.SerializeToElement(Prices, options);
+
+                var categoryFilter = new CategoryFilterSeatsIoConfig
+                {
+                    Enabled = true,
+                    SortBy = "price",
+                    MultiSelect = true,
+                    ZoomOnSelect = true
+                };
 
                 var config = new
                 {
-                    workspaceKey = WorkspaceKey,
+                    secretKey = SecretKey,
                     @event = EventKey,
                     session = SESSION_CONTINUE,
-                    pricing = prices,
+                    pricing = jsonElement,
                     channels = Channels,
+                    categoryFilter = categoryFilter,
+                    language = "es",
+                    mode = "createOrder",
                     selectedObjects = SelectedSeats
                 };
 
@@ -101,6 +114,11 @@ else
                 _error = true;
                 _errorMessage = "Error al cargar el mapa de asientos";
                 Console.WriteLine($"SeatingChart error: {ex.Message}");
+                StateHasChanged();
+            }
+            finally
+            {
+                _loading = false;
                 StateHasChanged();
             }
         }
@@ -196,6 +214,22 @@ else
             return;
 
         await _module.InvokeVoidAsync("deselectSeat", _chart, seatId);
+    }
+
+    public async ValueTask ChangeConfig(object config)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("changeConfig", _chart, config);
+    }
+
+    public async ValueTask FocusFilteredCategories()
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("focusFilteredCategories", _chart);
     }
 
     public async ValueTask DisposeAsync()

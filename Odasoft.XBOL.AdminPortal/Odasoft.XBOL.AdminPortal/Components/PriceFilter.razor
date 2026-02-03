@@ -1,0 +1,52 @@
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Models.DTO
+
+<div class="d-flex mb-2">
+    <MudTextField @bind-Value="SelectedMinPrice" Class="mr-2" Label="Precio Mínimo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" />
+
+    <MudTextField @bind-Value="SelectedMaxPrice" Label="Precio Máximo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" />
+</div>
+
+@code {
+    [Parameter]
+    public SeatingChart? Chart { get; set; }
+
+    [Parameter]
+    public IEnumerable<SeatsIoPriceDTO> Categories { get; set; } = [];
+
+    private int _interval = 100;
+
+    private decimal _minPrice = 100;
+    private decimal _maxPrice = 1000;
+
+    private int _selectedMinPrice = 0;
+    private int _selectedMaxPrice = 1000;
+
+    public int SelectedMaxPrice { get; set; }
+
+    public int SelectedMinPrice { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // TODO: Handle what to display when categories prices are not loaded or empty
+        _maxPrice = Categories.Max(x => x.Price ?? 0);
+        _minPrice = Categories.Min(x => x.Price ?? 0);
+        SelectedMaxPrice = (int)_maxPrice;
+        SelectedMinPrice = (int)_minPrice;
+    }
+
+    public async Task UpdateFilteredCategories()
+    {
+        if (Chart is null)
+            return;
+
+        var filteredCategories = Categories
+            .Where(c => (c.Price >= SelectedMinPrice && c.Price <= SelectedMaxPrice) || (c.TicketTypes?.Any(x => x.Price >= SelectedMinPrice && x.Price <= SelectedMaxPrice) ?? false))
+            .Select(c => c.Category)
+            .ToArray();
+
+        await Chart.ChangeConfig(new { filteredCategories = filteredCategories });
+
+        await Chart.FocusFilteredCategories();
+    }
+}

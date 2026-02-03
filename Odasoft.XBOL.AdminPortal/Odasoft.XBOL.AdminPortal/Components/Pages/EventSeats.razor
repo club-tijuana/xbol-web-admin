@@ -1,4 +1,5 @@
 @page "/events/{Id:long}/seats"
+@using Odasoft.XBOL.AdminPortal.Components.Shared
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.AdminPortal.Configs
 @using Microsoft.Extensions.Options
@@ -14,27 +15,15 @@
 
 <PageTitle>@_eventName</PageTitle>
 
-@if (_loading)
-{
-    <MudContainer Class="d-flex justify-center align-center" Style="height: 400px;">
-        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
-    </MudContainer>
-}
-else if (_error)
-{
-    <MudContainer Class="d-flex flex-column justify-center align-center gap-4" Style="height: 400px;">
-        <MudText Typo="Typo.h6" Color="Color.Error">Error al cargar el evento</MudText>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadEventData">
-            Reintentar
-        </MudButton>
-    </MudContainer>
-}
-else
-{
+<LoadingContainer 
+    IsLoading="_loading" 
+    HasError="_error"
+    ErrorMessage="Error al cargar el evento"
+    OnRetry="LoadEventData">
     <MudContainer>
         <MudGrid>
             <MudItem xs="7">
-                <SeatingChart @ref="_seatingChart" WorkspaceKey="@_workspaceKey" EventKey="@_eventKey" EventId="Id" />
+                <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@_eventKey" EventId="Id" Prices="_eventInfo?.Prices" />
             </MudItem>
             <MudItem xs="5">
                 <MudStack Spacing="4">
@@ -51,19 +40,21 @@ else
             </MudItem>
         </MudGrid>
     </MudContainer>
-}
+</LoadingContainer>
 
 @code {
     [Parameter]
     public long Id { get; set; }
 
     private SeatingChart? _seatingChart;
-    private string _workspaceKey = string.Empty;
+    private string _secretKey = string.Empty;
     private string _eventKey = string.Empty;
     private string _eventName = string.Empty;
     private bool _loading = true;
     private bool _holdProcessing => CartState.IsHoldCallsInProgress;
     private bool _error = false;
+
+    private EventInfoDTO? _eventInfo;
 
     protected override async Task OnInitializedAsync()
     {
@@ -79,10 +70,10 @@ else
 
         try
         {
-            var eventData = await AdminClient.GetEventByIdAsync(Id);
-            _eventName = eventData.Name ?? string.Empty;
-            _eventKey = eventData.ExternalEventKey ?? string.Empty;
-            _workspaceKey = SeatsOptions.Value.PublicWorkspaceKey;
+            _eventInfo = await AdminClient.GetEventByIdAsync(Id);
+            _eventName = _eventInfo.Name ?? string.Empty;
+            _eventKey = _eventInfo.ExternalEventKey ?? string.Empty;
+            _secretKey = SeatsOptions.Value.SecretKey;
 
             CartState.SetEvent(Id);
         }
@@ -94,6 +85,7 @@ else
         finally
         {
             _loading = false;
+            StateHasChanged();
         }
     }
 

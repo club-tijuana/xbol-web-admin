@@ -21,23 +21,20 @@ async function ensureSeatsioLoaded() {
 export async function renderChart(containerId, config, dotNetHelper) {
   await ensureSeatsioLoaded();
 
-  const chart = new seatsio.SeatingChart({
+  const chart = new seatsio.EventManager({
     divId: containerId,
-    workspaceKey: config.workspaceKey,
+    secretKey: config.secretKey,
+    mode: config.mode,
     event: config.event,
     session: config.session,
-    pricing: config.pricing,
+    pricing: {
+      prices: config.pricing,
+      priceFormatter: price => '$' + price
+    },
     channels: config.channels,
     selectedObjects: config.selectedObjects,
-    // TODO: Add this config to component parameters
-    multiSelectEnabled: true,
-    categoryFilter: {
-      enabled: true,
-      multiSelect: true,
-      zoomOnSelect: true
-    },
-    language: 'es',
-    priceFormatter: price => '$' + price,
+    language: config.language,
+    categoryFilter: config.categoryFilter,
     onObjectSelected: obj => {
       dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, obj.pricing?.price ?? 0, obj.category?.label);
     },
@@ -81,6 +78,10 @@ export function focusSeat(chart, seatId) {
   chart?.pulse([seatId]);
 }
 
+export function focusFilteredCategories(chart) {
+  chart?.zoomToFilteredCategories();
+}
+
 export function unfocusSeat(chart, seatId) {
   chart?.unpulse([seatId]);
 }
@@ -92,4 +93,8 @@ export function deselectSeat(chart, seatId) {
 
 export function clearSession() {
   sessionStorage.removeItem('seatsio');
+}
+
+export function changeConfig(chart, config) {
+  chart?.changeConfig(config);
 }
