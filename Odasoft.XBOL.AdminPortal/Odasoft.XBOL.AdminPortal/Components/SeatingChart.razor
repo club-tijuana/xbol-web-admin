@@ -13,7 +13,7 @@
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Events> Localizer
 
-<LoadingContainer HasError="_error" ErrorMessage="@_errorMessage" IsLoading="_loading">
+<LoadingContainer HasError="_error" ErrorMessage="_errorMessage" IsLoading="_loading">
     <PriceFilter Chart="this" Categories="Prices.Where(x => x.Category is not null)" />
 </LoadingContainer>
 <div id="@ChartId" style="height: 700px"></div>
@@ -43,8 +43,6 @@
     public EventCallback OnChartRendered { get; set; }
 
     private const string SESSION_CONTINUE = "continue";
-    private const string SESSION_NONE = "none";
-    private const string SESSION_MANUAL = "manual";
 
     private string ChartId = "event-manager";
 
@@ -71,7 +69,7 @@
             {
                 _objRef = DotNetObjectReference.Create(this);
                 _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
-                "import", "./Components/SeatingChart.razor.js");
+                    "import", "./Components/SeatingChart.razor.js");
 
                 // Clear Seats.io session if switching events
                 if (_lastRenderedEventId.HasValue && _lastRenderedEventId.Value != EventId)
@@ -100,20 +98,16 @@
                 {
                     secretKey = SecretKey,
                     @event = EventKey,
-                    session = SESSION_NONE,
+                    session = SESSION_CONTINUE,
                     pricing = jsonElement,
                     channels = Channels,
                     categoryFilter = categoryFilter,
                     language = "es",
-                    mode = "createOrder"
+                    mode = "createOrder",
+                    selectedObjects = SelectedSeats
                 };
 
                 _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
-
-                var selectedSeats = SelectedSeats;
-                CartState.ClearCart();
-
-                await TrySelectObjectsAsync(selectedSeats.ToArray());
             }
             catch (Exception ex)
             {
@@ -128,12 +122,6 @@
                 StateHasChanged();
             }
         }
-    }
-
-    [JSInvokable]
-    public async Task NotifyError(string message)
-    {
-        Snackbar.Add(message, Severity.Warning);
     }
 
     [JSInvokable]
@@ -204,30 +192,6 @@
         return await _module.InvokeAsync<string?>("getHoldToken", _chart);
     }
 
-    public async ValueTask<string[]> GetSelectedSeatsAsync()
-    {
-        if (_module is null || _chart is null)
-            return [];
-
-        return await _module.InvokeAsync<string[]>("getSelectedSeats", _chart);
-    }
-
-    public async ValueTask TrySelectObjectsAsync(string[] seats)
-    {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeAsync<string[]>("trySelectObjects", _chart, seats, _objRef);
-    }
-
-    public async ValueTask DoSelectObjectsAsync(string[] seats)
-    {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeAsync<string[]>("doSelectObjects", _chart, seats, _objRef);
-    }
-
     public async ValueTask FocusSeatAsync(string seatId)
     {
         if (_module is null || _chart is null)
@@ -250,22 +214,6 @@
             return;
 
         await _module.InvokeVoidAsync("deselectSeat", _chart, seatId);
-    }
-
-    public async ValueTask DeselectSeatsAsync(IEnumerable<string> seats)
-    {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeVoidAsync("deselectSeats", _chart, seats);
-    }
-
-    public async ValueTask ClearSelection()
-    {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeVoidAsync("clearSelection", _chart);
     }
 
     public async ValueTask ChangeConfig(object config)

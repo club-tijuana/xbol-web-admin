@@ -3,7 +3,6 @@
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.AdminPortal.Configs
 @using Microsoft.Extensions.Options
-@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
 @using Odasoft.XBOL.Business
 
 @implements IDisposable
@@ -16,49 +15,31 @@
 
 <PageTitle>@_eventName</PageTitle>
 
-<SectionContent SectionName="nav-header">
-    <PageActionBar>
-        <LeftContent>
-            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToEvents())"
-                        Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
-        </LeftContent>
-    </PageActionBar>
-</SectionContent>
-
 <LoadingContainer 
     IsLoading="_loading" 
     HasError="_error"
     ErrorMessage="Error al cargar el evento"
     OnRetry="LoadEventData">
-    <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
-    <MudPaper Class="pa-6" Elevation="3">   
-            @if (_currentStep == 1)
-            {
-                <MudGrid Justify="Justify.SpaceBetween">
-                    <MudItem xs="12" Class="d-flex justify-space-between">
-                        <MudText Typo="Typo.h5">Asientos</MudText>
-                        <MudButton Variant="Variant.Filled"
-                                    DropShadow="false"
-                                    EndIcon="@Icons.Material.Filled.NavigateNext"
-                                    Color="Color.Primary"
-                                    Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
-                                    @onclick="NextStep">
-                                @(_holdProcessing? Localizer["Seats_HoldProcessing"] : "MÉTODO DE PAGO")
-                        </MudButton>
-                    </MudItem>
-                    <MudItem xs="7">
-                        <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@_eventKey" EventId="Id" Prices="_eventInfo?.Prices" SelectedSeats="@CartState.SelectedSeatsKeys" />
-                    </MudItem>
-                    <MudItem xs="4" Class="mt-8">
-                        <OrderSummary Chart="_seatingChart" />
-                    </MudItem>
-                </MudGrid>
-            }
-            else
-            {
-                <EventCheckout OnReturn="PreviousStep" EventKey="@_eventKey"></EventCheckout>
-            }
-    </MudPaper>
+    <MudContainer>
+        <MudGrid>
+            <MudItem xs="7">
+                <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@_eventKey" EventId="Id" Prices="_eventInfo?.Prices" />
+            </MudItem>
+            <MudItem xs="5">
+                <MudStack Spacing="4">
+                    <OrderSummary Chart="_seatingChart" />
+                    <MudButton Variant="Variant.Filled"
+                               DropShadow="false"
+                               StartIcon="@Icons.Material.Outlined.Save"
+                               Color="Color.Tertiary"
+                               Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
+                               @onclick="Submit">
+                        @(_holdProcessing? Localizer["Seats_HoldProcessing"] : Localizer["Seats_Buy"])
+                    </MudButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
 </LoadingContainer>
 
 @code {
@@ -66,7 +47,6 @@
     public long Id { get; set; }
 
     private SeatingChart? _seatingChart;
-    private ImageHeroBannerViewModel _banner = new();
     private string _secretKey = string.Empty;
     private string _eventKey = string.Empty;
     private string _eventName = string.Empty;
@@ -74,14 +54,11 @@
     private bool _holdProcessing => CartState.IsHoldCallsInProgress;
     private bool _error = false;
 
-    private int _currentStep = 1;
-
     private EventInfoDTO? _eventInfo;
 
     protected override async Task OnInitializedAsync()
     {
         CartState.OnChange += StateHasChanged;
-        CartState.ClearCart();
         await LoadEventData();
     }
 
@@ -98,18 +75,7 @@
             _eventKey = _eventInfo.ExternalEventKey ?? string.Empty;
             _secretKey = SeatsOptions.Value.SecretKey;
 
-            _banner = new()
-            {
-               Title = _eventInfo.Name,
-               Subtitle = _eventInfo.Subtitle,
-               StartDateTime = _eventInfo.ScheduledStartDate?.UtcDateTime,
-               EndDateTime = _eventInfo.ScheduledEndDate?.UtcDateTime,
-               ImageUrl = _eventInfo.BannerImageUrl,
-               Venue = _eventInfo.VenueName,
-            };
-
             CartState.SetEvent(Id);
-            CartState.ClearToken();
         }
         catch (Exception ex)
         {
@@ -123,25 +89,46 @@
         }
     }
 
-    private void NextStep()
+    private async Task Submit()
     {
-        if(_currentStep < 2)
+        if (CartState.IsHoldCallsInProgress)
         {
-            _currentStep++;
+            Snackbar.Add(Localizer["Seats_ConfirmingStatus"], Severity.Warning);
+            return;
         }
-    }
 
-    private void PreviousStep()
-    {
-        if(_currentStep > 1)
+        var token = CartState.HoldToken;
+
+        if (string.IsNullOrEmpty(token))
         {
-            _currentStep--;
+            Snackbar.Add(Localizer["Seats_SessionExpired"], Severity.Error);
+            return;
         }
-    }
 
-    private void GoToEvents()
-    {
-        Navigation.NavigateTo("/events");
+        var request = new BookingRequest
+        {
+            Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList(),
+            HoldToken = token,
+            EventId = _eventKey
+        };
+
+        try
+        {
+            var result = await AdminClient.BookSeatsAsync(request);
+
+            Snackbar.Add(Localizer["Seats_PaymentSuccess"], configure: c =>
+            {
+                c.SnackbarVariant = Variant.Text;
+                c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
+                c.IconColor = Color.Success;
+            });
+
+            Navigation.NavigateTo("/events");
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(Localizer["Seats_PaymentError"], Severity.Error);
+        }
     }
 
     public void Dispose()
