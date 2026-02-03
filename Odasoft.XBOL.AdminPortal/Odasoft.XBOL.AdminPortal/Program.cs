@@ -11,16 +11,13 @@ using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.AdminPortal.States;
 using Odasoft.XBOL.Business;
 using Odasoft.XBOL.Business.Extensions;
-using Odasoft.XBOL.Business.Services;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region AppSettings
-
 Authentication authenticationConfig = builder.Configuration.GetSection("Authentication").Get<Authentication>()!;
-
-#endregion AppSettings
+#endregion
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -67,26 +64,20 @@ builder.Services.AddAuthorizationCore();
 
 // Services
 builder.Services.ConfigureServices();
-
-// TODO: Move the business services to the business layer
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 builder.Services.AddScoped<AuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEventService, ApiEventService>();
 builder.Services.AddScoped<GeneralService>();
+builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<ISeasonPassService, SeasonPassService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
-builder.Services.AddScoped<ClientsService>();
-
-builder.Services.AddScoped<CartState>();
-builder.Services.AddScoped<LoadingState>();
 
 builder.Services.AddHttpClient<IAdminClient, AdminClient>(
     (provider, client) =>
     {
         var config = provider.GetRequiredService<IOptions<AdminApiClientConfig>>().Value;
         client.BaseAddress = new Uri(config.BaseAddress);
-        client.DefaultRequestHeaders.Add("Accept-Language", "es");
     });
 
 builder.Services.AddOptions<Authentication>()
@@ -133,23 +124,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Map health check endpoint for container health monitoring
-app.MapHealthChecks("/healthz", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-{
-    ResponseWriter = async (context, report) =>
-    {
-        context.Response.ContentType = "application/json";
-        var appName = app.Environment.ApplicationName ?? "unknown";
-        var environment = app.Environment.EnvironmentName ?? "unknown";
-        var dockerImageVersion = Environment.GetEnvironmentVariable("DOCKER_IMAGE_VERSION") ?? "unknown";
-        var response = new
-        {
-            appName,
-            environment,
-            status = report.Status.ToString(),
-            dockerImageVersion
-        };
-        await context.Response.WriteAsJsonAsync(response);
-    }
-});
+app.MapHealthChecks("/healthz");
 
 app.Run();

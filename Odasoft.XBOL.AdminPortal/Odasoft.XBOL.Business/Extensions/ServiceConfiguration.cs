@@ -10,9 +10,6 @@ namespace Odasoft.XBOL.Business.Extensions
         {
             services.AddScoped<CatalogsService>();
             services.AddScoped<SuitesService>();
-            services.AddScoped<SuiteAgreementsService>();
-            services.AddScoped<OrdersService>();
-            services.AddScoped<CreditTransactionsService>();
 
             return services;
         }

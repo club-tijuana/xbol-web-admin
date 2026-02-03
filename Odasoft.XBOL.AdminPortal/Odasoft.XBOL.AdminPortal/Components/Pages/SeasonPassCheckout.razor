@@ -21,18 +21,11 @@
 @inject NavigationManager Navigation
 
 @inject NavigationManager NavigationManager
-
-<SectionContent SectionName="nav-header">
-    <PageActionBar>
-        <LeftContent>
-            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSeasonpassList())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
-        </LeftContent>
-    </PageActionBar>
-</SectionContent>
-
+<MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-4" Elevation="0">
+    <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSeasonpassList())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+</MudPaper>
 <ImageHeroBanner Banner="_seasonBanner"></ImageHeroBanner>
-
-<MudCard Elevation="3" Class="pa-6">
+<MudCard Class="mt-4 mb-6 pa-5" Elevation="3">
     <MudGrid Class="align-center pb-3">
         <MudItem xs="12" sm="6" lg="8">
             <MudText Typo="Typo.h5">@L["SubtitleSeats"]</MudText>
@@ -51,7 +44,6 @@
                        Margin="Margin.Dense"
                        Disabled="IsRenovation"
                        @bind-Value="_request.ClientContact.CountryPhoneISO"
-                       ShrinkLabel
                        Required>
 
                 @foreach (var item in CountryDialCodes.Map)
@@ -73,8 +65,7 @@
                           MaxLength="10"
                           OnBlur="OnPhoneBlur"
                           Disabled="IsRenovation"
-                          InputType="InputType.Telephone"
-                          ShrinkLabel />
+                          InputType="InputType.Telephone" />
         </MudItem>
         <MudItem xs="12" sm="12" md="6" lg="3">
             <MudTextField T="string"
@@ -82,8 +73,7 @@
                           @bind-Value="_request.ClientContact.Email"
                           Required="true" Margin="Margin.Dense"
                           Disabled="IsRenovation"
-                          Immediate="true"
-                          ShrinkLabel />
+                          Immediate="true" />
         </MudItem>
         <MudItem xs="12" sm="12" md="6" lg="3">
             <MudTextField T="string"
@@ -91,8 +81,7 @@
                           Label="Nombre del comprador " Variant="Variant.Outlined"
                           Required="true" Margin="Margin.Dense"
                           Disabled="IsRenovation"
-                          Immediate="true"
-                          ShrinkLabel />
+                          Immediate="true" />
         </MudItem>
         <MudItem xs="12" sm="12" md="6" lg="3">
             <MudTextField T="string"
@@ -100,8 +89,7 @@
                           Label="Apellido del comprador " Variant="Variant.Outlined"
                           Required="true" Margin="Margin.Dense"
                           Disabled="IsRenovation"
-                          Immediate="true"
-                          ShrinkLabel />
+                          Immediate="true" />
         </MudItem>
         <MudItem xs="6">
             @if (_loading)
@@ -116,10 +104,9 @@
             }
             else if (!string.IsNullOrWhiteSpace(_seasonKey))
             {
-                <SeatingChart SecretKey="@_secretKey"
+                <SeatingChart WorkspaceKey="@_workspaceKey"
                               EventKey="@_seasonKey"
                               EventId="SeasonId"
-                              Prices="_prices"
                               SelectedSeats="SelectedSeats"
                               OnChartRendered="HandleChartReady" />
             }
@@ -156,9 +143,8 @@
     [Parameter]
     public List<string> SelectedSeats { get; set; } = [];
 
-    private string _secretKey = string.Empty;
+    private string _workspaceKey = string.Empty;
     private string? _seasonKey = string.Empty;
-    private List<SeatsIoPriceDTO> _prices = new();
     private bool _loading = true;
     private bool _error = false;
     private ClientFilter clientFilter = new();
@@ -196,39 +182,28 @@
             SeasonId = SeasonId
         };
 
-        try
+        var result = await SeasonPassService.GetClientSeasonEventInfo(clientFilter);
+
+        if (result is null)
+            return;
+
+        if (IsRenovation)
         {
-            var result = await SeasonPassService.GetClientSeasonEventInfo(clientFilter);
-
-            if (result is null)
+            if (result.AlreadyRenewed.Value)
             {
-                return;
+                Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
+                Navigation.NavigateTo("/xolopass");
             }
-
-            if (IsRenovation)
+            if (!result.CanRenovate.Value)
             {
-                if (result.AlreadyRenewed is true)
-                {
-                    Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
-                    Navigation.NavigateTo("/xolopass");
-                }
-                if (result.CanRenovate is false)
-                {
-                    Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
-                    Navigation.NavigateTo("/xolopass");
-                }
+                Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
+                Navigation.NavigateTo("/xolopass");
             }
-
-            _request.ClientContact.Name = result.ClientContact.Name;
-            _request.ClientContact.LastName = result.ClientContact.LastName;
-            _request.ClientContact.Email = result.ClientContact.Email;
-
         }
-        catch (Exception ex)
-        {
-            // TODO: need to handle api responses
-            Console.WriteLine($"Client not found. Error {ex.Message}");
-        }
+
+        _request.ClientContact.Name = result.ClientContact.Name;
+        _request.ClientContact.LastName = result.ClientContact.LastName;
+        _request.ClientContact.Email = result.ClientContact.Email;
     }
 
     private void GoToSeasonpassList()
@@ -243,11 +218,11 @@
 
         try
         {
-            _secretKey = SeatsOptions.Value.SecretKey;
+            _workspaceKey = SeatsOptions.Value.PublicWorkspaceKey;
 
             if (IsRenovation)
             {
-                _clientSeasonEvent = await SeasonPassService.GetClientSeasonEventByOrderReference(orderReference!);
+                _clientSeasonEvent = await SeasonPassService.GetClientSeasonEventByOrderReference(orderReference);
                 if (_clientSeasonEvent != null)
                 {
                     _request.EventKey = _clientSeasonEvent.SeasonKey;
@@ -255,49 +230,32 @@
                     _request.RelatedOrderId = _clientSeasonEvent.RelatedOrderId;
 
                     _seasonKey = _request.EventKey;
-                    _selectedSeats = _clientSeasonEvent.Seats.Select(x => new SeatInfo
-                    {
-                        SeatId = x.SeatId,
-                        Price = (decimal)x.Price,
-                        Category = x.Category
-                    }).ToList();
+                    _selectedSeats = _clientSeasonEvent.Seats.Select(x => new SeatInfo { SeatId = x.SeatId, Price = (decimal)x.Price, Category = x.Category }).ToList();
 
-                    if (_clientSeasonEvent.SeasonId is null)
+                    SeasonId = _clientSeasonEvent.SeasonId.Value;
+                    SelectedSeats = _selectedSeats.Select(x => x.SeatId).ToList();
+                    CartState.SelectedSeats = _selectedSeats;
+
+                    _seasonBanner = await SeasonService.GetSeasonBannerByEventAsync(_clientSeasonEvent.SeasonId.Value);
+
+                    if (_clientSeasonEvent.AlreadyRenewed.Value)
                     {
-                        Snackbar.Add("Datos de temporada no válidos. Se requiere el ID de temporada.", Severity.Error);
+                        Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
                         Navigation.NavigateTo("/xolopass");
                     }
-                    else
+
+                    if (!_clientSeasonEvent.CanRenovate.Value)
                     {
-
-                        SeasonId = _clientSeasonEvent.SeasonId.Value;
-                        SelectedSeats = _selectedSeats.Select(x => x.SeatId).ToList();
-                        CartState.SelectedSeats = _selectedSeats;
-
-                        var season = await SeasonService.GetSeasonByIdAsync(SeasonId);
-                        _prices = season.Prices?.ToList() ?? new();
-                        _seasonBanner = await SeasonService.GetSeasonBannerAsync(SeasonId);
-
-                        if (_clientSeasonEvent.AlreadyRenewed is true)
-                        {
-                            Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
-                            Navigation.NavigateTo("/xolopass");
-                        }
-
-                        if (_clientSeasonEvent.CanRenovate is false)
-                        {
-                            Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
-                            Navigation.NavigateTo("/xolopass");
-                        }
+                        Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
+                        Navigation.NavigateTo("/xolopass");
                     }
                 }
             }
             else
             {
-                var season = await SeasonService.GetSeasonByIdAsync(SeasonId);
-                _seasonKey = season.ExternalSeasonKey ?? string.Empty;
-                _prices = season.Prices?.ToList() ?? new();
-                _seasonBanner = await SeasonService.GetSeasonBannerAsync(SeasonId);
+                var seasonKey = await AdminApiClient.GetSeasonKeyAsync(SeasonId);
+                _seasonKey = seasonKey.Value ?? string.Empty;
+                _seasonBanner = await SeasonService.GetSeasonBannerByEventAsync(SeasonId);
             }
         }
         catch
@@ -313,9 +271,7 @@
     private async Task Submit()
     {
         if (_isSubmitting)
-        {
             return;
-        }
 
         _isSubmitting = true;
         _showValidationError = false;
@@ -335,9 +291,18 @@
                 return;
             }
 
+            var token = CartState.HoldToken;
+
+            if (string.IsNullOrEmpty(token))
+            {
+                Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
+                Console.WriteLine("Error: Could not retrieve hold token.");
+                return;
+            }
+
             _request.Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList();
             _request.EventKey = _seasonKey;
-            _request.HoldToken = CartState.HoldToken ?? "";
+            _request.HoldToken = token;
             _request.SeassonId = SeasonId;
 
             var result = await AdminApiClient.BookSeasonAsync(_request);

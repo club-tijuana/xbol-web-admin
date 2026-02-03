@@ -1,9 +1,8 @@
 @page "/suites/settings"
 
-@using Odasoft.XBOL.AdminPortal.Extensions;
+@using Odasoft.XBOL.AdminPortal.Extensions
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
-@using Odasoft.XBOL.Common.Constants
 @using Odasoft.XBOL.Models.Parameters;
 @using Odasoft.XBOL.Models.ViewModels;
 
@@ -15,70 +14,72 @@
 
 <PageTitle>Palcos - Configuración</PageTitle>
 
-<SectionContent SectionName="nav-header">
-    <PageActionBar>
-        <RightContent>
-            <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateSuite())"
-                    Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nuevo Palco</MudButton>
-        </RightContent>
-    </PageActionBar>
-</SectionContent>
+<MudCard Class="mt-4 mb-6" Elevation="3">
 
-<MudCard Elevation="3">
+    <MudCardHeader>
+        <!-- Table header -->
+        <CardHeaderContent>
+            <MudItem xs="12" sm="12" md="12" lg="12" Class="justify-content-end d-flex">
+                <MudPaper Class="d-flex justify-end flex-grow-1 gap-4" Elevation="0">
+                    <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => AddSuite())"
+                               Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nuevo Palco</MudButton>
+                </MudPaper>
+            </MudItem>
+            <MudGrid Class="align-center">
+                <MudItem xs="12" sm="6" lg="8">
+                    <MudText Class="pl-lg-4" Typo="Typo.h5">Palcos - Configuración</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="4">
+                    <MudStack Row AlignItems="AlignItems.Center">
+                        <!-- Search field -->
+                        <MudTextField @bind-Value="_searchTerm"
+                                      @bind-Value:after="@(() => _dataGrid.ReloadServerData())" Placeholder="Buscar"
+                                      Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
+                                      AdornmentAriaLabel="Buscar" AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1" />
+
+                        <!-- Level multi-select -->
+                        <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                            <ActivatorContent>
+                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt"
+                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudStack Spacing="3" Class="pa-4" Style="width:375px">
+                                    <!-- Venue multi-select -->
+                                    <MudSelect T="string" Label="Nivel" MultiSelection="true"
+                                               Margin="Margin.Dense" @bind-SelectedValues="_selectedSuiteLevels"
+                                               Variant="Variant.Outlined" ShrinkLabel>
+                                        @foreach (var level in _suiteLevels)
+                                        {
+                                            <MudSelectItem T="string" Value="@level.Name">
+                                                <MudText Typo="Typo.body2">@level.Name</MudText>
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                    <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
+                                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
+                                                   Class="mud-no-activator" OnClick="ClearFiltersAsync">
+                                            Limpiar
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
+                                                   StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyFiltersAsync">
+                                            Aplicar
+                                        </MudButton>
+                                    </MudStack>
+                                </MudStack>
+                            </ChildContent>
+                        </MudMenu>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </CardHeaderContent>
+    </MudCardHeader>
+
     <MudCardContent Class="pa-0">
         <MudDataGrid T="SuitesViewModel" @ref="_dataGrid" ServerData="ServerReloadAsync" Loading="_loading" Filterable="false"
                      FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0">
-            <ToolBarContent>
-                <MudGrid Class="align-center">
-                    <MudItem xs="12" sm="6" lg="8">
-                        <MudText Class="pl-lg-4" Typo="Typo.h5">Palcos - Configuración</MudText>
-                    </MudItem>
-                    <MudItem xs="12" sm="6" lg="4">
-                        <MudStack Row AlignItems="AlignItems.Center">
-                            <!-- Search field -->
-                            <MudTextField @bind-Value="_searchTerm"
-                                          @bind-Value:after="@(() => _dataGrid.ReloadServerData())" Placeholder="Buscar"
-                                          Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
-                                          AdornmentAriaLabel="Buscar" AdornmentIcon="@Icons.Material.Filled.Search"
-                                          IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1"
-                                          DebounceInterval="500" />
-
-                            <!-- Level multi-select -->
-                            <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-                                <ActivatorContent>
-                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Secondary" />
-                                </ActivatorContent>
-                                <ChildContent>
-                                    <MudStack Spacing="3" Class="pa-4" Style="width:375px">
-                                        <!-- Venue multi-select -->
-                                        <MudSelect T="string" Label="Nivel" MultiSelection="true"
-                                                   Margin="Margin.Dense" @bind-SelectedValues="_selectedSuiteLevels"
-                                                   Variant="Variant.Outlined" ShrinkLabel>
-                                            @foreach (var level in _suiteLevels)
-                                            {
-                                                <MudSelectItem T="string" Value="@level.Name">
-                                                    <MudText Typo="Typo.body2">@level.Name</MudText>
-                                                </MudSelectItem>
-                                            }
-                                        </MudSelect>
-
-                                        <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
-                                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
-                                                       Class="mud-no-activator" OnClick="ClearFiltersAsync">
-                                                Limpiar
-                                            </MudButton>
-                                            <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
-                                                       StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyFiltersAsync">
-                                                Aplicar
-                                            </MudButton>
-                                        </MudStack>
-                                    </MudStack>
-                                </ChildContent>
-                            </MudMenu>
-                        </MudStack>
-                    </MudItem>
-                </MudGrid>
-            </ToolBarContent>
             <Columns>
                 <PropertyColumn Title="Nivel" Property="x => x.Level" Sortable="true" Filterable="false" InitialDirection="SortDirection.Ascending">
                     <CellTemplate>
@@ -120,7 +121,7 @@
             </Columns>
 
             <PagerContent>
-                <CustomMudDataGridPager T="SuitesViewModel" />
+                <MudDataGridPager T="SuitesViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
@@ -134,16 +135,12 @@
 
     private SuitesFilterParameters _filters = new SuitesFilterParameters();
 
-    private List<ListItem> _suiteLevels = [];
+    private ICollection<ListItem> _suiteLevels = [];
     private IEnumerable<string> _selectedSuiteLevels = new HashSet<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-
         _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
-
-        StateHasChanged();
     }
 
     private async Task<GridData<SuitesViewModel>> FetchFromServerAsync(GridState<SuitesViewModel> state)
@@ -160,7 +157,7 @@
             PageSize = state.PageSize
         };
 
-        SuiteResultPagedResponse result = await _suitesService.GetSuitesAsync(_filters);
+        var result = await _suitesService.GetSuitesAsync(_filters);
 
         return new GridData<SuitesViewModel>
         {
@@ -215,9 +212,9 @@
         await _dataGrid.ReloadServerData();
     }
 
-    private void CreateSuite()
+    private void AddSuite()
     {
-        _navigationManager.NavigateTo(SitePages.SUITES_CREATE);
+        _navigationManager.NavigateTo("/suites/add");
     }
 
     private async Task DeleteSuiteAsync(long suiteId)
@@ -238,13 +235,13 @@
                 }
                 else
                 {
-                    _snackbar.Add("Error al eliminar el palco.", Severity.Error);
+                    _snackbar.Add("Error al eliminar el palco. Por favor, intente nuevamente.", Severity.Error);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error deleting suite: {ex.Message}");
-                _snackbar.Add("Error al eliminar el palco.", Severity.Error);
+                _snackbar.Add("Error al eliminar el palco. Por favor, intente nuevamente.", Severity.Error);
             }
         }
     }

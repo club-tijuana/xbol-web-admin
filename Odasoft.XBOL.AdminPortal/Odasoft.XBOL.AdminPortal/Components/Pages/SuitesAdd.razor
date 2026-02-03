@@ -1,4 +1,4 @@
-@page "/suites/{_id:long}/update"
+@page "/suites/add"
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
@@ -9,7 +9,7 @@
 @inject ISnackbar _snackbar;
 @inject IDialogService _dialogService;
 
-<PageTitle>Editar - Palco</PageTitle>
+<PageTitle>Nuevo - Palco</PageTitle>
 
 <MudCard Class="mt-4 mb-6" Elevation="3">
     <MudCardHeader>
@@ -39,15 +39,12 @@
     </MudCardContent>
     <MudCardActions Class="gap-2">
         <MudStack Class="mud-width-full" Row="true" Justify="Justify.FlexEnd" AlignItems="AlignItems.Center">
-            <MudButton StartIcon="@Icons.Material.Outlined.Save" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => UpdateSuiteAsync())">Guardar</MudButton>
+            <MudButton StartIcon="@Icons.Material.Outlined.Save" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => CreateSuiteAsync())">Guardar</MudButton>
         </MudStack>
     </MudCardActions>
 </MudCard>
 
 @code {
-    [Parameter]
-    public long _id { get; set; }
-
     private long _suiteLevelId;
     private string _suiteName = "";
     private int _seats = 0;
@@ -57,21 +54,7 @@
     protected override async Task OnInitializedAsync()
     {
         _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
-
-        try
-        {
-            SuiteResult suite = await _suitesService.GetSuiteByIdAsync(_id);
-
-            _suiteName = suite.Name;
-            _seats = suite.Seats;
-            _suiteLevelId = suite.SuiteLevelId;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading suite data: {ex.Message}");
-            _snackbar.Add("Error al cargar los datos del palco. Por favor, intente nuevamente.", Severity.Error);
-            _navigationManager.NavigateTo("/suites/settings");
-        }
+        _suiteLevelId = _suiteLevels.Any() ? _suiteLevels.First().Id : default;
     }
 
     private async Task GoToSuiteConfigurationsAsync()
@@ -90,13 +73,12 @@
         }
     }
 
-    private async Task UpdateSuiteAsync()
+    private async Task CreateSuiteAsync()
     {
         try
         {
-            bool result = await _suitesService.UpdateSuiteAsync(new UpdateSuiteRequest
+            bool result = await _suitesService.CreateSuiteAsync(new CreateSuiteRequest
             {
-                Id = _id,
                 SuiteLevelId = _suiteLevelId,
                 Name = _suiteName,
                 Seats = _seats
@@ -104,18 +86,19 @@
 
             if (result)
             {
-                _snackbar.Add("Palco actualizado exitosamente.", Severity.Success);
-                _navigationManager.NavigateTo(SitePages.SUITES_SETTINGS);
+                _snackbar.Add("Palco creado exitosamente.", Severity.Success);
             }
             else
             {
-                _snackbar.Add("Error al actualizar el palco. Por favor, intente nuevamente.", Severity.Error);
+                _snackbar.Add("Error al crear el palco. Por favor, intente nuevamente.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error updating suite: {ex.Message}");
-            _snackbar.Add("Error al actualizar el palco. Por favor, intente nuevamente.", Severity.Error);
+            Console.WriteLine($"Error creating suite: {ex.Message}");
+            _snackbar.Add("Error al crear el palco. Por favor, intente nuevamente.", Severity.Error);
         }
+
+        _navigationManager.NavigateTo(SitePages.SUITES_SETTINGS);
     }
 }
