@@ -37,50 +37,7 @@
                Variant="DrawerVariant.Responsive"
                Anchor="Anchor.Start"
                Class="white-drawer pa-5">
-        <MudNavMenu>
-            <MudNavLink Href="/" Match="NavLinkMatch.All" IconColor="Color.Primary"
-                        Icon="@Icons.Material.Filled.Dashboard" Class="nav-link pt-5">
-                Dashboard
-            </MudNavLink>
-            <MudNavLink Href="/seasons" IconColor="Color.Primary" Class="nav-link pt-5"
-                        Disabled Icon="@Icons.Material.Filled.SportsSoccer">
-                Torneos
-            </MudNavLink>
-            <MudNavLink Href="/events" IconColor="Color.Primary" Class="nav-link pt-5"
-                        Icon="@Icons.Material.Filled.ConfirmationNumber">
-                Eventos
-            </MudNavLink>
-            <MudNavLink Href="/xolopass" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Icon="@Icons.Material.Filled.EventSeat">
-                Xolopass
-            </MudNavLink>
-            <MudNavLink Href="/clients" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Disabled Icon="@Icons.Material.Filled.Badge">
-                Clientes
-            </MudNavLink>
-            <MudNavLink Href="/venues" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Disabled Icon="@Icons.Material.Filled.Stadium">
-                Recintos
-            </MudNavLink>
-            <MudNavLink Href="/reports" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Disabled Icon="@Icons.Material.Filled.InsertChart">
-                Reportes
-            </MudNavLink>
-            <MudNavGroup Title="Configuración"
-                         Icon="@Icons.Material.Filled.Settings"
-                         IconColor="Color.Primary"
-                         Class="nav-link-rounded pt-5"
-                         Disabled>
-                <MudNavLink Href="/settings/users" Class="pt-5">
-                    Usuarios
-                </MudNavLink>
-
-                <MudNavLink Href="/settings/security" Class="pt-5" Disabled>
-                    Roles
-                </MudNavLink>
-
-            </MudNavGroup>
-        </MudNavMenu>
+        <NavMenu />
     </MudDrawer>
     <!-- MAIN CONTENT -->
     <MudMainContent Class="pt-20 px-10 pb-10">

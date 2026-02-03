@@ -10,6 +10,7 @@ using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.AdminPortal.States;
 using Odasoft.XBOL.Business;
+using Odasoft.XBOL.Business.Extensions;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,7 +63,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthorizationCore();
 
 // Services
-
+builder.Services.ConfigureServices();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 builder.Services.AddScoped<AuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();

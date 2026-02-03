@@ -20,8 +20,6 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
-
-
 @inject NavigationManager NavigationManager
 <MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-4" Elevation="0">
     <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSeasonpassList())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
@@ -54,7 +52,6 @@
                         @item.Value
                     </MudSelectItem>
                 }
-
             </MudSelect>
         </MudItem>
         <MudItem xs="12" sm="12" md="6" lg="2">
@@ -132,13 +129,9 @@
                     @(_isSubmitting ? "Procesando..." : "Comprar")
                 </MudButton>
             </div>
-
         </MudItem>
     </MudGrid>
-
-
 </MudCard>
-
 
 @code {
     [Parameter]
@@ -196,12 +189,12 @@
 
         if (IsRenovation)
         {
-            if (result.AlreadyRenewed)
+            if (result.AlreadyRenewed.Value)
             {
                 Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
                 Navigation.NavigateTo("/xolopass");
             }
-            if (!result.CanRenovate)
+            if (!result.CanRenovate.Value)
             {
                 Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
                 Navigation.NavigateTo("/xolopass");
@@ -239,17 +232,19 @@
                     _seasonKey = _request.EventKey;
                     _selectedSeats = _clientSeasonEvent.Seats.Select(x => new SeatInfo { SeatId = x.SeatId, Price = (decimal)x.Price, Category = x.Category }).ToList();
 
-                    SeasonId = _clientSeasonEvent.SeasonId;
+                    SeasonId = _clientSeasonEvent.SeasonId.Value;
                     SelectedSeats = _selectedSeats.Select(x => x.SeatId).ToList();
                     CartState.SelectedSeats = _selectedSeats;
 
-                    _seasonBanner = await SeasonService.GetSeasonBannerByEventAsync(_clientSeasonEvent.SeasonId);
-                    if (_clientSeasonEvent.AlreadyRenewed)
+                    _seasonBanner = await SeasonService.GetSeasonBannerByEventAsync(_clientSeasonEvent.SeasonId.Value);
+
+                    if (_clientSeasonEvent.AlreadyRenewed.Value)
                     {
                         Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
                         Navigation.NavigateTo("/xolopass");
                     }
-                    if (!_clientSeasonEvent.CanRenovate)
+
+                    if (!_clientSeasonEvent.CanRenovate.Value)
                     {
                         Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
                         Navigation.NavigateTo("/xolopass");

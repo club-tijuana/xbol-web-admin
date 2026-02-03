@@ -4,6 +4,8 @@ using Odasoft.XBOL.Business;
 
 namespace Odasoft.XBOL.AdminPortal.Services;
 
+// TODO: Move to Business project
+
 public class ApiEventService(IAdminClient adminClient) : IEventService
 {
     public async Task<GridData<EventViewModel>> GetEventsAsync(

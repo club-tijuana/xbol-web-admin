@@ -16,6 +16,11 @@
         "requestBody": {
           "description": "An object containing the user registration information, including user name, email address, and password.\r\n            Cannot be null.",
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateUserRequest"
@@ -67,6 +72,11 @@
         "requestBody": {
           "description": "The booking request containing event and seat selection details. Cannot be null.",
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingRequest"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BookingRequest"
@@ -147,14 +157,19 @@
         }
       }
     },
-    "/api/Client": {
+    "/api/clients": {
       "post": {
         "tags": [
-          "Client"
+          "Clients"
         ],
-        "operationId": "GetClientSeasonEventInfo",
+        "operationId": "GetClientSeasonEventInfoAsync",
         "requestBody": {
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientFilter"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ClientFilter"
@@ -388,14 +403,19 @@
         }
       }
     },
-    "/api/Order": {
+    "/api/orders": {
       "post": {
         "tags": [
-          "Order"
+          "Orders"
         ],
-        "operationId": "GetOrderList",
+        "operationId": "GetOrderListAsync",
         "requestBody": {
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderListFilters"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/OrderListFilters"
@@ -437,12 +457,12 @@
         }
       }
     },
-    "/api/Order/{orderReference}": {
+    "/api/orders/{orderReference}": {
       "get": {
         "tags": [
-          "Order"
+          "Orders"
         ],
-        "operationId": "GetClientSeasonEventByOrderReference",
+        "operationId": "GetClientSeasonEventByOrderReferenceAsync",
         "parameters": [
           {
             "name": "orderReference",
@@ -477,14 +497,19 @@
         }
       }
     },
-    "/api/Order/book-season": {
+    "/api/orders/book-season": {
       "post": {
         "tags": [
-          "Order"
+          "Orders"
         ],
         "operationId": "BookSeasonAsync",
         "requestBody": {
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookSeasonRequest"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BookSeasonRequest"
@@ -535,172 +560,7 @@
         }
       }
     },
-    "/api/season": {
-      "get": {
-        "tags": [
-          "Season"
-        ],
-        "operationId": "GetSeasonSelectorItemsAsync",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeasonSelectorItem"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeasonSelectorItem"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeasonSelectorItem"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/season/banner/{seasonId}": {
-      "get": {
-        "tags": [
-          "Season"
-        ],
-        "operationId": "GetSeasonBanner",
-        "parameters": [
-          {
-            "name": "seasonId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SeasonBanner"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SeasonBanner"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SeasonBanner"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/season/event/{seasonId}": {
-      "get": {
-        "tags": [
-          "Season"
-        ],
-        "operationId": "GetLatestEventIdBySeasonAsync",
-        "parameters": [
-          {
-            "name": "seasonId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/season/season-key/{seasonId}": {
-      "get": {
-        "tags": [
-          "Season"
-        ],
-        "operationId": "GetSeasonKeyAsync",
-        "parameters": [
-          {
-            "name": "seasonId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SeasonKeyResult"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SeasonKeyResult"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SeasonKeyResult"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/SeasonPass/status-list": {
+    "/api/season-pass/status-list": {
       "get": {
         "tags": [
           "SeasonPass"
@@ -740,7 +600,7 @@
         }
       }
     },
-    "/api/SeasonPass/suspended-reason-list": {
+    "/api/season-pass/suspended-reason-list": {
       "get": {
         "tags": [
           "SeasonPass"
@@ -780,7 +640,7 @@
         }
       }
     },
-    "/api/SeasonPass/renewal-type-list": {
+    "/api/season-pass/renewal-type-list": {
       "get": {
         "tags": [
           "SeasonPass"
@@ -820,13 +680,13 @@
         }
       }
     },
-    "/api/SeasonPass/seasonpass/{id}": {
+    "/api/season-pass/{id}": {
       "put": {
         "tags": [
           "SeasonPass"
         ],
         "summary": "Updated season pass status",
-        "operationId": "UpdateSeasonPassStatus",
+        "operationId": "UpdateSeasonPassStatusAsync",
         "parameters": [
           {
             "name": "id",
@@ -840,6 +700,11 @@
         ],
         "requestBody": {
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeasonPassStatusRequest"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SeasonPassStatusRequest"
@@ -897,6 +762,638 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seasons": {
+      "get": {
+        "tags": [
+          "Seasons"
+        ],
+        "operationId": "GetSeasonSelectorItemsAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeasonSelectorItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeasonSelectorItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeasonSelectorItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seasons/banner/{seasonId}": {
+      "get": {
+        "tags": [
+          "Seasons"
+        ],
+        "operationId": "GetSeasonBannerAsync",
+        "parameters": [
+          {
+            "name": "seasonId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonBanner"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonBanner"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonBanner"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seasons/event/{seasonId}": {
+      "get": {
+        "tags": [
+          "Seasons"
+        ],
+        "operationId": "GetLatestEventIdBySeasonAsync",
+        "parameters": [
+          {
+            "name": "seasonId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seasons/season-key/{seasonId}": {
+      "get": {
+        "tags": [
+          "Seasons"
+        ],
+        "operationId": "GetSeasonKeyAsync",
+        "parameters": [
+          {
+            "name": "seasonId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonKeyResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonKeyResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonKeyResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suite-levels/catalog": {
+      "get": {
+        "tags": [
+          "SuiteLevels"
+        ],
+        "summary": "Retrieves the suite-level catalog as a collection of list items.",
+        "operationId": "GetSuiteLevelCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suite-levels": {
+      "post": {
+        "tags": [
+          "SuiteLevels"
+        ],
+        "summary": "Creates a new suite level using the specified request data.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the suite level could not be created.",
+        "operationId": "CreateSuiteLevelAsync",
+        "requestBody": {
+          "description": "The request object containing the details required to create the suite level. Cannot be null.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "SuiteLevels"
+        ],
+        "summary": "Updates the suite level with the specified details.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the update operation fails.",
+        "operationId": "UpdateSuiteLevelAsync",
+        "requestBody": {
+          "description": "An object containing the updated suite level information. Must not be null and must satisfy all model\r\n            validation requirements.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suite-levels/{suiteLevelId}": {
+      "delete": {
+        "tags": [
+          "SuiteLevels"
+        ],
+        "summary": "Deletes the suite level with the specified identifier.",
+        "operationId": "DeleteSuiteLevelAsync",
+        "parameters": [
+          {
+            "name": "suiteLevelId",
+            "in": "path",
+            "description": "The unique identifier of the suite level to delete.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suites": {
+      "get": {
+        "tags": [
+          "Suites"
+        ],
+        "summary": "Retrieves a list of all available test suites.",
+        "operationId": "GetSuitesAsync",
+        "parameters": [
+          {
+            "name": "Levels",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteResultPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteResultPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteResultPagedResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Suites"
+        ],
+        "summary": "Creates a new suite based on the specified request data.",
+        "operationId": "CreateSuiteAsync",
+        "requestBody": {
+          "description": "The details of the suite to create. Must not be null and must satisfy all model validation requirements.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuiteRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuiteRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuiteRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuiteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Suites"
+        ],
+        "summary": "Updates an existing suite with the specified details.",
+        "operationId": "UpdateSuiteAsync",
+        "requestBody": {
+          "description": "The request object containing the updated suite information. Must not be null and must satisfy all\r\n            validation requirements.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suites/{suiteId}": {
+      "get": {
+        "tags": [
+          "Suites"
+        ],
+        "summary": "Retrieves the details of a suite with the specified identifier.",
+        "operationId": "GetSuiteByIdAsync",
+        "parameters": [
+          {
+            "name": "suiteId",
+            "in": "path",
+            "description": "The unique identifier of the suite to retrieve.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteResult"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Suites"
+        ],
+        "summary": "Deletes the suite with the specified identifier.",
+        "operationId": "DeleteSuiteAsync",
+        "parameters": [
+          {
+            "name": "suiteId",
+            "in": "path",
+            "description": "The unique identifier of the suite to delete.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
                 }
               }
             }
@@ -1022,6 +1519,47 @@
           }
         }
       }
+    },
+    "/api/venues/catalog": {
+      "get": {
+        "tags": [
+          "Venues"
+        ],
+        "summary": "Retrieves a collection of venue catalog items for use in selection lists or dropdowns.",
+        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\r\n            such as dropdowns. The returned items typically include venue identifiers and display names.",
+        "operationId": "GetVenueCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1067,6 +1605,11 @@
         "additionalProperties": false
       },
       "BookingRequest": {
+        "required": [
+          "eventId",
+          "holdToken",
+          "seats"
+        ],
         "type": "object",
         "properties": {
           "seats": {
@@ -1136,6 +1679,9 @@
         "additionalProperties": false
       },
       "ClientFilter": {
+        "required": [
+          "seasonId"
+        ],
         "type": "object",
         "properties": {
           "countryPhoneISO": {
@@ -1205,6 +1751,47 @@
         },
         "additionalProperties": false
       },
+      "CreateSuiteLevelRequest": {
+        "required": [
+          "name",
+          "venueId"
+        ],
+        "type": "object",
+        "properties": {
+          "venueId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSuiteRequest": {
+        "required": [
+          "name",
+          "seats",
+          "suiteLevelId"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "suiteLevelId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "seats": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateUserRequest": {
         "type": "object",
         "properties": {
@@ -1224,6 +1811,9 @@
         "additionalProperties": false
       },
       "EnumItemDto": {
+        "required": [
+          "value"
+        ],
         "type": "object",
         "properties": {
           "value": {
@@ -1238,6 +1828,14 @@
         "additionalProperties": false
       },
       "EventListItem": {
+        "required": [
+          "availableSeats",
+          "id",
+          "name",
+          "scheduledStartDate",
+          "totalSeats",
+          "venueMapId"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -1280,6 +1878,11 @@
         "additionalProperties": false
       },
       "EventListItemPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
         "type": "object",
         "properties": {
           "items": {
@@ -1304,9 +1907,46 @@
         },
         "additionalProperties": false
       },
-      "OrderListFilters": {
+      "ListItem": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderListFilters": {
+        "required": [
+          "page",
+          "pageSize",
+          "renovationMode"
+        ],
+        "type": "object",
+        "properties": {
+          "seasonId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "renovationMode": {
+            "type": "boolean"
+          },
+          "renewalTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonPassRenewalType"
+            },
+            "nullable": true
+          },
           "page": {
             "type": "integer",
             "format": "int32"
@@ -1326,31 +1966,15 @@
           "textFilter": {
             "type": "string",
             "nullable": true
-          },
-          "seasonId": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "renovationMode": {
-            "type": "boolean"
-          },
-          "renewalTypes": {
-            "type": "array",
-            "items": {
-              "enum": [
-                0,
-                1
-              ],
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false
       },
       "OrderListItem": {
+        "required": [
+          "seatCount",
+          "total"
+        ],
         "type": "object",
         "properties": {
           "orderId": {
@@ -1382,12 +2006,7 @@
             "format": "double"
           },
           "seasonPeriod": {
-            "enum": [
-              1,
-              2
-            ],
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/SeasonPeriod"
           },
           "relatedOrderReference": {
             "type": "string",
@@ -1404,6 +2023,12 @@
         "additionalProperties": false
       },
       "OrderListItemPagedResponse": {
+        "required": [
+          "currentPage",
+          "pageSize",
+          "totalItems",
+          "totalPages"
+        ],
         "type": "object",
         "properties": {
           "items": {
@@ -1502,6 +2127,10 @@
         "additionalProperties": false
       },
       "SeasonPassItem": {
+        "required": [
+          "price",
+          "seasonPassId"
+        ],
         "type": "object",
         "properties": {
           "seasonPassId": {
@@ -1517,38 +2146,17 @@
             "format": "double"
           },
           "categoryEnum": {
-            "enum": [
-              0,
-              1,
-              2
-            ],
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/SeatType"
           },
           "category": {
             "type": "string",
             "nullable": true
           },
           "status": {
-            "enum": [
-              0,
-              1
-            ],
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "$ref": "#/components/schemas/SeasonPassStatus"
           },
           "suspendedReason": {
-            "enum": [
-              0,
-              1,
-              2,
-              3,
-              4
-            ],
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "$ref": "#/components/schemas/SeasonPassSuspendedReason"
           },
           "suspendedOtherReason": {
             "type": "string",
@@ -1557,7 +2165,26 @@
         },
         "additionalProperties": false
       },
+      "SeasonPassRenewalType": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "SeasonPassStatus": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "SeasonPassStatusRequest": {
+        "required": [
+          "seasonPassId"
+        ],
         "type": "object",
         "properties": {
           "seasonPassId": {
@@ -1565,24 +2192,10 @@
             "format": "int64"
           },
           "seasonPassStatus": {
-            "enum": [
-              0,
-              1
-            ],
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/SeasonPassStatus"
           },
           "seasonPassSuspendedReason": {
-            "enum": [
-              0,
-              1,
-              2,
-              3,
-              4
-            ],
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "$ref": "#/components/schemas/SeasonPassSuspendedReason"
           },
           "suspendedOtherReason": {
             "type": "string",
@@ -1591,7 +2204,30 @@
         },
         "additionalProperties": false
       },
+      "SeasonPassSuspendedReason": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "SeasonPeriod": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "SeasonSelectorItem": {
+        "required": [
+          "isCurrent",
+          "seasonId"
+        ],
         "type": "object",
         "properties": {
           "seasonId": {
@@ -1613,6 +2249,9 @@
         "additionalProperties": false
       },
       "SeatInfoRequest": {
+        "required": [
+          "price"
+        ],
         "type": "object",
         "properties": {
           "seatId": {
@@ -1624,13 +2263,7 @@
             "format": "double"
           },
           "categoryEnum": {
-            "enum": [
-              0,
-              1,
-              2
-            ],
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/SeatType"
           },
           "category": {
             "type": "string",
@@ -1640,6 +2273,9 @@
         "additionalProperties": false
       },
       "SeatPriceDTO": {
+        "required": [
+          "price"
+        ],
         "type": "object",
         "properties": {
           "price": {
@@ -1653,7 +2289,131 @@
         },
         "additionalProperties": false
       },
+      "SeatType": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "SuiteResult": {
+        "required": [
+          "id",
+          "seats",
+          "suiteLevelId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "suiteLevelId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "suiteLevelName": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "seats": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SuiteResultPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuiteResult"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateSuiteLevelRequest": {
+        "required": [
+          "id",
+          "name",
+          "venueId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateSuiteRequest": {
+        "required": [
+          "id",
+          "name",
+          "seats",
+          "suiteLevelId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "suiteLevelId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "seats": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "VenueListItem": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -1668,6 +2428,10 @@
         "additionalProperties": false
       },
       "VenueMapListItem": {
+        "required": [
+          "id",
+          "venueId"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -1702,7 +2466,7 @@
       "name": "Categories"
     },
     {
-      "name": "Client"
+      "name": "Clients"
     },
     {
       "name": "Events"
@@ -1711,13 +2475,19 @@
       "name": "EventSeats"
     },
     {
-      "name": "Order"
-    },
-    {
-      "name": "Season"
+      "name": "Orders"
     },
     {
       "name": "SeasonPass"
+    },
+    {
+      "name": "Seasons"
+    },
+    {
+      "name": "SuiteLevels"
+    },
+    {
+      "name": "Suites"
     },
     {
       "name": "VenueMaps"

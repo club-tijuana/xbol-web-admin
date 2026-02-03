@@ -8,8 +8,7 @@ public static class DialogServiceExtensions
     public static async Task<bool> ShowConfirmDeleteAsync(
         this IDialogService dialogService,
         string title,
-        string message
-    )
+        string message)
     {
         var parameters = new DialogParameters<ConfirmDeleteDialog>
         {

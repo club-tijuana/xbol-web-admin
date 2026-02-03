@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal.csproj" />
   <Project Path="Odasoft.XBOL.Business/Odasoft.XBOL.Business.csproj" />
+  <Project Path="Odasoft.XBOL.Common/Odasoft.XBOL.Common.csproj" Id="a69f9165-b015-4c2f-9f55-6606438a4a0c" />
   <Project Path="Odasoft.XBOL.Data/Odasoft.XBOL.Data.csproj" />
   <Project Path="Odasoft.XBOL.Models/Odasoft.XBOL.Models.csproj" />
 </Solution>
