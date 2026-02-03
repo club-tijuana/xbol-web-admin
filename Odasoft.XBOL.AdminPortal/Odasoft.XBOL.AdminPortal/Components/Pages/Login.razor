@@ -1,0 +1,94 @@
+@page "/login"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Odasoft.XBOL.AdminPortal.Services.Contracts
+@using System.Security.Claims
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+@inject AuthenticationStateProvider AuthProvider
+
+
+<div class="login-page">
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="11" sm="8" md="6" lg="4" xl="3">
+            <MudPaper Elevation="6" Class="pa-18  align-center">
+                <MudTextField @bind-Value="email" Class="pb-6"
+                              Label="Correo electrónico" Variant="Variant.Outlined"
+                              Required="true" Margin="Margin.Dense"
+                              Immediate="true" />
+
+
+                <MudTextField @bind-Value="password" Class="@PasswordInputClass"
+                              Label="Contraseña" Variant="Variant.Outlined" InputType="@passwordInput"
+                              Adornment="Adornment.End" AdornmentIcon="@passwordInputIcon"
+                              OnAdornmentClick="TogglePasswordVisibility" AdornmentAriaLabel="Show Password"
+                              Required="true" Margin="Margin.Dense"
+                              Immediate="true" RequiredError="" />
+
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Class="mt-4 text-uppercase"
+                           FullWidth="true"
+                           OnClick="@LoginAsync">
+                    Iniciar sesión
+                </MudButton>
+
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mt-4">
+                        @errorMessage
+                    </MudAlert>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</div>
+
+
+@code {
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string errorMessage = string.Empty;
+    private string passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+    private bool isShow = false;
+    private InputType passwordInput = InputType.Password;
+
+    private string PasswordInputClass => isShow ? "pb-6 login-password-input show" : "pb-6 login-password-input";
+
+    private async Task LoginAsync()
+    {
+        bool success = await AuthService.LoginAsync(email, password);
+
+        if (!success)
+        {
+            errorMessage = "Credenciales inválidas";
+            return;
+        }
+        Navigation.NavigateTo("/");
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            passwordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            passwordInputIcon = Icons.Material.Filled.Visibility;
+            passwordInput = InputType.Text;
+        }
+    }
+
+}

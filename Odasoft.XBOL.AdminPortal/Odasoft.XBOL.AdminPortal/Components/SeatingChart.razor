@@ -1,0 +1,230 @@
+@using Microsoft.JSInterop
+@using Odasoft.XBOL.AdminPortal.Components.Pages
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.Business
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject CartState CartState
+@inject IAdminClient AdminClient
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<Events> Localizer
+
+@if (_error)
+{
+    <MudAlert Severity="Severity.Error" Class="ma-4">@_errorMessage</MudAlert>
+}
+else
+{
+    <div id="@ChartId" style="height: 750px"></div>
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string WorkspaceKey { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string EventKey { get; set; }
+
+    [Parameter] public string[]? Channels { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public long EventId { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public List<string> SelectedSeats { get; set; } = [];
+
+    [Parameter]
+    public EventCallback OnChartRendered { get; set; }
+
+    private const string SESSION_CONTINUE = "continue";
+
+    private string ChartId = $"chart-{Guid.NewGuid()}";
+
+    private DotNetObjectReference<SeatingChart>? _objRef;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _chart;
+    private bool _error;
+    private string? _errorMessage;
+
+    private static long? _lastRenderedEventId;
+
+    protected override void OnInitialized()
+    {
+        CartState.OnChange += StateHasChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _objRef = DotNetObjectReference.Create(this);
+                _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "./Components/SeatingChart.razor.js");
+
+                // Clear Seats.io session if switching events
+                if (_lastRenderedEventId.HasValue && _lastRenderedEventId.Value != EventId)
+                {
+                    await _module.InvokeVoidAsync("clearSession");
+                }
+                _lastRenderedEventId = EventId;
+
+                ICollection<SeatPriceDTO> seatPrices = await AdminClient.GetSeatPricesByEventIdAsync(EventId);
+
+                var prices = seatPrices
+                .GroupBy(item => item.Price)
+                .Select(group => new
+                {
+                    objects = group.Select(x => x.SeatKey).ToList(),
+                    price = group.Key
+                }).ToList();
+
+                var config = new
+                {
+                    workspaceKey = WorkspaceKey,
+                    @event = EventKey,
+                    session = SESSION_CONTINUE,
+                    pricing = prices,
+                    channels = Channels,
+                    selectedObjects = SelectedSeats
+                };
+
+                _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
+            }
+            catch (Exception ex)
+            {
+                _error = true;
+                _errorMessage = "Error al cargar el mapa de asientos";
+                Console.WriteLine($"SeatingChart error: {ex.Message}");
+                StateHasChanged();
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null)
+    {
+        SeatInfo seat = new SeatInfo
+        {
+            SeatId = seatId,
+            Price = price,
+            Category = category
+        };
+
+        CartState.AddSelectedSeat(seat);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task HandleSeatDeselected(string seatId)
+    {
+        CartState.RemoveSelectedSeat(seatId);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public void HandleHoldSucceeded(List<string> objects, object ticketTypes)
+    {
+        // Valid holds confirmed by Seats.io
+        CartState.SetHoldBusyState(false);
+    }
+
+    [JSInvokable]
+    public void HandleHoldFailed(List<string> objects, object ticketTypes)
+    {
+        CartState.SetHoldBusyState(false);
+        InvokeAsync(() => Snackbar.Add(Localizer["Seats_HoldFailed"], Severity.Error));
+    }
+
+    [JSInvokable]
+    public void HandleSessionExpired()
+    {
+        CartState.ClearCart();
+        CartState.ClearToken();
+    }
+
+    [JSInvokable]
+    public void HandleSessionInitialized(string holdToken, int expiresInSeconds)
+    {
+        CartState.SetHoldToken(holdToken, expiresInSeconds);
+    }
+
+    [JSInvokable]
+    public void HandleHoldCallsInProgress()
+    {
+        CartState.SetHoldBusyState(true);
+    }
+
+    [JSInvokable]
+    public void HandleHoldCallsComplete()
+    {
+        CartState.SetHoldBusyState(false);
+    }
+
+    public async ValueTask<string?> GetHoldTokenAsync()
+    {
+        if (_module is null || _chart is null)
+            return null;
+
+        return await _module.InvokeAsync<string?>("getHoldToken", _chart);
+    }
+
+    public async ValueTask FocusSeatAsync(string seatId)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("focusSeat", _chart, seatId);
+    }
+
+    public async ValueTask UnfocusSeatAsync(string seatId)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("unfocusSeat", _chart, seatId);
+    }
+
+    public async ValueTask DeselectSeatAsync(string seatId)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("deselectSeat", _chart, seatId);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null && _chart is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("destroyChart", _chart);
+            }
+            catch (JSDisconnectedException)
+            {
+                // Ignore - circuit is already disconnected
+            }
+        }
+
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Ignore - circuit is already disconnected
+            }
+        }
+
+        _objRef?.Dispose();
+        CartState.OnChange -= StateHasChanged;
+    }
+}

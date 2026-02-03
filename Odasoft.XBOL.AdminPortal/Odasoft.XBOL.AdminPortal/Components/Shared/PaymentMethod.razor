@@ -1,0 +1,125 @@
+﻿@inject IStringLocalizer<PaymentMethod> L
+@using System.Globalization
+<MudGrid>
+    <MudItem xs="9">
+        <MudTextField T="decimal"
+                      @bind-Value="_amount"
+                      Label="@L["DebitCard"]"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                      Margin="Margin.Dense" Format="0.00"
+                      Culture="CultureInfo.InvariantCulture"
+                      Immediate="true" />
+    </MudItem>
+
+    <MudItem xs="3" Class="d-flex align-center">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   FullWidth>
+            TODO
+        </MudButton>
+    </MudItem>
+    <MudItem xs="9">
+        <MudTextField T="decimal"
+                      @bind-Value="_amount"
+                      Label="@L["Cash"]"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                      Margin="Margin.Dense" Format="0.00"
+                      Culture="CultureInfo.InvariantCulture"
+                      Immediate="true" />
+    </MudItem>
+
+    <MudItem xs="3" Class="d-flex align-center">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   FullWidth>
+            TODO
+        </MudButton>
+    </MudItem>
+    <MudItem xs="9">
+        <MudTextField T="decimal"
+                      @bind-Value="_amount"
+                      Label="@L["Usd"]"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                      Margin="Margin.Dense" Format="0.00"
+                      Culture="CultureInfo.InvariantCulture"
+                      Immediate="true" />
+    </MudItem>
+
+    <MudItem xs="3" Class="d-flex align-center">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   FullWidth>
+            TODO
+        </MudButton>
+    </MudItem>
+    <MudItem xs="9">
+        <MudTextField T="decimal"
+                      @bind-Value="_amount"
+                      Label="@L["CreditCard"]"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                      Margin="Margin.Dense" Format="0.00"
+                      Culture="CultureInfo.InvariantCulture"
+                      Immediate="true" />
+    </MudItem>
+
+    <MudItem xs="3" Class="d-flex align-center">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   FullWidth>
+            TODO
+        </MudButton>
+    </MudItem>
+    <MudItem xs="9">
+        <MudTextField T="decimal"
+                      @bind-Value="_amount"
+                      Label="@L["Other"]"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                      Margin="Margin.Dense" Format="0.00"
+                      Culture="CultureInfo.InvariantCulture"
+                      Immediate="true" />
+    </MudItem>
+
+    <MudItem xs="3" Class="d-flex align-center">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   FullWidth>
+            TODO
+        </MudButton>
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudCard Class="payment-card" Elevation="3">
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.body2">Recibido</MudText>
+                    </MudItem>
+                    <MudItem xs="6" Class="text-right">
+                        <MudText Align="Align.Right" Typo="Typo.subtitle2">$ 1,200.00</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+            <MudDivider />
+            <MudCardContent Class="bg-secondary-lighten">
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.caption">Pendiente</MudText>
+                    </MudItem>
+                    <MudItem xs="6" Class="d-flex justify-end">
+                        <MudText Align="Align.Right"  Typo="Typo.caption">$ 300.00</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private decimal _amount = 0;
+}

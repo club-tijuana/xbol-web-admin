@@ -1,0 +1,349 @@
+@page "/xolopass/checkout"
+@page "/xolopass/checkout/renovate/{orderReference}"
+@page "/xolopass/checkout/{seasonId:long}"
+@using Microsoft.Extensions.Options
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.Configs
+@using Odasoft.XBOL.AdminPortal.Services.Contracts
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.AdminPortal.ViewModels.Order
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Models.Constants
+@inject IStringLocalizer<SeasonPassCheckout> L
+@inject IOptions<SeatsIo> SeatsOptions
+@inject IAdminClient AdminApiClient
+@inject ISeasonService SeasonService
+@inject ISeasonPassService SeasonPassService
+@inject CartState CartState
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+
+
+@inject NavigationManager NavigationManager
+<MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-4" Elevation="0">
+    <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSeasonpassList())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+</MudPaper>
+<ImageHeroBanner Banner="_seasonBanner"></ImageHeroBanner>
+<MudCard Class="mt-4 mb-6 pa-5" Elevation="3">
+    <MudGrid Class="align-center pb-3">
+        <MudItem xs="12" sm="6" lg="8">
+            <MudText Typo="Typo.h5">@L["SubtitleSeats"]</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="4" Class="justify-content-end d-flex">
+            <MudPaper Class="d-flex justify-end flex-grow-1 gap-4" Elevation="0">
+                <MudButton EndIcon="@Icons.Material.Filled.NavigateNext" OnClick="@(() => GoToSeasonpassList())" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Método de pago</MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="6" lg="1">
+            <MudSelect T="string"
+                       Label="Lada"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Disabled="IsRenovation"
+                       @bind-Value="_request.ClientContact.CountryPhoneISO"
+                       Required>
+
+                @foreach (var item in CountryDialCodes.Map)
+                {
+                    <MudSelectItem T="string" Value="item.Value">
+                        @item.Value
+                    </MudSelectItem>
+                }
+
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="2">
+            <!-- Teléfono -->
+            <MudTextField T="string"
+                          Label="Teléfono "
+                          Required="true"
+                          @bind-Value="_request.ClientContact.PhoneNumber"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          MaxLength="10"
+                          OnBlur="OnPhoneBlur"
+                          Disabled="IsRenovation"
+                          InputType="InputType.Telephone" />
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="3">
+            <MudTextField T="string"
+                          Label="Correo electrónico " Variant="Variant.Outlined"
+                          @bind-Value="_request.ClientContact.Email"
+                          Required="true" Margin="Margin.Dense"
+                          Disabled="IsRenovation"
+                          Immediate="true" />
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="3">
+            <MudTextField T="string"
+                          @bind-Value="_request.ClientContact.Name"
+                          Label="Nombre del comprador " Variant="Variant.Outlined"
+                          Required="true" Margin="Margin.Dense"
+                          Disabled="IsRenovation"
+                          Immediate="true" />
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="3">
+            <MudTextField T="string"
+                          @bind-Value="_request.ClientContact.LastName"
+                          Label="Apellido del comprador " Variant="Variant.Outlined"
+                          Required="true" Margin="Margin.Dense"
+                          Disabled="IsRenovation"
+                          Immediate="true" />
+        </MudItem>
+        <MudItem xs="6">
+            @if (_loading)
+            {
+                <MudProgressCircular Indeterminate Color="Color.Primary" />
+            }
+            else if (_error)
+            {
+                <MudAlert Severity="Severity.Error">
+                    No se pudo cargar el mapa del evento.
+                </MudAlert>
+            }
+            else if (!string.IsNullOrWhiteSpace(_seasonKey))
+            {
+                <SeatingChart WorkspaceKey="@_workspaceKey"
+                              EventKey="@_seasonKey"
+                              EventId="SeasonId"
+                              SelectedSeats="SelectedSeats"
+                              OnChartRendered="HandleChartReady" />
+            }
+        </MudItem>
+        <MudItem xs="6">
+            <div class="d-flex flex-column">
+                <OrderSummary></OrderSummary>
+                @if (_showValidationError)
+                {
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="mb-2">
+                        Completa todos los datos del comprador y selecciona al menos un asiento.
+                    </MudAlert>
+                }
+                <MudButton Variant="Variant.Filled"
+                           DropShadow="false"
+                           StartIcon="@Icons.Material.Outlined.Save"
+                           Color="Color.Tertiary"
+                           Disabled="_isSubmitting"
+                           @onclick="Submit">
+                    @(_isSubmitting ? "Procesando..." : "Comprar")
+                </MudButton>
+            </div>
+
+        </MudItem>
+    </MudGrid>
+
+
+</MudCard>
+
+
+@code {
+    [Parameter]
+    public string? orderReference { get; set; }
+
+    [Parameter]
+    public long SeasonId { get; set; }
+
+    [Parameter]
+    public List<string> SelectedSeats { get; set; } = [];
+
+    private string _workspaceKey = string.Empty;
+    private string? _seasonKey = string.Empty;
+    private bool _loading = true;
+    private bool _error = false;
+    private ClientFilter clientFilter = new();
+    private ClientSeasonEvent _clientSeasonEvent = new();
+    private BookSeasonRequest _request = new();
+    private ImageHeroBannerViewModel _seasonBanner = new();
+    private bool IsRenovation => !string.IsNullOrEmpty(orderReference);
+    private List<SeatInfo> _selectedSeats { get; set; } = [];
+    private bool _showValidationError = false;
+    private bool _isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartState.OnChange += async () =>
+        {
+            await InvokeAsync(StateHasChanged);
+        };
+
+        CartState.SetEvent(SeasonId);
+        await LoadSeasonData();
+    }
+
+    private async Task OnPhoneBlur(FocusEventArgs args)
+    {
+        if (string.IsNullOrWhiteSpace(_request.ClientContact.CountryPhoneISO) ||
+            string.IsNullOrWhiteSpace(_request.ClientContact.PhoneNumber))
+        {
+            return;
+        }
+
+        ClientFilter clientFilter = new()
+        {
+            CountryPhoneISO = _request.ClientContact.CountryPhoneISO,
+            PhoneNumber = _request.ClientContact.PhoneNumber,
+            SeasonId = SeasonId
+        };
+
+        var result = await SeasonPassService.GetClientSeasonEventInfo(clientFilter);
+
+        if (result is null)
+            return;
+
+        if (IsRenovation)
+        {
+            if (result.AlreadyRenewed)
+            {
+                Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
+                Navigation.NavigateTo("/xolopass");
+            }
+            if (!result.CanRenovate)
+            {
+                Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
+                Navigation.NavigateTo("/xolopass");
+            }
+        }
+
+        _request.ClientContact.Name = result.ClientContact.Name;
+        _request.ClientContact.LastName = result.ClientContact.LastName;
+        _request.ClientContact.Email = result.ClientContact.Email;
+    }
+
+    private void GoToSeasonpassList()
+    {
+        NavigationManager.NavigateTo("/xolopass");
+    }
+
+    private async Task LoadSeasonData()
+    {
+        _loading = true;
+        _error = false;
+
+        try
+        {
+            _workspaceKey = SeatsOptions.Value.PublicWorkspaceKey;
+
+            if (IsRenovation)
+            {
+                _clientSeasonEvent = await SeasonPassService.GetClientSeasonEventByOrderReference(orderReference);
+                if (_clientSeasonEvent != null)
+                {
+                    _request.EventKey = _clientSeasonEvent.SeasonKey;
+                    _request.ClientContact = _clientSeasonEvent.ClientContact;
+                    _request.RelatedOrderId = _clientSeasonEvent.RelatedOrderId;
+
+                    _seasonKey = _request.EventKey;
+                    _selectedSeats = _clientSeasonEvent.Seats.Select(x => new SeatInfo { SeatId = x.SeatId, Price = (decimal)x.Price, Category = x.Category }).ToList();
+
+                    SeasonId = _clientSeasonEvent.SeasonId;
+                    SelectedSeats = _selectedSeats.Select(x => x.SeatId).ToList();
+                    CartState.SelectedSeats = _selectedSeats;
+
+                    _seasonBanner = await SeasonService.GetSeasonBannerByEventAsync(_clientSeasonEvent.SeasonId);
+                    if (_clientSeasonEvent.AlreadyRenewed)
+                    {
+                        Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
+                        Navigation.NavigateTo("/xolopass");
+                    }
+                    if (!_clientSeasonEvent.CanRenovate)
+                    {
+                        Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
+                        Navigation.NavigateTo("/xolopass");
+                    }
+                }
+            }
+            else
+            {
+                var seasonKey = await AdminApiClient.GetSeasonKeyAsync(SeasonId);
+                _seasonKey = seasonKey.Value ?? string.Empty;
+                _seasonBanner = await SeasonService.GetSeasonBannerByEventAsync(SeasonId);
+            }
+        }
+        catch
+        {
+            _error = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (_isSubmitting)
+            return;
+
+        _isSubmitting = true;
+        _showValidationError = false;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_request.ClientContact.CountryPhoneISO) ||
+            string.IsNullOrWhiteSpace(_request.ClientContact.PhoneNumber) ||
+            string.IsNullOrWhiteSpace(_request.ClientContact.Email) ||
+            string.IsNullOrWhiteSpace(_request.ClientContact.Name) ||
+            string.IsNullOrWhiteSpace(_request.ClientContact.LastName) ||
+            CartState.SelectedSeats is null ||
+            CartState.SelectedSeats.Count == 0)
+            {
+                _showValidationError = true;
+                Snackbar.Add("Faltan datos para continuar con la compra.", Severity.Warning);
+                return;
+            }
+
+            var token = CartState.HoldToken;
+
+            if (string.IsNullOrEmpty(token))
+            {
+                Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
+                Console.WriteLine("Error: Could not retrieve hold token.");
+                return;
+            }
+
+            _request.Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList();
+            _request.EventKey = _seasonKey;
+            _request.HoldToken = token;
+            _request.SeassonId = SeasonId;
+
+            var result = await AdminApiClient.BookSeasonAsync(_request);
+
+            Snackbar.Add("Xolopass pagado con exito.", configure: c =>
+            {
+                c.SnackbarVariant = Variant.Text;
+                c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
+                c.IconColor = Color.Success;
+            });
+
+            Navigation.NavigateTo("/xolopass");
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task HandleChartReady()
+    {
+        if (SelectedSeats.Count > 0)
+        {
+            CartState.SelectedSeats = _selectedSeats;
+        }
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+
+}

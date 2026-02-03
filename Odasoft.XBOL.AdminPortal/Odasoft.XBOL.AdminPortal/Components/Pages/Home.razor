@@ -1,0 +1,12 @@
+@page "/"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@rendermode InteractiveServer
+
+<PageTitle>Dashboard</PageTitle>
+
+<MudContainer Class="d-flex flex-column justify-center align-center" Style="height: 400px;">
+    <MudText Typo="Typo.h4" Class="mb-4">Bienvenido al Portal de Administración</MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary">Dashboard en construcción</MudText>
+</MudContainer>

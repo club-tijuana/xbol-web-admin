@@ -1,0 +1,131 @@
+@using Odasoft.XBOL.AdminPortal.Components.Pages
+@using Odasoft.XBOL.AdminPortal.States
+@using System.Globalization
+
+@implements IDisposable
+@inject CartState CartState
+@inject IStringLocalizer<Events> Localizer
+
+<style>
+    .order-item.mud-list-item:focus,
+    .order-item.mud-list-item:focus-visible,
+    .order-item.mud-list-item:focus-within {
+        background-color: transparent !important;
+    }
+    .order-item.mud-list-item.selected {
+        background-color: var(--mud-palette-action-default-hover) !important;
+    }
+</style>
+<MudPaper Outlined="true" Class="rounded overflow-hidden">
+    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Dense="true" NoIcon="true" Class="rounded-0">
+        <MudStack Row="true" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">TOTAL</MudText>
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">@CartState.TotalPrice.ToString("C", CultureInfo.CurrentCulture)</MudText>
+        </MudStack>
+    </MudAlert>
+    <MudList T="string" Dense="true" Gutters="false">
+        @foreach (var item in CartState.SelectedSeats)
+        {
+            <MudListItem T="string" Class="@($"px-4 order-item{(_previousFocusedSeatId == item.SeatId ? " selected" : "")}")" Value="@item.SeatId">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Price.ToString("C", CultureInfo.CurrentCulture)</MudText>
+                        <MudTooltip Text="@Localizer["Seats_RemoveSeat"]">
+                            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           OnClick="@(() => RemoveSeat(item.SeatId))" />
+                        </MudTooltip>
+                    </MudStack>
+                </MudStack>
+            </MudListItem>
+        }
+    </MudList>
+    @if (CartState.HoldExpirationTime.HasValue)
+    {
+        <MudStack Row="true" Justify="Justify.Center" Class="pa-4">
+            <MudText Color="@(_timeLeft.TotalMinutes < 2 ? Color.Error : Color.Default)" Typo="Typo.caption">
+                @string.Format(Localizer["Seats_TimeRemaining"], _timeLeft.ToString(@"mm\:ss"))
+            </MudText>
+        </MudStack>
+    }
+</MudPaper>
+
+@code {
+    [Parameter]
+    public SeatingChart? Chart { get; set; }
+
+    private System.Timers.Timer? _timer;
+    private TimeSpan _timeLeft = TimeSpan.Zero;private string? _previousFocusedSeatId;
+    private string? _focusedSeatId
+    {
+        get => _previousFocusedSeatId;
+        set
+        {
+            if (_previousFocusedSeatId != value)
+            {
+                _ = UpdateFocus(_previousFocusedSeatId, value);
+                _previousFocusedSeatId = value;
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        CartState.OnChange += StateHasChanged;
+        _timer = new System.Timers.Timer(1000);
+        _timer.Elapsed += (sender, e) => UpdateTimer();
+        _timer.Start();
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+        _timer?.Stop();
+        _timer?.Dispose();
+    }
+
+    private void UpdateTimer()
+    {
+        if (CartState.HoldExpirationTime.HasValue)
+        {
+            _timeLeft = CartState.HoldExpirationTime.Value - DateTime.UtcNow;
+            if (_timeLeft.TotalSeconds <= 0)
+            {
+                _timeLeft = TimeSpan.Zero;
+                CartState.ClearCart();
+                CartState.ClearToken();
+            }
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task UpdateFocus(string? oldSeatId, string? newSeatId)
+    {
+        if (Chart is not null)
+        {
+            if (oldSeatId != null)
+            {
+                await Chart.UnfocusSeatAsync(oldSeatId);
+            }
+            if (newSeatId != null)
+            {
+                await Chart.FocusSeatAsync(newSeatId);
+            }
+        }
+    }
+
+    private async Task RemoveSeat(string seatId)
+    {
+        if (_focusedSeatId == seatId)
+        {
+            _previousFocusedSeatId = null;
+        }
+
+        if (Chart is not null)
+        {
+            await Chart.DeselectSeatAsync(seatId);
+        }
+    }
+}

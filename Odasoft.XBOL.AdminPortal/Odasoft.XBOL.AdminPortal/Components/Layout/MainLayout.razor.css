@@ -1,0 +1,9 @@
+.mud-nav-link-icon {
+    color: var(--mud-palette-secondary-darken) !important;
+}
+.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    background-color: var(--mud-palette-primary-light) !important;
+}
+.nav-link-rounded .mud-nav-link {
+    border-radius: 4px;
+}

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:element msdata:IsDataSet="true" name="root">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" msdata:Ordinal="1" name="value" type="xsd:string"/>
+                <xsd:element minOccurs="0" msdata:Ordinal="2" name="comment" type="xsd:string"/>
+              </xsd:sequence>
+              <xsd:attribute msdata:Ordinal="0" name="name" type="xsd:string"/>
+              <xsd:attribute msdata:Ordinal="3" name="type" type="xsd:string"/>
+              <xsd:attribute msdata:Ordinal="4" name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" msdata:Ordinal="1" name="value" type="xsd:string"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Eventos</value>
+  </data>
+  <data name="ColumnDateTime" xml:space="preserve">
+    <value>Fecha y hora</value>
+  </data>
+  <data name="ColumnTicketId" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="ColumnEventName" xml:space="preserve">
+    <value>Evento</value>
+  </data>
+  <data name="ColumnCategory" xml:space="preserve">
+    <value>Categoría</value>
+  </data>
+  <data name="ColumnAvailability" xml:space="preserve">
+    <value>Disponibilidad</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filtrar</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Buscar</value>
+  </data>
+  <data name="ColumnVenue" xml:space="preserve">
+    <value>Recinto</value>
+  </data>
+  <data name="FilterVenue" xml:space="preserve">
+    <value>Recinto</value>
+  </data>
+  <data name="FilterCategory" xml:space="preserve">
+    <value>Categoría de evento</value>
+  </data>
+  <data name="FilterDateRange" xml:space="preserve">
+    <value>Rango de fecha</value>
+  </data>
+  <data name="FilterClear" xml:space="preserve">
+    <value>Limpiar</value>
+  </data>
+  <data name="FilterApply" xml:space="preserve">
+    <value>Buscar</value>
+  </data>
+  <data name="ColumnActions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="ActionBoletos" xml:space="preserve">
+    <value>Boletos</value>
+  </data>
+  <data name="ErrorLoadingFilters" xml:space="preserve">
+    <value>Error al cargar los filtros.</value>
+  </data>
+  <data name="ErrorLoadingEvents" xml:space="preserve">
+    <value>Error al cargar eventos</value>
+  </data>
+  <data name="Seats_ConfirmingStatus" xml:space="preserve">
+    <value>Por favor espere a que se confirmen sus asientos.</value>
+  </data>
+  <data name="Seats_HoldProcessing" xml:space="preserve">
+    <value>Procesando...</value>
+  </data>
+  <data name="Seats_Buy" xml:space="preserve">
+    <value>Comprar</value>
+  </data>
+  <data name="Seats_TimeRemaining" xml:space="preserve">
+    <value>Tiempo restante: {0}</value>
+  </data>
+  <data name="Seats_SessionExpired" xml:space="preserve">
+    <value>Su sesión ha expirado o no es válida. Por favor recargue la página.</value>
+  </data>
+  <data name="Seats_PaymentSuccess" xml:space="preserve">
+    <value>Pagado con éxito.</value>
+  </data>
+  <data name="Seats_PaymentError" xml:space="preserve">
+    <value>Hubo un error, intenta más tarde.</value>
+  </data>
+  <data name="Seats_HoldFailed" xml:space="preserve">
+    <value>No se pudo reservar el asiento. Puede que ya no esté disponible.</value>
+  </data>
+  <data name="Seats_RemoveSeat" xml:space="preserve">
+    <value>Quitar asiento</value>
+  </data>
+</root>

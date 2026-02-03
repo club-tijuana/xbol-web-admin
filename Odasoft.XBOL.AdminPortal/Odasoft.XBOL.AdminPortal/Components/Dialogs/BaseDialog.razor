@@ -1,0 +1,22 @@
+<MudDialog Class="py-4 pr-4" ActionsClass="mt-2" TitleClass="pb-2" Style="max-width: 400px;">
+    <TitleContent>
+        <MudText Typo="Typo.subtitle2">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        @ChildContent
+    </DialogContent>
+    <DialogActions>
+        @Actions
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+}
