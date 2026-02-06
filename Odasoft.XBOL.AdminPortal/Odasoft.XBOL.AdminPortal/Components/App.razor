@@ -12,8 +12,7 @@
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["Odasoft.XBOL.AdminPortal.styles.css"]" />
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" />
     <link rel="stylesheet" href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -23,10 +22,11 @@
     <CascadingAuthenticationState>
         <Routes @rendermode="InteractiveServer" />
     </CascadingAuthenticationState>
-  <ReconnectModal />
-  <script src="@Assets["_framework/blazor.web.js"]"></script>
-  <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+    <ReconnectModal />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
     <script src="@Assets["js/seatsioInterop.js"]"></script>
+    <script src="@Assets["js/downloadFileFromStream.js"]"></script>
 </body>
 </html>
 @code {

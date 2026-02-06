@@ -1,4 +1,4 @@
-@page "/suites/add"
+@page "/suites/create"
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
@@ -53,8 +53,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
         _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
         _suiteLevelId = _suiteLevels.Any() ? _suiteLevels.First().Id : default;
+
+        StateHasChanged();
     }
 
     private async Task GoToSuiteConfigurationsAsync()
@@ -87,6 +91,7 @@
             if (result)
             {
                 _snackbar.Add("Palco creado exitosamente.", Severity.Success);
+                _navigationManager.NavigateTo(SitePages.SUITES_SETTINGS);
             }
             else
             {
@@ -98,7 +103,5 @@
             Console.WriteLine($"Error creating suite: {ex.Message}");
             _snackbar.Add("Error al crear el palco. Por favor, intente nuevamente.", Severity.Error);
         }
-
-        _navigationManager.NavigateTo(SitePages.SUITES_SETTINGS);
     }
 }
