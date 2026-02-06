@@ -15,10 +15,16 @@ namespace Odasoft.XBOL.Business.Services
             return venues.OrderBy(x => x.Name).ToList();
         }
 
-        public async Task<ICollection<ListItem>> GetSuiteLevelsAsync()
+        public async Task<List<ListItem>> GetSuiteLevelsAsync()
         {
             var suiteLevels = await _adminClient.GetSuiteLevelCatalogAsync();
             return suiteLevels.OrderBy(x => x.Name).ToList();
+        }
+
+        public async Task<List<ListItem>> GetSuitesBySuiteLevelIdAsync(long suiteLevelId)
+        {
+            var agreementTypes = await _adminClient.GetSuiteCatalogBySuiteLevelIdAsync(suiteLevelId);
+            return agreementTypes.OrderBy(x => x.Name).ToList();
         }
     }
 }

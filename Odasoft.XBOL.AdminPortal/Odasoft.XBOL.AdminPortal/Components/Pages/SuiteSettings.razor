@@ -1,8 +1,9 @@
 @page "/suites/settings"
 
-@using Odasoft.XBOL.AdminPortal.Extensions
+@using Odasoft.XBOL.AdminPortal.Extensions;
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants
 @using Odasoft.XBOL.Models.Parameters;
 @using Odasoft.XBOL.Models.ViewModels;
 
@@ -21,10 +22,11 @@
         <CardHeaderContent>
             <MudItem xs="12" sm="12" md="12" lg="12" Class="justify-content-end d-flex">
                 <MudPaper Class="d-flex justify-end flex-grow-1 gap-4" Elevation="0">
-                    <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => AddSuite())"
+                    <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateSuite())"
                                Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nuevo Palco</MudButton>
                 </MudPaper>
             </MudItem>
+
             <MudGrid Class="align-center">
                 <MudItem xs="12" sm="6" lg="8">
                     <MudText Class="pl-lg-4" Typo="Typo.h5">Palcos - Configuración</MudText>
@@ -41,8 +43,7 @@
                         <!-- Level multi-select -->
                         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                             <ActivatorContent>
-                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt"
-                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)" />
+                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Secondary" />
                             </ActivatorContent>
                             <ChildContent>
                                 <MudStack Spacing="3" Class="pa-4" Style="width:375px">
@@ -135,12 +136,16 @@
 
     private SuitesFilterParameters _filters = new SuitesFilterParameters();
 
-    private ICollection<ListItem> _suiteLevels = [];
+    private List<ListItem> _suiteLevels = [];
     private IEnumerable<string> _selectedSuiteLevels = new HashSet<string>();
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
         _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
+
+        StateHasChanged();
     }
 
     private async Task<GridData<SuitesViewModel>> FetchFromServerAsync(GridState<SuitesViewModel> state)
@@ -157,7 +162,7 @@
             PageSize = state.PageSize
         };
 
-        var result = await _suitesService.GetSuitesAsync(_filters);
+        SuiteResultPagedResponse result = await _suitesService.GetSuitesAsync(_filters);
 
         return new GridData<SuitesViewModel>
         {
@@ -212,9 +217,9 @@
         await _dataGrid.ReloadServerData();
     }
 
-    private void AddSuite()
+    private void CreateSuite()
     {
-        _navigationManager.NavigateTo("/suites/add");
+        _navigationManager.NavigateTo(SitePages.SUITES_CREATE);
     }
 
     private async Task DeleteSuiteAsync(long suiteId)
@@ -235,13 +240,13 @@
                 }
                 else
                 {
-                    _snackbar.Add("Error al eliminar el palco. Por favor, intente nuevamente.", Severity.Error);
+                    _snackbar.Add("Error al eliminar el palco.", Severity.Error);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error deleting suite: {ex.Message}");
-                _snackbar.Add("Error al eliminar el palco. Por favor, intente nuevamente.", Severity.Error);
+                _snackbar.Add("Error al eliminar el palco.", Severity.Error);
             }
         }
     }

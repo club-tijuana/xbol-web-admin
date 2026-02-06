@@ -986,6 +986,303 @@
         }
       }
     },
+    "/api/suite-agreements": {
+      "get": {
+        "tags": [
+          "SuiteAgreements"
+        ],
+        "summary": "Retrieves a list of suite agreements.",
+        "operationId": "GetSuiteAgreementsAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteAgreementResult"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteAgreementResult"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteAgreementResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "SuiteAgreements"
+        ],
+        "summary": "Creates a new Suite Agreement using the specified request data.",
+        "operationId": "CreateSuiteAgreementAsync",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "AgreementFile",
+                  "EndDate",
+                  "OwnerEmail",
+                  "OwnerName",
+                  "OwnerPhone",
+                  "StartDate",
+                  "SuiteId"
+                ],
+                "type": "object",
+                "properties": {
+                  "SuiteId": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "OwnerName": {
+                    "type": "string"
+                  },
+                  "OwnerEmail": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "OwnerPhone": {
+                    "type": "string",
+                    "format": "tel"
+                  },
+                  "StartDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "EndDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "AgreementFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "SuiteId": {
+                  "style": "form"
+                },
+                "OwnerName": {
+                  "style": "form"
+                },
+                "OwnerEmail": {
+                  "style": "form"
+                },
+                "OwnerPhone": {
+                  "style": "form"
+                },
+                "StartDate": {
+                  "style": "form"
+                },
+                "EndDate": {
+                  "style": "form"
+                },
+                "AgreementFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "SuiteAgreements"
+        ],
+        "summary": "Updates an existing suite agreement with the specified details.",
+        "operationId": "UpdateSuiteAgreementAsync",
+        "requestBody": {
+          "description": "The request object containing the updated suite agreement information. Must not be null.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/suite-agreements/{suiteAgreementId}": {
+      "get": {
+        "tags": [
+          "SuiteAgreements"
+        ],
+        "summary": "Retrieves the suite agreement with the specified identifier.",
+        "operationId": "GetSuiteAgreementByIdAsync",
+        "parameters": [
+          {
+            "name": "suiteAgreementId",
+            "in": "path",
+            "description": "The unique identifier of the suite agreement to retrieve.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteAgreementResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteAgreementResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteAgreementResult"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SuiteAgreements"
+        ],
+        "summary": "Deletes the suite agreement with the specified identifier.",
+        "operationId": "DeleteSuiteAgreementAsync",
+        "parameters": [
+          {
+            "name": "suiteAgreementId",
+            "in": "path",
+            "description": "The unique identifier of the suite agreement to delete.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/suite-agreements/{suiteAgreementId}/download": {
+      "get": {
+        "tags": [
+          "SuiteAgreements"
+        ],
+        "summary": "Downloads the file associated with the specified suite agreement.",
+        "operationId": "DownloadSuiteAgreementFileAsync",
+        "parameters": [
+          {
+            "name": "suiteAgreementId",
+            "in": "path",
+            "description": "The unique identifier of the suite agreement whose file is to be downloaded.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suite-agreements/download-batch": {
+      "get": {
+        "tags": [
+          "SuiteAgreements"
+        ],
+        "summary": "Downloads multiple suite agreement files as a single ZIP archive.",
+        "description": "The ZIP archive will contain one entry for each suite agreement file found. The file\r\n            name of the ZIP will include a timestamp to ensure uniqueness. If any of the specified IDs do not correspond\r\n            to existing files, only the files that are found will be included in the archive.",
+        "operationId": "DownloadMultipleSuiteAgreementsAsync",
+        "parameters": [
+          {
+            "name": "suiteAgreementIds",
+            "in": "query",
+            "description": "A list of suite agreement IDs for which to retrieve and download files. Must not be null or empty.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/suite-levels/catalog": {
       "get": {
         "tags": [
@@ -1446,6 +1743,58 @@
               "text/json": {
                 "schema": {
                   "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suites/{suiteLevelId}/catalog": {
+      "get": {
+        "tags": [
+          "Suites"
+        ],
+        "summary": "Retrieves the catalog of suite items associated with the specified suite level.",
+        "operationId": "GetSuiteCatalogBySuiteLevelIdAsync",
+        "parameters": [
+          {
+            "name": "suiteLevelId",
+            "in": "path",
+            "description": "The unique identifier of the suite level for which to retrieve the catalog.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
                 }
               }
             }
@@ -2438,6 +2787,58 @@
         },
         "additionalProperties": false
       },
+      "SuiteAgreementResult": {
+        "required": [
+          "endDate",
+          "id",
+          "startDate",
+          "suiteId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "suiteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "suiteName": {
+            "type": "string",
+            "nullable": true
+          },
+          "suiteLevel": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "SuiteResult": {
         "required": [
           "id",
@@ -2521,6 +2922,51 @@
           "primary": {
             "type": "boolean",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateSuiteAgreementRequest": {
+        "required": [
+          "endDate",
+          "id",
+          "ownerEmail",
+          "ownerName",
+          "ownerPhone",
+          "startDate",
+          "suiteId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "suiteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerEmail": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "ownerPhone": {
+            "type": "string",
+            "format": "tel",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -2673,6 +3119,9 @@
     },
     {
       "name": "Seasons"
+    },
+    {
+      "name": "SuiteAgreements"
     },
     {
       "name": "SuiteLevels"

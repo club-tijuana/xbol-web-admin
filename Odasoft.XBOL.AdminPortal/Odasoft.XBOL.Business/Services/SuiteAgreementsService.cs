@@ -20,46 +20,23 @@ namespace Odasoft.XBOL.Business.Services
             return await _adminClient.GetSuiteAgreementByIdAsync(agreementId);
         }
 
-        public async Task<long> CreateSuiteAgreementAsync(
+        public async Task<bool> CreateSuiteAgreementAsync(
             long suiteId,
             string ownerName,
             string ownerEmail,
             string ownerPhone,
-            DateTimeOffset startDate,
-            DateTimeOffset endDate)
+            DateTimeOffset? startDate,
+            DateTimeOffset? endDate,
+            FileParameter agreementFile)
         {
             try
             {
-                var agreementId = await _adminClient.CreateSuiteAgreementAsync(new CreateSuiteAgreementRequest
-                {
-                    EndDate = endDate.ToUniversalTime(),
-                    OwnerEmail = ownerEmail,
-                    OwnerPhone = ownerPhone,
-                    OwnerName = ownerName,
-                    StartDate = startDate.ToUniversalTime(),
-                    SuiteId = suiteId
-                });
-
-                return agreementId;
+                await _adminClient.CreateSuiteAgreementAsync(suiteId, ownerName, ownerEmail, ownerPhone, startDate, endDate, agreementFile);
+                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error creating suite agreement: {ex.Message}");
-                return 0;
-            }
-        }
-
-        public async Task<bool> UploadSuiteAgreementFileAsync(long suiteAgreementId, FileParameter file)
-        {
-            try
-            {
-                var success = await _adminClient.UploadSuiteAgreementFileAsync(suiteAgreementId, file);
-
-                return success;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error uploading suite agreementFile: {ex.Message}");
                 return false;
             }
         }
@@ -92,7 +69,7 @@ namespace Odasoft.XBOL.Business.Services
             }
         }
 
-        public async Task<FileResponse?> DownloadSuiteAgreementFileAsync(long suiteAgreementId)
+        public async Task<FileResponse> DownloadSuiteAgreementFileAsync(long suiteAgreementId)
         {
             try
             {
@@ -105,7 +82,7 @@ namespace Odasoft.XBOL.Business.Services
             }
         }
 
-        public async Task<FileResponse?> DownloadSuiteAgreementFilesAsync(List<long> suiteAgreementIds)
+        public async Task<FileResponse> DownloadSuiteAgreementFilesAsync(List<long> suiteAgreementIds)
         {
             try
             {
