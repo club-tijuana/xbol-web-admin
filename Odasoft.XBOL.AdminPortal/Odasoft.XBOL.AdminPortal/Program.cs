@@ -69,9 +69,11 @@ builder.Services.AddScoped<AuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEventService, ApiEventService>();
 builder.Services.AddScoped<GeneralService>();
-builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<ISeasonPassService, SeasonPassService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
+
+builder.Services.AddScoped<CartState>();
+builder.Services.AddScoped<LoadingState>();
 
 builder.Services.AddHttpClient<IAdminClient, AdminClient>(
     (provider, client) =>

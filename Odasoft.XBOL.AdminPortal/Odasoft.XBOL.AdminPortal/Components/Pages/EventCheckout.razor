@@ -1,0 +1,265 @@
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Models.Constants
+
+@implements IDisposable
+@inject CartState CartState
+@inject IAdminClient AdminClient
+@inject NavigationManager Navigation
+@inject IStringLocalizer<Events> Localizer
+@inject ISnackbar Snackbar
+@inject LoadingState LoadingState
+@inject IDialogService DialogService
+
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation" ConfirmExternalNavigation="true" />
+
+<MudGrid Justify="Justify.SpaceBetween">
+    <MudItem xs="12" Class="d-flex justify-space-between">
+        <MudText Typo="Typo.h5">Método de pago</MudText>
+        <MudButton OnClick="Return" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">ASIENTOS</MudButton>
+    </MudItem>
+    <MudItem xs="3">
+        <MudGrid>
+            <MudItem xs="6">
+                <MudSelect T="string"
+                           Label="Lada"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           @bind-Value="_request.ClientContact.CountryPhoneISO"
+                           Required>
+
+                    @foreach (var item in CountryDialCodes.Map)
+                    {
+                        <MudSelectItem T="string" Value="item.Value">
+                            @item.Value
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="6">                <MudTextField T="string"
+                              Label="Teléfono"
+                              Required="true"
+                              @bind-Value="_request.ClientContact.PhoneNumber"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              MaxLength="10"
+                              OnBlur="OnPhoneBlur"
+                              InputType="InputType.Telephone" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              Label="Correo electrónico" Variant="Variant.Outlined"
+                              @bind-Value="_request.ClientContact.Email"
+                              Required="true" Margin="Margin.Dense"
+                              Immediate="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              @bind-Value="_request.ClientContact.FullName"
+                              Label="Nombre del comprador" Variant="Variant.Outlined"
+                              Required="false" Margin="Margin.Dense"
+                              Immediate="true" />
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+    <MudItem xs="4">
+        <OrderSummary AllowRemoval="false"></OrderSummary>
+    </MudItem>
+    <MudItem xs="4">
+        <MudGrid>
+            <MudItem xs="12" class="d-flex gap-4 align-center">
+                <MudTextField @bind-Value="_request.PaymentInfoRequest.CardAmount" Label="Tarjeta" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" />
+                <MudButton Variant="Variant.Outlined">TODO</MudButton>
+            </MudItem>
+            <MudItem xs="12" class="d-flex gap-4 align-center">
+                <MudTextField @bind-Value="_request.PaymentInfoRequest.CashAmount" Label="Efectivo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" />
+                <MudButton Variant="Variant.Outlined">TODO</MudButton>
+            </MudItem>
+            <MudItem xs="12" class="d-flex gap-4 align-center">
+                <MudTextField @bind-Value="_request.PaymentInfoRequest.DolarAmount" Label="Dólares" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" />
+                <MudButton Variant="Variant.Outlined">TODO</MudButton>
+            </MudItem>
+            <MudItem xs="12" class="d-flex gap-4 align-center">
+                <MudTextField @bind-Value="_request.PaymentInfoRequest.CreditAmount" Label="Crédito" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" />
+                <MudButton Variant="Variant.Outlined">TODO</MudButton>
+            </MudItem>
+            <MudItem xs="12" class="d-flex gap-4 align-center">
+                <MudTextField @bind-Value="_request.PaymentInfoRequest.OtherAmount" Label="Otro (Cheque, SPEI)" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" />
+                <MudButton Variant="Variant.Outlined">TODO</MudButton>
+            </MudItem>
+            <MudItem xs="12">
+                <div class="order-summary">
+                    <div class="d-flex justify-space-between summary-item summary-received">
+                        <MudText Typo="Typo.body2">Recibido</MudText>
+                        <MudText Typo="Typo.subtitle2">@TotalPay.ToString("C")</MudText>
+                    </div>
+
+                    <div class="d-flex justify-space-between summary-item summary-change">
+                        <MudText Typo="Typo.caption">@(PendingPay < 0 ? "Cambio" : "Pendiente")</MudText>
+                        <MudText Typo="Typo.caption" Color="PendingPayColor">@FormattedPendingPay</MudText>
+                    </div>
+                </div>
+            </MudItem>
+            <MudItem xs="12" Class="d-flex justify-end">
+                <MudSwitch @bind-Value="_acceptTermsAndConditions" UncheckedColor="Color.Secondary" Color="Color.Primary">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Acepto términos y condiciones</MudText>
+                </MudSwitch>
+            </MudItem>
+            <MudItem xs="12" Class="d-flex justify-end">
+                <MudButton Variant="Variant.Filled"
+                           DropShadow="false"
+                           StartIcon="@Icons.Material.Outlined.Save"
+                           Color="Color.Tertiary"
+                           Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0 || PendingPay > 0 || !_acceptTermsAndConditions || _isSubmitting)"
+                           @onclick="Submit">@(_isSubmitting ? "Procesando..." : "PAGAR")</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [EditorRequired]
+    [Parameter]
+    public string EventKey { get; set; }
+    [Parameter]
+    public EventCallback OnReturn { get; set; }
+
+    private bool _acceptTermsAndConditions = false;
+    private bool _isSubmitting = false;
+
+    private BookingRequest _request = new();
+
+    private decimal TotalPay => (_request.PaymentInfoRequest.CardAmount ?? 0) + (_request.PaymentInfoRequest.CashAmount ?? 0) + (_request.PaymentInfoRequest.DolarAmount ?? 0) + (_request.PaymentInfoRequest.CreditAmount ?? 0) + (_request.PaymentInfoRequest.OtherAmount ?? 0);
+    private decimal PendingPay => CartState.TotalPrice - TotalPay;
+    private string FormattedPendingPay => Math.Abs(PendingPay).ToString("C");
+
+    private Color PendingPayColor => PendingPay > 0 ? Color.Error : PendingPay < 0 ? Color.Tertiary : Color.Secondary;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartState.OnChange += StateHasChanged;
+        try
+        {
+            var holdToken = await AdminClient.HoldSeatsAsync(new HoldSeatsRequest
+            {
+                EventId = CartState.CurrentEventId.Value,
+                Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList()
+            });
+            CartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
+        }
+        catch (Exception ex)
+        {            
+            Snackbar.Add("No se pueden reservar los asientos", Severity.Error);
+            await Return();
+        }
+    }
+
+    private async Task OnPhoneBlur(FocusEventArgs args)
+    {
+        // TODO: Validar que el cliente no tenga una compra previa para mostrar su información y validar renovación en caso de ser temporada
+    }
+
+    private async Task Return()
+    {
+        bool exit = await ConfirmExit();
+
+        if (exit)
+        {
+            await OnReturn.InvokeAsync();
+        }
+    }
+
+    private async Task<bool> ConfirmExit()
+    {
+        var options = new DialogOptions { CloseButton = true, NoHeader = true };
+        var parameters = new DialogParameters<ConfirmDialog>();
+
+        parameters.Add(dialog => dialog.Message, "Los cambios no guardados se perderan. ¿Desea continuar?");
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            await ReleaseToken();
+        }
+
+        return result is not null && !result.Canceled;
+    }
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        var exit = await ConfirmExit();
+
+        if (!exit)
+        {
+            context.PreventNavigation();
+        }
+
+        // TODO: Figure out how to release token and seats if user closes the page (tab, browser)
+    }
+
+    private async Task ReleaseToken()
+    {
+        // TODO: make sure token is released in seats.io before leaving this method
+        try
+        {
+            var token = await AdminClient.ReleaseHoldSeatsAsync(CartState.HoldToken);
+        }
+        catch (Exception)
+        {
+        }
+        finally
+        {
+            CartState.ClearToken();            
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (_isSubmitting)
+            return;
+
+        _isSubmitting = true;
+        LoadingState.Show();
+
+        var request = new BookingRequest
+        {
+            Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList(),
+            HoldToken = CartState.HoldToken,
+            EventId = EventKey
+        };
+
+        try
+        {
+            var result = await AdminClient.BookSeatsAsync(request);
+
+            Snackbar.Add(Localizer["Seats_PaymentSuccess"], configure: c =>
+            {
+                c.SnackbarVariant = Variant.Text;
+                c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
+                c.IconColor = Color.Success;
+            });
+
+            CartState.ClearCart();
+            CartState.ClearToken();
+
+            Navigation.NavigateTo("/events");
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(Localizer["Seats_PaymentError"], Severity.Error);
+            await Return();
+        }
+        finally
+        {
+            _isSubmitting = false;
+            LoadingState.Hide();
+        }
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+}

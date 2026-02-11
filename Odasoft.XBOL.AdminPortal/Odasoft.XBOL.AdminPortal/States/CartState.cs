@@ -13,6 +13,8 @@ namespace Odasoft.XBOL.AdminPortal.States
         private decimal totalPrice;
         private long? currentEventId;
 
+        public List<string> SelectedSeatsKeys => selectedSeats.Select(x => x.SeatId).ToList();
+
         public void SetEvent(long eventId)
         {
             if (currentEventId != eventId)
@@ -74,6 +76,16 @@ namespace Odasoft.XBOL.AdminPortal.States
                 HoldToken = token;
                 // Reset timer on new token or refresh
                 HoldExpirationTime = DateTime.UtcNow.AddSeconds(expiresInSeconds);
+                NotifyStateChanged();
+            }
+        }
+
+        public void SetHoldToken(string token, DateTimeOffset expiresAt)
+        {
+            if (HoldToken != token)
+            {
+                HoldToken = token;
+                HoldExpirationTime = expiresAt.UtcDateTime;
                 NotifyStateChanged();
             }
         }

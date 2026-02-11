@@ -43,6 +43,8 @@
     public EventCallback OnChartRendered { get; set; }
 
     private const string SESSION_CONTINUE = "continue";
+    private const string SESSION_NONE = "none";
+    private const string SESSION_MANUAL = "manual";
 
     private string ChartId = "event-manager";
 
@@ -98,16 +100,20 @@
                 {
                     secretKey = SecretKey,
                     @event = EventKey,
-                    session = SESSION_CONTINUE,
+                    session = SESSION_NONE,
                     pricing = jsonElement,
                     channels = Channels,
                     categoryFilter = categoryFilter,
                     language = "es",
-                    mode = "createOrder",
-                    selectedObjects = SelectedSeats
+                    mode = "createOrder"
                 };
 
                 _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
+
+                var selectedSeats = SelectedSeats;
+                CartState.ClearCart();
+
+                await TrySelectObjectsAsync(selectedSeats.ToArray());
             }
             catch (Exception ex)
             {
@@ -122,6 +128,12 @@
                 StateHasChanged();
             }
         }
+    }
+
+    [JSInvokable]
+    public async Task NotifyError(string message)
+    {
+        Snackbar.Add(message, Severity.Warning);
     }
 
     [JSInvokable]
@@ -192,6 +204,30 @@
         return await _module.InvokeAsync<string?>("getHoldToken", _chart);
     }
 
+    public async ValueTask<string[]> GetSelectedSeatsAsync()
+    {
+        if (_module is null || _chart is null)
+            return [];
+
+        return await _module.InvokeAsync<string[]>("getSelectedSeats", _chart);
+    }
+
+    public async ValueTask TrySelectObjectsAsync(string[] seats)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeAsync<string[]>("trySelectObjects", _chart, seats, _objRef);
+    }
+
+    public async ValueTask DoSelectObjectsAsync(string[] seats)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeAsync<string[]>("doSelectObjects", _chart, seats, _objRef);
+    }
+
     public async ValueTask FocusSeatAsync(string seatId)
     {
         if (_module is null || _chart is null)
@@ -214,6 +250,22 @@
             return;
 
         await _module.InvokeVoidAsync("deselectSeat", _chart, seatId);
+    }
+
+    public async ValueTask DeselectSeatsAsync(IEnumerable<string> seats)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("deselectSeats", _chart, seats);
+    }
+
+    public async ValueTask ClearSelection()
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeVoidAsync("clearSelection", _chart);
     }
 
     public async ValueTask ChangeConfig(object config)
