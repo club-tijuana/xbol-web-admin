@@ -101,7 +101,7 @@
     private string _ownerEmail = "";
     private string _ownerPhone = "";
 
-    private IBrowserFile _agreementFile;
+    private IBrowserFile? _agreementFile;
 
     private ICollection<ListItem> _suiteLevels = [];
     private ICollection<ListItem> _suites = [];
@@ -162,7 +162,7 @@
                 return;
             }
 
-            using var stream = _agreementFile.OpenReadStream(_maxFileSize);
+            using var stream = _agreementFile!.OpenReadStream(_maxFileSize);
 
             var success = await _suiteAgreementsService.CreateSuiteAgreementAsync(
                                 _suiteId,
@@ -230,7 +230,7 @@
         // TODO: Obtener extensiones permitidas desde configuración o servicio
         var allowedExtensions = new List<string>
     { ".pdf", ".docx", ".doc", ".png", ".jpeg", ".jpg" };
-        var fileExtension = Path.GetExtension(_agreementFile.Name).ToLower();
+        var fileExtension = Path.GetExtension(_agreementFile!.Name).ToLower();
 
         if (allowedExtensions.Contains(fileExtension))
         {

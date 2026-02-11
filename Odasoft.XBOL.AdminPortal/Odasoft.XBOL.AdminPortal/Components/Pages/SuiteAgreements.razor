@@ -197,7 +197,7 @@
     {
         try
         {
-            FileResponse file = await _suiteAgreementsService.DownloadSuiteAgreementFileAsync(agreementId);
+            FileResponse? file = await _suiteAgreementsService.DownloadSuiteAgreementFileAsync(agreementId);
 
             await DownloadFileAsync(file);
         }

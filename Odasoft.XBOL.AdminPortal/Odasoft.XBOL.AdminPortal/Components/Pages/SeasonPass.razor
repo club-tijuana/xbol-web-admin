@@ -33,7 +33,7 @@
                                    Variant="Variant.Outlined" ShrinkLabel>
                             @foreach (var season in _seasonSelectorItems)
                             {
-                                <MudSelectItem T="long?" Value="@season.SeasonId">
+                                <MudSelectItem T="long?" Value="@season.Id">
                                     <MudText Typo="Typo.body2">@season.Name</MudText>
                                 </MudSelectItem>
                             }
@@ -290,35 +290,33 @@
     private bool _initialized;
     private MudDataGrid<OrderListItem> _dataGrid = default!;
     private List<OrderListItem> _orderListItems = new();
-    private List<SeasonSelectorItem> _seasonSelectorItems = new();
+    private List<SeasonListItem> _seasonSelectorItems = new();
     private Business.OrderListFilters _orderListFilters = new();
     private List<EnumItemDto> _seasonPassStatusList = new();
     private List<EnumItemDto> _seasonPassSuspendedReasonList = new();
     private List<EnumItemDto> _seasonPassRenewalTypeList = new();
-    private SeasonSelectorItem _selectedSeason = new();
+    private SeasonListItem _selectedSeason = new();
     private SeasonPassStatusRequest _seasonPassStatusRequest = new();
 
-    private List<string> _availableTypes = new();
     private HashSet<SeasonPassRenewalType?> _selectedRenewalTypes = new();
-    private DateRange? _dateRange = null;
-    private bool _open;
     Dictionary<long, bool> _openRows = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            _seasonSelectorItems = await SeasonService.GetSeasonSelectorItemsAsync();
+            var seasonsResponse = await SeasonService.GetSeasonsAsync(SeasonStatus._1, "startDate", true);
+            _seasonSelectorItems = seasonsResponse.Items?.ToList() ?? new();
             _seasonPassStatusList = await SeasonPassService.GetSeasonPassStatusListAsync();
             _seasonPassSuspendedReasonList = await SeasonPassService.GetSeasonPassSuspendedReasonListAsync();
             _seasonPassRenewalTypeList = await SeasonPassService.GetSeasonPassRenewalTypeList();
 
-            _selectedSeason = _seasonSelectorItems.FirstOrDefault(x => x.IsCurrent)!;
+            _selectedSeason = _seasonSelectorItems.FirstOrDefault()!;
 
             _initialized = true;
             if (_selectedSeason != null)
             {
-                _orderListFilters.SeasonId = _selectedSeason.SeasonId;
+                _orderListFilters.SeasonId = _selectedSeason.Id;
                 await OnSeasonChanged();
             }
         }
@@ -339,7 +337,7 @@
         if (value is null)
             return L["Selector"];
 
-        return _seasonPassRenewalTypeList.FirstOrDefault(x => x.Value == (int)value)?.Label ?? value.ToString();
+        return _seasonPassRenewalTypeList.FirstOrDefault(x => x.Value == (int)value)?.Label ?? value.ToString()!;
     }
 
     private async Task UpdateSeasonPassStatus(SeasonPassItem seasonPassItem)
@@ -448,7 +446,7 @@
 
     private async Task ApplyFilters()
     {
-        ICollection<SeasonPassRenewalType> renewalTypes = _selectedRenewalTypes.Where(x => x.HasValue).Select(x => (SeasonPassRenewalType)x.Value).ToList();
+        ICollection<SeasonPassRenewalType> renewalTypes = _selectedRenewalTypes.Where(x => x.HasValue).Select(x => x!.Value).ToList();
         _orderListFilters.RenewalTypes = renewalTypes;
         await _dataGrid.ReloadServerData();
     }
@@ -456,7 +454,7 @@
     private async Task ClearFilters()
     {
         _selectedRenewalTypes = new HashSet<SeasonPassRenewalType?>();
-        ICollection<SeasonPassRenewalType> renewalTypes = _selectedRenewalTypes.Where(x => x.HasValue).Select(x => (SeasonPassRenewalType)x.Value).ToList();
+        ICollection<SeasonPassRenewalType> renewalTypes = _selectedRenewalTypes.Where(x => x.HasValue).Select(x => x!.Value).ToList();
         _orderListFilters.RenewalTypes = renewalTypes;
         await _dataGrid.ReloadServerData();
     }
@@ -489,7 +487,7 @@
         if (_orderListFilters.SeasonId is null)
             return;
 
-        NavigationManager.NavigateTo($"/xolopass/checkout/{_selectedSeason.SeasonId}");
+        NavigationManager.NavigateTo($"/xolopass/checkout/{_selectedSeason.Id}");
     }
 
     private void OnRenewClick(OrderListItem item)

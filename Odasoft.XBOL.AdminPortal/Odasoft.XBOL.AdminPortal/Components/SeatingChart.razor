@@ -13,7 +13,7 @@
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Events> Localizer
 
-<LoadingContainer HasError="_error" ErrorMessage="_errorMessage" IsLoading="_loading">
+<LoadingContainer HasError="_error" ErrorMessage="@_errorMessage" IsLoading="_loading">
     <PriceFilter Chart="this" Categories="Prices.Where(x => x.Category is not null)" />
 </LoadingContainer>
 <div id="@ChartId" style="height: 700px"></div>
@@ -69,7 +69,7 @@
             {
                 _objRef = DotNetObjectReference.Create(this);
                 _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
-                    "import", "./Components/SeatingChart.razor.js");
+                "import", "./Components/SeatingChart.razor.js");
 
                 // Clear Seats.io session if switching events
                 if (_lastRenderedEventId.HasValue && _lastRenderedEventId.Value != EventId)

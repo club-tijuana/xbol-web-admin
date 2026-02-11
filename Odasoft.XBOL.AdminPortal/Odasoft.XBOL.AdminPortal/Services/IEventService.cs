@@ -17,7 +17,7 @@ public interface IEventService
         EventFilterParameters? filters = null
     );
 
-    Task<List<VenueListItem>> GetVenuesAsync();
+    Task<List<VenueListItemDTO>> GetVenuesAsync();
 
     Task<List<string>> GetCategoriesAsync();
 }

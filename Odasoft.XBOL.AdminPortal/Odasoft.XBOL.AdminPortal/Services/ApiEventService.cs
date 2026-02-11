@@ -25,7 +25,9 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             sortBy: sortColumn,
             descending: sortDescending,
             page: page + 1,
-            pageSize: pageSize
+            pageSize: pageSize,
+            seasonId: null,
+            status: null
         );
 
         var items = response.Items?.Select(e => new EventViewModel(
@@ -45,7 +47,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         };
     }
 
-    public async Task<List<VenueListItem>> GetVenuesAsync()
+    public async Task<List<VenueListItemDTO>> GetVenuesAsync()
     {
         var result = await adminClient.GetVenuesAsync();
         return result.ToList();
