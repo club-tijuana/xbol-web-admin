@@ -69,7 +69,7 @@ namespace Odasoft.XBOL.Business.Services
             }
         }
 
-        public async Task<FileResponse> DownloadSuiteAgreementFileAsync(long suiteAgreementId)
+        public async Task<FileResponse?> DownloadSuiteAgreementFileAsync(long suiteAgreementId)
         {
             try
             {
@@ -82,7 +82,7 @@ namespace Odasoft.XBOL.Business.Services
             }
         }
 
-        public async Task<FileResponse> DownloadSuiteAgreementFilesAsync(List<long> suiteAgreementIds)
+        public async Task<FileResponse?> DownloadSuiteAgreementFilesAsync(List<long> suiteAgreementIds)
         {
             try
             {

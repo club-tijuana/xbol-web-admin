@@ -11,10 +11,10 @@
           "Accounts"
         ],
         "summary": "Registers a new user account using the specified registration details.",
-        "description": "This method creates a new user account with the provided credentials. The\r\n            registration may fail if the user name or email address is already in use, or if the password does not meet\r\n            the required criteria. The response does not include detailed error information; for more granular feedback,\r\n            consider extending the response model.",
+        "description": "This method creates a new user account with the provided credentials. The\n            registration may fail if the user name or email address is already in use, or if the password does not meet\n            the required criteria. The response does not include detailed error information; for more granular feedback,\n            consider extending the response model.",
         "operationId": "CreateUserAsync",
         "requestBody": {
-          "description": "An object containing the user registration information, including user name, email address, and password.\r\n            Cannot be null.",
+          "description": "An object containing the user registration information, including user name, email address, and password.\n            Cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -284,6 +284,21 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "seasonId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/EventStatus"
+            }
           }
         ],
         "responses": {
@@ -292,17 +307,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventListItemPagedResponse"
+                  "$ref": "#/components/schemas/EventListItemDTOPagedResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventListItemPagedResponse"
+                  "$ref": "#/components/schemas/EventListItemDTOPagedResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventListItemPagedResponse"
+                  "$ref": "#/components/schemas/EventListItemDTOPagedResponse"
                 }
               }
             }
@@ -826,33 +841,87 @@
         "tags": [
           "Seasons"
         ],
-        "operationId": "GetSeasonSelectorItemsAsync",
+        "summary": "Get paginated list of seasons with filters.",
+        "operationId": "GetSeasonsAsync",
+        "parameters": [
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SeasonStatus"
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeasonSelectorItem"
-                  }
+                  "$ref": "#/components/schemas/SeasonListItemPagedResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeasonSelectorItem"
-                  }
+                  "$ref": "#/components/schemas/SeasonListItemPagedResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeasonSelectorItem"
-                  }
+                  "$ref": "#/components/schemas/SeasonListItemPagedResponse"
                 }
               }
             }
@@ -860,15 +929,16 @@
         }
       }
     },
-    "/api/seasons/banner/{seasonId}": {
+    "/api/seasons/{id}": {
       "get": {
         "tags": [
           "Seasons"
         ],
-        "operationId": "GetSeasonBannerAsync",
+        "summary": "Get season by ID.",
+        "operationId": "GetSeasonByIdAsync",
         "parameters": [
           {
-            "name": "seasonId",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
@@ -883,17 +953,37 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SeasonBanner"
+                  "$ref": "#/components/schemas/SeasonResult"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SeasonBanner"
+                  "$ref": "#/components/schemas/SeasonResult"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SeasonBanner"
+                  "$ref": "#/components/schemas/SeasonResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -901,16 +991,18 @@
         }
       }
     },
-    "/api/seasons/event/{seasonId}": {
+    "/api/season-seats/{seasonId}/seat-prices": {
       "get": {
         "tags": [
-          "Seasons"
+          "SeasonSeats"
         ],
-        "operationId": "GetLatestEventIdBySeasonAsync",
+        "summary": "Retrieves the list of seat prices for the specified season.",
+        "operationId": "GetSeatPricesBySeasonIdAsync",
         "parameters": [
           {
             "name": "seasonId",
             "in": "path",
+            "description": "The unique identifier of the season for which to retrieve seat prices.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -924,20 +1016,26 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "integer",
-                  "format": "int64"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeatPriceDTO"
+                  }
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "integer",
-                  "format": "int64"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeatPriceDTO"
+                  }
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "integer",
-                  "format": "int64"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeatPriceDTO"
+                  }
                 }
               }
             }
@@ -945,16 +1043,18 @@
         }
       }
     },
-    "/api/seasons/season-key/{seasonId}": {
+    "/api/season-sections/{seasonId}/zone-prices": {
       "get": {
         "tags": [
-          "Seasons"
+          "SeasonSection"
         ],
-        "operationId": "GetSeasonKeyAsync",
+        "summary": "Retrieves the list of zone prices for the specified season.",
+        "operationId": "GetZonePricesBySeasonIdAsync",
         "parameters": [
           {
             "name": "seasonId",
             "in": "path",
+            "description": "The unique identifier of the season for which to retrieve zone prices.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -968,17 +1068,26 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SeasonKeyResult"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ZonePriceDTO"
+                  }
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SeasonKeyResult"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ZonePriceDTO"
+                  }
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SeasonKeyResult"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ZonePriceDTO"
+                  }
                 }
               }
             }
@@ -1252,7 +1361,7 @@
           "SuiteAgreements"
         ],
         "summary": "Downloads multiple suite agreement files as a single ZIP archive.",
-        "description": "The ZIP archive will contain one entry for each suite agreement file found. The file\r\n            name of the ZIP will include a timestamp to ensure uniqueness. If any of the specified IDs do not correspond\r\n            to existing files, only the files that are found will be included in the archive.",
+        "description": "The ZIP archive will contain one entry for each suite agreement file found. The file\n            name of the ZIP will include a timestamp to ensure uniqueness. If any of the specified IDs do not correspond\n            to existing files, only the files that are found will be included in the archive.",
         "operationId": "DownloadMultipleSuiteAgreementsAsync",
         "parameters": [
           {
@@ -1329,7 +1438,7 @@
           "SuiteLevels"
         ],
         "summary": "Creates a new suite level using the specified request data.",
-        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the suite level could not be created.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\n            Unprocessable Entity response if the suite level could not be created.",
         "operationId": "CreateSuiteLevelAsync",
         "requestBody": {
           "description": "The request object containing the details required to create the suite level. Cannot be null.",
@@ -1384,10 +1493,10 @@
           "SuiteLevels"
         ],
         "summary": "Updates the suite level with the specified details.",
-        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the update operation fails.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\n            Unprocessable Entity response if the update operation fails.",
         "operationId": "UpdateSuiteLevelAsync",
         "requestBody": {
-          "description": "An object containing the updated suite level information. Must not be null and must satisfy all model\r\n            validation requirements.",
+          "description": "An object containing the updated suite level information. Must not be null and must satisfy all model\n            validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -1510,7 +1619,6 @@
           {
             "name": "Descending",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "boolean"
             }
@@ -1518,7 +1626,6 @@
           {
             "name": "Page",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1527,7 +1634,6 @@
           {
             "name": "PageSize",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1618,7 +1724,7 @@
         "summary": "Updates an existing suite with the specified details.",
         "operationId": "UpdateSuiteAsync",
         "requestBody": {
-          "description": "The request object containing the updated suite information. Must not be null and must satisfy all\r\n            validation requirements.",
+          "description": "The request object containing the updated suite information. Must not be null and must satisfy all\n            validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -1816,7 +1922,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VenueMapListItem"
+                    "$ref": "#/components/schemas/VenueMapListItemDTO"
                   }
                 }
               },
@@ -1824,7 +1930,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VenueMapListItem"
+                    "$ref": "#/components/schemas/VenueMapListItemDTO"
                   }
                 }
               },
@@ -1832,7 +1938,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VenueMapListItem"
+                    "$ref": "#/components/schemas/VenueMapListItemDTO"
                   }
                 }
               }
@@ -1864,17 +1970,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/VenueMapListItem"
+                  "$ref": "#/components/schemas/VenueMapListItemDTO"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VenueMapListItem"
+                  "$ref": "#/components/schemas/VenueMapListItemDTO"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VenueMapListItem"
+                  "$ref": "#/components/schemas/VenueMapListItemDTO"
                 }
               }
             }
@@ -1896,7 +2002,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VenueListItem"
+                    "$ref": "#/components/schemas/VenueListItemDTO"
                   }
                 }
               },
@@ -1904,7 +2010,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VenueListItem"
+                    "$ref": "#/components/schemas/VenueListItemDTO"
                   }
                 }
               },
@@ -1912,7 +2018,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VenueListItem"
+                    "$ref": "#/components/schemas/VenueListItemDTO"
                   }
                 }
               }
@@ -1927,7 +2033,7 @@
           "Venues"
         ],
         "summary": "Retrieves a collection of venue catalog items for use in selection lists or dropdowns.",
-        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\r\n            such as dropdowns. The returned items typically include venue identifiers and display names.",
+        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\n            such as dropdowns. The returned items typically include venue identifiers and display names.",
         "operationId": "GetVenueCatalogAsync",
         "responses": {
           "200": {
@@ -2277,7 +2383,7 @@
         },
         "additionalProperties": false
       },
-      "EventListItem": {
+      "EventListItemDTO": {
         "required": [
           "availableSeats",
           "id",
@@ -2327,7 +2433,7 @@
         },
         "additionalProperties": false
       },
-      "EventListItemPagedResponse": {
+      "EventListItemDTOPagedResponse": {
         "required": [
           "page",
           "pageSize",
@@ -2338,7 +2444,7 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EventListItem"
+              "$ref": "#/components/schemas/EventListItemDTO"
             },
             "nullable": true
           },
@@ -2356,6 +2462,15 @@
           }
         },
         "additionalProperties": false
+      },
+      "EventStatus": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
       },
       "ListItem": {
         "required": [
@@ -2532,46 +2647,68 @@
             "nullable": true
           }
         },
-        "additionalProperties": { }
+        "additionalProperties": {}
       },
-      "SeasonBanner": {
+      "SeasonListItem": {
         "type": "object",
         "properties": {
-          "imageUrl": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "code": {
             "type": "string",
             "nullable": true
           },
-          "title": {
+          "name": {
             "type": "string",
             "nullable": true
           },
-          "subtitle": {
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bannerImageUrl": {
             "type": "string",
             "nullable": true
           },
-          "venue": {
+          "posterImageUrl": {
             "type": "string",
-            "nullable": true
-          },
-          "startDateTime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "endDateTime": {
-            "type": "string",
-            "format": "date-time",
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "SeasonKeyResult": {
+      "SeasonListItemPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
         "type": "object",
         "properties": {
-          "value": {
-            "type": "string",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonListItem"
+            },
             "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -2673,14 +2810,10 @@
         "type": "integer",
         "format": "int32"
       },
-      "SeasonSelectorItem": {
-        "required": [
-          "isCurrent",
-          "seasonId"
-        ],
+      "SeasonResult": {
         "type": "object",
         "properties": {
-          "seasonId": {
+          "id": {
             "type": "integer",
             "format": "int64"
           },
@@ -2688,15 +2821,48 @@
             "type": "string",
             "nullable": true
           },
-          "isCurrent": {
-            "type": "boolean"
+          "description": {
+            "type": "string",
+            "nullable": true
           },
-          "eventId": {
-            "type": "integer",
-            "format": "int64"
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "externalSeasonKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "venue": {
+            "type": "string",
+            "nullable": true
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeatsIoPriceDTO"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
+      },
+      "SeasonStatus": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
       },
       "SeatInfoRequest": {
         "required": [
@@ -3022,7 +3188,7 @@
         },
         "additionalProperties": false
       },
-      "VenueListItem": {
+      "VenueListItemDTO": {
         "required": [
           "id"
         ],
@@ -3039,7 +3205,7 @@
         },
         "additionalProperties": false
       },
-      "VenueMapListItem": {
+      "VenueMapListItemDTO": {
         "required": [
           "id",
           "venueId"
@@ -3119,6 +3285,12 @@
     },
     {
       "name": "Seasons"
+    },
+    {
+      "name": "SeasonSeats"
+    },
+    {
+      "name": "SeasonSection"
     },
     {
       "name": "SuiteAgreements"

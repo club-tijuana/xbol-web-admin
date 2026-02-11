@@ -14,8 +14,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         string? sortColumn,
         bool sortDescending,
         string? search = null,
-        EventFilterParameters? filters = null,
-        int? seasonId = null)
+        EventFilterParameters? filters = null)
     {
         var response = await adminClient.GetEventsAsync(
             venues: filters?.Venues != null && filters.Venues.Count > 0 ? string.Join(",", filters.Venues) : null,
@@ -27,7 +26,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             descending: sortDescending,
             page: page + 1,
             pageSize: pageSize,
-            seasonId: seasonId,
+            seasonId: null,
             status: null
         );
 

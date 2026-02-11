@@ -104,9 +104,10 @@
             }
             else if (!string.IsNullOrWhiteSpace(_seasonKey))
             {
-                <SeatingChart WorkspaceKey="@_workspaceKey"
+                <SeatingChart SecretKey="@_secretKey"
                               EventKey="@_seasonKey"
                               EventId="SeasonId"
+                              Prices="_prices"
                               SelectedSeats="SelectedSeats"
                               OnChartRendered="HandleChartReady" />
             }
@@ -143,8 +144,9 @@
     [Parameter]
     public List<string> SelectedSeats { get; set; } = [];
 
-    private string _workspaceKey = string.Empty;
+    private string _secretKey = string.Empty;
     private string? _seasonKey = string.Empty;
+    private List<SeatsIoPriceDTO> _prices = new();
     private bool _loading = true;
     private bool _error = false;
     private ClientFilter clientFilter = new();
@@ -189,12 +191,12 @@
 
         if (IsRenovation)
         {
-            if (result.AlreadyRenewed.Value)
+            if (result.AlreadyRenewed is true)
             {
                 Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
                 Navigation.NavigateTo("/xolopass");
             }
-            if (!result.CanRenovate.Value)
+            if (result.CanRenovate is false)
             {
                 Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
                 Navigation.NavigateTo("/xolopass");
@@ -218,11 +220,11 @@
 
         try
         {
-            _workspaceKey = SeatsOptions.Value.PublicWorkspaceKey;
+            _secretKey = SeatsOptions.Value.SecretKey;
 
             if (IsRenovation)
             {
-                _clientSeasonEvent = await SeasonPassService.GetClientSeasonEventByOrderReference(orderReference);
+                _clientSeasonEvent = await SeasonPassService.GetClientSeasonEventByOrderReference(orderReference!);
                 if (_clientSeasonEvent != null)
                 {
                     _request.EventKey = _clientSeasonEvent.SeasonKey;
@@ -230,32 +232,49 @@
                     _request.RelatedOrderId = _clientSeasonEvent.RelatedOrderId;
 
                     _seasonKey = _request.EventKey;
-                    _selectedSeats = _clientSeasonEvent.Seats.Select(x => new SeatInfo { SeatId = x.SeatId, Price = (decimal)x.Price, Category = x.Category }).ToList();
-
-                    SeasonId = _clientSeasonEvent.SeasonId.Value;
-                    SelectedSeats = _selectedSeats.Select(x => x.SeatId).ToList();
-                    CartState.SelectedSeats = _selectedSeats;
-
-                    _seasonBanner = await SeasonService.GetSeasonBannerByEventAsync(_clientSeasonEvent.SeasonId.Value);
-
-                    if (_clientSeasonEvent.AlreadyRenewed.Value)
+                    _selectedSeats = _clientSeasonEvent.Seats.Select(x => new SeatInfo
                     {
-                        Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
+                        SeatId = x.SeatId,
+                        Price = (decimal)x.Price,
+                        Category = x.Category
+                    }).ToList();
+
+                    if (_clientSeasonEvent.SeasonId is null)
+                    {
+                        Snackbar.Add("Datos de temporada no válidos. Se requiere el ID de temporada.", Severity.Error);
                         Navigation.NavigateTo("/xolopass");
                     }
-
-                    if (!_clientSeasonEvent.CanRenovate.Value)
+                    else
                     {
-                        Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
-                        Navigation.NavigateTo("/xolopass");
+
+                        SeasonId = _clientSeasonEvent.SeasonId.Value;
+                        SelectedSeats = _selectedSeats.Select(x => x.SeatId).ToList();
+                        CartState.SelectedSeats = _selectedSeats;
+
+                        var season = await SeasonService.GetSeasonByIdAsync(SeasonId);
+                        _prices = season.Prices?.ToList() ?? new();
+                        _seasonBanner = await SeasonService.GetSeasonBannerAsync(SeasonId);
+
+                        if (_clientSeasonEvent.AlreadyRenewed is true)
+                        {
+                            Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
+                            Navigation.NavigateTo("/xolopass");
+                        }
+
+                        if (_clientSeasonEvent.CanRenovate is false)
+                        {
+                            Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
+                            Navigation.NavigateTo("/xolopass");
+                        }
                     }
                 }
             }
             else
             {
-                var seasonKey = await AdminApiClient.GetSeasonKeyAsync(SeasonId);
-                _seasonKey = seasonKey.Value ?? string.Empty;
-                _seasonBanner = await SeasonService.GetSeasonBannerByEventAsync(SeasonId);
+                var season = await SeasonService.GetSeasonByIdAsync(SeasonId);
+                _seasonKey = season.ExternalSeasonKey ?? string.Empty;
+                _prices = season.Prices?.ToList() ?? new();
+                _seasonBanner = await SeasonService.GetSeasonBannerAsync(SeasonId);
             }
         }
         catch
