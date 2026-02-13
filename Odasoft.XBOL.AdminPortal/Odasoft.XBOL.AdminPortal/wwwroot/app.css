@@ -130,6 +130,10 @@ h1:focus {
     border-color: var(--mud-palette-secondary-lighten) !important;
 }
 
+.border-secondary-lighten {
+    border-color: var(--mud-palette-secondary-lighten) !important;
+}
+
 .mud-nav-link, .mud-nav-group > .mud-nav-link > .mud-nav-link-text {
     font-weight: var(--mud-typography-subtitle2-weight) !important;
 }

@@ -93,18 +93,15 @@
                 <MudAlert Severity="Severity.Normal" Class="mx-4">@L["NoEventsFound"]</MudAlert>
             </NoRecordsContent>
             <Columns>
-                @if (IsVisible(EventColumn.DateTime))
-                {
-                    <PropertyColumn Property="x => x.DateTime" Sortable="true" Filterable="false"
-                                    InitialDirection="SortDirection.Descending">
-                        <HeaderTemplate>
-                            <span Class="pl-lg-4">@L["ColumnDateTime"]</span>
-                        </HeaderTemplate>
-                        <CellTemplate>
-                            <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.DateTime</MudText>
-                        </CellTemplate>
-                    </PropertyColumn>
-                }
+                <PropertyColumn Property="x => x.DateTime" Sortable="true" Filterable="false"
+                                InitialDirection="SortDirection.Descending">
+                    <HeaderTemplate>
+                        <span Class="pl-lg-4">@L["ColumnDateTime"]</span>
+                    </HeaderTemplate>
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.DateTime</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
 
                 <TemplateColumn Title="@L["ColumnEventName"]" Sortable="false" Filterable="false">
                     <CellTemplate>
@@ -117,33 +114,27 @@
                     </CellTemplate>
                 </TemplateColumn>
 
-                @if (IsVisible(EventColumn.Category))
-                {
-                    <TemplateColumn Title="@L["ColumnCategory"]" Sortable="false" Filterable="false">
-                        <CellTemplate>
-                            <MudText Typo="Typo.body2">@context.Item.Category</MudText>
-                        </CellTemplate>
-                    </TemplateColumn>
-                }
+                <TemplateColumn Title="@L["ColumnCategory"]" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.Category</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
 
-                @if (IsVisible(EventColumn.Availability))
-                {
-                    <TemplateColumn Title="@L["ColumnAvailability"]" Filterable="false" Sortable="false">
-                        <CellTemplate>
-                            <div class="d-flex">
-                                <MudText Typo="Typo.body2" Color="Color.Tertiary">
-                                    <strong>@context.Item.Available</strong>
-                                </MudText>
-                                <MudText Typo="Typo.body2" Style="padding: 0 2px; color: var(--mud-palette-text-disabled);">
-                                    /
-                                </MudText>
-                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-disabled);">
-                                    @context.Item.Total
-                                </MudText>
-                            </div>
-                        </CellTemplate>
-                    </TemplateColumn>
-                }
+                <TemplateColumn Title="@L["ColumnAvailability"]" Filterable="false" Sortable="false">
+                    <CellTemplate>
+                        <div class="d-flex">
+                            <MudText Typo="Typo.body2" Color="Color.Tertiary">
+                                <strong>@context.Item.Available</strong>
+                            </MudText>
+                            <MudText Typo="Typo.body2" Style="padding: 0 2px; color: var(--mud-palette-text-disabled);">
+                                /
+                            </MudText>
+                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-disabled);">
+                                @context.Item.Total
+                            </MudText>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
 
                 <TemplateColumn Title="@L["ColumnActions"]" Filterable="false" Sortable="false">
                     <CellTemplate>
@@ -158,7 +149,7 @@
             </Columns>
 
             <PagerContent>
-                <CustomMudDataGridPager T="EventViewModel" />
+                <MudDataGridPager T="EventViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
@@ -184,14 +175,6 @@
     /// Constrain height of data grid to enable inline scrolling
     /// </summary>
     [Parameter] public string? Height { get; set; }
-
-    /// <summary>
-    /// Controls which optional columns are visible.
-    /// EventName and Actions are always shown.
-    /// </summary>
-    [Parameter] public EventColumn VisibleColumns { get; set; } = EventColumn.All;
-
-    private bool IsVisible(EventColumn column) => VisibleColumns.HasFlag(column);
 
     private bool _loading;
     private string _searchString = "";

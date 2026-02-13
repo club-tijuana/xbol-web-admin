@@ -9,27 +9,21 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
-<SectionContent SectionName="nav-header">
-    <PageActionBar>
-        <LeftContent>
-            <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
-                            Class="border-secondary-lighten" Color="Color.Secondary">
-                <MudToggleItem Value="@UpcomingTab" Text="@L["TabUpcoming"]"
-                               Class="@($"px-6 {(_selectedTab == UpcomingTab ? "bg-secondary-darken" : "")}")" />
-                <MudToggleItem Value="@PastTab" Text="@L["TabPast"]"
-                               Class="@($"px-6 {(_selectedTab == PastTab ? "bg-secondary-darken" : "")}")" />
-            </MudToggleGroup>
-        </LeftContent>
-        <RightContent>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                       Href="/seasons/create">
-                @L["ButtonNewTournament"]
-            </MudButton>
-        </RightContent>
-    </PageActionBar>
-</SectionContent>
+<MudStack Spacing="4" Class="mt-4">
+    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
+                        Class="border-secondary-lighten" Color="Color.Secondary">
+            <MudToggleItem Value="@UpcomingTab" Text="@L["TabUpcoming"]"
+                           Class="@($"px-6 {(_selectedTab == UpcomingTab ? "bg-secondary-darken" : "")}")" />
+            <MudToggleItem Value="@PastTab" Text="@L["TabPast"]"
+                           Class="@($"px-6 {(_selectedTab == PastTab ? "bg-secondary-darken" : "")}")" />
+        </MudToggleGroup>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   Href="/seasons/create">
+            @L["ButtonNewTournament"]
+        </MudButton>
+    </MudStack>
 
-<MudStack Spacing="4">
     @if (_loading)
     {
         <MudCard Elevation="2">
@@ -49,10 +43,10 @@
     }
     else
     {
-        @foreach (var season in _seasons)
-        {
-        <MudCard Elevation="2" class="mb-2">
+        <MudCard Elevation="2" Class="overflow-hidden">
             <MudGrid Spacing="0">
+                @foreach (var season in _seasons)
+                {
                     <MudItem xs="12" sm="6" md="3">
                         <MudCard Elevation="0" Class="rounded-0 border-r" Style="border-color: var(--mud-palette-gray-lighter);">
                             <MudCardHeader>
@@ -68,7 +62,7 @@
 
                                 <CardHeaderActions>
                                     <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Color="Color.Secondary"
-                                                   Href="@($"seasons/{season.Id}/events")" />
+                                                Href="@($"seasons/{season.Id}/events")" />
                                 </CardHeaderActions>
                             </MudCardHeader>
 
@@ -83,22 +77,23 @@
                         </MudCard>
                     </MudItem>
                     <MudItem xs="12" sm="6" md="9">
-                        <EventsDataGrid SeasonId="@season.Id"
-                                        Height="@((height - 55) + "px")"
-                                        VisibleColumns="EventColumn.DateTime | EventColumn.Availability"
-                                        Dense
-                                        HideTitle />
+                        <EventsDataGrid
+                            SeasonId="@season.Id" 
+                            Height="@((height - 55) + "px")" 
+                            Dense 
+                            HideTitle
+                        />
                     </MudItem>
+                }
             </MudGrid>
         </MudCard>
-        }
     }
 </MudStack>
 
 @code {
     private const string UpcomingTab = "upcoming";
     private const string PastTab = "past";
-    private int height = 330;
+    private int height = 375;
 
     [Parameter]
     public string? Filter { get; set; }
@@ -129,8 +124,8 @@
         try
         {
             var period = _selectedTab == UpcomingTab
-                ? SeasonPeriod.CurrentSeason
-                : SeasonPeriod.PastSeason;
+                ? SeasonPeriod._0
+                : SeasonPeriod._1;
 
             var result = await SeasonService.GetSeasonsAsync(
                 status: null,

@@ -14,10 +14,6 @@
 
 <LoadingOverlay />
 
-@implements IDisposable
-
-<LoadingOverlay />
-
 <MudLayout>
     <!-- TOP BAR -->
         <MudAppBar Elevation="1" Class="bg-secondary-darken">
@@ -53,9 +49,9 @@
     </MudDrawer>
     <!-- MAIN CONTENT -->
     <MudMainContent Class="pt-20 px-10 pb-10">
-        <AdminPage>
+        <div class="pt-3">
             @Body
-        </AdminPage>
+        </div>
     </MudMainContent>
 </MudLayout>
 
