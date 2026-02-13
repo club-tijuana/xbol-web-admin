@@ -80,6 +80,7 @@ builder.Services.AddHttpClient<IAdminClient, AdminClient>(
     {
         var config = provider.GetRequiredService<IOptions<AdminApiClientConfig>>().Value;
         client.BaseAddress = new Uri(config.BaseAddress);
+        client.DefaultRequestHeaders.Add("Accept-Language", "es");
     });
 
 builder.Services.AddOptions<Authentication>()

@@ -305,7 +305,7 @@
     {
         try
         {
-            var seasonsResponse = await SeasonService.GetSeasonsAsync(SeasonStatus._1, "startDate", true);
+            var seasonsResponse = await SeasonService.GetSeasonsAsync(Odasoft.XBOL.Business.SeasonStatus._1, period: null, "startDate", true);
             _seasonSelectorItems = seasonsResponse.Items?.ToList() ?? new();
             _seasonPassStatusList = await SeasonPassService.GetSeasonPassStatusListAsync();
             _seasonPassSuspendedReasonList = await SeasonPassService.GetSeasonPassSuspendedReasonListAsync();

@@ -8,6 +8,7 @@
 @inject LoadingState LoadingState
 @inject NavigationManager Navigation
 @inject AuthStateProvider AuthStateProvider
+@inject IStringLocalizer<MainLayout> L
 
 @implements IDisposable
 
@@ -32,7 +33,7 @@
                                    Color="Color.Inherit" />
                 </ActivatorContent>
                 <ChildContent>
-                    <MudMenuItem Label="Cerrar Sesión" OnClick="Logout" />
+                    <MudMenuItem Label="@L["Logout"]" OnClick="Logout" />
                 </ChildContent>
             </MudMenu>
         </MudAppBar>

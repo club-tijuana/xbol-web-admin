@@ -14,7 +14,8 @@ public interface IEventService
         string? sortColumn,
         bool sortDescending,
         string? search = null,
-        EventFilterParameters? filters = null
+        EventFilterParameters? filters = null,
+        int? seasonId = null
     );
 
     Task<List<VenueListItemDTO>> GetVenuesAsync();

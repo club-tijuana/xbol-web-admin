@@ -120,4 +120,16 @@
   <data name="Seats_RemoveSeat" xml:space="preserve">
     <value>Quitar asiento</value>
   </data>
+  <data name="DeleteDialogTitle" xml:space="preserve">
+    <value>Borrar: {0}</value>
+  </data>
+  <data name="DeleteDialogMessage" xml:space="preserve">
+    <value>¿Desea borrar esta información? Esta acción no se puede revertir.</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Torneo eliminado exitosamente.</value>
+  </data>
+  <data name="DeleteError" xml:space="preserve">
+    <value>Error al eliminar el torneo.</value>
+  </data>
 </root>
