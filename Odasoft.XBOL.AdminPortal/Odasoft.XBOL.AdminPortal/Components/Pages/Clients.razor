@@ -16,20 +16,22 @@
 
 <PageTitle>Empresas</PageTitle>
 
-<SectionContent SectionName="nav-header">
-    <PageActionBar>
-        <RightContent>
-            <MudStack Row="true" Spacing="4">
-                <MudButton StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => DownloadFiles())"
-                           Disabled="@_disableDownloads" Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">Descargar Seleccionados</MudButton>
-                <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateClient())"
-                           Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nueva Empresa</MudButton>
-            </MudStack>
-        </RightContent>
-    </PageActionBar>
-</SectionContent>
+<MudCard Class="mt-4 mb-6" Elevation="3">
 
-<MudCard Elevation="3">
+    <MudCardHeader>
+        <!-- Table header -->
+        <CardHeaderContent>
+            <MudItem xs="12" sm="12" md="12" lg="12" Class="justify-content-end d-flex">
+                <MudPaper Class="d-flex justify-end flex-grow-1 gap-4" Elevation="0">
+                    <MudButton StartIcon="@Icons.Material.Outlined.Download" OnClick="@(() => DownloadFiles())"
+                               Disabled="@_disableDownloads" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Descargar Seleccionados</MudButton>
+                    <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateClient())"
+                               Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nueva Empresa</MudButton>
+                </MudPaper>
+            </MudItem>
+        </CardHeaderContent>
+    </MudCardHeader>
+
     <MudCardContent Class="pa-0">
         <MudDataGrid T="EnterpriseViewModel" MultiSelection="true" @ref="_dataGrid" ServerData="ServerReloadAsync" Loading="_loading" Filterable="false"
                      FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0" @bind-SelectedItems="_selectedClients" RowClick="@RowClicked">
@@ -57,8 +59,8 @@
                                         <MudSelect T="CreditStatus" Label="Estatus de crédito" MultiSelection="true"
                                                    Margin="Margin.Dense" Variant="Variant.Outlined"
                                                    ShrinkLabel @bind-SelectedValues="_selectedCreditStatus"
-                                                   Placeholder="Seleccionar"
-                                                   ToStringFunc="GetCreditStatusLabel">
+                                                    Placeholder="Seleccionar"
+                                                    ToStringFunc="GetCreditStatusLabel">
                                             @foreach (var creditStatus in _creditStatus)
                                             {
                                                 <MudSelectItem T="CreditStatus" Value="@((CreditStatus)@creditStatus.Value)">
@@ -103,33 +105,33 @@
                     </CellTemplate>
                 </PropertyColumn>
 
-                <PropertyColumn Title="Representante legal" Property="x => x.LegalRepresentative" Sortable="false" Filterable="false">
+                <PropertyColumn Title="Representante legal" Property="x => x.LegalRepresentative" Sortable="true" Filterable="false">
                     <CellTemplate>
                         <MudText Typo="Typo.body2">@context.Item.LegalRepresentative</MudText>
                     </CellTemplate>
                 </PropertyColumn>
 
-                <PropertyColumn Title="Crédito" Property="x => x.Credit" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right">
+                <PropertyColumn Title="Crédito" Property="x => x.Credit" Sortable="true" Filterable="false">
                     <CellTemplate>
-                        <MudText Typo="Typo.body2" Align="Align.Right">@context.Item.Credit</MudText>
+                        <MudText Typo="Typo.body2">@context.Item.Credit</MudText>
                     </CellTemplate>
                 </PropertyColumn>
 
-                <PropertyColumn Title="Pendiente" Property="x => x.PendingCredit" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right">
+                <PropertyColumn Title="Pendiente" Property="x => x.PendingCredit" Sortable="true" Filterable="false">
                     <CellTemplate>
-                        <MudText Typo="Typo.body2" Align="Align.Right">@context.Item.PendingCredit</MudText>
+                        <MudText Typo="Typo.body2">@context.Item.PendingCredit</MudText>
                     </CellTemplate>
                 </PropertyColumn>
 
-                <PropertyColumn Title="Monto pagado" Property="x => x.AmountPaid" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right">
+                <PropertyColumn Title="Monto pagado" Property="x => x.AmountPaid" Sortable="true" Filterable="false">
                     <CellTemplate>
-                        <MudText Typo="Typo.body2" Align="Align.Right">@context.Item.AmountPaid</MudText>
+                        <MudText Typo="Typo.body2">@context.Item.AmountPaid</MudText>
                     </CellTemplate>
                 </PropertyColumn>
 
-                <PropertyColumn Title="Estatus" Property="x => x.CreditStatus" Sortable="false" Filterable="false">
+                <PropertyColumn Title="Estatus" Property="x => x.CreditStatus" Sortable="true" Filterable="false">
                     <CellTemplate>
-                        <MudChip T="string" Color="@GetCreditStatusColor(context.Item.CreditStatusValue)" Size="Size.Small">@context.Item.CreditStatus</MudChip>
+                        <MudText Typo="Typo.body2">@context.Item.CreditStatus</MudText>
                     </CellTemplate>
                 </PropertyColumn>
 
@@ -156,7 +158,7 @@
                 </TemplateColumn>
             </Columns>
             <PagerContent>
-                <CustomMudDataGridPager T="EnterpriseViewModel" />
+                <MudDataGridPager T="EnterpriseViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
@@ -291,8 +293,7 @@
                     Credit = (c.HasCredit && c.CreditAmount is not null) ? c.CreditAmount.Value.ToString(FormatConstants.CURRENCY) : "No",
                     PendingCredit = c.PendingAmount is not null ? c.PendingAmount.Value.ToString(FormatConstants.CURRENCY) : "-",
                     AmountPaid = c.AmountPaid is not null ? c.AmountPaid.Value.ToString(FormatConstants.CURRENCY) : "-",
-                    CreditStatus = c.CreditStatus is not null ? GetCreditStatusLabel(c.CreditStatus.Value) : "-",
-                    CreditStatusValue = (int?)c.CreditStatus
+                    CreditStatus = c.CreditStatus is not null ? GetCreditStatusLabel(c.CreditStatus.Value) : "-"
                 }) ?? []
             };
         }
@@ -316,15 +317,6 @@
     {
         return _creditStatus.FirstOrDefault(x => x.Value == (int)value)?.Label ?? value.ToString()!;
     }
-
-    private static Color GetCreditStatusColor(int? status) => status switch
-    {
-        0 => Color.Default,  // Pending
-        1 => Color.Success,  // Paid
-        2 => Color.Warning,  // Delayed
-        3 => Color.Info,     // Partial
-        _ => Color.Default
-    };
 
     private void RowClicked(DataGridRowClickEventArgs<EnterpriseViewModel> args)
     {
@@ -454,7 +446,7 @@
                     || creditTransaction.PaymentDate.HasValue == false
                     || creditTransaction.PaymentMethod.HasValue == false)
                 {
-                    _snackbar.Add("Con los datos proporcionados no se puede guardar el abono.", Severity.Warning);
+                    _snackbar.Add("Con los datos proporcionados no se puede guardar el abano.", Severity.Warning);
                     return;
                 }
 
@@ -471,8 +463,8 @@
 
                 if (response)
                 {
-                    _snackbar.Add("Abono guardado exitosamente.", Severity.Success);
-                    await _dataGrid.ReloadServerData();
+                    _snackbar.Add("Abono guardado exitosamente.", Severity.Warning);
+                    _dataGrid.ReloadServerData();
                     return;
                 }
 

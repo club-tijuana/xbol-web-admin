@@ -142,8 +142,8 @@
                 OwnerName = _ownerName,
                 OwnerEmail = _ownerEmail,
                 OwnerPhone = _ownerPhone,
-                StartDate = _startDate.HasValue ? _startDate.Value : default,
-                EndDate = _endDate.HasValue ? _endDate.Value : default
+                StartDate = _startDate.HasValue ? _startDate.Value.ToUniversalTime() : default,
+                EndDate = _endDate.HasValue ? _endDate.Value.ToUniversalTime() : default
             });
 
             if (success)

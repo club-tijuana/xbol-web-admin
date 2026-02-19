@@ -46,7 +46,8 @@
                             <MudTextField @bind-Value="_searchTerm" Placeholder="Buscar"
                                           Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
                                           AdornmentAriaLabel="Buscar" AdornmentIcon="@Icons.Material.Filled.Search"
-                                          IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1" />
+                                          IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1"
+                                          DebounceInterval="500" />
 
                             <!-- Level multi-select -->
                             <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
@@ -214,14 +215,20 @@
         {
             var suiteAgreementIds = _selectedAgreements.Select(item => item.Id).ToList();
 
-            FileResponse file = await _suiteAgreementsService.DownloadSuiteAgreementFilesAsync(suiteAgreementIds);
+            FileResponse? file = await _suiteAgreementsService.DownloadSuiteAgreementFilesAsync(suiteAgreementIds);
 
-            await DownloadFileAsync(file);
+            if (file != null)
+            {
+                await DownloadFileAsync(file);
+            }
+
+            Console.WriteLine("Error trying to get file: null response.");
+            _snackbar.Add("Error al tratar de descargar el archivo.", Severity.Error);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error trying to get file: {ex.Message}");
-            _snackbar.Add($"Error al tratar de descargar el archivo", Severity.Error);
+            _snackbar.Add($"Error al tratar de descargar el archivo.", Severity.Error);
         }
     }
 
@@ -320,8 +327,8 @@
                 OwnerName = sa.OwnerName,
                 OwnerEmail = sa.OwnerEmail,
                 OwnerPhone = sa.OwnerPhone,
-                StartDate = sa.StartDate.ToString("dd/MM/yyyy"),
-                EndDate = sa.EndDate.ToString("dd/MM/yyyy"),
+                StartDate = sa.StartDate.ToString(FormatConstants.DATE_ONLY),
+                EndDate = sa.EndDate.ToString(FormatConstants.DATE_ONLY),
                 FileName = sa.FileName
 
             }).ToArray() ?? [];
@@ -356,13 +363,13 @@
 
         if (_startDate.HasValue)
         {
-            var startDate = _startDate.Value.ToString("dd/MM/yyyy");
+            var startDate = _startDate.Value.ToString(FormatConstants.DATE_ONLY);
             query = _suiteAgreements.Where(x => x.StartDate == startDate);
         }
 
         if (_endDate.HasValue)
         {
-            var endDate = _endDate.Value.ToString("dd/MM/yyyy");
+            var endDate = _endDate.Value.ToString(FormatConstants.DATE_ONLY);
             query = _suiteAgreements.Where(x => x.EndDate == endDate);
         }
     }

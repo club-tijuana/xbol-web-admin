@@ -9,7 +9,6 @@ namespace Odasoft.XBOL.Models.ViewModels
         public string PendingCredit { get; set; } = "";
         public string AmountPaid { get; set; } = "";
         public string CreditStatus { get; set; } = "";
-        public int? CreditStatusValue { get; set; }
 
         public override bool Equals(object? obj)
         {

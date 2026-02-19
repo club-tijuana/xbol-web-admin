@@ -62,7 +62,7 @@
 
                                 <CardHeaderActions>
                                     <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Color="Color.Secondary"
-                                                Href="@($"seasons/{season.Id}/events")" />
+                                                   Href="@($"seasons/{season.Id}/events")" />
                                 </CardHeaderActions>
                             </MudCardHeader>
 
@@ -77,12 +77,10 @@
                         </MudCard>
                     </MudItem>
                     <MudItem xs="12" sm="6" md="9">
-                        <EventsDataGrid
-                            SeasonId="@season.Id" 
-                            Height="@((height - 55) + "px")" 
-                            Dense 
-                            HideTitle
-                        />
+                        <EventsDataGrid SeasonId="@season.Id"
+                                        Height="@((height - 55) + "px")"
+                                        Dense
+                                        HideTitle />
                     </MudItem>
                 }
             </MudGrid>
@@ -124,8 +122,8 @@
         try
         {
             var period = _selectedTab == UpcomingTab
-                ? SeasonPeriod._0
-                : SeasonPeriod._1;
+                ? SeasonPeriod.CurrentSeason
+                : SeasonPeriod.PastSeason;
 
             var result = await SeasonService.GetSeasonsAsync(
                 status: null,
