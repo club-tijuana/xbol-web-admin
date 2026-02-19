@@ -42,11 +42,11 @@
             </MudItem>
 
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_startDate" Label="Inicio" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Required />
+                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_startDate" Label="Inicio del acuerdo" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Required />
             </MudItem>
 
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_endDate" Label="Inicio" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Required />
+                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_endDate" Label="Vigencia" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Required />
             </MudItem>
         </MudGrid>
         <MudGrid Class="mud-width-full">
@@ -169,8 +169,8 @@
                                 _ownerName,
                                 _ownerEmail,
                                 _ownerPhone,
-                                _startDate.HasValue ? _startDate.Value : default,
-                                _endDate.HasValue ? _endDate.Value : default,
+                                _startDate.HasValue ? _startDate.Value.ToUniversalTime() : default,
+                                _endDate.HasValue ? _endDate.Value.ToUniversalTime() : default,
                                 new FileParameter(stream, _agreementFile.Name, _agreementFile.ContentType));
 
             if (success)

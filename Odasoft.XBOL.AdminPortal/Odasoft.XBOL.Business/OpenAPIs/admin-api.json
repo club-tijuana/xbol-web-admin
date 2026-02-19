@@ -11,29 +11,45 @@
           "Accounts"
         ],
         "summary": "Registers a new user account using the specified registration details.",
-        "description": "This method creates a new user account with the provided credentials. The\n            registration may fail if the user name or email address is already in use, or if the password does not meet\n            the required criteria. The response does not include detailed error information; for more granular feedback,\n            consider extending the response model.",
+        "description": "This method creates a new user account with the provided credentials. The\r\n            registration may fail if the user name or email address is already in use, or if the password does not meet\r\n            the required criteria. The response does not include detailed error information; for more granular feedback,\r\n            consider extending the response model.",
         "operationId": "CreateUserAsync",
         "requestBody": {
-          "description": "An object containing the user registration information, including user name, email address, and password.\n            Cannot be null.",
+          "description": "An object containing the user registration information, including user name, email address, and password.\r\n            Cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateUserRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateUserRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateUserRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateUserRequest"
+                  }
+                ]
               }
             }
           }
@@ -74,22 +90,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/BookingRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookingRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BookingRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookingRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/BookingRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookingRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/BookingRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookingRequest"
+                  }
+                ]
               }
             }
           }
@@ -157,7 +189,7 @@
         }
       }
     },
-    "/api/clients": {
+    "/api/clients/season": {
       "post": {
         "tags": [
           "Clients"
@@ -167,22 +199,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/ClientFilter"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientFilter"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ClientFilter"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientFilter"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/ClientFilter"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientFilter"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/ClientFilter"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientFilter"
+                  }
+                ]
               }
             }
           }
@@ -204,6 +252,1128 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ClientSeasonEvent"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "GetClientsAsync",
+        "parameters": [
+          {
+            "name": "CreditStatus",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CreditStatus"
+              }
+            }
+          },
+          {
+            "name": "HasCredit",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResultPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResultPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResultPagedResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "CreateClientAsync",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateClientRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateClientRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateClientRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateClientRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/{clientId}": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "GetClientDetailById",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDetailResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDetailResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDetailResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/{id}": {
+      "put": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "UpdateClientAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateClientRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateClientRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateClientRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateClientRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "DeleteClientAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/clients/download": {
+      "post": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "DownloadClientsCsvAsync",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/credit-status-list": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "GetCreditStatusList",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnumItemDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnumItemDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnumItemDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/client-type-list": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "GetClientTypeList",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnumItemDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnumItemDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnumItemDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/payment-frequency-list": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "GetPaymentFrequencyList",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnumItemDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnumItemDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnumItemDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credit-accounts/client/{clientId}": {
+      "get": {
+        "tags": [
+          "CreditAccounts"
+        ],
+        "summary": "Retrieves the client credit account information using the client Id as identifier.",
+        "operationId": "GetCreditAccountByClientIdAsync",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "Client unique identifier.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditAccountResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditAccountResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditAccountResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credit-accounts/{creditAccountId}": {
+      "put": {
+        "tags": [
+          "CreditAccounts"
+        ],
+        "summary": "Updates an exisiting client credit account with the specified details",
+        "operationId": "UpdateCreditAccountByIdAsync",
+        "parameters": [
+          {
+            "name": "creditAccountId",
+            "in": "path",
+            "description": "Unique identifier.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "An object containing the updated credit account information.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateClientCreditAccountRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateClientCreditAccountRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateClientCreditAccountRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateClientCreditAccountRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "CreditAccounts"
+        ],
+        "summary": "Deletes an existing client credit.",
+        "operationId": "DeleteCreditAccountByIdAsync",
+        "parameters": [
+          {
+            "name": "creditAccountId",
+            "in": "path",
+            "description": "Unique identifier",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credit-transactions": {
+      "get": {
+        "tags": [
+          "CreditTransactions"
+        ],
+        "operationId": "GetCreditTransactionsAsync",
+        "parameters": [
+          {
+            "name": "CreditAccountId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "PaymentTypes",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditTransactionResultPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditTransactionResultPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditTransactionResultPagedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credit-transactions/{creditAccountId}": {
+      "post": {
+        "tags": [
+          "CreditTransactions"
+        ],
+        "summary": "Creates a new credit transaction for the credit account based on the specified request data.",
+        "operationId": "CreateCreditTransactionByCreditAccountIdAsync",
+        "parameters": [
+          {
+            "name": "creditAccountId",
+            "in": "path",
+            "description": "The unique identifier of the credit account.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "An object containing the info for the credit transaction to create.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreditTransactionRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreditTransactionRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreditTransactionRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreditTransactionRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credit-transactions/{creditTransactionId}": {
+      "put": {
+        "tags": [
+          "CreditTransactions"
+        ],
+        "summary": "Updates an existing credit transaction with the specified details.",
+        "operationId": "UpdateCreditTransactionByIdAsync",
+        "parameters": [
+          {
+            "name": "creditTransactionId",
+            "in": "path",
+            "description": "Unique identifier.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The request object containing the updated credit transaction information.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreditTransactionRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreditTransactionRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreditTransactionRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreditTransactionRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "CreditTransactions"
+        ],
+        "summary": "Deletes an existing credit transaction.",
+        "operationId": "DeleteCreditTransactionByIdAsync",
+        "parameters": [
+          {
+            "name": "creditTransactionId",
+            "in": "path",
+            "description": "Unique identifier",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -297,7 +1467,11 @@
             "name": "status",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/EventStatus"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/EventStatus"
+                }
+              ]
             }
           }
         ],
@@ -359,6 +1533,46 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EventInfoDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events/catalog": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Retrieves the event catalog as a collection of list items.",
+        "operationId": "GetEventCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
                 }
               }
             }
@@ -480,22 +1694,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/HoldSeatsRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HoldSeatsRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/HoldSeatsRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HoldSeatsRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/HoldSeatsRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HoldSeatsRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/HoldSeatsRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HoldSeatsRequest"
+                  }
+                ]
               }
             }
           }
@@ -598,7 +1828,414 @@
         }
       }
     },
+    "/api/legal-representatives/{clientId}": {
+      "get": {
+        "tags": [
+          "LegalRepresentatives"
+        ],
+        "summary": "Retreives the detail of a legal representative using the client Id as the identifier.",
+        "operationId": "GetLegalRepresentativeByClientIdAsync",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "The unique identifier of the client.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalRepresentativeResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalRepresentativeResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalRepresentativeResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "LegalRepresentatives"
+        ],
+        "summary": "Deletes the legal representative with the specified client as identifier.",
+        "operationId": "DeleteLegalRepresentativeByClientIdAsync",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/legal-representatives": {
+      "post": {
+        "tags": [
+          "LegalRepresentatives"
+        ],
+        "summary": "Creates a new legal representative based on the specified request data.",
+        "operationId": "CreateLegalRepresentativeAsync",
+        "requestBody": {
+          "description": "The details of the legal representative to create.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LegalRepresentativeRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LegalRepresentativeRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LegalRepresentativeRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LegalRepresentativeRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "LegalRepresentatives"
+        ],
+        "summary": "Updates an existing legal representative with the specified details, using the Client Id as unique identifier.",
+        "operationId": "UpdateLegalRepresentativeByClientIdAsync",
+        "requestBody": {
+          "description": "The request object containing the updated legal representative information.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LegalRepresentativeRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LegalRepresentativeRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LegalRepresentativeRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LegalRepresentativeRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/orders": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "GetOrdersAsync",
+        "parameters": [
+          {
+            "name": "ClientId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Events",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResultPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResultPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResultPagedResponse"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Orders"
@@ -608,22 +2245,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/OrderListFilters"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderListFilters"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/OrderListFilters"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderListFilters"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/OrderListFilters"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderListFilters"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/OrderListFilters"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderListFilters"
+                  }
+                ]
               }
             }
           }
@@ -702,22 +2355,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/BookSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookSeasonRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BookSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookSeasonRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/BookSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookSeasonRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/BookSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookSeasonRequest"
+                  }
+                ]
               }
             }
           }
@@ -897,22 +2566,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/SeasonPassStatusRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SeasonPassStatusRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SeasonPassStatusRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SeasonPassStatusRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/SeasonPassStatusRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SeasonPassStatusRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/SeasonPassStatusRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SeasonPassStatusRequest"
+                  }
+                ]
               }
             }
           }
@@ -992,14 +2677,22 @@
             "name": "Status",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/SeasonStatus"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/SeasonStatus"
+                }
+              ]
             }
           },
           {
             "name": "Period",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/SeasonPeriod"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/SeasonPeriod"
+                }
+              ]
             }
           },
           {
@@ -1074,22 +2767,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSeasonRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSeasonRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSeasonRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSeasonRequest"
+                  }
+                ]
               }
             }
           }
@@ -1242,22 +2951,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSeasonRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSeasonRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSeasonRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSeasonRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSeasonRequest"
+                  }
+                ]
               }
             }
           }
@@ -1502,17 +3227,35 @@
         ],
         "summary": "Creates a new Suite Agreement using the specified request data.",
         "operationId": "CreateSuiteAgreementAsync",
+        "parameters": [
+          {
+            "name": "StartDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "multipart/form-data": {
               "schema": {
                 "required": [
                   "AgreementFile",
-                  "EndDate",
                   "OwnerEmail",
                   "OwnerName",
                   "OwnerPhone",
-                  "StartDate",
                   "SuiteId"
                 ],
                 "type": "object",
@@ -1532,14 +3275,6 @@
                     "type": "string",
                     "format": "tel"
                   },
-                  "StartDate": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "EndDate": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
                   "AgreementFile": {
                     "type": "string",
                     "format": "binary"
@@ -1557,12 +3292,6 @@
                   "style": "form"
                 },
                 "OwnerPhone": {
-                  "style": "form"
-                },
-                "StartDate": {
-                  "style": "form"
-                },
-                "EndDate": {
                   "style": "form"
                 },
                 "AgreementFile": {
@@ -1589,22 +3318,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteAgreementRequest"
+                  }
+                ]
               }
             }
           }
@@ -1723,7 +3468,7 @@
           "SuiteAgreements"
         ],
         "summary": "Downloads multiple suite agreement files as a single ZIP archive.",
-        "description": "The ZIP archive will contain one entry for each suite agreement file found. The file\n            name of the ZIP will include a timestamp to ensure uniqueness. If any of the specified IDs do not correspond\n            to existing files, only the files that are found will be included in the archive.",
+        "description": "The ZIP archive will contain one entry for each suite agreement file found. The file\r\n            name of the ZIP will include a timestamp to ensure uniqueness. If any of the specified IDs do not correspond\r\n            to existing files, only the files that are found will be included in the archive.",
         "operationId": "DownloadMultipleSuiteAgreementsAsync",
         "parameters": [
           {
@@ -1800,29 +3545,45 @@
           "SuiteLevels"
         ],
         "summary": "Creates a new suite level using the specified request data.",
-        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\n            Unprocessable Entity response if the suite level could not be created.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the suite level could not be created.",
         "operationId": "CreateSuiteLevelAsync",
         "requestBody": {
           "description": "The request object containing the details required to create the suite level. Cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteLevelRequest"
+                  }
+                ]
               }
             }
           }
@@ -1855,29 +3616,45 @@
           "SuiteLevels"
         ],
         "summary": "Updates the suite level with the specified details.",
-        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\n            Unprocessable Entity response if the update operation fails.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the update operation fails.",
         "operationId": "UpdateSuiteLevelAsync",
         "requestBody": {
-          "description": "An object containing the updated suite level information. Must not be null and must satisfy all model\n            validation requirements.",
+          "description": "An object containing the updated suite level information. Must not be null and must satisfy all model\r\n            validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteLevelRequest"
+                  }
+                ]
               }
             }
           }
@@ -2036,22 +3813,38 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSuiteRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSuiteRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSuiteRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSuiteRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteRequest"
+                  }
+                ]
               }
             }
           }
@@ -2086,26 +3879,42 @@
         "summary": "Updates an existing suite with the specified details.",
         "operationId": "UpdateSuiteAsync",
         "requestBody": {
-          "description": "The request object containing the updated suite information. Must not be null and must satisfy all\n            validation requirements.",
+          "description": "The request object containing the updated suite information. Must not be null and must satisfy all\r\n            validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSuiteRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSuiteRequest"
+                  }
+                ]
               }
             }
           }
@@ -2395,7 +4204,7 @@
           "Venues"
         ],
         "summary": "Retrieves a collection of venue catalog items for use in selection lists or dropdowns.",
-        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\n            such as dropdowns. The returned items typically include venue identifiers and display names.",
+        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\r\n            such as dropdowns. The returned items typically include venue identifiers and display names.",
         "operationId": "GetVenueCatalogAsync",
         "responses": {
           "200": {
@@ -2444,22 +4253,23 @@
         "type": "object",
         "properties": {
           "clientContact": {
-            "$ref": "#/components/schemas/ClientContactRequest"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientContactRequest"
+              }
+            ]
           },
           "seats": {
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "holdToken": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "eventKey": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "seassonId": {
             "type": "integer",
@@ -2479,8 +4289,7 @@
           "eventId",
           "holdToken",
           "paymentInfoRequest",
-          "seats",
-          "ticketType"
+          "seats"
         ],
         "type": "object",
         "properties": {
@@ -2488,26 +4297,31 @@
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "holdToken": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "eventId": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "ticketType": {
             "type": "string",
             "nullable": true
           },
           "clientContact": {
-            "$ref": "#/components/schemas/EventClientContactRequest"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventClientContactRequest"
+              }
+            ]
           },
           "paymentInfoRequest": {
-            "$ref": "#/components/schemas/PaymentInfoRequest"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentInfoRequest"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -2521,15 +4335,13 @@
             "nullable": true
           },
           "message": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "tickets": {
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           }
         },
         "additionalProperties": false
@@ -2538,10 +4350,142 @@
         "type": "object",
         "properties": {
           "countryPhoneISO": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientCreditDTO": {
+        "required": [
+          "clientId",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "creditLimit": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "appliesInterestRate": {
+            "type": "boolean"
+          },
+          "paymentFrequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentFrequency"
+              }
+            ],
+            "nullable": true
+          },
+          "paymentFrequencyLabel": {
             "type": "string",
             "nullable": true
           },
-          "phoneNumber": {
+          "pendingAmount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "amountPaid": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "creditStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditStatus"
+              }
+            ],
+            "nullable": true
+          },
+          "creditStatusLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientCreditTransactionRequest": {
+        "type": "object",
+        "properties": {
+          "transactionType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditTransactionType"
+              }
+            ]
+          },
+          "paymentType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientDetailResult": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientType"
+              }
+            ]
+          },
+          "clientName": {
+            "type": "string",
+            "nullable": true
+          },
+          "businessName": {
             "type": "string",
             "nullable": true
           },
@@ -2549,12 +4493,64 @@
             "type": "string",
             "nullable": true
           },
-          "name": {
+          "countryPhoneCode": {
             "type": "string",
             "nullable": true
           },
-          "lastName": {
+          "phoneNumber": {
             "type": "string",
+            "nullable": true
+          },
+          "taxId": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "streetAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "extNum": {
+            "type": "string",
+            "nullable": true
+          },
+          "intNum": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "legalRepresentative": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalRepresentativeDTO"
+              }
+            ],
+            "nullable": true
+          },
+          "clientCredit": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientCreditDTO"
+              }
+            ],
             "nullable": true
           }
         },
@@ -2585,15 +4581,96 @@
         },
         "additionalProperties": false
       },
+      "ClientResult": {
+        "required": [
+          "clientName",
+          "hasCredit",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientName": {
+            "type": "string"
+          },
+          "legalRepName": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasCredit": {
+            "type": "boolean"
+          },
+          "creditAmount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "pendingAmount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "amountPaid": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "creditStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditStatus"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientResultPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientResult"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "ClientSeasonEvent": {
         "type": "object",
         "properties": {
           "clientContact": {
-            "$ref": "#/components/schemas/ClientContactRequest"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientContactRequest"
+              }
+            ],
+            "nullable": true
           },
           "eventKey": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "eventId": {
             "type": "integer",
@@ -2614,21 +4691,116 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SeatInfoRequest"
-            },
-            "nullable": true
+            }
           },
           "seasonId": {
             "type": "integer",
             "format": "int64"
           },
           "seasonKey": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "relatedOrderId": {
             "type": "integer",
             "format": "int64",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientType": {
+        "enum": [
+          "Individual",
+          "Business"
+        ],
+        "type": "string"
+      },
+      "CreateClientRequest": {
+        "required": [
+          "companyName"
+        ],
+        "type": "object",
+        "properties": {
+          "companyName": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "socialReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "rfc": {
+            "type": "string",
+            "nullable": true
+          },
+          "personTypeId": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientType"
+              }
+            ],
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "street": {
+            "type": "string",
+            "nullable": true
+          },
+          "extNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "intNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "countryPhoneCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasCredit": {
+            "type": "boolean"
+          },
+          "legalRep": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalRepForm"
+              }
+            ]
+          },
+          "credit": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditForm"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -2709,8 +4881,7 @@
             "format": "int64"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -2724,8 +4895,7 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "suiteLevelId": {
             "type": "integer",
@@ -2742,15 +4912,234 @@
         "type": "object",
         "properties": {
           "userName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "password": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreditAccountResult": {
+        "required": [
+          "amountPaid",
+          "clientId",
+          "creditLimit",
+          "id",
+          "paymentFrequency",
+          "pendingAmount",
+          "startDate"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "creditLimit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "startDate": {
             "type": "string",
+            "format": "date-time"
+          },
+          "paymentFrequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentFrequency"
+              }
+            ]
+          },
+          "amountPaid": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "pendingAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "creditStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditStatus"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreditForm": {
+        "type": "object",
+        "properties": {
+          "authorizedAmount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paymentCycleTypeId": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentFrequency"
+              }
+            ],
+            "nullable": true
+          },
+          "interestApply": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "totalPlusInterest": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "termInDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreditStatus": {
+        "enum": [
+          "Pending",
+          "Paid",
+          "Delayed",
+          "Partial"
+        ],
+        "type": "string"
+      },
+      "CreditTransactionResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "referenceId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "paymentType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            ]
+          },
+          "transactionType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditTransactionType"
+              }
+            ]
+          },
+          "receivedBy": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreditTransactionResultPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditTransactionResult"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreditTransactionType": {
+        "enum": [
+          "Drawdown",
+          "Interest",
+          "Fee",
+          "AdjustmentDebit",
+          "Payment",
+          "Reversal",
+          "AdjustmentCredit"
+        ],
+        "type": "string"
+      },
+      "CreditUpdateForm": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "authorizedAmount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paymentCycleTypeId": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentFrequency"
+              }
+            ],
+            "nullable": true
+          },
+          "interestApply": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "totalPlusInterest": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "termInDays": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -2767,18 +5156,12 @@
             "format": "int32"
           },
           "label": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
       "EventClientContactRequest": {
-        "required": [
-          "countryPhoneISO",
-          "email",
-          "phoneNumber"
-        ],
         "type": "object",
         "properties": {
           "countryPhoneISO": {
@@ -2817,32 +5200,26 @@
             "nullable": true
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "subtitle": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "bannerImageUrl": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "category": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "venueMapId": {
             "type": "integer",
             "format": "int64"
           },
           "venueName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "externalEventKey": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "availableSeats": {
             "type": "integer",
@@ -2856,8 +5233,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SeatsIoPriceDTO"
-            },
-            "nullable": true
+            }
           }
         },
         "additionalProperties": false
@@ -2882,8 +5258,7 @@
             "format": "date-time"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "category": {
             "type": "string",
@@ -2924,8 +5299,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/EventListItemDTO"
-            },
-            "nullable": true
+            }
           },
           "totalCount": {
             "type": "integer",
@@ -2944,16 +5318,14 @@
       },
       "EventStatus": {
         "enum": [
-          0,
-          1,
-          2
+          "Draft",
+          "Published",
+          "Cancelled"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "HoldSeatsRequest": {
         "required": [
-          "eventId",
           "seats"
         ],
         "type": "object",
@@ -2966,8 +5338,7 @@
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           }
         },
         "additionalProperties": false
@@ -2981,17 +5352,157 @@
           },
           "expiresAt": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "format": "date-time"
           },
           "expiresInSeconds": {
             "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "format": "int32"
           },
           "workspaceKey": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LegalRepForm": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "birthday": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "rfc": {
+            "type": "string",
+            "nullable": true
+          },
+          "curp": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LegalRepUdpateForm": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "birthday": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "rfc": {
+            "type": "string",
+            "nullable": true
+          },
+          "curp": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LegalRepresentativeDTO": {
+        "required": [
+          "clientId",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "taxId": {
+            "type": "string",
+            "nullable": true
+          },
+          "curp": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LegalRepresentativeRequest": {
+        "required": [
+          "clientId"
+        ],
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "taxId": {
+            "type": "string"
+          },
+          "curp": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LegalRepresentativeResult": {
+        "required": [
+          "clientId",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "taxId": {
+            "type": "string"
+          },
+          "curp": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -3007,8 +5518,7 @@
             "format": "int64"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -3071,20 +5581,16 @@
             "format": "int64"
           },
           "order": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "countryPhoneISO": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "phoneNumber": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "seatCount": {
             "type": "integer",
@@ -3095,7 +5601,11 @@
             "format": "decimal"
           },
           "seasonPeriod": {
-            "$ref": "#/components/schemas/SeasonPeriod"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPeriod"
+              }
+            ]
           },
           "relatedOrderReference": {
             "type": "string",
@@ -3105,8 +5615,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SeasonPassItem"
-            },
-            "nullable": true
+            }
           }
         },
         "additionalProperties": false
@@ -3124,8 +5633,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/OrderListItem"
-            },
-            "nullable": true
+            }
           },
           "currentPage": {
             "type": "integer",
@@ -3145,6 +5653,69 @@
           }
         },
         "additionalProperties": false
+      },
+      "OrderResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "orderDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "event": {
+            "type": "string"
+          },
+          "numberOfItems": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderResultPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderResult"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentFrequency": {
+        "enum": [
+          "Monthly",
+          "BiWeekly",
+          "SemiMonthly",
+          "Weekly"
+        ],
+        "type": "string"
       },
       "PaymentInfoRequest": {
         "type": "object",
@@ -3177,6 +5748,15 @@
         },
         "additionalProperties": false
       },
+      "PaymentType": {
+        "enum": [
+          "Cash",
+          "CreditCard",
+          "DebitCard",
+          "Spei"
+        ],
+        "type": "string"
+      },
       "ProblemDetails": {
         "type": "object",
         "properties": {
@@ -3202,7 +5782,7 @@
             "nullable": true
           }
         },
-        "additionalProperties": {}
+        "additionalProperties": { }
       },
       "SeasonListItem": {
         "type": "object",
@@ -3212,12 +5792,10 @@
             "format": "int64"
           },
           "code": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "startDate": {
             "type": "string",
@@ -3250,8 +5828,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SeasonListItem"
-            },
-            "nullable": true
+            }
           },
           "totalCount": {
             "type": "integer",
@@ -3280,25 +5857,38 @@
             "format": "int64"
           },
           "seatCode": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "price": {
             "type": "number",
             "format": "decimal"
           },
           "categoryEnum": {
-            "$ref": "#/components/schemas/SeatType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeatType"
+              }
+            ]
           },
           "category": {
             "type": "string",
             "nullable": true
           },
           "status": {
-            "$ref": "#/components/schemas/SeasonPassStatus"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPassStatus"
+              }
+            ],
+            "nullable": true
           },
           "suspendedReason": {
-            "$ref": "#/components/schemas/SeasonPassSuspendedReason"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPassSuspendedReason"
+              }
+            ],
+            "nullable": true
           },
           "suspendedOtherReason": {
             "type": "string",
@@ -3309,19 +5899,17 @@
       },
       "SeasonPassRenewalType": {
         "enum": [
-          0,
-          1
+          "New",
+          "Renewal"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "SeasonPassStatus": {
         "enum": [
-          0,
-          1
+          "Active",
+          "Suspended"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "SeasonPassStatusRequest": {
         "required": [
@@ -3334,10 +5922,19 @@
             "format": "int64"
           },
           "seasonPassStatus": {
-            "$ref": "#/components/schemas/SeasonPassStatus"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPassStatus"
+              }
+            ]
           },
           "seasonPassSuspendedReason": {
-            "$ref": "#/components/schemas/SeasonPassSuspendedReason"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPassSuspendedReason"
+              }
+            ],
+            "nullable": true
           },
           "suspendedOtherReason": {
             "type": "string",
@@ -3348,22 +5945,20 @@
       },
       "SeasonPassSuspendedReason": {
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
+          "PaymentIssue",
+          "PolicyViolation",
+          "FraudSuspicion",
+          "AdminDecision",
+          "Other"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "SeasonPeriod": {
         "enum": [
-          0,
-          1
+          "CurrentSeason",
+          "PastSeason"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "SeasonResult": {
         "type": "object",
@@ -3373,12 +5968,10 @@
             "format": "int64"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "code": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "description": {
             "type": "string",
@@ -3425,11 +6018,14 @@
             "nullable": true
           },
           "status": {
-            "$ref": "#/components/schemas/SeasonStatus"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonStatus"
+              }
+            ]
           },
           "externalSeasonKey": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "venue": {
             "type": "string",
@@ -3439,20 +6035,18 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SeatsIoPriceDTO"
-            },
-            "nullable": true
+            }
           }
         },
         "additionalProperties": false
       },
       "SeasonStatus": {
         "enum": [
-          0,
-          1,
-          2
+          "Draft",
+          "Published",
+          "Closed"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "SeatInfoRequest": {
         "required": [
@@ -3461,15 +6055,18 @@
         "type": "object",
         "properties": {
           "seatId": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "price": {
             "type": "number",
             "format": "decimal"
           },
           "categoryEnum": {
-            "$ref": "#/components/schemas/SeatType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeatType"
+              }
+            ]
           },
           "category": {
             "type": "string",
@@ -3489,20 +6086,18 @@
             "format": "decimal"
           },
           "seatKey": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
       "SeatType": {
         "enum": [
-          0,
-          1,
-          2
+          "Standard",
+          "Accessible",
+          "Vip"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "SeatsIoPriceDTO": {
         "type": "object",
@@ -3561,24 +6156,19 @@
             "format": "int64"
           },
           "suiteName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "suiteLevel": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "ownerName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "ownerEmail": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "ownerPhone": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "startDate": {
             "type": "string",
@@ -3589,8 +6179,7 @@
             "format": "date-time"
           },
           "fileName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -3612,12 +6201,10 @@
             "format": "int64"
           },
           "suiteLevelName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "seats": {
             "type": "integer",
@@ -3638,8 +6225,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SuiteResult"
-            },
-            "nullable": true
+            }
           },
           "totalCount": {
             "type": "integer",
@@ -3660,8 +6246,7 @@
         "type": "object",
         "properties": {
           "ticketType": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "price": {
             "type": "number",
@@ -3678,6 +6263,129 @@
           "primary": {
             "type": "boolean",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateClientCreditAccountRequest": {
+        "required": [
+          "creditLimit",
+          "startDate"
+        ],
+        "type": "object",
+        "properties": {
+          "creditLimit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "appliesInterestRate": {
+            "type": "boolean"
+          },
+          "paymentFrequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentFrequency"
+              }
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateClientRequest": {
+        "required": [
+          "companyName"
+        ],
+        "type": "object",
+        "properties": {
+          "companyName": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "socialReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "rfc": {
+            "type": "string",
+            "nullable": true
+          },
+          "personTypeId": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientType"
+              }
+            ],
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "street": {
+            "type": "string",
+            "nullable": true
+          },
+          "extNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "intNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "countryPhoneCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasCredit": {
+            "type": "boolean"
+          },
+          "legalRep": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalRepUdpateForm"
+              }
+            ]
+          },
+          "credit": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditUpdateForm"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -3767,18 +6475,15 @@
             "format": "int64"
           },
           "ownerName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "ownerEmail": {
             "type": "string",
-            "format": "email",
-            "nullable": true
+            "format": "email"
           },
           "ownerPhone": {
             "type": "string",
-            "format": "tel",
-            "nullable": true
+            "format": "tel"
           },
           "startDate": {
             "type": "string",
@@ -3808,8 +6513,7 @@
             "format": "int64"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -3828,8 +6532,7 @@
             "format": "int64"
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "suiteLevelId": {
             "type": "integer",
@@ -3923,6 +6626,12 @@
       "name": "Clients"
     },
     {
+      "name": "CreditAccounts"
+    },
+    {
+      "name": "CreditTransactions"
+    },
+    {
       "name": "Events"
     },
     {
@@ -3933,6 +6642,9 @@
     },
     {
       "name": "Hold"
+    },
+    {
+      "name": "LegalRepresentatives"
     },
     {
       "name": "Orders"

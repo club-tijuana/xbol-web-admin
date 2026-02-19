@@ -38,7 +38,8 @@
                                       @bind-Value:after="@(() => _dataGrid.ReloadServerData())" Placeholder="Buscar"
                                       Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
                                       AdornmentAriaLabel="Buscar" AdornmentIcon="@Icons.Material.Filled.Search"
-                                      IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1" />
+                                      IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1"
+                                      DebounceInterval="500" />
 
                         <!-- Level multi-select -->
                         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">

@@ -44,6 +44,7 @@
                        Margin="Margin.Dense"
                        Disabled="IsRenovation"
                        @bind-Value="_request.ClientContact.CountryPhoneISO"
+                       ShrinkLabel
                        Required>
 
                 @foreach (var item in CountryDialCodes.Map)
@@ -65,7 +66,8 @@
                           MaxLength="10"
                           OnBlur="OnPhoneBlur"
                           Disabled="IsRenovation"
-                          InputType="InputType.Telephone" />
+                          InputType="InputType.Telephone"
+                          ShrinkLabel />
         </MudItem>
         <MudItem xs="12" sm="12" md="6" lg="3">
             <MudTextField T="string"
@@ -73,7 +75,8 @@
                           @bind-Value="_request.ClientContact.Email"
                           Required="true" Margin="Margin.Dense"
                           Disabled="IsRenovation"
-                          Immediate="true" />
+                          Immediate="true"
+                          ShrinkLabel />
         </MudItem>
         <MudItem xs="12" sm="12" md="6" lg="3">
             <MudTextField T="string"
@@ -81,7 +84,8 @@
                           Label="Nombre del comprador " Variant="Variant.Outlined"
                           Required="true" Margin="Margin.Dense"
                           Disabled="IsRenovation"
-                          Immediate="true" />
+                          Immediate="true"
+                          ShrinkLabel />
         </MudItem>
         <MudItem xs="12" sm="12" md="6" lg="3">
             <MudTextField T="string"
@@ -89,7 +93,8 @@
                           Label="Apellido del comprador " Variant="Variant.Outlined"
                           Required="true" Margin="Margin.Dense"
                           Disabled="IsRenovation"
-                          Immediate="true" />
+                          Immediate="true"
+                          ShrinkLabel />
         </MudItem>
         <MudItem xs="6">
             @if (_loading)
@@ -184,28 +189,39 @@
             SeasonId = SeasonId
         };
 
-        var result = await SeasonPassService.GetClientSeasonEventInfo(clientFilter);
-
-        if (result is null)
-            return;
-
-        if (IsRenovation)
+        try
         {
-            if (result.AlreadyRenewed is true)
-            {
-                Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
-                Navigation.NavigateTo("/xolopass");
-            }
-            if (result.CanRenovate is false)
-            {
-                Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
-                Navigation.NavigateTo("/xolopass");
-            }
-        }
+            var result = await SeasonPassService.GetClientSeasonEventInfo(clientFilter);
 
-        _request.ClientContact.Name = result.ClientContact.Name;
-        _request.ClientContact.LastName = result.ClientContact.LastName;
-        _request.ClientContact.Email = result.ClientContact.Email;
+            if (result is null)
+            {
+                return;
+            }
+
+            if (IsRenovation)
+            {
+                if (result.AlreadyRenewed is true)
+                {
+                    Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
+                    Navigation.NavigateTo("/xolopass");
+                }
+                if (result.CanRenovate is false)
+                {
+                    Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
+                    Navigation.NavigateTo("/xolopass");
+                }
+            }
+
+            _request.ClientContact.Name = result.ClientContact.Name;
+            _request.ClientContact.LastName = result.ClientContact.LastName;
+            _request.ClientContact.Email = result.ClientContact.Email;
+
+        }
+        catch (Exception ex)
+        {
+            // TODO: need to handle api responses
+            Console.WriteLine($"Client not found. Error {ex.Message}");
+        }
     }
 
     private void GoToSeasonpassList()
@@ -290,7 +306,9 @@
     private async Task Submit()
     {
         if (_isSubmitting)
+        {
             return;
+        }
 
         _isSubmitting = true;
         _showValidationError = false;
@@ -310,18 +328,9 @@
                 return;
             }
 
-            var token = CartState.HoldToken;
-
-            if (string.IsNullOrEmpty(token))
-            {
-                Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
-                Console.WriteLine("Error: Could not retrieve hold token.");
-                return;
-            }
-
             _request.Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList();
             _request.EventKey = _seasonKey;
-            _request.HoldToken = token;
+            _request.HoldToken = CartState.HoldToken;
             _request.SeassonId = SeasonId;
 
             var result = await AdminApiClient.BookSeasonAsync(_request);

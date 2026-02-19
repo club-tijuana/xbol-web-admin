@@ -1,0 +1,102 @@
+@using XBOL.Models.ViewModels;
+
+<MudDialog Class="py-4 pr-4" ActionsClass="mt-2" TitleClass="pb-2">
+    <TitleContent>
+        <MudText Typo="Typo.h5">@Client.Name</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Razón social</MudText>
+                <MudText Typo="Typo.body2">@Client.CompanyName</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">RFC</MudText>
+                <MudText Typo="Typo.body2">@Client.CompanyTaxId</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Dirección</MudText>
+                <MudText Typo="Typo.body2">@Client.Address</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Correo electrónico</MudText>
+                <MudText Typo="Typo.body2">@Client.ContactEmail</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Teléfono</MudText>
+                <MudText Typo="Typo.body2">@Client.Phone</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.body2"><b>Crédito</b></MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Importe autorizado</MudText>
+                <MudText Typo="Typo.body2">@Credit.Credit</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Fecha de inicio</MudText>
+                <MudText Typo="Typo.body2">@Credit.StartDate</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Periocidad de pago</MudText>
+                <MudText Typo="Typo.body2">@Credit.PaymentTerm</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Aplica interés</MudText>
+                <MudText Typo="Typo.body2">@Credit.AppliesTaxes</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Plazo</MudText>
+                <MudText Typo="Typo.body2">@Credit.Term</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Número de pagos</MudText>
+                <MudText Typo="Typo.body2">@Credit.NumberOfInstallments</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.body2"><b>Representante legal</b></MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Representante Legal</MudText>
+                <MudText Typo="Typo.body2">@Representative.Name</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">Fecha de nacimiento</MudText>
+                <MudText Typo="Typo.body2">@Representative.DOB</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">RFC</MudText>
+                <MudText Typo="Typo.body2">@Representative.TaxId</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1" Color="Color.Primary">CURP</MudText>
+                <MudText Typo="Typo.body2">@Representative.SSN</MudText>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public ClientViewModel Client { get; set; } = default!;
+    [Parameter] public ClientCreditViewModel Credit { get; set; } = default!;
+    [Parameter] public LegalRepresentativeViewModel Representative { get; set; } = default!;
+
+    private decimal _amountPaid;
+    private DateTime? _paymentDate;
+    private string _paymentMethod = "";
+
+    @* TODO: Pull this data from DB *@
+    private Dictionary<string, string> _paymentMethods = new Dictionary<string, string>()
+    {
+        { "Transferencia", "Transferencia" },
+        { "Efectivo", "Efectivo" },
+        { "Tarjeta", "Tarjeta" },
+        { "Otro", "Otro" }
+    };
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+}

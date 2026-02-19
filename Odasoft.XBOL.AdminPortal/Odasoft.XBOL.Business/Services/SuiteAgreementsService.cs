@@ -25,13 +25,13 @@ namespace Odasoft.XBOL.Business.Services
             string ownerName,
             string ownerEmail,
             string ownerPhone,
-            DateTimeOffset? startDate,
-            DateTimeOffset? endDate,
+            DateTimeOffset startDate,
+            DateTimeOffset endDate,
             FileParameter agreementFile)
         {
             try
             {
-                await _adminClient.CreateSuiteAgreementAsync(suiteId, ownerName, ownerEmail, ownerPhone, startDate, endDate, agreementFile);
+                await _adminClient.CreateSuiteAgreementAsync(startDate, endDate, suiteId, ownerName, ownerEmail, ownerPhone, agreementFile);
                 return true;
             }
             catch (Exception ex)

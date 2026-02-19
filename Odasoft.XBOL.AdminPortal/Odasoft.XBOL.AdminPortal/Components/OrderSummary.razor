@@ -1,6 +1,7 @@
 @using Odasoft.XBOL.AdminPortal.Components.Pages
 @using Odasoft.XBOL.AdminPortal.States
 @using System.Globalization
+@using Odasoft.XBOL.Common.Constants
 
 @implements IDisposable
 @inject CartState CartState
@@ -23,14 +24,14 @@
             <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">TOTAL</MudText>
             @if (AllowRemoval && CartState.SelectedSeats.Any())
             {
-                <MudIconButton 
-                    Icon="@Icons.Material.Filled.ClearAll" 
-                    Size="Size.Small"                                   
+                <MudIconButton
+                    Icon="@Icons.Material.Filled.ClearAll"
+                    Size="Size.Small"
                     Style="color: var(--mud-palette-secondary-lighten);"
-                    aria-label="delete" 
+                    aria-label="delete"
                     OnClick="RemoveAllSeats" />
             }
-            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">@CartState.TotalPrice.ToString("C")</MudText>
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">@CartState.TotalPrice.ToString(FormatConstants.CURRENCY)</MudText>
         </MudStack>
     </MudPaper>
     <MudList T="string" Dense="true" Gutters="false">
@@ -40,10 +41,10 @@
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Price.ToString("C")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Price.ToString(FormatConstants.CURRENCY)</MudText>
                         @if (AllowRemoval)
                         {
-                        
+
                             <MudTooltip Text="@Localizer["Seats_RemoveSeat"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                Size="Size.Small"

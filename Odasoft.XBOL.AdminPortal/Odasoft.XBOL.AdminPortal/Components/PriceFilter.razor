@@ -2,9 +2,9 @@
 @using Odasoft.XBOL.Models.DTO
 
 <div class="d-flex mb-2">
-    <MudTextField @bind-Value="SelectedMinPrice" Class="mr-2" Label="Precio Mínimo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" />
+    <MudTextField @bind-Value="SelectedMinPrice" Class="mr-2" Label="Precio Mínimo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" ShrinkLabel Margin="Margin.Dense" />
 
-    <MudTextField @bind-Value="SelectedMaxPrice" Label="Precio Máximo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" />
+    <MudTextField @bind-Value="SelectedMaxPrice" Label="Precio Máximo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" ShrinkLabel Margin="Margin.Dense" />
 </div>
 
 @code {
@@ -14,7 +14,7 @@
     [Parameter]
     public IEnumerable<SeatsIoPriceDTO> Categories { get; set; } = [];
 
-    private int _interval = 100;
+    private int _interval = 500;
 
     private decimal _minPrice = 100;
     private decimal _maxPrice = 1000;
