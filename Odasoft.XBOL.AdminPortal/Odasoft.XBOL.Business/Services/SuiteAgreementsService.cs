@@ -20,23 +20,46 @@ namespace Odasoft.XBOL.Business.Services
             return await _adminClient.GetSuiteAgreementByIdAsync(agreementId);
         }
 
-        public async Task<bool> CreateSuiteAgreementAsync(
+        public async Task<long> CreateSuiteAgreementAsync(
             long suiteId,
             string ownerName,
             string ownerEmail,
             string ownerPhone,
             DateTimeOffset startDate,
-            DateTimeOffset endDate,
-            FileParameter agreementFile)
+            DateTimeOffset endDate)
         {
             try
             {
-                await _adminClient.CreateSuiteAgreementAsync(startDate, endDate, suiteId, ownerName, ownerEmail, ownerPhone, agreementFile);
-                return true;
+                var agreementId = await _adminClient.CreateSuiteAgreementAsync(new CreateSuiteAgreementRequest
+                {
+                    EndDate = endDate.ToUniversalTime(),
+                    OwnerEmail = ownerEmail,
+                    OwnerPhone = ownerPhone,
+                    OwnerName = ownerName,
+                    StartDate = startDate.ToUniversalTime(),
+                    SuiteId = suiteId
+                });
+
+                return agreementId;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error creating suite agreement: {ex.Message}");
+                return 0;
+            }
+        }
+
+        public async Task<bool> UploadSuiteAgreementFileAsync(long suiteAgreementId, FileParameter file)
+        {
+            try
+            {
+                var success = await _adminClient.UploadSuiteAgreementFileAsync(suiteAgreementId, file);
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error uploading suite agreementFile: {ex.Message}");
                 return false;
             }
         }

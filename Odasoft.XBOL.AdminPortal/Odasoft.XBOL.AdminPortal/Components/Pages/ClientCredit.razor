@@ -7,6 +7,7 @@
 @using Odasoft.XBOL.Common.Constants
 @using Odasoft.XBOL.Models.Parameters;
 @using Odasoft.XBOL.Models.ViewModels;
+@using System.Text.RegularExpressions
 
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
@@ -15,35 +16,29 @@
 @inject CreditTransactionsService _creditTransactionsService;
 @inject NavigationManager _navigationManager;
 @inject OrdersService _ordersService;
+@inject IStringLocalizer<ClientCredit> L
 
-<PageTitle>Detalle client</PageTitle>
+<PageTitle>Detalle cliente</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GotToClients())"
+                       Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+        <RightContent>
+            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => PayOnCreditAsync())"
+                       Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Abonar crédito</MudButton>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
 
 <LoadingContainer IsLoading="@(_isLoading)"
                   HasError="@_error"
                   ErrorMessage="@_errorMessage">
-
-    <MudCard Class="mt-2" Elevation="3">
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudGrid>
-                    <MudItem xs="6">
-                        <MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-2" Elevation="0">
-                            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GotToClients())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="6">
-                        <MudPaper Class="bg-default d-flex justify-end flex-grow-1 gap-2" Elevation="0">
-                            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => PayOnCreditAsync())" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Abonar crédito</MudButton>
-                        </MudPaper>
-                    </MudItem>
-                </MudGrid>
-            </CardHeaderContent>
-        </MudCardHeader>
-    </MudCard>
-
     <MudGrid>
-        <MudItem xs="6">
-            <MudCard Class="mt-2" Elevation="3" Style="height:260px">
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
                 <MudCardContent>
                     <MudGrid>
                         <MudItem xs="12">
@@ -79,8 +74,8 @@
             </MudCard>
         </MudItem>
 
-        <MudItem xs="6">
-            <MudCard Class="mt-2" Elevation="3" Style="height:260px">
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
                 <MudCardContent>
                     <MudGrid>
                         <MudItem xs="12">
@@ -99,7 +94,7 @@
 
                         <MudItem xs="6">
                             <MudText Typo="Typo.subtitle2" Color="Color.Primary">Periocidad de pago</MudText>
-                            <MudText Typo="Typo.body2">@_clientCredit.PaymentTerm</MudText>
+                            <MudText Typo="Typo.body2">@L[_clientCredit.PaymentTerm]</MudText>
                         </MudItem>
 
                         <MudItem xs="6">
@@ -114,16 +109,16 @@
 
                         <MudItem xs="6">
                             <MudText Typo="Typo.subtitle2" Color="Color.Primary">Estatus</MudText>
-                            <MudText Typo="Typo.body2">@_clientCredit.Status</MudText>
+                            <MudText Typo="Typo.body2">@L[_clientCredit.Status]</MudText>
                         </MudItem>
                     </MudGrid>
                 </MudCardContent>
             </MudCard>
         </MudItem>
 
-        <MudItem xs="6">
+        <MudItem xs="12" lg="6">
             <MudCard Class="mt-2" Elevation="3">
-                <MudDataGrid T="CreditOrderViewModel" @ref="_dataOrders" ServerData="OrdersServerReloadAsync" Style="height:750px;"
+                <MudDataGrid T="CreditOrderViewModel" @ref="_dataOrders" ServerData="OrdersServerReloadAsync" Height="675px"
                              Filterable="false" FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0">
                     <ToolBarContent>
                         <MudText Typo="Typo.h6">Compras</MudText>
@@ -166,21 +161,21 @@
                         </MudMenu>
                     </ToolBarContent>
                     <Columns>
-                        <PropertyColumn Property="x => x.Date" Title="Fecha" Sortable="true" Filterable="false" />
-                        <PropertyColumn Property="x => x.Event" Title="Evento" Sortable="true" Filterable="false" />
-                        <PropertyColumn Property="x => x.Tickets" Title="Boletos" Sortable="true" Filterable="false" />
-                        <PropertyColumn Property="x => x.Amount" Title="Importe" Sortable="true" Filterable="false" />
+                        <PropertyColumn Property="x => x.Date" Title="Fecha" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.Event" Title="Evento" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.Tickets" Title="Boletos" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.Amount" Title="Importe" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right" />
                     </Columns>
                     <PagerContent>
-                        <MudDataGridPager T="CreditOrderViewModel" />
+                        <CustomMudDataGridPager T="CreditOrderViewModel" />
                     </PagerContent>
                 </MudDataGrid>
             </MudCard>
         </MudItem>
 
-        <MudItem xs="6">
+        <MudItem xs="12" lg="6">
             <MudCard Class="mt-2" Elevation="3">
-                <MudDataGrid T="CreditPaymentsViewModel" @ref="_dataPayments" ServerData="PaymentsServerReloadAsync" Style="height:750px"
+                <MudDataGrid T="CreditPaymentsViewModel" @ref="_dataPayments" ServerData="PaymentsServerReloadAsync" Height="675px"
                              Filterable="false" FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0">
                     <ToolBarContent>
                         <MudText Typo="Typo.h6">Abonos</MudText>
@@ -200,7 +195,7 @@
                                         @foreach (var option in _paymentTypes)
                                         {
                                             <MudSelectItem T="PaymentType" Value="@option">
-                                                <MudText Typo="Typo.body2">@option.ToString()</MudText>
+                                                <MudText Typo="Typo.body2">@L[option.ToString()]</MudText>
                                             </MudSelectItem>
                                         }
                                     </MudSelect>
@@ -223,11 +218,11 @@
                         </MudMenu>
                     </ToolBarContent>
                     <Columns>
-                        <PropertyColumn Property="x => x.Date" Title="Fecha" Sortable="true" Filterable="false" />
-                        <PropertyColumn Property="x => x.PaymentId" Title="Id" Sortable="true" Filterable="false" />
-                        <PropertyColumn Property="x => x.Amount" Title="Monto" Sortable="true" Filterable="false" />
-                        <PropertyColumn Property="x => x.PaymentMethod" Title="Método de pago" Sortable="true" Filterable="false" />
-                        <PropertyColumn Property="x => x.ReceivedBy" Title="Recibido por" Sortable="true" Filterable="false" />
+                        <PropertyColumn Property="x => x.Date" Title="Fecha" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.PaymentId" Title="Id" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.Amount" Title="Monto" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right" />
+                        <PropertyColumn Property="x => x.PaymentMethod" Title="Método de pago" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.ReceivedBy" Title="Recibido por" Sortable="false" Filterable="false" />
                         <TemplateColumn Filterable="false" Sortable="false">
                             <CellTemplate>
                                 <MudStack Row>
@@ -244,16 +239,15 @@
                             </CellTemplate>
                         </TemplateColumn>
                     </Columns>
-
                     <PagerContent>
-                        <MudDataGridPager T="CreditPaymentsViewModel" />
+                        <CustomMudDataGridPager T="CreditPaymentsViewModel" />
                     </PagerContent>
                 </MudDataGrid>
             </MudCard>
         </MudItem>
 
         <MudItem xs="12">
-            <MudCard Class="mt-2" Elevation="3">
+            <MudCard Class="mt-2 pb-4" Elevation="3">
                 <MudCardContent>
                     <MudGrid>
                         <MudItem xs="12">
@@ -428,8 +422,8 @@
 
                 if (response)
                 {
-                    _snackbar.Add("Abono guardado exitosamente.", Severity.Warning);
-                    StateHasChanged();
+                    _snackbar.Add("Abono guardado exitosamente.", Severity.Success);
+                    await LoadClientCreditDataAsync();
                     await _dataPayments.ReloadServerData();
                     return;
                 }
@@ -446,8 +440,8 @@
 
     private async Task UpdateCreditTransactionAsync(CreditPaymentsViewModel model)
     {
-
-        decimal amountPaid = decimal.Parse(model.Amount);
+        string cleanAmount = Regex.Replace(model.Amount, @"[$,]", "");
+        decimal amountPaid = decimal.Parse(cleanAmount);
         DateTime? paymentDate = DateTime.Parse(model.Date);
         PaymentType? paymentType = model.PaymentMethod switch
         {
@@ -461,7 +455,7 @@
         var parameters = new DialogParameters<CreditTransactionDialog>();
         parameters.Add(p => p.AmountPaid, amountPaid);
         parameters.Add(p => p.PaymentDate, paymentDate);
-        parameters.Add(p => p.PaymentMethod, paymentType);
+        parameters.Add(p => p.PaymentMethod, paymentType is null ? PaymentType.Cash : paymentType.Value);
 
         var dialog = await _dialogService.ShowAsync<CreditTransactionDialog>("", parameters, _dialogOptions);
         var result = await dialog.Result;
@@ -494,8 +488,8 @@
 
                 if (response)
                 {
-                    _snackbar.Add("Abono actualizado exitosamente.", Severity.Warning);
-                    StateHasChanged();
+                    _snackbar.Add("Abono actualizado exitosamente.", Severity.Success);
+                    await LoadClientCreditDataAsync();
                     await _dataPayments.ReloadServerData();
                     return;
                 }
@@ -525,7 +519,7 @@
                 if (result)
                 {
                     _snackbar.Add("Abono eliminado exitosamente.", Severity.Success);
-                    StateHasChanged();
+                    await LoadClientCreditDataAsync();
                     await _dataPayments.ReloadServerData();
                 }
                 else
@@ -612,10 +606,12 @@
                 {
                     Amount = credit.Amount?.ToString(FormatConstants.CURRENCY_AMOUNT) ?? "0.00",
                     Date = credit.PaymentDate?.ToString(FormatConstants.DATE_ONLY) ?? "-",
-                    PaymentId = credit.ReferenceId,
+                    PaymentId = credit.ReferenceId ?? "-",
                     Id = credit.Id ?? 0,
-                    PaymentMethod = credit.PaymentType?.ToString() ?? "-",
-                    ReceivedBy = credit.ReceivedBy
+                    PaymentMethod = credit.PaymentType.HasValue
+                                    ? L[credit.PaymentType.Value.ToString()]
+                                    : "-",
+                    ReceivedBy = credit.ReceivedBy ?? "-"
                 })
             };
 

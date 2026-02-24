@@ -16,43 +16,49 @@
 
 <PageTitle>@_eventName</PageTitle>
 
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToEvents())"
+                        Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
 <LoadingContainer 
     IsLoading="_loading" 
     HasError="_error"
     ErrorMessage="Error al cargar el evento"
     OnRetry="LoadEventData">
-    <MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-4" Elevation="0">
-        <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToEvents())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
-    </MudPaper>
     <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
-    <MudCard Class="pa-6" Elevation="3">
-    @if (_currentStep == 1)
-    {
-        <MudGrid Justify="Justify.SpaceBetween">
-            <MudItem xs="12" Class="d-flex justify-space-between">
-                <MudText Typo="Typo.h5">Asientos</MudText>
-                <MudButton Variant="Variant.Filled"
-                            DropShadow="false"
-                            EndIcon="@Icons.Material.Filled.NavigateNext"
-                            Color="Color.Primary"
-                            Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
-                            @onclick="NextStep">
-                        @(_holdProcessing? Localizer["Seats_HoldProcessing"] : "MÉTODO DE PAGO")
-                </MudButton>
-            </MudItem>
-            <MudItem xs="7">
-                <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@_eventKey" EventId="Id" Prices="_eventInfo?.Prices" SelectedSeats="@CartState.SelectedSeatsKeys" />
-            </MudItem>
-            <MudItem xs="4" Class="mt-8">
-                <OrderSummary Chart="_seatingChart" />
-            </MudItem>
-        </MudGrid>
-    }
-    else
-    {
-        <EventCheckout OnReturn="PreviousStep" EventKey="@_eventKey"></EventCheckout>
-    }
-    </MudCard>
+    <MudPaper Class="pa-6" Elevation="3">   
+            @if (_currentStep == 1)
+            {
+                <MudGrid Justify="Justify.SpaceBetween">
+                    <MudItem xs="12" Class="d-flex justify-space-between">
+                        <MudText Typo="Typo.h5">Asientos</MudText>
+                        <MudButton Variant="Variant.Filled"
+                                    DropShadow="false"
+                                    EndIcon="@Icons.Material.Filled.NavigateNext"
+                                    Color="Color.Primary"
+                                    Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
+                                    @onclick="NextStep">
+                                @(_holdProcessing? Localizer["Seats_HoldProcessing"] : "MÉTODO DE PAGO")
+                        </MudButton>
+                    </MudItem>
+                    <MudItem xs="7">
+                        <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@_eventKey" EventId="Id" Prices="_eventInfo?.Prices" SelectedSeats="@CartState.SelectedSeatsKeys" />
+                    </MudItem>
+                    <MudItem xs="4" Class="mt-8">
+                        <OrderSummary Chart="_seatingChart" />
+                    </MudItem>
+                </MudGrid>
+            }
+            else
+            {
+                <EventCheckout OnReturn="PreviousStep" EventKey="@_eventKey"></EventCheckout>
+            }
+    </MudPaper>
 </LoadingContainer>
 
 @code {
@@ -75,6 +81,7 @@
     protected override async Task OnInitializedAsync()
     {
         CartState.OnChange += StateHasChanged;
+        CartState.ClearCart();
         await LoadEventData();
     }
 

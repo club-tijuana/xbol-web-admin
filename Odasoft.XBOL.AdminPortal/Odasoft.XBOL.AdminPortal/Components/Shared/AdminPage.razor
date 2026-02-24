@@ -1,0 +1,11 @@
+<header Class="mt-2">
+    <SectionOutlet SectionName="nav-header" />
+</header>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-2">
+    @ChildContent
+</MudContainer>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

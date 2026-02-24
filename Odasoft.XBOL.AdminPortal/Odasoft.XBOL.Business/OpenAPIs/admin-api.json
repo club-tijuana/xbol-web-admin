@@ -3227,83 +3227,70 @@
         ],
         "summary": "Creates a new Suite Agreement using the specified request data.",
         "operationId": "CreateSuiteAgreementAsync",
-        "parameters": [
-          {
-            "name": "StartDate",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "EndDate",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          }
-        ],
         "requestBody": {
+          "description": "The details of the Suite Agreement to create. Cannot be null.",
           "content": {
-            "multipart/form-data": {
+            "application/json-patch+json": {
               "schema": {
-                "required": [
-                  "AgreementFile",
-                  "OwnerEmail",
-                  "OwnerName",
-                  "OwnerPhone",
-                  "SuiteId"
-                ],
-                "type": "object",
-                "properties": {
-                  "SuiteId": {
-                    "type": "integer",
-                    "format": "int64"
-                  },
-                  "OwnerName": {
-                    "type": "string"
-                  },
-                  "OwnerEmail": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "OwnerPhone": {
-                    "type": "string",
-                    "format": "tel"
-                  },
-                  "AgreementFile": {
-                    "type": "string",
-                    "format": "binary"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteAgreementRequest"
                   }
-                }
-              },
-              "encoding": {
-                "SuiteId": {
-                  "style": "form"
-                },
-                "OwnerName": {
-                  "style": "form"
-                },
-                "OwnerEmail": {
-                  "style": "form"
-                },
-                "OwnerPhone": {
-                  "style": "form"
-                },
-                "AgreementFile": {
-                  "style": "form"
-                }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteAgreementRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteAgreementRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateSuiteAgreementRequest"
+                  }
+                ]
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
           }
         }
       },
@@ -3424,6 +3411,103 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/suite-agreements/upload": {
+      "post": {
+        "tags": [
+          "SuiteAgreements"
+        ],
+        "operationId": "UploadSuiteAgreementFileAsync",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "suiteAgreementId": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "agreementFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "suiteAgreementId": {
+                  "style": "form"
+                },
+                "agreementFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -4869,6 +4953,43 @@
         },
         "additionalProperties": false
       },
+      "CreateSuiteAgreementRequest": {
+        "required": [
+          "endDate",
+          "ownerEmail",
+          "ownerName",
+          "ownerPhone",
+          "startDate",
+          "suiteId"
+        ],
+        "type": "object",
+        "properties": {
+          "suiteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ownerName": {
+            "type": "string"
+          },
+          "ownerEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "ownerPhone": {
+            "type": "string",
+            "format": "tel"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateSuiteLevelRequest": {
         "required": [
           "name",
@@ -6143,7 +6264,8 @@
           "endDate",
           "id",
           "startDate",
-          "suiteId"
+          "suiteId",
+          "suiteLevelId"
         ],
         "type": "object",
         "properties": {
@@ -6157,6 +6279,10 @@
           },
           "suiteName": {
             "type": "string"
+          },
+          "suiteLevelId": {
+            "type": "integer",
+            "format": "int64"
           },
           "suiteLevel": {
             "type": "string"

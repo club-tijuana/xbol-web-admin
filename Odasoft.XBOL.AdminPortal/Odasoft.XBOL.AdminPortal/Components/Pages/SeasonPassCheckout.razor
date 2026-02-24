@@ -21,11 +21,18 @@
 @inject NavigationManager Navigation
 
 @inject NavigationManager NavigationManager
-<MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-4" Elevation="0">
-    <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSeasonpassList())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
-</MudPaper>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSeasonpassList())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
 <ImageHeroBanner Banner="_seasonBanner"></ImageHeroBanner>
-<MudCard Class="mt-4 mb-6 pa-5" Elevation="3">
+
+<MudCard Elevation="3" Class="pa-6">
     <MudGrid Class="align-center pb-3">
         <MudItem xs="12" sm="6" lg="8">
             <MudText Typo="Typo.h5">@L["SubtitleSeats"]</MudText>
@@ -330,7 +337,7 @@
 
             _request.Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList();
             _request.EventKey = _seasonKey;
-            _request.HoldToken = CartState.HoldToken;
+            _request.HoldToken = CartState.HoldToken ?? "";
             _request.SeassonId = SeasonId;
 
             var result = await AdminApiClient.BookSeasonAsync(_request);

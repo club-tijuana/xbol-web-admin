@@ -1,5 +1,8 @@
+@using Odasoft.XBOL.AdminPortal.Resources
 @using Odasoft.XBOL.Business
 @using XBOL.Models.ViewModels;
+
+@inject IStringLocalizer<CreditTransactionDialog> L
 
 <MudDialog Class="py-4 pr-4" ActionsClass="mt-2" TitleClass="pb-2" Style="max-width: 400px;">
     <TitleContent>
@@ -16,7 +19,7 @@
             @foreach (var method in _paymentMethods)
             {
                 <MudSelectItem T="PaymentType" Value="@method">
-                    <MudText Typo="Typo.body2">@method.ToString()</MudText>
+                    <MudText Typo="Typo.body2">@L[method.ToString()]</MudText>
                 </MudSelectItem>
             }
         </MudSelect>

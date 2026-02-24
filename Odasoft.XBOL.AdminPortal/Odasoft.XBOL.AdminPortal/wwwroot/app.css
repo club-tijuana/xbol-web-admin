@@ -90,24 +90,26 @@ h1:focus {
 
 /* Snackbar styling */
 .mud-snackbar-content-message {
-  color: var(--mud-palette-secondary);
-  font-family: var(--mud-typography-body2-family);
-  font-size: var(--mud-typography-caption-size);
-  line-height: var(--mud-typography-body2-lineheight);
-  letter-spacing: var(--mud-typography-body2-letterspacing);
-  text-transform: var(--mud-typography-body2-text-transform);
+    color: var(--mud-palette-secondary);
+    font-family: var(--mud-typography-body2-family);
+    font-size: var(--mud-typography-caption-size);
+    line-height: var(--mud-typography-body2-lineheight);
+    letter-spacing: var(--mud-typography-body2-letterspacing);
+    text-transform: var(--mud-typography-body2-text-transform);
 }
 
 .mud-snackbar-content-action {
-  color: var(--mud-palette-secondary);
+    color: var(--mud-palette-secondary);
 }
 
 .bg-secondary-darken {
     background-color: var(--mud-palette-secondary-darken) !important;
 }
+
 .bg-default {
     background-color: var(--mud-palette-background);
 }
+
 .bg-primary-darken {
     background-color: var(--mud-palette-primary-darken) !important;
 }
@@ -119,10 +121,10 @@ h1:focus {
 .text-secondary-darken {
     color: var(--mud-palette-secondary-darken) !important;
 }
+
 .bg-secondary-lighten {
     background-color: var(--mud-palette-secondary-lighten) !important;
 }
-
 
 .border-secondary-lighten {
     border-color: var(--mud-palette-secondary-lighten) !important;
@@ -138,4 +140,22 @@ h1:focus {
 
 .login-password-input .mud-input-adornment button {
     color: var(--shadow-grey);
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+    .text-right > * {
+        justify-content: flex-end !important;
+    }
+
+.mud-table-pagination-toolbar {
+    container-type: inline-size;
+}
+
+@container (max-width: 500px) {
+    .mud-table-pagination-caption:first-of-type {
+        display: none !important;
+    }
 }

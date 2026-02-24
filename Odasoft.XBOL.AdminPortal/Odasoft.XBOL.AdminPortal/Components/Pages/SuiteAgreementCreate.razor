@@ -13,18 +13,20 @@
 
 <PageTitle>Nuevo - Contrato Palco</PageTitle>
 
-<MudCard Class="mt-4 mb-6" Elevation="3">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-2" Elevation="0">
-                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteAgreementsAsync())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
-            </MudPaper>
-        </CardHeaderContent>
-    </MudCardHeader>
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteAgreementsAsync())"
+                    Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
     <MudCardContent>
         <MudGrid Class="mud-width-full">
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudSelect Class="d-flex" Variant="Variant.Outlined" Value="@_suiteLevelId" Label="Nivel" T="long" ValueChanged="@SuiteLevelChangedAsync" Required>
+                <MudSelect Class="d-flex" Variant="Variant.Outlined" Value="@_suiteLevelId" Label="Nivel" T="long" ValueChanged="@SuiteLevelChangedAsync" Margin="Margin.Dense" ShrinkLabel Required>
                     @foreach (var level in _suiteLevels)
                     {
                         <MudSelectItem Value="@level.Id">@level.Name</MudSelectItem>
@@ -33,7 +35,7 @@
             </MudItem>
 
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudSelect Class="d-flex" Variant="Variant.Outlined" @bind-Value="_suiteId" Label="Palco" Required>
+                <MudSelect Class="d-flex" Variant="Variant.Outlined" @bind-Value="_suiteId" Label="Palco" Margin="Margin.Dense" ShrinkLabel Required>
                     @foreach (var level in _suites)
                     {
                         <MudSelectItem Value="@level.Id">@level.Name</MudSelectItem>
@@ -42,22 +44,22 @@
             </MudItem>
 
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_startDate" Label="Inicio del acuerdo" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Required />
+                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_startDate" Label="Inicio del acuerdo" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
 
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_endDate" Label="Vigencia" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Required />
+                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_endDate" Label="Vigencia" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
         </MudGrid>
         <MudGrid Class="mud-width-full">
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerName" Label="Propietario" Required />
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerName" Label="Propietario" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerEmail" Label="Correo electrónico" InputType="InputType.Email" Required />
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerEmail" Label="Correo electrónico" InputType="InputType.Email" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerPhone" Label="Teléfono" InputType="InputType.Telephone" Required />
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerPhone" Label="Teléfono" InputType="InputType.Telephone" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
         </MudGrid>
         <MudGrid Class="mud-width-full">
@@ -164,19 +166,29 @@
 
             using var stream = _agreementFile!.OpenReadStream(_maxFileSize);
 
-            var success = await _suiteAgreementsService.CreateSuiteAgreementAsync(
+            var agreementId = await _suiteAgreementsService.CreateSuiteAgreementAsync(
                                 _suiteId,
                                 _ownerName,
                                 _ownerEmail,
                                 _ownerPhone,
                                 _startDate.HasValue ? _startDate.Value.ToUniversalTime() : default,
-                                _endDate.HasValue ? _endDate.Value.ToUniversalTime() : default,
+                                _endDate.HasValue ? _endDate.Value.ToUniversalTime() : default);
+
+            if (agreementId > 0)
+            {
+                var success = await _suiteAgreementsService.UploadSuiteAgreementFileAsync(agreementId,
                                 new FileParameter(stream, _agreementFile.Name, _agreementFile.ContentType));
 
-            if (success)
-            {
-                _snackbar.Add("Contrato de palco creado exitosamente.", Severity.Success);
-                _navigationManager.NavigateTo(SitePages.SUITE_AGREEMENTS);
+                if (success)
+                {
+
+                    _snackbar.Add("Contrato de palco creado exitosamente.", Severity.Success);
+                    _navigationManager.NavigateTo(SitePages.SUITE_AGREEMENTS);
+                }
+                else
+                {
+                    _snackbar.Add("Error al subir el contrato del palco", Severity.Error);
+                }
             }
             else
             {

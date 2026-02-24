@@ -1,0 +1,24 @@
+<MudContainer Elevation="0" MaxWidth="MaxWidth.ExtraLarge" Class="@GetClass()">
+    @if (LeftContent is not null)
+    {
+        @LeftContent
+    }
+    @if (RightContent is not null)
+    {
+        @RightContent
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public RenderFragment? LeftContent { get; set; }
+    [Parameter] public RenderFragment? RightContent { get; set; }
+
+    private string GetClass()
+    {
+        if (LeftContent is not null && RightContent is not null)
+            return "d-flex justify-space-between align-center mb-4";
+        if (RightContent is not null)
+            return "d-flex justify-end align-center mb-4";
+        return "d-flex justify-start align-center mb-4";
+    }
+}

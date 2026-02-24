@@ -1,4 +1,4 @@
-@page "/suite-agreement/{_suiteAgreementId:long}/create"
+@page "/suite-agreements/{_suiteAgreementId:long}/update"
 
 @using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.Business;
@@ -13,18 +13,20 @@
 
 <PageTitle>Nuevo - Contrato Palco</PageTitle>
 
-<MudCard Class="mt-4 mb-6" Elevation="3">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-2" Elevation="0">
-                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteAgreementsAsync())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
-            </MudPaper>
-        </CardHeaderContent>
-    </MudCardHeader>
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteAgreementsAsync())"
+                    Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
     <MudCardContent>
         <MudGrid Class="mud-width-full">
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudSelect Class="d-flex" Variant="Variant.Outlined" Value="@_suiteLevelId" Label="Nivel" T="long" ValueChanged="@SuiteLevelChangedAsync" Required>
+                <MudSelect Class="d-flex" Variant="Variant.Outlined" Value="@_suiteLevelId" Label="Nivel" T="long" ValueChanged="@SuiteLevelChangedAsync" Margin="Margin.Dense" ShrinkLabel Required>
                     @foreach (var level in _suiteLevels)
                     {
                         <MudSelectItem Value="@level.Id">@level.Name</MudSelectItem>
@@ -33,7 +35,7 @@
             </MudItem>
 
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudSelect Class="d-flex" Variant="Variant.Outlined" @bind-Value="_suiteId" Label="Palco" Required>
+                <MudSelect Class="d-flex" Variant="Variant.Outlined" @bind-Value="_suiteId" Label="Palco" Margin="Margin.Dense" ShrinkLabel Required>
                     @foreach (var level in _suites)
                     {
                         <MudSelectItem Value="@level.Id">@level.Name</MudSelectItem>
@@ -42,22 +44,22 @@
             </MudItem>
 
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_startDate" Label="Inicio" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Required />
+                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_startDate" Label="Inicio" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
 
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_endDate" Label="Inicio" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Required />
+                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_endDate" Label="Vigencia" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
         </MudGrid>
         <MudGrid Class="mud-width-full">
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerName" Label="Propietario" Required />
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerName" Label="Propietario" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerEmail" Label="Correo electrónico" InputType="InputType.Email" Required />
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerEmail" Label="Correo electrónico" InputType="InputType.Email" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerPhone" Label="Teléfono" InputType="InputType.Telephone" Required />
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerPhone" Label="Teléfono" InputType="InputType.Telephone" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
         </MudGrid>
     </MudCardContent>
@@ -88,14 +90,23 @@
     {
         await base.OnInitializedAsync();
 
+        SuiteAgreementResult agreement = await _suiteAgreementsService.GetSuiteAgreementByIdAsync(_suiteAgreementId);
+
         _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
-        _suiteLevelId = _suiteLevels.Any() ? _suiteLevels.First().Id : default;
+        _suiteLevelId = agreement.SuiteLevelId;
 
         if (_suiteLevelId > 0)
         {
             _suites = await _catalogsService.GetSuitesBySuiteLevelIdAsync(_suiteLevelId);
-            _suiteId = _suites.Any() ? _suites.First().Id : default;
+            _suiteId = agreement.SuiteId;
         }
+
+        _startDate = agreement.StartDate.Date;
+        _endDate = agreement.EndDate.Date;
+
+        _ownerName = agreement.OwnerName ?? "";
+        _ownerEmail = agreement.OwnerEmail ?? "";
+        _ownerPhone = agreement.OwnerPhone ?? "";
 
         StateHasChanged();
     }

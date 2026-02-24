@@ -11,19 +11,25 @@
 @inject ClientsService _clientService;
 @inject NavigationManager _navigationManager;
 @inject LoadingState LoadingState
+@inject IStringLocalizer<ClientsCreate> L
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
 
 <PageTitle>Nueva Empresa</PageTitle>
 
-<MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-4" Elevation="0">
-    <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToClientsListAsync())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
-</MudPaper>
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToClientsListAsync())"
+                        Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
 
 <LoadingContainer IsLoading="@_isLoading">
-<EditForm FormName="ClientCreate" Model="@model" OnValidSubmit="OnValidSubmit">
+<MudPaper Elevation="3" Class="pa-6">
+    <EditForm FormName="ClientCreate" Model="@model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator/>
-    <MudPaper Class="mt-4 pa-6" Elevation="3">
         <MudGrid Spacing="8">
             <MudItem xs="12">
                 <MudStack Spacing="0">
@@ -63,14 +69,13 @@
             <MudItem xs="12" md="6" lg="3">
                 <MudSelect T="ClientType?" Label="Tipo de persona"
                            Margin="Margin.Dense" Variant="Variant.Outlined"
-                           @bind-SelectedValue="model.PersonTypeId"
+                           @bind-Value="model.PersonTypeId"
                            For="@(() => model.PersonTypeId)"
-                           ToStringFunc="GetClientTypeLabel"
                            Clearable>
                     @foreach (var clientType in _clientTypes)
                     {
-                        <MudSelectItem T="ClientType?" Value="@((ClientType)@clientType.Value)">
-                            <MudText Typo="Typo.body2">@clientType.Label</MudText>
+                        <MudSelectItem T="ClientType?" Value="@clientType">
+                                <MudText>@L[clientType.ToString()]</MudText>
                         </MudSelectItem>
                     }
                 </MudSelect>
@@ -271,15 +276,14 @@
                     Label="Periodicidad de pago"
                     Margin="Margin.Dense" 
                     Variant="Variant.Outlined"
-                    @bind-SelectedValue="model.Credit.PaymentCycleTypeId"
+                    @bind-Value="model.Credit.PaymentCycleTypeId"
                     For="@(() => model.Credit.PaymentCycleTypeId)"
-                    ToStringFunc="GetPaymentFrequencyLabel"
                     Disabled="!CreditEnabled"
                     Clearable>
                     @foreach (var paymentFrequency in _paymentFrequencies)
                     {
-                        <MudSelectItem T="PaymentFrequency?" Value="@((PaymentFrequency)@paymentFrequency.Value)">
-                            <MudText Typo="Typo.body2">@paymentFrequency.Label</MudText>
+                        <MudSelectItem T="PaymentFrequency?" Value="@paymentFrequency">
+                            <MudText>@L[paymentFrequency.ToString()]</MudText>
                         </MudSelectItem>
                     }
                 </MudSelect>
@@ -328,8 +332,8 @@
                 </MudPaper>
             </MudItem>
         </MudGrid>
-    </MudPaper>
-</EditForm>
+    </EditForm>
+</MudPaper>
 </LoadingContainer>
 
 @code {
@@ -369,8 +373,8 @@
     private DateTime? LegalRepDOB { get; set; }
 
 
-    private List<EnumItemDto> _clientTypes = [];
-    private List<EnumItemDto> _paymentFrequencies = [];
+    private List<ClientType> _clientTypes = Enum.GetValues<ClientType>().ToList();
+    private List<PaymentFrequency> _paymentFrequencies = Enum.GetValues<PaymentFrequency>().ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -379,20 +383,7 @@
         model.LegalRep = new();
         model.Credit = new();
 
-        try
-        {
-            _clientTypes = await _clientService.GetClientTypeOptionsAsync();
-            _paymentFrequencies = await _clientService.GetPaymentFrequencyOptionsAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading options: {ex.Message}");
-            _snackbar.Add("Error al cargar las opciones.", Severity.Error);
-        }
-        finally
-        {
-            _isLoading = false;
-        }
+        _isLoading = false;
     }
 
     private async Task GoToClientsListAsync()
@@ -446,23 +437,5 @@
             _isSubmitting = false;
             LoadingState.Hide();
         }
-    }
-
-    private string? GetClientTypeLabel(ClientType? value)
-    {
-        if(value is null)
-        {
-            return null;
-        }
-        return _clientTypes.FirstOrDefault(x => x.Value == (int)value)?.Label ?? value.ToString()!;
-    }
-
-    private string? GetPaymentFrequencyLabel(PaymentFrequency? value)
-    {
-        if (value is null)
-        {
-            return null;
-        }
-        return _paymentFrequencies.FirstOrDefault(x => x.Value == (int)value)?.Label ?? value.ToString()!;
     }
 }
