@@ -21,23 +21,21 @@ async function ensureSeatsioLoaded() {
 export async function renderChart(containerId, config, dotNetHelper) {
   await ensureSeatsioLoaded();
 
-  const chart = new seatsio.SeatingChart({
+  const chart = new seatsio.EventManager({
     divId: containerId,
-    workspaceKey: config.workspaceKey,
+    secretKey: config.secretKey,
+    mode: config.mode,
     event: config.event,
     session: config.session,
-    pricing: config.pricing,
+    holdToken: config.holdToken,
+    pricing: {
+      prices: config.pricing,
+      priceFormatter: price => '$' + price
+    },
     channels: config.channels,
     selectedObjects: config.selectedObjects,
-    // TODO: Add this config to component parameters
-    multiSelectEnabled: true,
-    categoryFilter: {
-      enabled: true,
-      multiSelect: true,
-      zoomOnSelect: true
-    },
-    language: 'es',
-    priceFormatter: price => '$' + price,
+    language: config.language,
+    categoryFilter: config.categoryFilter,
     onObjectSelected: obj => {
       dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, obj.pricing?.price ?? 0, obj.category?.label);
     },
@@ -72,6 +70,10 @@ export function getHoldToken(chart) {
   return chart?.holdToken ?? null;
 }
 
+export function getSelectedSeats(chart) {
+  return chart?.selectedObjects ?? [];
+}
+
 export function destroyChart(chart) {
   chart?.destroy();
 }
@@ -79,6 +81,10 @@ export function destroyChart(chart) {
 export function focusSeat(chart, seatId) {
   chart?.zoomToSelectedObjects([seatId]);
   chart?.pulse([seatId]);
+}
+
+export function focusFilteredCategories(chart) {
+  chart?.zoomToFilteredCategories();
 }
 
 export function unfocusSeat(chart, seatId) {
@@ -90,6 +96,35 @@ export function deselectSeat(chart, seatId) {
   chart?.deselectObjects([seatId]);
 }
 
+export function deselectSeats(chart, seats) {
+  chart?.unpulse(seats);
+  chart?.deselectObjects(seats);
+}
+
+export function clearSelection(chart) {
+  chart?.clearSelection();
+}
+
+export async function trySelectObjects(chart, seats, dotNetHelper) {
+  try {
+    await chart?.trySelectObjects(seats);
+  } catch (e) {
+    dotNetHelper.invokeMethodAsync('NotifyError', "No se pudo seleccionar uno o mas asientos.");
+  }  
+}
+
+export async function doSelectObjects(chart, seats, dotNetHelper) {
+  try {
+    await chart?.doSelectObjects(seats);
+  } catch (e) {
+    dotNetHelper.invokeMethodAsync('NotifyError', "No se pudo seleccionar uno o mas asientos."); 
+  }
+}
+
 export function clearSession() {
   sessionStorage.removeItem('seatsio');
+}
+
+export function changeConfig(chart, config) {
+  chart?.changeConfig(config);
 }

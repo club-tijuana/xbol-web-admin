@@ -1,0 +1,437 @@
+@page "/suites/agreements"
+
+@using Microsoft.Net.Http.Headers;
+@using Odasoft.XBOL.AdminPortal.Extensions
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Models.ViewModels
+
+@inject IDialogService _dialogService;
+@inject IJSRuntime JS;
+@inject ISnackbar _snackbar;
+@inject CatalogsService _catalogsService;
+@inject NavigationManager _navigationManager;
+@inject SuiteAgreementsService _suiteAgreementsService;
+
+<PageTitle>Contratos de palcos</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <RightContent>
+            <MudStack Row="true" Spacing="4">
+                <MudButton StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => DownloadSuiteAgreementFilesAsync())"
+                           Disabled="@_disableMultipleDownloads" Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">Descargar Seleccionados</MudButton>
+                <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateSuiteAgreement())"
+                           Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nuevo Contrato</MudButton>
+            </MudStack>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
+    <MudCardContent Class="pa-0">
+        <MudDataGrid T="SuiteAgreementViewModel" MultiSelection="true" Items="@_suiteAgreements" Loading="_loading" Filterable="false"
+                     FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0" SelectedItemsChanged="@SelectedItemsChanged" QuickFilter="@_quickFilter">
+            <ToolBarContent>
+                <MudGrid Class="align-center">
+                    <MudItem xs="12" sm="6" lg="8">
+                        <MudText Class="pl-lg-4" Typo="Typo.h5">Contratos de palcos</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" lg="4">
+                        <MudStack Row AlignItems="AlignItems.Center">
+                            <!-- Search field -->
+                            <MudTextField @bind-Value="_searchTerm" Placeholder="Buscar"
+                                          Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
+                                          AdornmentAriaLabel="Buscar" AdornmentIcon="@Icons.Material.Filled.Search"
+                                          IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1"
+                                          DebounceInterval="500" />
+
+                            <!-- Level multi-select -->
+                            <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                                <ActivatorContent>
+                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" />
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudStack Spacing="3" Class="pa-4" Style="width:375px">
+                                        <MudSelect T="string" Label="Nivel" MultiSelection="true"
+                                                   Margin="Margin.Dense" Variant="Variant.Outlined"
+                                                   ShrinkLabel @bind-SelectedValues="_selectedSuiteLevels">
+                                            @foreach (var level in _suiteLevels)
+                                            {
+                                                <MudSelectItem T="string" Value="@level.Name">
+                                                    <MudText Typo="Typo.body2">@level.Name</MudText>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+
+                                        <MudSelect T="string" Label="Palco" MultiSelection="true"
+                                                   Margin="Margin.Dense" @bind-SelectedValues="_selectedSuites"
+                                                   Variant="Variant.Outlined" ShrinkLabel>
+                                            @foreach (var level in _suites)
+                                            {
+                                                <MudSelectItem T="string" Value="@level.Name">
+                                                    <MudText Typo="Typo.body2">@level.Name</MudText>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+
+                                        <MudDatePicker @bind-Date="_startDate" Label="Fecha inicio acuerdo"
+                                                       Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel
+                                                       PlaceholderStart="DD/MM/AAAA" PlaceholderEnd="DD/MM/AAAA" />
+
+                                        <MudDatePicker @bind-Date="_endDate" Label="Vigencia"
+                                                       Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel
+                                                       PlaceholderStart="DD/MM/AAAA" PlaceholderEnd="DD/MM/AAAA" />
+
+                                        <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
+                                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
+                                                       Class="mud-no-activator" OnClick="ClearFiltersAsync">
+                                                Limpiar
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
+                                                       StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyFiltersAsync">
+                                                Aplicar
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudStack>
+                                </ChildContent>
+                            </MudMenu>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </ToolBarContent>
+            <Columns>
+                <SelectColumn T="SuiteAgreementViewModel" />
+                <PropertyColumn Title="Nivel" Property="x => x.SuiteLevel" Sortable="true" Filterable="false" InitialDirection="SortDirection.Ascending">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.SuiteLevel</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="Palco" Property="x => x.SuiteName" Sortable="true" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.SuiteName</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="Palcohabiente" Property="x => x.OwnerName" Sortable="true" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.OwnerName</MudText>
+                        <MudFlexBreak />
+                        <MudText Typo="Typo.caption">@context.Item.OwnerEmail</MudText>
+                        <MudFlexBreak />
+                        <MudText Typo="Typo.caption">@context.Item.OwnerPhone</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="Inicio del acuerdo" Property="x => x.StartDate" Sortable="true" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.StartDate</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="Vigencia" Property="x => x.EndDate" Sortable="true" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.EndDate</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <TemplateColumn Filterable="false" Sortable="false">
+                    <CellTemplate>
+                        <MudStack Row>
+                            <MudTooltip Text="Descargar" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Download" Size="Size.Medium"
+                                               OnClick="@(() => DownloadSuiteAgreementFileAsync(context.Item.Id))" />
+                            </MudTooltip>
+
+                            <MudTooltip Text="Editar" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Medium"
+                                               OnClick="@(() => UpdateSuiteAgreement(context.Item.Id))" />
+                            </MudTooltip>
+
+                            <MudTooltip Text="Borrar" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Medium"
+                                               OnClick="@(() => DeleteSuiteAgreementAsync(context.Item.Id))" />
+                            </MudTooltip>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <PagerContent>
+                <CustomMudDataGridPager T="SuiteAgreementViewModel" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private bool _loading = false;
+    private string _searchTerm = "";
+    private bool _disableMultipleDownloads => _selectedAgreements.Count == 0;
+
+    private IEnumerable<SuiteAgreementViewModel> _suiteAgreements = [];
+    private HashSet<SuiteAgreementViewModel> _selectedAgreements = new();
+
+    private List<ListItem> _suiteLevels = [];
+    private IEnumerable<string> _selectedSuiteLevels = new HashSet<string>();
+
+    private List<ListItem> _suites = [];
+    private IEnumerable<string> _selectedSuites = new HashSet<string>();
+
+    private DateTime? _startDate;
+    private DateTime? _endDate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
+        await LoadSuitesCatalogAsync();
+
+        await ServerReloadAsync();
+    }
+
+    private async Task DownloadSuiteAgreementFileAsync(long agreementId)
+    {
+        try
+        {
+            FileResponse? file = await _suiteAgreementsService.DownloadSuiteAgreementFileAsync(agreementId);
+
+            await DownloadFileAsync(file);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error trying to get file: {ex.Message}");
+            _snackbar.Add($"Error al tratar de descargar el archivo", Severity.Error);
+        }
+    }
+
+    private async Task DownloadSuiteAgreementFilesAsync()
+    {
+        try
+        {
+            var suiteAgreementIds = _selectedAgreements.Select(item => item.Id).ToList();
+
+            FileResponse? file = await _suiteAgreementsService.DownloadSuiteAgreementFilesAsync(suiteAgreementIds);
+
+            if (file != null)
+            {
+                await DownloadFileAsync(file);
+            }
+
+            Console.WriteLine("Error trying to get file: null response.");
+            _snackbar.Add("Error al tratar de descargar el archivo.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error trying to get file: {ex.Message}");
+            _snackbar.Add($"Error al tratar de descargar el archivo.", Severity.Error);
+        }
+    }
+
+    private async Task DownloadFileAsync(FileResponse file)
+    {
+        try
+        {
+            string contentDisposition = file.Headers["Content-Disposition"].FirstOrDefault() ?? "";
+            string filename = "";
+
+            if (ContentDispositionHeaderValue.TryParse(contentDisposition, out var disposition))
+            {
+                filename = disposition.FileNameStar.Value ?? disposition.FileName.Value ?? filename;
+                filename = filename.Trim('\"');
+            }
+
+            using var streamRef = new DotNetStreamReference(stream: file.Stream);
+
+            await JS.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+
+            _snackbar.Add("Archivo descargado correctamente", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error downloading file: {ex.Message}");
+            _snackbar.Add($"Error al descargar el archivo", Severity.Error);
+        }
+    }
+
+    private void CreateSuiteAgreement()
+    {
+        _navigationManager.NavigateTo(SitePages.SUITE_AGREEMENTS_CREATE);
+    }
+
+    private void UpdateSuiteAgreement(long suiteAgreementId)
+    {
+        _navigationManager.NavigateTo($"/suite-agreements/{suiteAgreementId}/update");
+    }
+
+    private async Task DeleteSuiteAgreementAsync(long suiteAgreementId)
+    {
+        bool dialogResult = await DialogServiceExtensions.ShowConfirmDeleteAsync(_dialogService,
+                             "Eliminar Contrato Palco",
+                              "Esta acción no se puede deshacer. ¿Está seguro de que desea eliminar este palco?");
+
+        if (dialogResult)
+        {
+            try
+            {
+                bool result = await _suiteAgreementsService.DeleteSuiteAgreementAsync(suiteAgreementId);
+
+                if (result)
+                {
+                    _snackbar.Add("Contrato de palco eliminado exitosamente.", Severity.Success);
+
+                    _suiteAgreements = _suiteAgreements.Where(x => x.Id != suiteAgreementId);
+                }
+                else
+                {
+                    _snackbar.Add("Error al eliminar el contrato de palco.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting suite agreement: {ex.Message}");
+                _snackbar.Add("Error al eliminar el contrato de palco.", Severity.Error);
+            }
+        }
+    }
+
+    private void SelectedItemsChanged(HashSet<SuiteAgreementViewModel> items)
+    {
+        _selectedAgreements = items;
+    }
+
+    private async Task ServerReloadAsync()
+    {
+        _loading = true;
+
+        try
+        {
+            ICollection<SuiteAgreementResult> result = await _suiteAgreementsService.GetSuiteAgreementsAsync();
+            _loading = false;
+
+            if (_selectedSuiteLevels.Any())
+            {
+                result = result.Where(x => _selectedSuiteLevels.Contains(x.SuiteLevel)).ToList();
+            }
+
+            _suiteAgreements = result.Select(sa => new SuiteAgreementViewModel
+            {
+                Id = sa.Id,
+                SuiteId = sa.SuiteId,
+                SuiteLevel = sa.SuiteLevel,
+                SuiteName = sa.SuiteName,
+                OwnerName = sa.OwnerName,
+                OwnerEmail = sa.OwnerEmail,
+                OwnerPhone = sa.OwnerPhone,
+                StartDate = sa.StartDate.ToString(FormatConstants.DATE_ONLY),
+                EndDate = sa.EndDate.ToString(FormatConstants.DATE_ONLY),
+                FileName = sa.FileName
+
+            }).ToArray() ?? [];
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading suite agreements: {ex.Message}");
+
+            _suiteAgreements = [];
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ApplyFiltersAsync()
+    {
+        await ServerReloadAsync();
+
+        IEnumerable<SuiteAgreementViewModel> query = _suiteAgreements;
+
+        if (_selectedSuiteLevels.Any())
+        {
+            query = _suiteAgreements.Where(x => _selectedSuiteLevels.Contains(x.SuiteLevel));
+        }
+
+        if (_selectedSuites.Any())
+        {
+            query = _suiteAgreements.Where(x => _selectedSuites.Contains(x.SuiteName));
+        }
+
+        if (_startDate.HasValue)
+        {
+            var startDate = _startDate.Value.ToString(FormatConstants.DATE_ONLY);
+            query = _suiteAgreements.Where(x => x.StartDate == startDate);
+        }
+
+        if (_endDate.HasValue)
+        {
+            var endDate = _endDate.Value.ToString(FormatConstants.DATE_ONLY);
+            query = _suiteAgreements.Where(x => x.EndDate == endDate);
+        }
+    }
+
+    private async Task ClearFiltersAsync()
+    {
+        _searchTerm = "";
+        _selectedSuiteLevels = new HashSet<string>();
+        _selectedSuites = new HashSet<string>();
+        _startDate = null;
+        _endDate = null;
+
+        await ServerReloadAsync();
+    }
+
+    private async Task LoadSuitesCatalogAsync()
+    {
+        _suites = [];
+
+        List<long> suiteLevelIds = _suiteLevels
+                                    .Where(x => _selectedSuiteLevels.Contains(x.Name))
+                                    .Select(x => x.Id)
+                                    .ToList();
+
+        foreach (var id in suiteLevelIds)
+        {
+            List<ListItem> suitesByLevel = await _catalogsService.GetSuitesBySuiteLevelIdAsync(id);
+
+            _suites.AddRange(suitesByLevel);
+        }
+    }
+
+    private Func<SuiteAgreementViewModel, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchTerm))
+        {
+            return true;
+        }
+
+        if (x.OwnerEmail.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (x.OwnerName.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (x.OwnerPhone.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (x.SuiteLevel.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (x.SuiteName.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return false;
+    };
+}

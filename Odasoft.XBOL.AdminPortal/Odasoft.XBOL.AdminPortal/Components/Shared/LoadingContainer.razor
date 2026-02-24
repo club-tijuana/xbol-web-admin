@@ -1,0 +1,48 @@
+@if (IsLoading)
+{
+    @if(LoadingTemplate is not null)
+    {
+        @LoadingTemplate
+    }
+    else
+    {
+        <MudContainer Class="d-flex justify-center align-center" Style="@Style">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+        </MudContainer>
+    }
+}
+else if (HasError)
+{
+    <MudContainer Class="d-flex flex-column justify-center align-center gap-4"
+                  Style="@Style">
+        <MudText Typo="Typo.h6" Color="Color.Error">
+            @ErrorMessage
+        </MudText>
+        @if (OnRetry.HasDelegate)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="OnRetry"
+                       StartIcon="@Icons.Material.Filled.Refresh">
+                @RetryText
+            </MudButton>
+        }
+    </MudContainer>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool HasError { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; } = "Ha ocurrido un error";
+    [Parameter] public string Style { get; set; } = "height: 100%; min-height: 200px;";
+
+    [Parameter] public EventCallback OnRetry { get; set; }
+    [Parameter] public string RetryText { get; set; } = "Reintentar";
+
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+}

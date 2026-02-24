@@ -1,0 +1,658 @@
+@page "/clients/{_id:long}/credit"
+
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.Extensions
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Models.Parameters;
+@using Odasoft.XBOL.Models.ViewModels;
+@using System.Text.RegularExpressions
+
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+@inject CatalogsService _catalogsService;
+@inject ClientsService _clientService;
+@inject CreditTransactionsService _creditTransactionsService;
+@inject NavigationManager _navigationManager;
+@inject OrdersService _ordersService;
+@inject IStringLocalizer<ClientCredit> L
+
+<PageTitle>Detalle cliente</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GotToClients())"
+                       Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+        <RightContent>
+            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => PayOnCreditAsync())"
+                       Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Abonar crédito</MudButton>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<LoadingContainer IsLoading="@(_isLoading)"
+                  HasError="@_error"
+                  ErrorMessage="@_errorMessage">
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h5">@_client.Name</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Razón Social</MudText>
+                            <MudText Typo="Typo.body2">@_client.CompanyName</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">RFC</MudText>
+                            <MudText Typo="Typo.body2">@_client.CompanyTaxId</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Dirección</MudText>
+                            <MudText Typo="Typo.body2">@_client.Address</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Correo electrónico</MudText>
+                            <MudText Typo="Typo.body2">@_client.ContactEmail</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Teléfono</MudText>
+                            <MudText Typo="Typo.body2">@_client.Phone</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h5">Crédito</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Crédito</MudText>
+                            <MudText Typo="Typo.body2">@_clientCredit.Credit</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Fecha de inicio</MudText>
+                            <MudText Typo="Typo.body2">@_clientCredit.StartDate</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Periocidad de pago</MudText>
+                            <MudText Typo="Typo.body2">@L[_clientCredit.PaymentTerm]</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Importe pagado</MudText>
+                            <MudText Typo="Typo.body2">@_clientCredit.AmountPaid</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Importe pendiente</MudText>
+                            <MudText Typo="Typo.body2"><b>@_clientCredit.PendingAmount</b></MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Estatus</MudText>
+                            <MudText Typo="Typo.body2">@L[_clientCredit.Status]</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudCard Class="mt-2" Elevation="3">
+                <MudDataGrid T="CreditOrderViewModel" @ref="_dataOrders" ServerData="OrdersServerReloadAsync" Height="675px"
+                             Filterable="false" FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6">Compras</MudText>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="_ordersSearchTerm" @bind-Value:after="@(() => _dataOrders.ReloadServerData())" Placeholder="Buscar"
+                                      Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1" DebounceInterval="500" />
+                        <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                            <ActivatorContent>
+                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Primary" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudStack Spacing="3" Class="pa-4" Style="width:375px">
+                                    <MudSelect T="string" Label="Evento" MultiSelection="true"
+                                               Margin="Margin.Dense" @bind-SelectedValues="_selectedEvents"
+                                               Variant="Variant.Outlined" ShrinkLabel>
+                                        @foreach (var option in _events)
+                                        {
+                                            <MudSelectItem T="string" Value="@option.Name">
+                                                <MudText Typo="Typo.body2">@option.Name</MudText>
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudDateRangePicker @bind-DateRange="_ordersDateRange" Label="Rango de fecha"
+                                                        Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel
+                                                        PlaceholderStart="DD/MM/AAAA" PlaceholderEnd="DD/MM/AAAA" />
+
+                                    <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
+                                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
+                                                   Class="mud-no-activator" OnClick="ClearOrdersFilters">
+                                            Limpiar
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
+                                                   StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyOrdersFilters">
+                                            Buscar
+                                        </MudButton>
+                                    </MudStack>
+                                </MudStack>
+                            </ChildContent>
+                        </MudMenu>
+                    </ToolBarContent>
+                    <Columns>
+                        <PropertyColumn Property="x => x.Date" Title="Fecha" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.Event" Title="Evento" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.Tickets" Title="Boletos" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.Amount" Title="Importe" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right" />
+                    </Columns>
+                    <PagerContent>
+                        <CustomMudDataGridPager T="CreditOrderViewModel" />
+                    </PagerContent>
+                </MudDataGrid>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudCard Class="mt-2" Elevation="3">
+                <MudDataGrid T="CreditPaymentsViewModel" @ref="_dataPayments" ServerData="PaymentsServerReloadAsync" Height="675px"
+                             Filterable="false" FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6">Abonos</MudText>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="_creditTransactionsSearchTerm" @bind-Value:after="@(() => _dataPayments.ReloadServerData())" Placeholder="Buscar"
+                                      Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1" DebounceInterval="500" />
+                        <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                            <ActivatorContent>
+                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Primary" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudStack Spacing="3" Class="pa-4" Style="width:375px">
+                                    <MudSelect T="PaymentType" Label="Método de pago" MultiSelection="true"
+                                               Margin="Margin.Dense" @bind-SelectedValues="_selectedPaymentTypes"
+                                               Variant="Variant.Outlined" ShrinkLabel>
+                                        @foreach (var option in _paymentTypes)
+                                        {
+                                            <MudSelectItem T="PaymentType" Value="@option">
+                                                <MudText Typo="Typo.body2">@L[option.ToString()]</MudText>
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudDateRangePicker @bind-DateRange="_creditTransactionsDateRange" Label="Rango de fecha"
+                                                        Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel
+                                                        PlaceholderStart="DD/MM/AAAA" PlaceholderEnd="DD/MM/AAAA" />
+
+                                    <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
+                                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
+                                                   Class="mud-no-activator" OnClick="ClearOrdersFilters">
+                                            Limpiar
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
+                                                   StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyOrdersFilters">
+                                            Buscar
+                                        </MudButton>
+                                    </MudStack>
+                                </MudStack>
+                            </ChildContent>
+                        </MudMenu>
+                    </ToolBarContent>
+                    <Columns>
+                        <PropertyColumn Property="x => x.Date" Title="Fecha" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.PaymentId" Title="Id" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.Amount" Title="Monto" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right" />
+                        <PropertyColumn Property="x => x.PaymentMethod" Title="Método de pago" Sortable="false" Filterable="false" />
+                        <PropertyColumn Property="x => x.ReceivedBy" Title="Recibido por" Sortable="false" Filterable="false" />
+                        <TemplateColumn Filterable="false" Sortable="false">
+                            <CellTemplate>
+                                <MudStack Row>
+                                    <MudTooltip Text="Editar" Placement="Placement.Top">
+                                        <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Medium"
+                                                       OnClick="@(() => UpdateCreditTransactionAsync(context.Item))" />
+                                    </MudTooltip>
+
+                                    <MudTooltip Text="Borrar" Placement="Placement.Top">
+                                        <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Medium"
+                                                       OnClick="@(() => DeleteCreditTransactionAsync(context.Item.Id))" />
+                                    </MudTooltip>
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <CustomMudDataGridPager T="CreditPaymentsViewModel" />
+                    </PagerContent>
+                </MudDataGrid>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudCard Class="mt-2 pb-4" Elevation="3">
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h5">Representante Legal</MudText>
+                        </MudItem>
+
+                        <MudItem xs="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Representante Legal</MudText>
+                            <MudText Typo="Typo.body2">@_legalRepresentative.Name</MudText>
+                        </MudItem>
+
+                        <MudItem xs="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Fecha de nacimiento</MudText>
+                            <MudText Typo="Typo.body2">@_legalRepresentative.DOB</MudText>
+                        </MudItem>
+
+                        <MudItem xs="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">RFC</MudText>
+                            <MudText Typo="Typo.body2">@_legalRepresentative.TaxId</MudText>
+                        </MudItem>
+
+                        <MudItem xs="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">CURP</MudText>
+                            <MudText Typo="Typo.body2">@_legalRepresentative.SSN</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</LoadingContainer>
+
+@code {
+    [Parameter]
+    public long _id { get; set; }
+
+    public long _creditAccountId;
+
+    public string _ordersSearchTerm = "";
+    public string _creditTransactionsSearchTerm = "";
+
+    private List<ListItem> _events = [];
+    private IEnumerable<string> _selectedEvents = new HashSet<string>();
+    private DateRange? _ordersDateRange = null;
+
+    private List<PaymentType> _paymentTypes = Enum.GetValues<PaymentType>().ToList();
+    private IEnumerable<PaymentType> _selectedPaymentTypes = new HashSet<PaymentType>();
+    private DateRange? _creditTransactionsDateRange = null;
+
+    private ClientViewModel _client = new();
+    private ClientCreditViewModel _clientCredit = new();
+    private LegalRepresentativeViewModel _legalRepresentative = new();
+
+    private MudDataGrid<CreditOrderViewModel> _dataOrders = default!;
+    private OrdersFilterParameters _ordersFilters = new OrdersFilterParameters();
+
+    private MudDataGrid<CreditPaymentsViewModel> _dataPayments = default!;
+    private CreditTransactionsFilterParameters _paymentsFilters = new CreditTransactionsFilterParameters();
+
+    private bool _isLoading = false;
+    private bool _error = false;
+    private string _errorMessage = string.Empty;
+
+    private DialogOptions _dialogOptions = new()
+    {
+        CloseButton = true,
+        FullWidth = true,
+        CloseOnEscapeKey = true
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        _isLoading = true;
+
+        try
+        {
+            _events = await _catalogsService.GetEventsAsync();
+            await LoadClientCreditDataAsync();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error at init load: {ex.Message}");
+            _snackbar.Add("Error al cargar los datos.", Severity.Error);
+            _errorMessage = "Hubo un error al cargar datos, intenta mas tarde.";
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadClientCreditDataAsync()
+    {
+        var clientDetails = await _clientService.GetClientDetailsAsync(_id);
+
+        // TODO: Move VM initialization to constructors or mapper
+        _client = clientDetails is not null ? new ClientViewModel
+        {
+            Address = $"{clientDetails.StreetAddress} {clientDetails.ExtNum}, {clientDetails.Neighborhood}, {clientDetails.PostalCode} {clientDetails.City}, {clientDetails.State} {clientDetails.Country}",
+            CompanyName = clientDetails.BusinessName,
+            CompanyTaxId = clientDetails.TaxId,
+            ContactEmail = clientDetails.Email,
+            Id = clientDetails.Id,
+            Name = clientDetails.ClientName,
+            Phone = $"({clientDetails.CountryPhoneCode}) {clientDetails.PhoneNumber}"
+        } : new();
+
+        _clientCredit = clientDetails?.ClientCredit is not null ? new ClientCreditViewModel
+        {
+            AmountPaid = clientDetails.ClientCredit.AmountPaid is not null ? clientDetails.ClientCredit.AmountPaid.Value.ToString("C") : "-",
+            AppliesTaxes = clientDetails.ClientCredit.AppliesInterestRate is not null ? clientDetails.ClientCredit.AppliesInterestRate == true ? "Si" : "No" : "-",
+            Credit = clientDetails.ClientCredit.CreditLimit is not null ? clientDetails.ClientCredit.CreditLimit.Value.ToString("C") : "-",
+            NumberOfInstallments = "-",
+            PaymentTerm = clientDetails.ClientCredit.PaymentFrequencyLabel,
+            PendingAmount = clientDetails.ClientCredit.PendingAmount is not null ? clientDetails.ClientCredit.PendingAmount.Value.ToString("C") : "-",
+            StartDate = clientDetails.ClientCredit.StartDate is not null ? clientDetails.ClientCredit.StartDate.Value.ToString("dd/MM/yyyy") : "-",
+            Status = clientDetails.ClientCredit.CreditStatusLabel,
+            Term = "-",
+            Id = clientDetails.ClientCredit.Id
+        } : new();
+
+        _legalRepresentative = clientDetails?.LegalRepresentative is not null ? new LegalRepresentativeViewModel
+        {
+            ClientId = clientDetails.LegalRepresentative.ClientId,
+            DOB = clientDetails.LegalRepresentative.Dob is not null ? clientDetails.LegalRepresentative.Dob.Value.ToString("dd/MM/yyyy") : "-",
+            Id = clientDetails.LegalRepresentative.Id,
+            Name = clientDetails.LegalRepresentative.FullName,
+            SSN = clientDetails.LegalRepresentative.Curp,
+            TaxId = clientDetails.LegalRepresentative.TaxId
+        } : new();
+    }
+
+    private void GotToClients()
+    {
+        _navigationManager.NavigateTo("/clients");
+    }
+
+    private async Task PayOnCreditAsync()
+    {
+        var dialog = await _dialogService.ShowAsync<CreditTransactionDialog>("", _dialogOptions);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+        {
+            return;
+        }
+
+        if (result.Data is CreditTransactionModel creditTransaction)
+        {
+            try
+            {
+                if (creditTransaction.AmountPaid <= 0
+                    || creditTransaction.PaymentDate.HasValue == false
+                    || creditTransaction.PaymentMethod.HasValue == false)
+                {
+                    _snackbar.Add("Con los datos proporcionados no se puede guardar el abano.", Severity.Warning);
+                    return;
+                }
+
+                var response = await _creditTransactionsService.CreateCreditTransactionByCreditAccountIdAsync(_clientCredit.Id,
+                    new ClientCreditTransactionRequest
+                    {
+                        Amount = creditTransaction.AmountPaid,
+                        PaymentType = creditTransaction.PaymentMethod,
+                        TransactionDate = creditTransaction.PaymentDate,
+                        TransactionType = CreditTransactionType.Payment
+                    });
+
+                if (response)
+                {
+                    _snackbar.Add("Abono guardado exitosamente.", Severity.Success);
+                    await LoadClientCreditDataAsync();
+                    await _dataPayments.ReloadServerData();
+                    return;
+                }
+
+                _snackbar.Add("El abano no pudo ser guardado.", Severity.Error);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating credit transacion: {ex.Message}");
+                _snackbar.Add("Error al tratar de guardar el abono", Severity.Error);
+            }
+        }
+    }
+
+    private async Task UpdateCreditTransactionAsync(CreditPaymentsViewModel model)
+    {
+        string cleanAmount = Regex.Replace(model.Amount, @"[$,]", "");
+        decimal amountPaid = decimal.Parse(cleanAmount);
+        DateTime? paymentDate = DateTime.Parse(model.Date);
+        PaymentType? paymentType = model.PaymentMethod switch
+        {
+            "Cash" => PaymentType.Cash,
+            "CreditCard" => PaymentType.CreditCard,
+            "DebitCard" => PaymentType.DebitCard,
+            "Spei" => PaymentType.Spei,
+            _ => null
+        };
+
+        var parameters = new DialogParameters<CreditTransactionDialog>();
+        parameters.Add(p => p.AmountPaid, amountPaid);
+        parameters.Add(p => p.PaymentDate, paymentDate);
+        parameters.Add(p => p.PaymentMethod, paymentType is null ? PaymentType.Cash : paymentType.Value);
+
+        var dialog = await _dialogService.ShowAsync<CreditTransactionDialog>("", parameters, _dialogOptions);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+        {
+            return;
+        }
+
+        if (result.Data is CreditTransactionModel creditTransaction)
+        {
+            try
+            {
+                if (creditTransaction.AmountPaid <= 0
+                    || creditTransaction.PaymentDate.HasValue == false
+                    || creditTransaction.PaymentMethod.HasValue == false)
+                {
+                    _snackbar.Add("Con los datos proporcionados no se puede actualizar el abano.", Severity.Warning);
+                    return;
+                }
+
+                var response = await _creditTransactionsService.UpdateCreditTransactionByIdAsync(model.Id,
+                    new ClientCreditTransactionRequest
+                    {
+                        Amount = creditTransaction.AmountPaid,
+                        PaymentType = creditTransaction.PaymentMethod,
+                        TransactionDate = creditTransaction.PaymentDate,
+                        TransactionType = CreditTransactionType.Payment
+                    });
+
+                if (response)
+                {
+                    _snackbar.Add("Abono actualizado exitosamente.", Severity.Success);
+                    await LoadClientCreditDataAsync();
+                    await _dataPayments.ReloadServerData();
+                    return;
+                }
+
+                _snackbar.Add("El abano no pudo ser actualizado.", Severity.Error);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating credit transacion {model.Id} : {ex.Message}");
+                _snackbar.Add("Error al tratar de actualicar el abono", Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeleteCreditTransactionAsync(long id)
+    {
+        bool dialogResult = await DialogServiceExtensions.ShowConfirmDeleteAsync(_dialogService,
+                             "Eliminar Abono",
+                              "Esta acción no se puede deshacer. ¿Está seguro de que desea eliminar este palco?");
+
+        if (dialogResult)
+        {
+            try
+            {
+                bool result = await _creditTransactionsService.DeleteCreditTransactionByIdAsync(id);
+
+                if (result)
+                {
+                    _snackbar.Add("Abono eliminado exitosamente.", Severity.Success);
+                    await LoadClientCreditDataAsync();
+                    await _dataPayments.ReloadServerData();
+                }
+                else
+                {
+                    _snackbar.Add("Error al eliminar el abono.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting credit transaction {id}: {ex.Message}");
+                _snackbar.Add("Error al eliminar el abono.", Severity.Error);
+            }
+        }
+    }
+
+    private async Task<GridData<CreditOrderViewModel>> OrdersServerReloadAsync(GridState<CreditOrderViewModel> state)
+    {
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+
+        _ordersFilters.ClientId = _id;
+        _ordersFilters.Descending = sortDefinition?.Descending ?? false;
+        _ordersFilters.SortBy = sortDefinition?.SortBy ?? "";
+        _ordersFilters.Page = state.Page;
+        _ordersFilters.PageSize = state.PageSize;
+
+        _ordersFilters.SearchTerm = _ordersSearchTerm;
+        _ordersFilters.Events = _selectedEvents.ToList();
+        _ordersFilters.StartDate = _ordersDateRange?.Start;
+        _ordersFilters.EndDate = _ordersDateRange?.End;
+
+        try
+        {
+            OrderResultPagedResponse response = await _ordersService.GetOrdersAsync(_ordersFilters);
+
+            return new GridData<CreditOrderViewModel>
+            {
+                TotalItems = response.TotalCount,
+                Items = response.Items.Select(order => new CreditOrderViewModel
+                {
+                    Amount = order.Amount?.ToString(FormatConstants.CURRENCY_AMOUNT) ?? "0.00",
+                    Date = order.OrderDate?.ToString(FormatConstants.DATE_ONLY) ?? "-",
+                    Event = order.Event,
+                    Id = order.Id ?? 0,
+                    Tickets = order.NumberOfItems ?? 0
+                })
+            };
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while loading orders: {ex.Message}");
+
+            return new GridData<CreditOrderViewModel>
+            {
+                TotalItems = 0,
+                Items = new List<CreditOrderViewModel>()
+            };
+        }
+    }
+
+    private async Task<GridData<CreditPaymentsViewModel>> PaymentsServerReloadAsync(GridState<CreditPaymentsViewModel> state)
+    {
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+
+        _paymentsFilters.CreditAccountId = _clientCredit.Id;
+        _paymentsFilters.Descending = sortDefinition?.Descending ?? false;
+        _paymentsFilters.SortBy = sortDefinition?.SortBy ?? "";
+        _paymentsFilters.Page = state.Page;
+        _paymentsFilters.PageSize = state.PageSize;
+
+        _paymentsFilters.SearchTerm = _creditTransactionsSearchTerm;
+        _paymentsFilters.PaymentTypes = _selectedPaymentTypes.ToList();
+        _paymentsFilters.StartDate = _creditTransactionsDateRange?.Start;
+        _paymentsFilters.EndDate = _creditTransactionsDateRange?.End;
+
+        try
+        {
+            CreditTransactionResultPagedResponse response = await _creditTransactionsService.GetCreditTransactionsAsync(_paymentsFilters);
+
+            return new GridData<CreditPaymentsViewModel>
+            {
+                TotalItems = response.TotalCount,
+                Items = response.Items.Select(credit => new CreditPaymentsViewModel
+                {
+                    Amount = credit.Amount?.ToString(FormatConstants.CURRENCY_AMOUNT) ?? "0.00",
+                    Date = credit.PaymentDate?.ToString(FormatConstants.DATE_ONLY) ?? "-",
+                    PaymentId = credit.ReferenceId ?? "-",
+                    Id = credit.Id ?? 0,
+                    PaymentMethod = credit.PaymentType.HasValue
+                                    ? L[credit.PaymentType.Value.ToString()]
+                                    : "-",
+                    ReceivedBy = credit.ReceivedBy ?? "-"
+                })
+            };
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while loading orders: {ex.Message}");
+
+            return new GridData<CreditPaymentsViewModel>
+            {
+                TotalItems = 0,
+                Items = new List<CreditPaymentsViewModel>()
+            };
+        }
+    }
+
+    private async Task ClearOrdersFilters()
+    {
+        _selectedEvents = new HashSet<string>();
+        _ordersDateRange = null;
+        _ordersSearchTerm = "";
+
+        await _dataOrders.ReloadServerData();
+    }
+
+    private async Task ApplyOrdersFilters()
+    {
+        await _dataOrders.ReloadServerData();
+    }
+
+    private async Task ClearCreditTransactionsFilters()
+    {
+        _selectedPaymentTypes = new HashSet<PaymentType>();
+        _creditTransactionsDateRange = null;
+        _creditTransactionsSearchTerm = "";
+
+        await _dataPayments.ReloadServerData();
+    }
+
+    private async Task ApplyCreditTransactionsFilters()
+    {
+        await _dataOrders.ReloadServerData();
+    }
+}

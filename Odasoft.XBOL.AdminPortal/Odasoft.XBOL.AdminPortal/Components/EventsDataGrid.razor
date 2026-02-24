@@ -1,0 +1,285 @@
+@using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.AdminPortal.Extensions
+@using Odasoft.XBOL.AdminPortal.Services.Contracts
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
+@using Odasoft.XBOL.Business
+@inject IStringLocalizer<EventsDataGrid> L
+@inject IEventService EventService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<MudCard Elevation="0">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudGrid Class="align-center">
+                @if (HideTitle is false) {
+                    <MudItem xs="12" sm="6" lg="8">
+                        <MudText Class="pl-lg-4" Typo="Typo.h5">@L["PageTitle"]</MudText>
+                    </MudItem>
+                } else {
+                    <MudItem xs="0" sm="0" lg="6" />
+                }
+                <MudItem xs="12" sm="@(HideTitle ? 12 : 6)" lg="@(HideTitle ? 6 : 4)">
+                    <MudStack Row AlignItems="AlignItems.Center">
+                        <MudTextField @bind-Value="_searchString"
+                                      @bind-Value:after="@(() => _dataGrid.ReloadServerData())"
+                                      Placeholder="@L["Search"]"
+                                      Adornment="Adornment.Start"
+                                      Immediate="true"
+                                      Variant="Variant.Outlined"
+                                      AdornmentAriaLabel="@L["Search"]"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium"
+                                      Margin="Margin.Dense"
+                                      Typo="Typo.body2"
+                                      Class="flex-grow-1" />
+
+                        <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                            <ActivatorContent>
+                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt"
+                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudStack Spacing="3" Class="pa-4" Style="width:375px">
+                                    <MudSelect T="string" Label="@L["FilterVenue"]" MultiSelection="true"
+                                               Margin="Margin.Dense" @bind-SelectedValues="_selectedVenues"
+                                               Variant="Variant.Outlined" ShrinkLabel>
+                                        @foreach (var venue in _venues)
+                                        {
+                                            <MudSelectItem T="string" Value="@venue.Name">
+                                                <MudText Typo="Typo.body2">@venue.Name</MudText>
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                    <MudSelect T="string" Label="@L["FilterCategory"]" MultiSelection="true"
+                                               Margin="Margin.Dense" @bind-SelectedValues="_selectedCategories"
+                                               Variant="Variant.Outlined" ShrinkLabel>
+                                        @foreach (var category in _availableCategories)
+                                        {
+                                            <MudSelectItem T="string" Value="@category">
+                                                <MudText Typo="Typo.body2">@category</MudText>
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                    <MudDateRangePicker @bind-DateRange="_dateRange" Label="@L["FilterDateRange"]"
+                                                        Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel
+                                                        PlaceholderStart="DD/MM/AAAA" PlaceholderEnd="DD/MM/AAAA" />
+
+                                    <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
+                                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
+                                                   Class="mud-no-activator" OnClick="ClearFilters">
+                                            @L["FilterClear"]
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
+                                                   StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyFilters">
+                                            @L["FilterApply"]
+                                        </MudButton>
+                                    </MudStack>
+                                </MudStack>
+                            </ChildContent>
+                        </MudMenu>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </CardHeaderContent>
+    </MudCardHeader>
+
+    <MudCardContent Class="pa-0">
+        <MudDataGrid T="EventViewModel" @ref="_dataGrid" ServerData="ServerReload" Loading="_loading" Filterable="true"
+                     FilterMode="DataGridFilterMode.Simple" Dense="@Dense" Hover="true" Height="@Height" Elevation="0">
+            <NoRecordsContent>
+                <MudAlert Severity="Severity.Normal" Class="mx-4">@L["NoEventsFound"]</MudAlert>
+            </NoRecordsContent>
+            <Columns>
+                @if (IsVisible(EventColumn.DateTime))
+                {
+                    <PropertyColumn Property="x => x.DateTime" Sortable="true" Filterable="false"
+                                    InitialDirection="SortDirection.Descending">
+                        <HeaderTemplate>
+                            <span Class="pl-lg-4">@L["ColumnDateTime"]</span>
+                        </HeaderTemplate>
+                        <CellTemplate>
+                            <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.DateTime</MudText>
+                        </CellTemplate>
+                    </PropertyColumn>
+                }
+
+                <TemplateColumn Title="@L["ColumnEventName"]" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.subtitle2">
+                            <MudHighlighter Text="@context.Item.EventName" HighlightedText="@_searchString" />
+                        </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Primary">
+                            @context.Item.Venue
+                        </MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                @if (IsVisible(EventColumn.Category))
+                {
+                    <TemplateColumn Title="@L["ColumnCategory"]" Sortable="false" Filterable="false">
+                        <CellTemplate>
+                            <MudText Typo="Typo.body2">@context.Item.Category</MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
+                }
+
+                @if (IsVisible(EventColumn.Availability))
+                {
+                    <TemplateColumn Title="@L["ColumnAvailability"]" Filterable="false" Sortable="false">
+                        <CellTemplate>
+                            <div class="d-flex">
+                                <MudText Typo="Typo.body2" Color="Color.Tertiary">
+                                    <strong>@context.Item.Available</strong>
+                                </MudText>
+                                <MudText Typo="Typo.body2" Style="padding: 0 2px; color: var(--mud-palette-text-disabled);">
+                                    /
+                                </MudText>
+                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-disabled);">
+                                    @context.Item.Total
+                                </MudText>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                }
+
+                <TemplateColumn Title="@L["ColumnActions"]" Filterable="false" Sortable="false">
+                    <CellTemplate>
+                        <MudStack Row Spacing="2">
+                            <MudTooltip Text="@L["ActionBoletos"]" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium"
+                                               OnClick="@(() => Navigation.NavigateTo($"/events/{context.Item.Id}/seats"))" />
+                            </MudTooltip>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+
+            <PagerContent>
+                <CustomMudDataGridPager T="EventViewModel" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    /// <summary>
+    /// Allows hiding the title of the data grid
+    /// </summary>
+    [Parameter] public bool HideTitle { get; set; } = false;
+
+    /// <summary>
+    /// Optional Season ID to filter the events list by a specific season.
+    /// </summary>
+    [Parameter] public long? SeasonId { get; set; }
+
+    /// <summary>
+    /// Less vertical spacing within rows
+    /// </summary>
+    [Parameter] public bool Dense { get; set; } = false;
+
+    /// <summary>
+    /// Constrain height of data grid to enable inline scrolling
+    /// </summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>
+    /// Controls which optional columns are visible.
+    /// EventName and Actions are always shown.
+    /// </summary>
+    [Parameter] public EventColumn VisibleColumns { get; set; } = EventColumn.All;
+
+    private bool IsVisible(EventColumn column) => VisibleColumns.HasFlag(column);
+
+    private bool _loading;
+    private string _searchString = "";
+    private MudDataGrid<EventViewModel> _dataGrid = default!;
+    private EventFilterParameters _filters = EventFilterParameters.Empty;
+    private List<VenueListItemDTO> _venues = [];
+    private IEnumerable<string> _selectedVenues = new HashSet<string>();
+    private List<string> _availableCategories = [];
+    private IEnumerable<string> _selectedCategories = new HashSet<string>();
+    private DateRange? _dateRange = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Load filter options (Venues/Categories) in parallel
+            var venueTask = EventService.GetVenuesAsync();
+            var catTask = EventService.GetCategoriesAsync();
+
+            await Task.WhenAll(venueTask, catTask);
+
+            _venues = await venueTask;
+            _availableCategories = await catTask;
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
+        }
+    }
+
+    /// <summary>
+    /// Fetches data for the MudDataGrid based on current state (pagination, sorting, search).
+    /// </summary>
+    private async Task<GridData<EventViewModel>> ServerReload(GridState<EventViewModel> state)
+    {
+        _loading = true;
+        try
+        {
+            var sortDefinition = state.SortDefinitions.FirstOrDefault();
+
+            var result = await EventService.GetEventsAsync(
+                page: state.Page,
+                pageSize: state.PageSize,
+                sortColumn: sortDefinition?.SortBy,
+                sortDescending: sortDefinition?.Descending ?? false,
+                search: _searchString,
+                filters: _filters.HasAnyFilter() ? _filters : null,
+                seasonId: (int?)SeasonId
+            );
+
+            return result;
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
+            return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    /// <summary>
+    /// Updates the local filter parameters and reloads the grid.
+    /// </summary>
+    private async Task ApplyFilters()
+    {
+        _filters = new EventFilterParameters(
+            _selectedVenues.ToList(),
+            _selectedCategories.ToList(),
+            _dateRange?.Start,
+            _dateRange?.End
+        );
+
+        await _dataGrid.ReloadServerData();
+    }
+
+    /// <summary>
+    /// Resets all selection fields and clears the current filters.
+    /// </summary>
+    private async Task ClearFilters()
+    {
+        _selectedVenues = new HashSet<string>();
+        _selectedCategories = new HashSet<string>();
+        _dateRange = null;
+        _filters = EventFilterParameters.Empty;
+
+        await _dataGrid.ReloadServerData();
+    }
+}

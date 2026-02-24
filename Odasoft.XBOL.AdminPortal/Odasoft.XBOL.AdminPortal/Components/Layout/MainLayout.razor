@@ -1,10 +1,18 @@
+@using Odasoft.XBOL.AdminPortal.Components.Shared
 @using Odasoft.XBOL.AdminPortal.Services
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
+@using Odasoft.XBOL.AdminPortal.States
 @inherits LayoutComponentBase
 @layout ThemeLayout
 @inject IAuthService AuthService
+@inject LoadingState LoadingState
 @inject NavigationManager Navigation
 @inject AuthStateProvider AuthStateProvider
+@inject IStringLocalizer<MainLayout> L
+
+@implements IDisposable
+
+<LoadingOverlay />
 
 <MudLayout>
     <!-- TOP BAR -->
@@ -25,7 +33,7 @@
                                    Color="Color.Inherit" />
                 </ActivatorContent>
                 <ChildContent>
-                    <MudMenuItem Label="Cerrar Sesión" OnClick="Logout" />
+                    <MudMenuItem Label="@L["Logout"]" OnClick="Logout" />
                 </ChildContent>
             </MudMenu>
         </MudAppBar>
@@ -37,61 +45,23 @@
                Variant="DrawerVariant.Responsive"
                Anchor="Anchor.Start"
                Class="white-drawer pa-5">
-        <MudNavMenu>
-            <MudNavLink Href="/" Match="NavLinkMatch.All" IconColor="Color.Primary"
-                        Icon="@Icons.Material.Filled.Dashboard" Class="nav-link pt-5">
-                Dashboard
-            </MudNavLink>
-            <MudNavLink Href="/seasons" IconColor="Color.Primary" Class="nav-link pt-5"
-                        Disabled Icon="@Icons.Material.Filled.SportsSoccer">
-                Torneos
-            </MudNavLink>
-            <MudNavLink Href="/events" IconColor="Color.Primary" Class="nav-link pt-5"
-                        Icon="@Icons.Material.Filled.ConfirmationNumber">
-                Eventos
-            </MudNavLink>
-            <MudNavLink Href="/xolopass" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Icon="@Icons.Material.Filled.EventSeat">
-                Xolopass
-            </MudNavLink>
-            <MudNavLink Href="/clients" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Disabled Icon="@Icons.Material.Filled.Badge">
-                Clientes
-            </MudNavLink>
-            <MudNavLink Href="/venues" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Disabled Icon="@Icons.Material.Filled.Stadium">
-                Recintos
-            </MudNavLink>
-            <MudNavLink Href="/reports" IconColor="Color.Primary" Class="nav-link-rounded pt-5"
-                        Disabled Icon="@Icons.Material.Filled.InsertChart">
-                Reportes
-            </MudNavLink>
-            <MudNavGroup Title="Configuración"
-                         Icon="@Icons.Material.Filled.Settings"
-                         IconColor="Color.Primary"
-                         Class="nav-link-rounded pt-5"
-                         Disabled>
-                <MudNavLink Href="/settings/users" Class="pt-5">
-                    Usuarios
-                </MudNavLink>
-
-                <MudNavLink Href="/settings/security" Class="pt-5" Disabled>
-                    Roles
-                </MudNavLink>
-
-            </MudNavGroup>
-        </MudNavMenu>
+        <NavMenu />
     </MudDrawer>
     <!-- MAIN CONTENT -->
     <MudMainContent Class="pt-20 px-10 pb-10">
-        <div class="pt-3">
+        <AdminPage>
             @Body
-        </div>
+        </AdminPage>
     </MudMainContent>
 </MudLayout>
 
 @code {
     private bool _drawerOpen = true; // En desktop inicia abierto
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += (s, e) => LoadingState.Reset();
+    }
 
     private void ToggleDrawer()
     {
@@ -102,5 +72,10 @@
     {
         await AuthService.LogoutAsync();
         Navigation.NavigateTo("/login");
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= (s, e) => LoadingState.Reset();
     }
 }

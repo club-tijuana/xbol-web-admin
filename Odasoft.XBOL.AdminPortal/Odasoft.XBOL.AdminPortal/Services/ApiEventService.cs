@@ -4,6 +4,8 @@ using Odasoft.XBOL.Business;
 
 namespace Odasoft.XBOL.AdminPortal.Services;
 
+// TODO: Move to Business project
+
 public class ApiEventService(IAdminClient adminClient) : IEventService
 {
     public async Task<GridData<EventViewModel>> GetEventsAsync(
@@ -12,7 +14,8 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         string? sortColumn,
         bool sortDescending,
         string? search = null,
-        EventFilterParameters? filters = null)
+        EventFilterParameters? filters = null,
+        int? seasonId = null)
     {
         var response = await adminClient.GetEventsAsync(
             venues: filters?.Venues != null && filters.Venues.Count > 0 ? string.Join(",", filters.Venues) : null,
@@ -23,7 +26,9 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             sortBy: sortColumn,
             descending: sortDescending,
             page: page + 1,
-            pageSize: pageSize
+            pageSize: pageSize,
+            seasonId: seasonId,
+            status: null
         );
 
         var items = response.Items?.Select(e => new EventViewModel(
@@ -43,7 +48,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         };
     }
 
-    public async Task<List<VenueListItem>> GetVenuesAsync()
+    public async Task<List<VenueListItemDTO>> GetVenuesAsync()
     {
         var result = await adminClient.GetVenuesAsync();
         return result.ToList();

@@ -1,0 +1,199 @@
+@page "/suite-agreements/{_suiteAgreementId:long}/update"
+
+@using Microsoft.Net.Http.Headers
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants
+
+@inject CatalogsService _catalogsService;
+@inject NavigationManager _navigationManager;
+@inject SuiteAgreementsService _suiteAgreementsService;
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+
+<PageTitle>Nuevo - Contrato Palco</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteAgreementsAsync())"
+                    Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
+    <MudCardContent>
+        <MudGrid Class="mud-width-full">
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudSelect Class="d-flex" Variant="Variant.Outlined" Value="@_suiteLevelId" Label="Nivel" T="long" ValueChanged="@SuiteLevelChangedAsync" Margin="Margin.Dense" ShrinkLabel Required>
+                    @foreach (var level in _suiteLevels)
+                    {
+                        <MudSelectItem Value="@level.Id">@level.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudSelect Class="d-flex" Variant="Variant.Outlined" @bind-Value="_suiteId" Label="Palco" Margin="Margin.Dense" ShrinkLabel Required>
+                    @foreach (var level in _suites)
+                    {
+                        <MudSelectItem Value="@level.Id">@level.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_startDate" Label="Inicio" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Margin="Margin.Dense" ShrinkLabel Required />
+            </MudItem>
+
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudDatePicker Class="d-flex" Variant="Variant.Outlined" @bind-Date="_endDate" Label="Vigencia" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="dd/MM/yyyy" Margin="Margin.Dense" ShrinkLabel Required />
+            </MudItem>
+        </MudGrid>
+        <MudGrid Class="mud-width-full">
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerName" Label="Propietario" Margin="Margin.Dense" ShrinkLabel Required />
+            </MudItem>
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerEmail" Label="Correo electrónico" InputType="InputType.Email" Margin="Margin.Dense" ShrinkLabel Required />
+            </MudItem>
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerPhone" Label="Teléfono" InputType="InputType.Telephone" Margin="Margin.Dense" ShrinkLabel Required />
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+    <MudCardActions Class="gap-2">
+        <MudStack Class="mud-width-full" Row="true" Justify="Justify.FlexEnd" AlignItems="AlignItems.Center">
+            <MudButton StartIcon="@Icons.Material.Outlined.Save" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => UpdateSuiteAgreementAsync())">Guardar</MudButton>
+        </MudStack>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter]
+    public long _suiteAgreementId { get; set; }
+
+    private long _suiteLevelId;
+    private long _suiteId;
+    private DateTime? _startDate;
+    private DateTime? _endDate;
+
+    private string _ownerName = "";
+    private string _ownerEmail = "";
+    private string _ownerPhone = "";
+
+    private ICollection<ListItem> _suiteLevels = [];
+    private ICollection<ListItem> _suites = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        SuiteAgreementResult agreement = await _suiteAgreementsService.GetSuiteAgreementByIdAsync(_suiteAgreementId);
+
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
+        _suiteLevelId = agreement.SuiteLevelId;
+
+        if (_suiteLevelId > 0)
+        {
+            _suites = await _catalogsService.GetSuitesBySuiteLevelIdAsync(_suiteLevelId);
+            _suiteId = agreement.SuiteId;
+        }
+
+        _startDate = agreement.StartDate.Date;
+        _endDate = agreement.EndDate.Date;
+
+        _ownerName = agreement.OwnerName ?? "";
+        _ownerEmail = agreement.OwnerEmail ?? "";
+        _ownerPhone = agreement.OwnerPhone ?? "";
+
+        StateHasChanged();
+    }
+
+    private async Task GoToSuiteAgreementsAsync()
+    {
+        var options = new DialogOptions { CloseButton = true, NoHeader = true };
+        var parameters = new DialogParameters<ConfirmDialog>();
+
+        parameters.Add(dialog => dialog.Message, "Los cambios no guardados se perderan. ¿Desea continuar?");
+
+        var dialog = await _dialogService.ShowAsync<ConfirmDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            _navigationManager.NavigateTo(SitePages.SUITE_AGREEMENTS);
+        }
+    }
+
+    private async Task SuiteLevelChangedAsync(long newValue)
+    {
+        _suiteLevelId = newValue;
+
+        _suites = await _catalogsService.GetSuitesBySuiteLevelIdAsync(newValue);
+        _suiteId = _suites.Any() ? _suites.First().Id : default;
+
+        StateHasChanged();
+    }
+
+    private async Task UpdateSuiteAgreementAsync()
+    {
+        try
+        {
+            if (PeriodInvalid())
+            {
+                return;
+            }
+
+            var success = await _suiteAgreementsService.UpdateSuiteAgreementAsync(new UpdateSuiteAgreementRequest
+            {
+                Id = _suiteAgreementId,
+                SuiteId = _suiteId,
+                OwnerName = _ownerName,
+                OwnerEmail = _ownerEmail,
+                OwnerPhone = _ownerPhone,
+                StartDate = _startDate.HasValue ? _startDate.Value.ToUniversalTime() : default,
+                EndDate = _endDate.HasValue ? _endDate.Value.ToUniversalTime() : default
+            });
+
+            if (success)
+            {
+                _snackbar.Add("Contrato de palco actualizado exitosamente.", Severity.Success);
+                _navigationManager.NavigateTo(SitePages.SUITE_AGREEMENTS);
+            }
+            else
+            {
+                _snackbar.Add("Error al actualizar el contrato. Por favor, intente nuevamente.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating suite agreement: {ex.Message}");
+            _snackbar.Add($"Error al actualizar el contrato de palco", Severity.Error);
+        }
+    }
+
+    private bool PeriodInvalid()
+    {
+        if (_startDate is null)
+        {
+            _snackbar.Add("Fecha de inicio requerida", Severity.Warning);
+            return true;
+        }
+
+        if (_endDate is null)
+        {
+            _snackbar.Add("Fecha de vigencia requerida", Severity.Warning);
+            return true;
+        }
+
+        if (_startDate > _endDate)
+        {
+            _snackbar.Add("Fecha inicio no puede ser mayor al de la vigencia", Severity.Warning);
+            return true;
+        }
+
+        return false;
+    }
+}

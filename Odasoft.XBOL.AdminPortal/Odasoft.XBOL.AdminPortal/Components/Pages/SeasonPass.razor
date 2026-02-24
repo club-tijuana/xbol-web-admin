@@ -2,9 +2,9 @@
 @using System.Globalization
 @using Odasoft.XBOL.AdminPortal.Extensions
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
-@using Odasoft.XBOL.AdminPortal.ViewModels.SeasonPass
 @using Odasoft.XBOL.AdminPortal.ViewModels.Order
 @using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Common.Constants
 @inject IStringLocalizer<SeasonPass> L
 @inject ISeasonPassService SeasonPassService
 @inject IDialogService DialogService
@@ -13,10 +13,16 @@
 @inject ISeasonService SeasonService
 
 <PageTitle>@L["PageTitle"]</PageTitle>
-<MudPaper Class="bg-default d-flex justify-end flex-grow-1 gap-4" Elevation="0">
-    <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => GoToCheckoutSeasonpass())" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Comprar Xolopass</MudButton>
-</MudPaper>
-<MudCard Class="mt-5 mb-6" Elevation="3">
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <RightContent>
+            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => GoToCheckoutSeasonpass())" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Comprar Xolopass</MudButton>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
     <MudCardHeader>
         <!-- Table header -->
         <CardHeaderContent>
@@ -34,7 +40,7 @@
                                    Variant="Variant.Outlined" ShrinkLabel>
                             @foreach (var season in _seasonSelectorItems)
                             {
-                                <MudSelectItem T="long?" Value="@season.SeasonId">
+                                <MudSelectItem T="long?" Value="@season.Id">
                                     <MudText Typo="Typo.body2">@season.Name</MudText>
                                 </MudSelectItem>
                             }
@@ -59,7 +65,7 @@
                             </ActivatorContent>
                             <ChildContent>
                                 <MudStack Spacing="3" Class="pa-4" Style="width:375px">
-                                    <MudSelect T="SeasonPassItemStatus?"
+                                    <MudSelect T="SeasonPassRenewalType ?"
                                                Label="@L["FilterRenewalType"]"
                                                MultiSelection="true"
                                                Placeholder="@L["Selector"]"
@@ -72,7 +78,7 @@
 
                                         @foreach (var type in _seasonPassRenewalTypeList)
                                         {
-                                            <MudSelectItem T="SeasonPassItemStatus?" Value="@((SeasonPassItemStatus?)type.Value)">
+                                            <MudSelectItem T="SeasonPassRenewalType ?" Value="@((SeasonPassRenewalType?)type.Value)">
                                                 <MudText Typo="Typo.body2">@type.Label</MudText>
                                             </MudSelectItem>
                                         }
@@ -90,8 +96,6 @@
                                 </MudStack>
                             </ChildContent>
                         </MudMenu>
-
-
                     </MudStack>
                 </MudItem>
             </MudGrid>
@@ -157,10 +161,10 @@
                     </CellTemplate>
                 </TemplateColumn>
 
-                <TemplateColumn Title="@L["ColumnTotalAmount"]" Filterable="false" Sortable="false">
+                <TemplateColumn Title="@L["ColumnTotalAmount"]" Filterable="false" Sortable="false" HeaderClass="text-right" CellClass="text-right">
                     <CellTemplate>
-                        <MudText Typo="Typo.body2">
-                            @context.Item.Total.ToString("C", new CultureInfo("es-MX"))
+                        <MudText Typo="Typo.body2" Align="Align.Right">
+                            @context.Item.Total.ToString(FormatConstants.CURRENCY, new CultureInfo("es-MX"))
                         </MudText>
                     </CellTemplate>
                 </TemplateColumn>
@@ -170,7 +174,7 @@
                         <CellTemplate>
                             <MudStack Row Spacing="2">
                                 <MudTooltip Text="@GetTooltipText(context.Item)" Placement="Placement.Top">
-                                    <MudIconButton Disabled="context.Item.SeasonPeriod == OrderListItemSeasonPeriod._1" Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium" OnClick="@(() => OnRenewClick(context.Item))" />
+                                    <MudIconButton Disabled="context.Item.SeasonPeriod == SeasonPeriod.PastSeason" Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium" OnClick="@(() => OnRenewClick(context.Item))" />
                                 </MudTooltip>
                             </MudStack>
                         </CellTemplate>
@@ -206,8 +210,8 @@
                             </div>
                         </td>
                         <td class="mud-table-cell mud-table-child-content" colspan="2">
-                            <div class="d-flex justify-center align-center">
-                                @seasonPass.Price.ToString("C", new CultureInfo("es-MX"))
+                            <div class="d-flex justify-end align-center">
+                                @seasonPass.Price.ToString(FormatConstants.CURRENCY, new CultureInfo("es-MX"))
                             </div>
                         </td>
                         <td class="mud-table-cell mud-table-child-content" colspan="1">
@@ -218,41 +222,41 @@
                         <td class="mud-table-cell mud-table-child-content" colspan="@(_orderListFilters.RenovationMode ? 2 : 1)">
                             <div class="d-flex justify-center align-center">
                                 <div class="d-flex justify-center align-center">
-                                    <MudIconButton Icon="@(seasonPass.Status == SeasonPassItemStatus._1 ? Icons.Material.Filled.LockPerson : Icons.Material.Filled.LockOpen)"
-                                                   Color="@(seasonPass.Status == SeasonPassItemStatus._1 ? Color.Error : Color.Primary )"
+                                    <MudIconButton Icon="@(seasonPass.Status == SeasonPassStatus.Suspended ? Icons.Material.Filled.LockPerson : Icons.Material.Filled.LockOpen)"
+                                                   Color="@(seasonPass.Status == SeasonPassStatus.Suspended ? Color.Error : Color.Primary )"
                                                    OnClick="@(() => ToggleOpen(seasonPass))" />
                                 </div>
                                 <MudPopover Open="@_openRows.GetValueOrDefault(seasonPass.SeasonPassId)" RelativeWidth="DropdownWidth.Ignore" Fixed="true" AnchorOrigin=Origin.BottomCenter Class="px-4 pt-4">
                                     <div class="d-flex flex-column">
                                         <MudGrid>
                                             <MudItem xs="12">
-                                                <MudSelect T="SeasonPassStatusRequestSeasonPassStatus" Label="@L["SelectorSeasonPassStatus"]" @bind-Value="_seasonPassStatusRequest.SeasonPassStatus"
+                                                <MudSelect T="SeasonPassStatus?" Label="@L["SelectorSeasonPassStatus"]" @bind-Value="_seasonPassStatusRequest.SeasonPassStatus"
                                                            Margin="Margin.Dense"
                                                            Variant="Variant.Outlined" ShrinkLabel>
                                                     @foreach (var status in _seasonPassStatusList)
                                                     {
-                                                        <MudSelectItem T="SeasonPassStatusRequestSeasonPassStatus" Value="@((SeasonPassStatusRequestSeasonPassStatus)status.Value)">
+                                                        <MudSelectItem T="SeasonPassStatus" Value="@((SeasonPassStatus)status.Value)">
                                                             <MudText Typo="Typo.body2">@status.Label</MudText>
                                                         </MudSelectItem>
                                                     }
                                                 </MudSelect>
                                             </MudItem>
-                                            @if (_seasonPassStatusRequest.SeasonPassStatus == SeasonPassStatusRequestSeasonPassStatus._1)
+                                            @if (_seasonPassStatusRequest.SeasonPassStatus == SeasonPassStatus.Suspended)
                                             {
                                                 <MudItem xs="12">
-                                                    <MudSelect T="SeasonPassStatusRequestSeasonPassSuspendedReason?" Label="@L["SelectorSeasonPassSuspendedReason"]" @bind-Value="_seasonPassStatusRequest.SeasonPassSuspendedReason"
+                                                    <MudSelect T="SeasonPassSuspendedReason?" Label="@L["SelectorSeasonPassSuspendedReason"]" @bind-Value="_seasonPassStatusRequest.SeasonPassSuspendedReason"
                                                                Placeholder="@L["Selector"]"
                                                                Margin="Margin.Dense"
                                                                Variant="Variant.Outlined" ShrinkLabel>
                                                         @foreach (var suspendedReason in _seasonPassSuspendedReasonList)
                                                         {
-                                                            <MudSelectItem T="SeasonPassStatusRequestSeasonPassSuspendedReason?" Value="@((SeasonPassStatusRequestSeasonPassSuspendedReason?)suspendedReason.Value)">
+                                                            <MudSelectItem T="SeasonPassSuspendedReason ?" Value="@((SeasonPassSuspendedReason?)suspendedReason.Value)">
                                                                 <MudText Typo="Typo.body2">@suspendedReason.Label</MudText>
                                                             </MudSelectItem>
                                                         }
                                                     </MudSelect>
                                                 </MudItem>
-                                                @if (_seasonPassStatusRequest.SeasonPassSuspendedReason == SeasonPassStatusRequestSeasonPassSuspendedReason._4)
+                                                @if (_seasonPassStatusRequest.SeasonPassSuspendedReason == SeasonPassSuspendedReason.Other)
                                                 {
                                                     <MudItem xs="12">
                                                         <MudTextField T="string"
@@ -269,22 +273,19 @@
                                     <MudGrid Class="pa-4 py-4">
                                         <MudItem xs="6">
                                             <MudButton FullWidth="true" OnClick="Cancel" Variant="Variant.Text" Color="Color.Default">Cancelar</MudButton>
-
                                         </MudItem>
                                         <MudItem xs="6">
                                             <MudButton FullWidth="true" Variant="Variant.Filled" OnClick="@(() => UpdateSeasonPassStatus(seasonPass))" Color="Color.Primary">Actualizar</MudButton>
-
                                         </MudItem>
                                     </MudGrid>
                                 </MudPopover>
                             </div>
                         </td>
-
                     </tr>
                 }
             </ChildRowRenderer>
             <PagerContent>
-                <MudDataGridPager T="OrderListItem" />
+                <CustomMudDataGridPager T="OrderListItem" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
@@ -296,55 +297,54 @@
     private bool _initialized;
     private MudDataGrid<OrderListItem> _dataGrid = default!;
     private List<OrderListItem> _orderListItems = new();
-    private List<SeasonSelectorItem> _seasonSelectorItems = new();
+    private List<SeasonListItem> _seasonSelectorItems = new();
     private Business.OrderListFilters _orderListFilters = new();
     private List<EnumItemDto> _seasonPassStatusList = new();
     private List<EnumItemDto> _seasonPassSuspendedReasonList = new();
     private List<EnumItemDto> _seasonPassRenewalTypeList = new();
-    private SeasonSelectorItem _selectedSeason = new();
+    private SeasonListItem _selectedSeason = new();
     private SeasonPassStatusRequest _seasonPassStatusRequest = new();
 
-    private List<string> _availableTypes = new();
-    private HashSet<SeasonPassItemStatus?> _selectedRenewalTypes = new();
-    private DateRange? _dateRange = null;
-    private bool _open;
+    private HashSet<SeasonPassRenewalType?> _selectedRenewalTypes = new();
     Dictionary<long, bool> _openRows = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            _seasonSelectorItems = await SeasonService.GetSeasonSelectorItemsAsync();
+            var seasonsResponse = await SeasonService.GetSeasonsAsync(Odasoft.XBOL.Business.SeasonStatus.Published, period: null, "startDate", true);
+            _seasonSelectorItems = seasonsResponse.Items?.ToList() ?? new();
             _seasonPassStatusList = await SeasonPassService.GetSeasonPassStatusListAsync();
             _seasonPassSuspendedReasonList = await SeasonPassService.GetSeasonPassSuspendedReasonListAsync();
             _seasonPassRenewalTypeList = await SeasonPassService.GetSeasonPassRenewalTypeList();
 
-            _selectedSeason = _seasonSelectorItems.FirstOrDefault(x => x.IsCurrent)!;
+            _selectedSeason = _seasonSelectorItems.FirstOrDefault()!;
 
             _initialized = true;
             if (_selectedSeason != null)
             {
-                _orderListFilters.SeasonId = _selectedSeason.SeasonId;
+                _orderListFilters.SeasonId = _selectedSeason.Id;
                 await OnSeasonChanged();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Console.WriteLine($"Error loading filters: {ex.Message}");
             Snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
         }
     }
 
-    private void OnRenewalTypesChanged(IEnumerable<SeasonPassItemStatus?> values)
+    private void OnRenewalTypesChanged(IEnumerable<SeasonPassRenewalType?> values)
     {
         _selectedRenewalTypes = values?.ToHashSet() ?? new();
     }
 
-    private string GetRenewalTypeLabel(SeasonPassItemStatus? value)
+    private string GetRenewalTypeLabel(SeasonPassRenewalType? value)
     {
         if (value is null)
             return L["Selector"];
 
-        return _seasonPassRenewalTypeList.FirstOrDefault(x => x.Value == (int)value)?.Label ?? value.ToString();
+        return _seasonPassRenewalTypeList.FirstOrDefault(x => x.Value == (int)value)?.Label ?? value.ToString()!;
     }
 
     private async Task UpdateSeasonPassStatus(SeasonPassItem seasonPassItem)
@@ -352,8 +352,8 @@
         await SeasonPassService.UpdateSeasonPassStatusAsync(seasonPassItem.SeasonPassId, _seasonPassStatusRequest);
 
         seasonPassItem.SuspendedOtherReason = _seasonPassStatusRequest.SuspendedOtherReason;
-        seasonPassItem.Status = (SeasonPassItemStatus)_seasonPassStatusRequest.SeasonPassStatus;
-        seasonPassItem.SuspendedReason = (SeasonPassItemSuspendedReason?)_seasonPassStatusRequest.SeasonPassSuspendedReason;
+        seasonPassItem.Status = _seasonPassStatusRequest.SeasonPassStatus;
+        seasonPassItem.SuspendedReason = _seasonPassStatusRequest.SeasonPassSuspendedReason;
 
         CloseAll();
     }
@@ -382,14 +382,12 @@
             _seasonPassStatusRequest = new SeasonPassStatusRequest
             {
                 SeasonPassId = item.SeasonPassId,
-                SeasonPassStatus = (SeasonPassStatusRequestSeasonPassStatus)item.Status.Value
+                SeasonPassStatus = item.Status
             };
 
-            if (item.Status == SeasonPassItemStatus._1 && item.SuspendedReason != null)
+            if (item.Status == SeasonPassStatus.Suspended && item.SuspendedReason != null)
             {
-                _seasonPassStatusRequest.SeasonPassSuspendedReason =
-                    (SeasonPassStatusRequestSeasonPassSuspendedReason)item.SuspendedReason.Value;
-
+                _seasonPassStatusRequest.SeasonPassSuspendedReason = item.SuspendedReason;
                 _seasonPassStatusRequest.SuspendedOtherReason = item.SuspendedOtherReason;
             }
         }
@@ -424,7 +422,7 @@
 
     private string GetTooltipText(OrderListItem item)
     {
-        return item.SeasonPeriod == OrderListItemSeasonPeriod._1
+        return item.SeasonPeriod == SeasonPeriod.PastSeason
             ? L["ActionBoletosDisabled"]
             : L["ActionBoletos"];
     }
@@ -455,19 +453,17 @@
 
     private async Task ApplyFilters()
     {
-        ICollection<RenewalTypes> renewalTypes = _selectedRenewalTypes.Where(x => x.HasValue).Select(x => (RenewalTypes)x.Value).ToList();
+        ICollection<SeasonPassRenewalType> renewalTypes = _selectedRenewalTypes.Where(x => x.HasValue).Select(x => x!.Value).ToList();
         _orderListFilters.RenewalTypes = renewalTypes;
         await _dataGrid.ReloadServerData();
     }
 
-
     private async Task ClearFilters()
     {
-        _selectedRenewalTypes = new HashSet<SeasonPassItemStatus?>();
-        ICollection<RenewalTypes> renewalTypes = _selectedRenewalTypes.Where(x => x.HasValue).Select(x => (RenewalTypes)x.Value).ToList();
+        _selectedRenewalTypes = new HashSet<SeasonPassRenewalType?>();
+        ICollection<SeasonPassRenewalType> renewalTypes = _selectedRenewalTypes.Where(x => x.HasValue).Select(x => x!.Value).ToList();
         _orderListFilters.RenewalTypes = renewalTypes;
         await _dataGrid.ReloadServerData();
-        
     }
 
     private async Task<GridData<OrderListItem>> ServerReload(GridState<OrderListItem> state)
@@ -498,7 +494,7 @@
         if (_orderListFilters.SeasonId is null)
             return;
 
-        NavigationManager.NavigateTo($"/xolopass/checkout/{_selectedSeason.SeasonId}");
+        NavigationManager.NavigateTo($"/xolopass/checkout/{_selectedSeason.Id}");
     }
 
     private void OnRenewClick(OrderListItem item)

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element msdata:IsDataSet="true" name="root">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" msdata:Ordinal="1" name="value" type="xsd:string"/>
+                <xsd:element minOccurs="0" msdata:Ordinal="2" name="comment" type="xsd:string"/>
+              </xsd:sequence>
+              <xsd:attribute msdata:Ordinal="1" name="name" type="xsd:string" use="required"/>
+              <xsd:attribute msdata:Ordinal="3" name="type" type="xsd:string"/>
+              <xsd:attribute msdata:Ordinal="4" name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Events</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search...</value>
+  </data>
+  <data name="FilterVenue" xml:space="preserve">
+    <value>Venue</value>
+  </data>
+  <data name="FilterCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="FilterDateRange" xml:space="preserve">
+    <value>Date Range</value>
+  </data>
+  <data name="FilterClear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="FilterApply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ColumnDateTime" xml:space="preserve">
+    <value>Date &amp; Time</value>
+  </data>
+  <data name="ColumnEventName" xml:space="preserve">
+    <value>Event / Venue</value>
+  </data>
+  <data name="ColumnCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="ColumnAvailability" xml:space="preserve">
+    <value>Available / Total</value>
+  </data>
+  <data name="ColumnActions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="ActionBoletos" xml:space="preserve">
+    <value>View Seats</value>
+  </data>
+  <data name="ErrorLoadingFilters" xml:space="preserve">
+    <value>Could not load filter options.</value>
+  </data>
+  <data name="ErrorLoadingEvents" xml:space="preserve">
+    <value>Could not load events list.</value>
+  </data>
+  <data name="ErrorLoadingSeason" xml:space="preserve">
+    <value>Could not load season details.</value>
+  </data>
+  <data name="DeleteDialogTitle" xml:space="preserve">
+    <value>Delete {0}?</value>
+  </data>
+  <data name="DeleteDialogMessage" xml:space="preserve">
+    <value>This action cannot be undone. Are you sure?</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Season deleted successfully.</value>
+  </data>
+  <data name="DeleteError" xml:space="preserve">
+    <value>Error deleting the season.</value>
+  </data>
+  <data name="NoEventsFound" xml:space="preserve">
+    <value>No events were found.</value>
+  </data>
+</root>

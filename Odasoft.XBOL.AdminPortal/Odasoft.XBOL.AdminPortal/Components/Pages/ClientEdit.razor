@@ -1,0 +1,395 @@
+@page "/clients/{Id:long}/edit"
+@using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Business.Services
+@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Models.Constants
+@using Odasoft.XBOL.Models.ViewModels
+@using System.ComponentModel.DataAnnotations
+
+@inject ClientsService _clientService;
+@inject NavigationManager _navigationManager;
+@inject LoadingState LoadingState
+@inject IStringLocalizer<ClientsCreate> L
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+
+<PageTitle>Editar Empresa</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToClientsListAsync())"
+                       Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<LoadingContainer IsLoading="@_isLoading">
+    <MudCard Elevation="3" Class="pa-6">
+        <EditForm FormName="ClientEdit" Model="@model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <MudGrid Spacing="8">
+                <MudItem xs="12">
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.h5">Empresa</MudText>
+                        <MudText Typo="Typo.caption">*Campos obligatorios</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudTextField @bind-Value="model.CompanyName" For="@(() => model.CompanyName)"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Label="Empresa" Required
+                                  RequiredError="El nombre de la empresa es obligatorio.">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudTextField @bind-Value="model.SocialReason" For="@(() => model.SocialReason)"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Label="Razón social">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudTextField @bind-Value="model.Rfc" For="@(() => model.Rfc)" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" Label="RFC">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudSelect T="ClientType?" Label="Tipo de persona" Margin="Margin.Dense" Variant="Variant.Outlined"
+                               @bind-Value="model.PersonTypeId" For="@(() => model.PersonTypeId)" Clearable>
+                        @foreach (var clientType in _clientTypes)
+                        {
+                            <MudSelectItem T="ClientType?" Value="@clientType">
+                                <MudText>@L[clientType.ToString()]</MudText>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2">Dirección y contacto</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudTextField @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" Label="País">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudTextField @bind-Value="model.State" For="@(() => model.State)" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" Label="Estado">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudTextField @bind-Value="model.Street" For="@(() => model.Street)" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" Label="Calle">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudGrid Spacing="8">
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="model.ExtNumber" For="@(() => model.ExtNumber)"
+                                          Variant="Variant.Outlined" Margin="Margin.Dense" Label="Número">
+                            </MudTextField>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="model.IntNumber" For="@(() => model.IntNumber)"
+                                          Variant="Variant.Outlined" Margin="Margin.Dense" Label="Número interior">
+                            </MudTextField>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12" lg="6">
+                    <MudGrid Spacing="8">
+                        <MudItem xs="12" md="6" lg="3">
+                            <MudTextField @bind-Value="model.PostalCode" For="@(() => model.PostalCode)"
+                                          Variant="Variant.Outlined" Margin="Margin.Dense" Label="Código Postal">
+                            </MudTextField>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="model.Neighborhood" For="@(() => model.Neighborhood)"
+                                          Variant="Variant.Outlined" Margin="Margin.Dense" Label="Colonia">
+                            </MudTextField>
+                        </MudItem>
+                        <MudItem xs="12" md="6" lg="3">
+                            <MudTextField @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" Label="Ciudad">
+                            </MudTextField>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12" lg="6">
+                    <MudGrid Spacing="8">
+                        <MudItem xs="12" md="6" lg="3">
+                            <MudSelect Label="Lada" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                       @bind-Value="model.CountryPhoneCode" For="@(() => model.CountryPhoneCode)" Clearable>
+                                @foreach (var item in CountryDialCodes.Map)
+                                {
+                                    <MudSelectItem T="string" Value="item.Value">
+                                        @item.Value
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="6" lg="3">
+                            <MudTextField @bind-Value="model.Phone" For="@(() => model.Phone)"
+                                          Variant="Variant.Outlined" Margin="Margin.Dense" Label="Teléfono">
+                            </MudTextField>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="model.Email" For="@(() => model.Email)"
+                                          Variant="Variant.Outlined" Margin="Margin.Dense" Label="Correo electrónico">
+                            </MudTextField>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2">Representante legal</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudTextField @bind-Value="model.LegalRep.Name" For="@(() => model.LegalRep.Name)"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Label="Nombre completo">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Date="LegalRepDOB"
+                                   For="@(() => LegalRepDOB)" Label="Fecha de nacimiento" Mask="@(new DateMask("dd/MM/yyyy"))"
+                                   DateFormat="dd/MM/yyyy" Clearable />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudTextField @bind-Value="model.LegalRep.Rfc" For="@(() => model.LegalRep.Rfc)"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Label="RFC">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudTextField @bind-Value="model.LegalRep.Curp" For="@(() => model.LegalRep.Curp)"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Label="CURP">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSwitch @bind-Value="CreditEnabled" Color="Color.Primary" UncheckedColor="Color.Secondary">
+                        Crédito</MudSwitch>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2">Datos del crédito</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudTextField @bind-Value="model.Credit.AuthorizedAmount"
+                                      For="@(() => model.Credit.AuthorizedAmount)" Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                      Margin="Margin.Dense" Label="Importe autorizado" Placeholder="0.00" Disabled="!CreditEnabled" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Date="CreditStartDate"
+                                       For="@(() => CreditStartDate)" Label="Fecha de inicio" Mask="@(new DateMask("dd/MM/yyyy"))"
+                                       DateFormat="dd/MM/yyyy" Disabled="!CreditEnabled" Clearable />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudSelect T="PaymentFrequency?" Label="Periodicidad de pago" Margin="Margin.Dense"
+                                   Variant="Variant.Outlined" @bind-Value="model.Credit.PaymentCycleTypeId"
+                                   For="@(() => model.Credit.PaymentCycleTypeId)" Disabled="!CreditEnabled" Clearable>
+                            @foreach (var paymentFrequency in _paymentFrequencies)
+                            {
+                                <MudSelectItem T="PaymentFrequency?" Value="@paymentFrequency">
+                                    <MudText>@L[paymentFrequency.ToString()]</MudText>
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudSelect Label="¿Aplica tasa de interés?" Margin="Margin.Dense"
+                                   @bind-Value="model.Credit.InterestApply" For="@(() => model.Credit.InterestApply)"
+                                   Variant="Variant.Outlined" Disabled="!CreditEnabled" Clearable>
+                            <MudSelectItem Value="(bool?)true">Si</MudSelectItem>
+                            <MudSelectItem Value="(bool?)false">No</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudTextField @bind-Value="model.Credit.TotalPlusInterest"
+                                      For="@(() => model.Credit.TotalPlusInterest)" Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                      Margin="Margin.Dense" Label="Monto total + intereses" Placeholder="0.00"
+                                      Disabled="!CreditEnabled" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudTextField @bind-Value="model.Credit.TermInDays" For="@(() => model.Credit.TermInDays)"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" Label="Plazo (días)" Disabled="!CreditEnabled">
+                        </MudTextField>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudPaper Class="d-flex justify-end" Elevation="0">
+                            <MudButton StartIcon="@Icons.Material.Outlined.Save" Variant="Variant.Filled"
+                                       Color="Color.Tertiary" ButtonType="ButtonType.Submit">
+                                GUARDAR
+                            </MudButton>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudCard>
+    </LoadingContainer>
+
+@code {
+    [Parameter] public long Id { get; set; }
+    private UpdateClientRequest model = new();
+
+    private bool _isLoading = false;
+    private bool _isSubmitting = false;
+    private bool _updatedSuccesfully = false;
+
+    private bool _creditEnabled = false;
+
+    public bool CreditEnabled
+    {
+        get
+        {
+            return _creditEnabled;
+        }
+        set
+        {
+            _creditEnabled = value;
+            model.HasCredit = value;
+            if (!value)
+            {
+                ResetCredit();
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ResetCredit()
+    {
+        model.Credit = new();
+        CreditStartDate = null;
+    }
+
+    private DateTime? CreditStartDate { get; set; }
+    private DateTime? LegalRepDOB { get; set; }
+
+
+    private List<ClientType> _clientTypes = Enum.GetValues<ClientType>().ToList();
+    private List<PaymentFrequency> _paymentFrequencies = Enum.GetValues<PaymentFrequency>().ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoading = true;
+
+        model.LegalRep = new();
+        model.Credit = new();
+
+        try
+        {
+            var client = await _clientService.GetClientDetailsAsync(Id);
+
+            if (client is not null)
+            {
+                model = new()
+                {
+                    CompanyName = client.ClientName ?? string.Empty,
+                    SocialReason = client.BusinessName,
+                    Rfc = client.TaxId,
+                    PersonTypeId = client.ClientType,
+                    Country = client.Country,
+                    State = client.State,
+                    Street = client.StreetAddress,
+                    ExtNumber = client.ExtNum,
+                    IntNumber = client.IntNum,
+                    PostalCode = client.PostalCode,
+                    Neighborhood = client.Neighborhood,
+                    City = client.City,
+                    CountryPhoneCode = client.CountryPhoneCode,
+                    Phone = client.PhoneNumber,
+                    Email = client.Email
+                };
+
+                model.LegalRep = new();
+                if (client.LegalRepresentative is not null)
+                {
+                    model.LegalRep.Id = client.LegalRepresentative.Id;
+                    model.LegalRep.Name = client.LegalRepresentative.FullName;
+                    model.LegalRep.Rfc = client.LegalRepresentative.TaxId;
+                    model.LegalRep.Curp = client.LegalRepresentative.Curp;
+                }
+
+                model.Credit = new();
+                if (client.ClientCredit is not null)
+                {
+                    model.Credit.Id = client.ClientCredit.Id;
+                    model.Credit.AuthorizedAmount = client.ClientCredit.CreditLimit;
+                    model.Credit.PaymentCycleTypeId = client.ClientCredit.PaymentFrequency;
+                    model.Credit.InterestApply = client.ClientCredit.AppliesInterestRate;
+                    model.Credit.TotalPlusInterest = 0;
+                }
+
+                LegalRepDOB = client.LegalRepresentative?.Dob?.Date;
+                CreditStartDate = client.ClientCredit?.StartDate?.Date;
+                CreditEnabled = client.ClientCredit is not null;
+            }
+            else
+            {
+                _snackbar.Add("Cliente no encontrado.", Severity.Warning);
+                _navigationManager.NavigateTo(SitePages.CLIENTS_LIST);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading options: {ex.Message}");
+            _snackbar.Add("Error al cargar las opciones.", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task GoToClientsListAsync()
+    {
+        bool exit = await ConfirmExit();
+
+        if (exit)
+        {
+            _navigationManager.NavigateTo(SitePages.CLIENTS_LIST);
+        }
+    }
+
+    private async Task<bool> ConfirmExit()
+    {
+        var options = new DialogOptions { CloseButton = true, NoHeader = true };
+        var parameters = new DialogParameters<ConfirmDialog>();
+
+        parameters.Add(dialog => dialog.Message, "Los cambios no guardados se perderan. ¿Desea continuar?");
+
+        var dialog = await _dialogService.ShowAsync<ConfirmDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        return result is not null && !result.Canceled;
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        if (_isSubmitting)
+        {
+            return;
+        }
+
+        _isSubmitting = true;
+        LoadingState.Show();
+        try
+        {
+            model.LegalRep.Birthday = LegalRepDOB;
+            model.Credit.StartDate = CreditStartDate.HasValue ? CreditStartDate.Value : default;
+
+            await _clientService.UpdateClientAsync(Id, model);
+
+            _snackbar.Add("Cliente actualizado exitosamente.", Severity.Success);
+            _navigationManager.NavigateTo(SitePages.CLIENTS_LIST);
+        }
+        catch (Exception)
+        {
+            _snackbar.Add("Error al actualizar el cliente, intenta mas tarde", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+            LoadingState.Hide();
+        }
+    }
+}

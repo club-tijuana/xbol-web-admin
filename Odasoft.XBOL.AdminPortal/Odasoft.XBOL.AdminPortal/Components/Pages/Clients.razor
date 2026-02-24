@@ -1,0 +1,488 @@
+@page "/clients"
+
+@using Microsoft.Net.Http.Headers
+@using Odasoft.XBOL.AdminPortal.Extensions
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Business.Services
+@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Models.ViewModels;
+
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+@inject IJSRuntime JS;
+@inject NavigationManager _navigationManager;
+@inject ClientsService _clientService;
+@inject CreditTransactionsService _creditTransactionsService;
+
+<PageTitle>Empresas</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <RightContent>
+            <MudStack Row="true" Spacing="4">
+                <MudButton StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => DownloadFiles())"
+                           Disabled="@_disableDownloads" Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">Descargar Seleccionados</MudButton>
+                <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateClient())"
+                           Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nueva Empresa</MudButton>
+            </MudStack>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
+    <MudCardContent Class="pa-0">
+        <MudDataGrid T="EnterpriseViewModel" MultiSelection="true" @ref="_dataGrid" ServerData="ServerReloadAsync" Loading="_loading" Filterable="false"
+                     FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0" @bind-SelectedItems="_selectedClients" RowClick="@RowClicked">
+            <ToolBarContent>
+                <MudGrid Class="align-center">
+                    <MudItem xs="12" sm="6" lg="8">
+                        <MudText Class="pl-lg-4" Typo="Typo.h5">Empresas</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" lg="4">
+                        <MudStack Row AlignItems="AlignItems.Center">
+                            <!-- Search field -->
+                            <MudTextField @bind-Value="SearchTerm" Placeholder="Buscar"
+                                          Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
+                                          AdornmentAriaLabel="Buscar" AdornmentIcon="@Icons.Material.Filled.Search"
+                                          IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1"
+                                          DebounceInterval="500" />
+
+                            <!-- Level multi-select -->
+                            <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                                <ActivatorContent>
+                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" />
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudStack Spacing="3" Class="pa-4" Style="width:375px">
+                                        <MudSelect T="CreditStatus" Label="Estatus de crédito" MultiSelection="true"
+                                                   Margin="Margin.Dense" Variant="Variant.Outlined"
+                                                   ShrinkLabel @bind-SelectedValues="_selectedCreditStatus"
+                                                   Placeholder="Seleccionar"
+                                                   ToStringFunc="GetCreditStatusLabel">
+                                            @foreach (var creditStatus in _creditStatus)
+                                            {
+                                                <MudSelectItem T="CreditStatus" Value="@((CreditStatus)@creditStatus.Value)">
+                                                    <MudText Typo="Typo.body2">@creditStatus.Label</MudText>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+
+                                        <MudSelect Label="Crédito"
+                                                   Margin="Margin.Dense" @bind-Value="_onlyCredits"
+                                                   Placeholder="Seleccionar"
+                                                   Variant="Variant.Outlined" ShrinkLabel>
+                                            <MudSelectItem Value="(bool?)true">Si</MudSelectItem>
+                                            <MudSelectItem Value="(bool?)false">No</MudSelectItem>
+                                        </MudSelect>
+
+                                        <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
+                                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
+                                                       Class="mud-no-activator" OnClick="ClearFilters">
+                                                Limpiar
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
+                                                       StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyFilters">
+                                                Aplicar
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudStack>
+                                </ChildContent>
+                            </MudMenu>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </ToolBarContent>
+            <Columns>
+                <SelectColumn T="EnterpriseViewModel" />
+                <PropertyColumn Title="Empresa" Property="x => x.Name" Sortable="true" Filterable="false" InitialDirection="SortDirection.Ascending">
+                    <CellTemplate>
+                        <div @onclick:preventDefault @onclick:stopPropagation="true">
+                            <MudText Class="cursor-pointer" Typo="Typo.body2" Color="Color.Primary"
+                                     @onclick="() => ShowClientDetailsAsync(context.Item.Id)">@context.Item.Name</MudText>
+                        </div>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="Representante legal" Property="x => x.LegalRepresentative" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.LegalRepresentative</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="Crédito" Property="x => x.Credit" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Align="Align.Right">@context.Item.Credit</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="Pendiente" Property="x => x.PendingCredit" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Align="Align.Right">@context.Item.PendingCredit</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="Monto pagado" Property="x => x.AmountPaid" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Align="Align.Right">@context.Item.AmountPaid</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="Estatus" Property="x => x.CreditStatus" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudChip T="string" Color="@GetCreditStatusColor(context.Item.CreditStatusValue)" Size="Size.Small">@context.Item.CreditStatus</MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <TemplateColumn Filterable="false" Sortable="false">
+                    <CellTemplate>
+                        <MudStack Row>
+
+                            <MudTooltip Text="Editar" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Medium"
+                                               OnClick="@(() => UpdateClient(context.Item.Id))" />
+                            </MudTooltip>
+
+                            <MudTooltip Text="Abonar" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Shop" Size="Size.Medium"
+                                               OnClick="@(() => PayOnCreditAsync(context.Item.Id))" />
+                            </MudTooltip>
+
+                            <MudTooltip Text="Borrar" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Medium"
+                                               OnClick="@(() => DeleteClient(context.Item.Id))" />
+                            </MudTooltip>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <PagerContent>
+                <CustomMudDataGridPager T="EnterpriseViewModel" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+
+    private bool _loading = false;
+    private string _searchTerm = "";
+    private bool _disableDownloads => _selectedClients.Count == 0;
+
+    private string SearchTerm
+    {
+        get { return _searchTerm; }
+        set { _searchTerm = value; _ = ApplyFilters(); }
+    }
+
+    private MudDataGrid<EnterpriseViewModel> _dataGrid = default!;
+
+    private ClientFilterParameters _filters = new();
+
+    private IEnumerable<EnterpriseViewModel> _clients = [];
+    private HashSet<EnterpriseViewModel> _selectedClients = [];
+
+    private List<EnumItemDto> _creditStatus = [];
+    private IEnumerable<CreditStatus> _selectedCreditStatus = [];
+
+    private bool? _onlyCredits = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _loading = true;
+        try
+        {
+            _creditStatus = await _clientService.GetCreditStatusOptionsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading credit status options: {ex.Message}");
+            _snackbar.Add("Error al cargar las opciones de estatus de crédito.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task DownloadFiles()
+    {
+        try
+        {
+            var clientIds = _selectedClients.Select(item => item.Id).ToList();
+
+            FileResponse? file = await _clientService.DownloadClientsCsvAsync(clientIds);
+
+            if (file is null)
+            {
+                throw new Exception("No se recibió un archivo para descargar.");
+            }
+            else
+            {
+                await DownloadFileAsync(file);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error trying to get file: {ex.Message}");
+            _snackbar.Add($"Error al tratar de descargar el archivo", Severity.Error);
+        }
+    }
+
+    private async Task DownloadFileAsync(FileResponse file)
+    {
+        try
+        {
+            string contentDisposition = file.Headers["Content-Disposition"].FirstOrDefault() ?? "";
+            string filename = "";
+
+            if (ContentDispositionHeaderValue.TryParse(contentDisposition, out var disposition))
+            {
+                filename = disposition.FileNameStar.Value ?? disposition.FileName.Value ?? filename;
+                filename = filename.Trim('\"');
+            }
+
+            using var streamRef = new DotNetStreamReference(stream: file.Stream);
+
+            await JS.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+
+            _snackbar.Add("Archivo descargado correctamente", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error downloading file: {ex.Message}");
+            _snackbar.Add($"Error al descargar el archivo", Severity.Error);
+        }
+    }
+
+    private void CreateClient()
+    {
+        _navigationManager.NavigateTo(SitePages.CLIENTS_CREATE);
+    }
+
+    private async Task<GridData<EnterpriseViewModel>> ServerReloadAsync(GridState<EnterpriseViewModel> state)
+    {
+        _loading = true;
+
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+
+        _filters = new ClientFilterParameters
+        {
+            CreditStatus = _selectedCreditStatus.ToList(),
+            HasCredit = _onlyCredits,
+            SearchTerm = SearchTerm,
+            SortBy = sortDefinition?.SortBy ?? "",
+            Descending = sortDefinition?.Descending ?? false,
+            Page = state.Page,
+            PageSize = state.PageSize
+        };
+        try
+        {
+            ClientResultPagedResponse clients = await _clientService.GetClientsAsync(_filters);
+
+            return new GridData<EnterpriseViewModel>
+            {
+                TotalItems = clients.TotalCount,
+                Items = clients.Items.Select(c => new EnterpriseViewModel
+                {
+                    Id = c.Id,
+                    Name = c.ClientName,
+                    LegalRepresentative = c.LegalRepName,
+                    Credit = (c.HasCredit && c.CreditAmount is not null) ? c.CreditAmount.Value.ToString(FormatConstants.CURRENCY) : "No",
+                    PendingCredit = c.PendingAmount is not null ? c.PendingAmount.Value.ToString(FormatConstants.CURRENCY) : "-",
+                    AmountPaid = c.AmountPaid is not null ? c.AmountPaid.Value.ToString(FormatConstants.CURRENCY) : "-",
+                    CreditStatus = c.CreditStatus is not null ? GetCreditStatusLabel(c.CreditStatus.Value) : "-",
+                    CreditStatusValue = (int?)c.CreditStatus
+                }) ?? []
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading clients: {ex.Message}");
+
+            return new GridData<EnterpriseViewModel>
+            {
+                TotalItems = 0,
+                Items = []
+            };
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string GetCreditStatusLabel(CreditStatus value)
+    {
+        return _creditStatus.FirstOrDefault(x => x.Value == (int)value)?.Label ?? value.ToString()!;
+    }
+
+    private static Color GetCreditStatusColor(int? status) => status switch
+    {
+        0 => Color.Default,  // Pending
+        1 => Color.Success,  // Paid
+        2 => Color.Warning,  // Delayed
+        3 => Color.Info,     // Partial
+        _ => Color.Default
+    };
+
+    private void RowClicked(DataGridRowClickEventArgs<EnterpriseViewModel> args)
+    {
+        _navigationManager.NavigateTo($"/clients/{args.Item.Id}/credit");
+    }
+
+    private async Task ClearFilters()
+    {
+        _filters = new ClientFilterParameters();
+        SearchTerm = string.Empty;
+        _selectedCreditStatus = [];
+        _onlyCredits = null;
+        await _dataGrid.ReloadServerData();
+    }
+
+    private async Task ApplyFilters()
+    {
+        await _dataGrid.ReloadServerData();
+    }
+
+    private void UpdateClient(long clientId)
+    {
+        _navigationManager.NavigateTo($"/clients/{clientId}/edit");
+    }
+
+    private async Task DeleteClient(long clientId)
+    {
+        bool dialogResult = await DialogServiceExtensions.ShowConfirmDeleteAsync(_dialogService,
+                             "Eliminar Empresa",
+                              "Esta acción no se puede deshacer. ¿Está seguro de que desea eliminar esta empresa?");
+
+        if (dialogResult)
+        {
+            // TODO: Show loading
+            try
+            {
+                await _clientService.DeleteClientAsync(clientId);
+                _snackbar.Add("Empresa eliminada correctamente", Severity.Success);
+                await _dataGrid.ReloadServerData();
+            }
+            catch (Exception ex)
+            {
+                _snackbar.Add("Error al eliminar la empresa. Intente de nuevo más tarde.", Severity.Error);
+            }
+        }
+    }
+
+    private async Task ShowClientDetailsAsync(long clientId)
+    {
+        DialogOptions options = new()
+        {
+            CloseButton = true,
+            FullWidth = true,
+            CloseOnEscapeKey = true
+        };
+
+        ClientDetailResult clientDetails = await _clientService.GetClientDetailsAsync(clientId);
+
+        // TODO: Move VM initialization to constructors or mapper
+        var client = new ClientViewModel
+        {
+            Address = $"{clientDetails.StreetAddress} {clientDetails.ExtNum}, {clientDetails.Neighborhood}, {clientDetails.PostalCode} {clientDetails.City}, {clientDetails.State} {clientDetails.Country}",
+            CompanyName = clientDetails.BusinessName,
+            CompanyTaxId = clientDetails.TaxId,
+            ContactEmail = clientDetails.Email,
+            Id = clientDetails.Id,
+            Name = clientDetails.ClientName,
+            Phone = $"({clientDetails.CountryPhoneCode}) {clientDetails.PhoneNumber}"
+        };
+
+        var credit = clientDetails.ClientCredit is not null ? new ClientCreditViewModel
+        {
+            AmountPaid = clientDetails.ClientCredit.AmountPaid is not null ? clientDetails.ClientCredit.AmountPaid.Value.ToString("C") : "-",
+            AppliesTaxes = clientDetails.ClientCredit.AppliesInterestRate is not null ? clientDetails.ClientCredit.AppliesInterestRate == true ? "Si" : "No" : "-",
+            Credit = clientDetails.ClientCredit.CreditLimit is not null ? clientDetails.ClientCredit.CreditLimit.Value.ToString("C") : "-",
+            NumberOfInstallments = "-",
+            PaymentTerm = clientDetails.ClientCredit.PaymentFrequencyLabel,
+            PendingAmount = clientDetails.ClientCredit.PendingAmount is not null ? clientDetails.ClientCredit.PendingAmount.Value.ToString("C") : "-",
+            StartDate = clientDetails.ClientCredit.StartDate is not null ? clientDetails.ClientCredit.StartDate.Value.ToString("dd/MM/yyyy") : "-",
+            Status = clientDetails.ClientCredit.CreditStatusLabel,
+            Term = "-"
+        } : new();
+
+        var representative = clientDetails.LegalRepresentative is not null ? new LegalRepresentativeViewModel
+        {
+            ClientId = clientDetails.LegalRepresentative.ClientId,
+            DOB = clientDetails.LegalRepresentative.Dob is not null ? clientDetails.LegalRepresentative.Dob.Value.ToString("dd/MM/yyyy") : "-",
+            Id = clientDetails.LegalRepresentative.Id,
+            Name = clientDetails.LegalRepresentative.FullName,
+            SSN = clientDetails.LegalRepresentative.Curp,
+            TaxId = clientDetails.LegalRepresentative.TaxId
+        } : new();
+
+        var parameters = new DialogParameters<ClientCreditDialog>
+        {
+            { x => x.Client, client },
+            { x => x.Credit, credit },
+            { x => x.Representative, representative }
+        };
+
+        var dialog = await _dialogService.ShowAsync<ClientCreditDialog>("", parameters, options);
+        var result = await dialog.Result;
+    }
+
+    private async Task PayOnCreditAsync(long clientId)
+    {
+        DialogOptions options = new()
+        {
+            CloseButton = true,
+            FullWidth = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = await _dialogService.ShowAsync<CreditTransactionDialog>("", options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+        {
+            return;
+        }
+
+        if (result.Data is CreditTransactionModel creditTransaction)
+        {
+            try
+            {
+                if (creditTransaction.AmountPaid <= 0
+                    || creditTransaction.PaymentDate.HasValue == false
+                    || creditTransaction.PaymentMethod.HasValue == false)
+                {
+                    _snackbar.Add("Con los datos proporcionados no se puede guardar el abono.", Severity.Warning);
+                    return;
+                }
+
+                ClientDetailResult clientDetails = await _clientService.GetClientDetailsAsync(clientId);
+
+                var response = await _creditTransactionsService.CreateCreditTransactionByCreditAccountIdAsync(clientDetails.ClientCredit.Id,
+                    new ClientCreditTransactionRequest
+                    {
+                        Amount = creditTransaction.AmountPaid,
+                        PaymentType = creditTransaction.PaymentMethod,
+                        TransactionDate = creditTransaction.PaymentDate,
+                        TransactionType = CreditTransactionType.Payment
+                    });
+
+                if (response)
+                {
+                    _snackbar.Add("Abono guardado exitosamente.", Severity.Success);
+                    await _dataGrid.ReloadServerData();
+                    return;
+                }
+
+                _snackbar.Add("El abano no pudo ser guardado.", Severity.Error);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating credit transacion: {ex.Message}");
+                _snackbar.Add("Error al tratar de guardar el abono", Severity.Error);
+            }
+        }
+    }
+}

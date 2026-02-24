@@ -1,0 +1,30 @@
+<MudStack Spacing="0" Class="flex-grow-1 pt-4 pr-4 pl-6">
+    @* Search bar *@
+    <MudStack Row Justify="Justify.FlexEnd" AlignItems="AlignItems.Center" Spacing="3" Class="mb-3">
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="40%" Height="40px" />
+        <MudSkeleton SkeletonType="SkeletonType.Circle" Width="32px" Height="32px" />
+    </MudStack>
+    @* Table header *@
+    <MudGrid Spacing="2" Class="mb-2">
+        <MudItem xs="3"><MudSkeleton SkeletonType="SkeletonType.Text" Width="70%" /></MudItem>
+        <MudItem xs="4"><MudSkeleton SkeletonType="SkeletonType.Text" Width="50%" /></MudItem>
+        <MudItem xs="3"><MudSkeleton SkeletonType="SkeletonType.Text" Width="70%" /></MudItem>
+        <MudItem xs="2"></MudItem>
+    </MudGrid>
+    @* Table rows *@
+    @for (var row = 0; row < 5; row++)
+    {
+        <MudGrid Spacing="2" Class="my-1">
+            <MudItem xs="3"><MudSkeleton SkeletonType="SkeletonType.Text" Width="85%" /></MudItem>
+            <MudItem xs="4"><MudSkeleton SkeletonType="SkeletonType.Text" Width="60%" /></MudItem>
+            <MudItem xs="3"><MudSkeleton SkeletonType="SkeletonType.Text" Width="55%" /></MudItem>
+            <MudItem xs="2" Class="d-flex justify-end">
+                <MudSkeleton SkeletonType="SkeletonType.Circle" Width="28px" Height="28px" />
+            </MudItem>
+        </MudGrid>
+    }
+    @* Pagination *@
+    <div class="d-flex justify-end align-center mt-6">
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="35%" Height="40px" />
+    </div>
+</MudStack>

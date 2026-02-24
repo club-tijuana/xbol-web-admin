@@ -6,41 +6,47 @@ namespace Odasoft.XBOL.AdminPortal.Services
 {
     public class SeasonService(IAdminClient apiClient) : ISeasonService
     {
-        public async Task<ImageHeroBannerViewModel> GetSeasonBannerByEventAsync(long eventId)
+        public async Task<SeasonListItemPagedResponse> GetSeasonsAsync(SeasonStatus? status, SeasonPeriod? period, string? sortBy, bool? descending)
         {
-            var result = await apiClient.GetSeasonBannerAsync(eventId);
-            if (result != null)
+            return await apiClient.GetSeasonsAsync(
+                startDate: null,
+                endDate: null,
+                status: status,
+                period: period,
+                searchTerm: null,
+                sortBy: sortBy,
+                descending: descending,
+                page: null,
+                pageSize: null);
+        }
+
+        public async Task<SeasonResult> GetSeasonByIdAsync(long id)
+        {
+            return await apiClient.GetSeasonByIdAsync(id);
+        }
+
+        public async Task<SeasonResult> CreateSeasonAsync(CreateSeasonRequest request)
+            => await apiClient.CreateSeasonAsync(request);
+
+        public async Task UpdateSeasonAsync(long id, UpdateSeasonRequest request)
+            => await apiClient.UpdateSeasonAsync(id, request);
+
+        public async Task DeleteSeasonAsync(long id)
+            => await apiClient.DeleteSeasonAsync(id);
+
+        public async Task<ImageHeroBannerViewModel> GetSeasonBannerAsync(long seasonId)
+        {
+            var season = await apiClient.GetSeasonByIdAsync(seasonId);
+
+            return new ImageHeroBannerViewModel
             {
-                ImageHeroBannerViewModel banner = new()
-                {
-                    ImageUrl = result.ImageUrl,
-                    Subtitle = result.Subtitle,
-                    Title = result.Title,
-                    Venue = result.Venue,
-                    EndDateTime = result.EndDateTime?.UtcDateTime,
-                    StartDateTime = result.StartDateTime?.UtcDateTime,
-                };
-                return banner;
-            }
-            return new ImageHeroBannerViewModel();
-        }
-
-        public async Task<List<SeasonSelectorItem>> GetSeasonSelectorItemsAsync()
-        {
-            var result = await apiClient.GetSeasonSelectorItemsAsync();
-            return result.ToList();
-        }
-
-        public async Task<long?> GetLatestEventIdBySeasonAsync(long seasonId)
-        {
-            var result = await apiClient.GetLatestEventIdBySeasonAsync(seasonId);
-            return result;
-        }
-
-        public async Task<string?> GetSeasonKeyAsync(long seasonId)
-        {
-            var result = await apiClient.GetSeasonKeyAsync(seasonId);
-            return result.Value;
+                ImageUrl = season.BannerImageUrl,
+                Title = season.Name,
+                Subtitle = season.Description,
+                Venue = season.Venue,
+                StartDateTime = season.StartDate?.UtcDateTime,
+                EndDateTime = season.EndDate?.UtcDateTime,
+            };
         }
     }
 }

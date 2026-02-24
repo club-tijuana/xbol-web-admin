@@ -1,29 +1,55 @@
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Odasoft.XBOL.AdminPortal</a>
-    </div>
-</div>
+@using Odasoft.XBOL.Common.Constants
+<MudNavMenu>
+    <MudNavLink Href="/" Match="NavLinkMatch.All" IconColor="Color.Primary"
+                Icon="@Icons.Material.Filled.Dashboard" Class="nav-link pt-1">
+        Dashboard
+    </MudNavLink>
+    <MudNavLink Href="/seasons" IconColor="Color.Primary" Class="nav-link pt-1"
+                Icon="@Icons.Material.Filled.SportsSoccer">
+        Torneos
+    </MudNavLink>
+    <MudNavLink Href="/events" IconColor="Color.Primary" Class="nav-link pt-1"
+                Icon="@Icons.Material.Filled.ConfirmationNumber">
+        Eventos
+    </MudNavLink>
+    <MudNavLink Href="/xolopass" IconColor="Color.Primary" Class="nav-link-rounded pt-1"
+                Icon="@Icons.Material.Filled.EventSeat">
+        Xolopass
+    </MudNavLink>
+    <MudNavLink Href="/clients" IconColor="Color.Primary" Class="nav-link-rounded pt-1"
+                Icon="@Icons.Material.Filled.Badge">
+        Empresas y créditos
+    </MudNavLink>
+    <MudNavLink Href="/venues" IconColor="Color.Primary" Class="nav-link-rounded pt-1"
+                Disabled Icon="@Icons.Material.Filled.Stadium">
+        Recintos
+    </MudNavLink>
+    <MudNavLink Href="/reports" IconColor="Color.Primary" Class="nav-link-rounded pt-1"
+                Disabled Icon="@Icons.Material.Filled.InsertChart">
+        Reportes
+    </MudNavLink>
+    <MudNavGroup Title="Gestión de palcos" IconColor="Color.Primary" Class="nav-link pt-1" Icon="@Icons.Material.Rounded.Castle" Expanded="false">
+        <MudNavLink Href="@SitePages.SUITE_AGREEMENTS" Class="nav-link pt-1">
+            Contratos
+        </MudNavLink>
+        <MudNavLink Href="/suites/sales" Class="nav-link pt-1">
+            Ventas
+        </MudNavLink>
+        <MudNavLink Href="@SitePages.SUITES_SETTINGS" Class="nav-link pt-1">
+            Palcos
+        </MudNavLink>
+    </MudNavGroup>
+    <MudNavGroup Title="Configuración"
+                 Icon="@Icons.Material.Filled.Settings"
+                 IconColor="Color.Primary"
+                 Class="nav-link-rounded pt-1"
+                 Disabled>
+        <MudNavLink Href="/settings/users" Class="pt-1">
+            Usuarios
+        </MudNavLink>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="events">
-                <MudIcon Icon="@Icons.Material.Rounded.LocalActivity" Size="Size.Small" Class="me-2" /> Eventos
-            </NavLink>
-        </div>
-    </nav>
-</div>
+        <MudNavLink Href="/settings/security" Class="pt-1" Disabled>
+            Roles
+        </MudNavLink>
+    </MudNavGroup>
+</MudNavMenu>

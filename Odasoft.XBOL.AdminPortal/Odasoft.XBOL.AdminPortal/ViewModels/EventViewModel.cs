@@ -1,5 +1,7 @@
 namespace Odasoft.XBOL.AdminPortal.ViewModels;
 
+// TODO: Move to Model project
+
 public record EventViewModel(
     long Id,
     DateTime DateTime,

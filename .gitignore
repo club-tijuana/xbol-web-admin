@@ -75,3 +75,6 @@ logs/
 # Publish output
 /publish/
 /dist/
+
+# Git worktrees
+.worktrees

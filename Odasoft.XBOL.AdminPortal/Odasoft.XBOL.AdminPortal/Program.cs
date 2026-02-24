@@ -10,13 +10,17 @@ using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.AdminPortal.States;
 using Odasoft.XBOL.Business;
+using Odasoft.XBOL.Business.Extensions;
+using Odasoft.XBOL.Business.Services;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region AppSettings
+
 Authentication authenticationConfig = builder.Configuration.GetSection("Authentication").Get<Authentication>()!;
-#endregion
+
+#endregion AppSettings
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -62,21 +66,27 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthorizationCore();
 
 // Services
+builder.Services.ConfigureServices();
 
+// TODO: Move the business services to the business layer
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 builder.Services.AddScoped<AuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEventService, ApiEventService>();
 builder.Services.AddScoped<GeneralService>();
-builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<ISeasonPassService, SeasonPassService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
+builder.Services.AddScoped<ClientsService>();
+
+builder.Services.AddScoped<CartState>();
+builder.Services.AddScoped<LoadingState>();
 
 builder.Services.AddHttpClient<IAdminClient, AdminClient>(
     (provider, client) =>
     {
         var config = provider.GetRequiredService<IOptions<AdminApiClientConfig>>().Value;
         client.BaseAddress = new Uri(config.BaseAddress);
+        client.DefaultRequestHeaders.Add("Accept-Language", "es");
     });
 
 builder.Services.AddOptions<Authentication>()

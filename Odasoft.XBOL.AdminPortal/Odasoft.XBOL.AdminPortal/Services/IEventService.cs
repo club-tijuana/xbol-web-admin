@@ -4,6 +4,8 @@ using Odasoft.XBOL.Business;
 
 namespace Odasoft.XBOL.AdminPortal.Services;
 
+// TODO: Move to Business project
+
 public interface IEventService
 {
     Task<GridData<EventViewModel>> GetEventsAsync(
@@ -12,10 +14,11 @@ public interface IEventService
         string? sortColumn,
         bool sortDescending,
         string? search = null,
-        EventFilterParameters? filters = null
+        EventFilterParameters? filters = null,
+        int? seasonId = null
     );
 
-    Task<List<VenueListItem>> GetVenuesAsync();
+    Task<List<VenueListItemDTO>> GetVenuesAsync();
 
     Task<List<string>> GetCategoriesAsync();
 }

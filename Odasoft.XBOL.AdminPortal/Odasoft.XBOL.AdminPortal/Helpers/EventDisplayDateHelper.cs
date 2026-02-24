@@ -1,3 +1,4 @@
+using Odasoft.XBOL.Common.Constants;
 using System.Globalization;
 
 namespace Odasoft.XBOL.AdminPortal.Helpers
@@ -16,7 +17,7 @@ namespace Odasoft.XBOL.AdminPortal.Helpers
 
             if (!end.HasValue || start.Value.Date == end.Value.Date)
             {
-                return start.Value.ToString("dd MMM yyyy", Culture);
+                return start.Value.ToString(FormatConstants.DATE_ONLY, Culture);
             }
 
             return $"{start:dd MMM yyyy} - {end:dd MMM yyyy}";
@@ -88,7 +89,6 @@ namespace Odasoft.XBOL.AdminPortal.Helpers
 
             return $"{Math.Ceiling(duration.Value.TotalMinutes)} minutos";
         }
-
 
         // Valid date range
         public static bool IsValidRange(DateTime? start, DateTime? end)

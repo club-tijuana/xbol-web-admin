@@ -1,0 +1,153 @@
+@page "/seasons"
+@page "/seasons/{Filter}"
+@using Odasoft.XBOL.AdminPortal.Components
+@using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.AdminPortal.Services.Contracts
+@using Odasoft.XBOL.Business
+@inject IStringLocalizer<Seasons> L
+@inject ISeasonService SeasonService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
+                            Class="border-secondary-lighten" Color="Color.Secondary">
+                <MudToggleItem Value="@UpcomingTab" Text="@L["TabUpcoming"]"
+                               Class="@($"px-6 {(_selectedTab == UpcomingTab ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@PastTab" Text="@L["TabPast"]"
+                               Class="@($"px-6 {(_selectedTab == PastTab ? "bg-secondary-darken" : "")}")" />
+            </MudToggleGroup>
+        </LeftContent>
+        <RightContent>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                       Href="/seasons/create">
+                @L["ButtonNewTournament"]
+            </MudButton>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudStack Spacing="4">
+    @if (_loading)
+    {
+        <MudCard Elevation="2">
+            <MudGrid Spacing="4">
+                <MudItem xs="12" sm="6" md="3">
+                    <SeasonCardSkeleton />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="9">
+                    <EventsDataGridSkeleton />
+                </MudItem>
+            </MudGrid>
+        </MudCard>
+    }
+    else if (_seasons.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info">@L["NoSeasonsFound"]</MudAlert>
+    }
+    else
+    {
+        @foreach (var season in _seasons)
+        {
+        <MudCard Elevation="2" class="mb-2">
+            <MudGrid Spacing="0">
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Elevation="0" Class="rounded-0 border-r" Style="border-color: var(--mud-palette-gray-lighter);">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                                        @season.Code
+                                    </MudText>
+
+                                    <MudText Typo="Typo.subtitle2">
+                                        @season.Name
+                                    </MudText>
+                                </CardHeaderContent>
+
+                                <CardHeaderActions>
+                                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Color="Color.Secondary"
+                                                   Href="@($"seasons/{season.Id}/events")" />
+                                </CardHeaderActions>
+                            </MudCardHeader>
+
+                            @if (string.IsNullOrEmpty(season.PosterImageUrl))
+                            {
+                                <ImagePlaceholder Height="@(height + "px")" />
+                            }
+                            else
+                            {
+                                <MudCardMedia Image="@season.PosterImageUrl" Height="@height" />
+                            }
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="9">
+                        <EventsDataGrid SeasonId="@season.Id"
+                                        Height="@((height - 55) + "px")"
+                                        VisibleColumns="EventColumn.DateTime | EventColumn.Availability"
+                                        Dense
+                                        HideTitle />
+                    </MudItem>
+            </MudGrid>
+        </MudCard>
+        }
+    }
+</MudStack>
+
+@code {
+    private const string UpcomingTab = "upcoming";
+    private const string PastTab = "past";
+    private int height = 330;
+
+    [Parameter]
+    public string? Filter { get; set; }
+
+    private string _selectedTab = UpcomingTab;
+    private bool _loading;
+    private List<SeasonListItem> _seasons = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _selectedTab = string.Equals(Filter, PastTab, StringComparison.OrdinalIgnoreCase)
+            ? PastTab
+            : UpcomingTab;
+
+        await LoadSeasonsAsync();
+    }
+
+    private async Task OnTabChanged(string tab)
+    {
+        _selectedTab = tab;
+        var route = tab == UpcomingTab ? "/seasons/upcoming" : "/seasons/past";
+        Navigation.NavigateTo(route, replace: true);
+    }
+
+    private async Task LoadSeasonsAsync()
+    {
+        _loading = true;
+        try
+        {
+            var period = _selectedTab == UpcomingTab
+                ? SeasonPeriod.CurrentSeason
+                : SeasonPeriod.PastSeason;
+
+            var result = await SeasonService.GetSeasonsAsync(
+                status: null,
+                period: period,
+                sortBy: "startDate",
+                descending: true);
+
+            _seasons = result.Items?.ToList() ?? [];
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["ErrorLoadingSeasons"], Severity.Error);
+            _seasons = [];
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

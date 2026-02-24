@@ -1,0 +1,109 @@
+@page "/suites/create"
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
+
+@inject CatalogsService _catalogsService;
+@inject NavigationManager _navigationManager;
+@inject SuitesService _suitesService;
+@inject ISnackbar _snackbar;
+@inject IDialogService _dialogService;
+
+<PageTitle>Nuevo - Palco</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteConfigurationsAsync())"
+                    Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
+    <MudCardContent>
+        <MudGrid Class="mud-width-full">
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudSelect Class="d-flex" Variant="Variant.Outlined" @bind-Value="_suiteLevelId" Label="Nivel" Required>
+                    @foreach (var level in _suiteLevels)
+                    {
+                        <MudSelectItem Value="@level.Id">@level.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_suiteName" Label="Palco" Required />
+            </MudItem>
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudNumericField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_seats" Label="Total de asientos" Required />
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+    <MudCardActions Class="gap-2">
+        <MudStack Class="mud-width-full" Row="true" Justify="Justify.FlexEnd" AlignItems="AlignItems.Center">
+            <MudButton StartIcon="@Icons.Material.Outlined.Save" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => CreateSuiteAsync())">Guardar</MudButton>
+        </MudStack>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    private long _suiteLevelId;
+    private string _suiteName = "";
+    private int _seats = 0;
+
+    private ICollection<ListItem> _suiteLevels = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
+        _suiteLevelId = _suiteLevels.Any() ? _suiteLevels.First().Id : default;
+
+        StateHasChanged();
+    }
+
+    private async Task GoToSuiteConfigurationsAsync()
+    {
+        var options = new DialogOptions { CloseButton = true, NoHeader = true };
+        var parameters = new DialogParameters<ConfirmDialog>();
+
+        parameters.Add(dialog => dialog.Message, "Los cambios no guardados se perderan. ¿Desea continuar?");
+
+        var dialog = await _dialogService.ShowAsync<ConfirmDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            _navigationManager.NavigateTo(SitePages.SUITES_SETTINGS);
+        }
+    }
+
+    private async Task CreateSuiteAsync()
+    {
+        try
+        {
+            bool result = await _suitesService.CreateSuiteAsync(new CreateSuiteRequest
+            {
+                SuiteLevelId = _suiteLevelId,
+                Name = _suiteName,
+                Seats = _seats
+            });
+
+            if (result)
+            {
+                _snackbar.Add("Palco creado exitosamente.", Severity.Success);
+                _navigationManager.NavigateTo(SitePages.SUITES_SETTINGS);
+            }
+            else
+            {
+                _snackbar.Add("Error al crear el palco. Por favor, intente nuevamente.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating suite: {ex.Message}");
+            _snackbar.Add("Error al crear el palco. Por favor, intente nuevamente.", Severity.Error);
+        }
+    }
+}

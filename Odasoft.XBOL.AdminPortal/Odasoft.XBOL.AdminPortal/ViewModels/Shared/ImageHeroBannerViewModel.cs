@@ -1,4 +1,4 @@
-﻿using Odasoft.XBOL.AdminPortal.Helpers;
+using Odasoft.XBOL.AdminPortal.Helpers;
 
 namespace Odasoft.XBOL.AdminPortal.ViewModels.Shared
 {
@@ -7,7 +7,7 @@ namespace Odasoft.XBOL.AdminPortal.ViewModels.Shared
         public string? ImageUrl { get; set; }
         public string? Title { get; set; }
         public string? Subtitle { get; set; }
-        public string? Venue { get; set; } 
+        public string? Venue { get; set; }
         public DateTime? StartDateTime { get; set; }
         public DateTime? EndDateTime { get; set; }
         public string? DateRangeText => EventDisplayDateHelper.GetDateRange(StartDateTime, EndDateTime);

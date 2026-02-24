@@ -1,0 +1,249 @@
+@page "/seasons/create"
+@using Odasoft.XBOL.AdminPortal.Services.Contracts
+@using Odasoft.XBOL.Business
+@inject IStringLocalizer<SeasonCreate> L
+@inject ISeasonService SeasonService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@using Newtonsoft.Json.Linq
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Secondary"
+                    Variant="Variant.Outlined" DropShadow="false" OnClick="GoBackAsync">
+                @L["ButtonBack"]
+            </MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
+    <MudCardContent>
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+            <MudText Typo="Typo.h5">@L["PageTitle"]</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RequiredFieldsNote"]</MudText>
+        </MudStack>
+
+        <MudForm @ref="_form" @bind-IsValid="_formValid">
+            <MudGrid Spacing="4">
+                @* Row 1: Code, Name, StartDate, EndDate *@
+                <MudItem xs="12" lg="2">
+                    <MudTextField @bind-Value="_code" Label="@L["Code"]"
+                                  Variant="Variant.Outlined" Placeholder="@L["CodePlaceholder"]" 
+                                  Required="true" RequiredError="@L["RequiredField"]"
+                                  Validation="@(ValidationFor<string>("Code"))"
+                                  TextChanged="@(() => ClearFieldError("Code"))" />
+                </MudItem>
+                <MudItem xs="12" lg="4">
+                    <MudTextField @bind-Value="_name" Label="@L["Name"]"
+                                  Variant="Variant.Outlined" Placeholder="@L["NamePlaceholder"]"
+                                  Required="true" RequiredError="@L["RequiredField"]"
+                                  Validation="@(ValidationFor<string>("Name"))"
+                                  TextChanged="@(() => ClearFieldError("Name"))" />
+                </MudItem>
+                <MudItem xs="12" lg="3">
+                    <MudDatePicker Date="_startDate" DateChanged="@(d => { _startDate = d; ClearFieldError("StartDate"); })" 
+                                   Label="@L["StartDate"]"
+                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
+                                   Mask="@(new DateMask("dd/MM/yyyy"))"
+                                   Required="true" RequiredError="@L["RequiredField"]" 
+                                   Validation="@(ValidationFor<DateTime?>("StartDate"))" />
+                </MudItem>
+                <MudItem xs="12" lg="3">
+                    <MudDatePicker Date="_endDate" DateChanged="@(d => { _endDate = d; ClearFieldError("EndDate"); })" 
+                                   Label="@L["EndDate"]"
+                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
+                                   Mask="@(new DateMask("dd/MM/yyyy"))"
+                                   Required="true" RequiredError="@L["RequiredField"]"
+                                   Validation="@(ValidationFor<DateTime?>("EndDate"))" />
+                </MudItem>
+
+                @* Row 2: Description *@
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_description" Label="@L["Description"]"
+                                  Variant="Variant.Outlined" Lines="3" Placeholder="@L["DescriptionPlaceholder"]" />
+                </MudItem>
+
+                @* Row 3: BannerImageUrl, PosterImageUrl *@
+                <MudItem xs="12" lg="6">
+                    <MudTextField @bind-Value="_bannerImageUrl" Label="@L["BannerImageUrl"]"
+                                  Variant="Variant.Outlined" Placeholder="https://" />
+                </MudItem>
+                <MudItem xs="12" lg="6">
+                    <MudTextField @bind-Value="_posterImageUrl" Label="@L["PosterImageUrl"]"
+                                  Variant="Variant.Outlined" Placeholder="https://" />
+                </MudItem>
+
+                @* Row 4: LandingUrl *@
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_landingUrl" Label="@L["LandingUrl"]"
+                                  Variant="Variant.Outlined" Placeholder="https://" />
+                </MudItem>
+
+                @* Row 5: PublishedDate, OnSaleDate, PreSaleDate, OffSaleDate *@
+                <MudItem xs="12" lg="3">
+                    <MudDatePicker @bind-Date="_publishedDate" Label="@L["PublishedDate"]"
+                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
+                                   Mask="@(new DateMask("dd/MM/yyyy"))" />
+                </MudItem>
+                <MudItem xs="12" lg="3">
+                    <MudDatePicker @bind-Date="_onSaleDate" Label="@L["OnSaleDate"]"
+                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
+                                   Mask="@(new DateMask("dd/MM/yyyy"))" />
+                </MudItem>
+                <MudItem xs="12" lg="3">
+                    <MudDatePicker @bind-Date="_preSaleDate" Label="@L["PreSaleDate"]"
+                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
+                                   Mask="@(new DateMask("dd/MM/yyyy"))" />
+                </MudItem>
+                <MudItem xs="12" lg="3">
+                    <MudDatePicker @bind-Date="_offSaleDate" Label="@L["OffSaleDate"]"
+                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
+                                   Mask="@(new DateMask("dd/MM/yyyy"))" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudCardContent>
+
+    <MudCardActions Class="justify-end pa-4">
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" Disabled="@_saving"
+                   OnClick="SaveAsync" Class="text-uppercase">
+            @L["ButtonSave"]
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    private MudForm _form = default!;
+    private bool _formValid;
+    private bool _saving;
+    private Dictionary<string, List<string>> _serverErrors = new();
+
+    private string? _code;
+    private string? _name;
+    private string? _description;
+    private string? _bannerImageUrl;
+    private string? _posterImageUrl;
+    private string? _landingUrl;
+    private DateTime? _startDate;
+    private DateTime? _endDate;
+    private DateTime? _publishedDate;
+    private DateTime? _onSaleDate;
+    private DateTime? _preSaleDate;
+    private DateTime? _offSaleDate;
+
+    private bool HasChanges() =>
+        !string.IsNullOrEmpty(_code) || !string.IsNullOrEmpty(_name) ||
+        !string.IsNullOrEmpty(_description) || !string.IsNullOrEmpty(_bannerImageUrl) ||
+        !string.IsNullOrEmpty(_posterImageUrl) || !string.IsNullOrEmpty(_landingUrl) ||
+        _startDate is not null || _endDate is not null ||
+        _publishedDate is not null || _onSaleDate is not null ||
+        _preSaleDate is not null || _offSaleDate is not null;
+
+    private async Task GoBackAsync()
+    {
+        if (HasChanges())
+        {
+            var result = await DialogService.ShowMessageBox(
+                L["UnsavedChangesTitle"],
+                L["UnsavedChangesMessage"],
+                yesText: L["UnsavedChangesConfirm"],
+                cancelText: L["UnsavedChangesCancel"]);
+
+            if (result is not true) return;
+        }
+
+        Navigation.NavigateTo("/seasons");
+    }
+
+    private IEnumerable<string> ValidateField(string fieldName)
+    {
+        if (_serverErrors.TryGetValue(fieldName, out var errors))
+        {
+            return errors;
+        }
+        return Enumerable.Empty<string>();
+    }
+
+    private Func<T, IEnumerable<string>> ValidationFor<T>(string fieldName) => _ => ValidateField(fieldName);
+
+    private void ClearFieldError(string fieldName)
+    {
+        if (_serverErrors.Remove(fieldName))
+        {
+            // Trigger state change if needed, though validation should auto-update on value change
+            StateHasChanged(); 
+        }
+    }
+
+    private void HandleApiException(ApiException<ProblemDetails> ex)
+    {
+        _serverErrors.Clear();
+
+        if (ex.Result.AdditionalProperties != null && 
+            ex.Result.AdditionalProperties.TryGetValue("errors", out var errorsObj) &&
+            errorsObj is JObject errorsJson)
+        {
+            foreach (var property in errorsJson.Properties())
+            {
+                var errorMessages = property.Value.ToObject<List<string>>();
+                if (errorMessages != null)
+                {
+                    _serverErrors[property.Name] = errorMessages;
+                }
+            }
+        }
+        
+        _form.Validate();
+    }
+
+    private async Task SaveAsync()
+    {
+        await _form.Validate();
+        if (!_form.IsValid) return;
+
+        _saving = true;
+        try
+        {
+            var request = new CreateSeasonRequest
+            {
+                Code = _code,
+                Name = _name,
+                Description = _description,
+                BannerImageUrl = _bannerImageUrl,
+                PosterImageUrl = _posterImageUrl,
+                LandingUrl = _landingUrl,
+                StartDate = ToDateTimeOffset(_startDate),
+                EndDate = ToDateTimeOffset(_endDate),
+                PublishedDate = ToDateTimeOffset(_publishedDate),
+                OnSaleDate = ToDateTimeOffset(_onSaleDate),
+                PreSaleDate = ToDateTimeOffset(_preSaleDate),
+                OffSaleDate = ToDateTimeOffset(_offSaleDate),
+            };
+
+            await SeasonService.CreateSeasonAsync(request);
+            Snackbar.Add(L["CreateSuccess"], Severity.Success);
+            Navigation.NavigateTo("/seasons");
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            HandleApiException(ex);
+            Snackbar.Add(ex.Result.Title ?? L["CreateError"], Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["CreateError"], Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private static DateTimeOffset ToDateTimeOffset(DateTime? date) =>
+        date.HasValue ? new DateTimeOffset(date.Value, TimeSpan.Zero) : default;
+}
