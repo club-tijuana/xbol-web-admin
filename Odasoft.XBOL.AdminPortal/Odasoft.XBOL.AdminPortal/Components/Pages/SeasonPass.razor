@@ -13,10 +13,16 @@
 @inject ISeasonService SeasonService
 
 <PageTitle>@L["PageTitle"]</PageTitle>
-<MudPaper Class="bg-default d-flex justify-end flex-grow-1 gap-4" Elevation="0">
-    <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => GoToCheckoutSeasonpass())" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Comprar Xolopass</MudButton>
-</MudPaper>
-<MudCard Class="mt-5 mb-6" Elevation="3">
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <RightContent>
+            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => GoToCheckoutSeasonpass())" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Comprar Xolopass</MudButton>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
     <MudCardHeader>
         <!-- Table header -->
         <CardHeaderContent>
@@ -155,9 +161,9 @@
                     </CellTemplate>
                 </TemplateColumn>
 
-                <TemplateColumn Title="@L["ColumnTotalAmount"]" Filterable="false" Sortable="false">
+                <TemplateColumn Title="@L["ColumnTotalAmount"]" Filterable="false" Sortable="false" HeaderClass="text-right" CellClass="text-right">
                     <CellTemplate>
-                        <MudText Typo="Typo.body2">
+                        <MudText Typo="Typo.body2" Align="Align.Right">
                             @context.Item.Total.ToString(FormatConstants.CURRENCY, new CultureInfo("es-MX"))
                         </MudText>
                     </CellTemplate>
@@ -204,7 +210,7 @@
                             </div>
                         </td>
                         <td class="mud-table-cell mud-table-child-content" colspan="2">
-                            <div class="d-flex justify-center align-center">
+                            <div class="d-flex justify-end align-center">
                                 @seasonPass.Price.ToString(FormatConstants.CURRENCY, new CultureInfo("es-MX"))
                             </div>
                         </td>
@@ -279,7 +285,7 @@
                 }
             </ChildRowRenderer>
             <PagerContent>
-                <MudDataGridPager T="OrderListItem" />
+                <CustomMudDataGridPager T="OrderListItem" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>

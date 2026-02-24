@@ -20,34 +20,34 @@
 </style>
 <MudPaper Outlined="true" Class="rounded overflow-hidden">
     <MudPaper Class="rounded-0">
-        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class=@($"mud-info px-4 {(AllowRemoval && CartState.SelectedSeats.Any() ? "py-2" : "py-3")}")>
-            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">TOTAL</MudText>
-            @if (AllowRemoval && CartState.SelectedSeats.Any())
-            {
-                <MudIconButton
-                    Icon="@Icons.Material.Filled.ClearAll"
-                    Size="Size.Small"
-                    Style="color: var(--mud-palette-secondary-lighten);"
-                    aria-label="delete"
-                    OnClick="RemoveAllSeats" />
-            }
-            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-white)">@CartState.TotalPrice.ToString(FormatConstants.CURRENCY)</MudText>
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class=@($"mud-info {(AllowRemoval && CartState.SelectedSeats.Any() ? "py-2 pl-4 pr-3" : "py-3 px-4")}")>
+            <MudText Typo="Typo.caption" Style="color: var(--mud-palette-white)">TOTAL</MudText>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-white)">@CartState.TotalPrice.ToString(FormatConstants.CURRENCY)</MudText>
+                @if (AllowRemoval && CartState.SelectedSeats.Any())
+                {
+                    <MudIconButton Icon="@Icons.Material.Outlined.DeleteSweep"
+                        Style="color: var(--mud-palette-secondary-lighten); padding:0;"
+                        aria-label="delete"
+                        OnClick="RemoveAllSeats" />
+                }
+            </MudStack>
         </MudStack>
     </MudPaper>
     <MudList T="string" Dense="true" Gutters="false">
         @foreach (var item in CartState.SelectedSeats)
         {
-            <MudListItem T="string" Class="@($"px-4 order-item{(_previousFocusedSeatId == item.SeatId ? " selected" : "")} {(AllowRemoval ? "py-1" : "py-2")}")" Value="@item.SeatId">
+            <MudListItem T="string" Class="@($"order-item{(_previousFocusedSeatId == item.SeatId ? " selected" : "")} {(AllowRemoval ? "py-1 pl-4 pr-3" : "py-2 px-4")}")" Value="@item.SeatId">
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Price.ToString(FormatConstants.CURRENCY)</MudText>
                         @if (AllowRemoval)
                         {
 
                             <MudTooltip Text="@Localizer["Seats_RemoveSeat"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
-                                               Size="Size.Small"
+                                               Style="padding:0;"
                                                Color="Color.Error"
                                                OnClick="@(() => RemoveSeat(item.SeatId))" />
                             </MudTooltip>

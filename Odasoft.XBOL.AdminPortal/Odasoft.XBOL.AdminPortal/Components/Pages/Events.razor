@@ -16,29 +16,31 @@
 
 @if (SeasonId != null)
 {
-    <MudPaper Elevation="0" Class="mb-4">
-        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 
-            <!-- TODO: Go back to upcoming/past depending on Season data -->
-            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Href="/seasons" Color="Color.Secondary"
-                       Variant="Variant.Outlined" DropShadow="false">
-                Regresar
-            </MudButton>
-
-            <MudStack Row="true" Spacing="4">
-                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled"
-                           Class="text-uppercase" OnClick="DeleteSeasonAsync">
-                    Borrar
+    <SectionContent SectionName="nav-header">
+        <PageActionBar>
+            <LeftContent>
+                <!-- TODO: Go back to upcoming/past depending on Season data -->
+                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Href="/seasons" Color="Color.Secondary"
+                        Variant="Variant.Outlined" DropShadow="false">
+                    Regresar
                 </MudButton>
+            </LeftContent>
+            <RightContent>
+                <MudStack Row="true" Spacing="4">
+                    <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled"
+                            Class="text-uppercase" OnClick="DeleteSeasonAsync">
+                        Borrar
+                    </MudButton>
 
-                <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Filled"
-                           Class="text-uppercase" Href="@($"/seasons/{SeasonId}/edit")">
-                    Editar
-                </MudButton>
-            </MudStack>
-
-        </MudStack>
-    </MudPaper>
+                    <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Filled"
+                            Class="text-uppercase" Href="@($"/seasons/{SeasonId}/edit")">
+                        Editar
+                    </MudButton>
+                </MudStack>
+            </RightContent>
+        </PageActionBar>
+    </SectionContent>
 
     @if (_seasonLoading)
     {
@@ -91,7 +93,7 @@
     }
 }
 
-<MudCard Class="mt-4 mb-6" Elevation="3">
+<MudCard Elevation="3">
     <MudCardHeader>
         <!-- Table header -->
         <CardHeaderContent>
@@ -231,7 +233,7 @@
             </Columns>
 
             <PagerContent>
-                <MudDataGridPager T="EventViewModel" />
+                <CustomMudDataGridPager T="EventViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>

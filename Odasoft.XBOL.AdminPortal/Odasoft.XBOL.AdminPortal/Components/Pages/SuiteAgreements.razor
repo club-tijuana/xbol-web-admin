@@ -16,22 +16,20 @@
 
 <PageTitle>Contratos de palcos</PageTitle>
 
-<MudCard Class="mt-4 mb-6" Elevation="3">
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <RightContent>
+            <MudStack Row="true" Spacing="4">
+                <MudButton StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => DownloadSuiteAgreementFilesAsync())"
+                           Disabled="@_disableMultipleDownloads" Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">Descargar Seleccionados</MudButton>
+                <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateSuiteAgreement())"
+                           Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nuevo Contrato</MudButton>
+            </MudStack>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
 
-    <MudCardHeader>
-        <!-- Table header -->
-        <CardHeaderContent>
-            <MudItem xs="12" sm="12" md="12" lg="12" Class="justify-content-end d-flex">
-                <MudPaper Class="d-flex justify-end flex-grow-1 gap-4" Elevation="0">
-                    <MudButton StartIcon="@Icons.Material.Outlined.Download" OnClick="@(() => DownloadSuiteAgreementFilesAsync())"
-                               Disabled="@_disableMultipleDownloads" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Descargar Seleccionados</MudButton>
-                    <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateSuiteAgreement())"
-                               Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nuevo Contrato</MudButton>
-                </MudPaper>
-            </MudItem>
-        </CardHeaderContent>
-    </MudCardHeader>
-
+<MudCard Elevation="3">
     <MudCardContent Class="pa-0">
         <MudDataGrid T="SuiteAgreementViewModel" MultiSelection="true" Items="@_suiteAgreements" Loading="_loading" Filterable="false"
                      FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0" SelectedItemsChanged="@SelectedItemsChanged" QuickFilter="@_quickFilter">
@@ -161,7 +159,7 @@
                 </TemplateColumn>
             </Columns>
             <PagerContent>
-                <MudDataGridPager T="SuiteAgreementViewModel" />
+                <CustomMudDataGridPager T="SuiteAgreementViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>

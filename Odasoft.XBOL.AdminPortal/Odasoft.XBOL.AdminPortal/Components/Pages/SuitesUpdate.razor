@@ -11,14 +11,16 @@
 
 <PageTitle>Editar - Palco</PageTitle>
 
-<MudCard Class="mt-4 mb-6" Elevation="3">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudPaper Class="bg-default d-flex justify-start flex-grow-1 gap-2" Elevation="0">
-                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteConfigurationsAsync())" Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
-            </MudPaper>
-        </CardHeaderContent>
-    </MudCardHeader>
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteConfigurationsAsync())"
+                    Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
     <MudCardContent>
         <MudGrid Class="mud-width-full">
             <MudItem xs="12" sm="12" md="6" lg="3">

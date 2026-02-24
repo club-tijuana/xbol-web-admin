@@ -10,12 +10,16 @@
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
-<MudPaper Elevation="0" Class="mb-4">
-    <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Secondary"
-               Variant="Variant.Outlined" DropShadow="false" OnClick="GoBackAsync">
-        @L["ButtonBack"]
-    </MudButton>
-</MudPaper>
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Secondary"
+                    Variant="Variant.Outlined" DropShadow="false" OnClick="GoBackAsync">
+                @L["ButtonBack"]
+            </MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
 
 @if (_loadingFailed)
 {
