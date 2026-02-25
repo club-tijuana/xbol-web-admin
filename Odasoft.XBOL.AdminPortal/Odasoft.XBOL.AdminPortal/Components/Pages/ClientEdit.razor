@@ -11,7 +11,7 @@
 @inject ClientsService _clientService;
 @inject NavigationManager _navigationManager;
 @inject LoadingState LoadingState
-@inject IStringLocalizer<ClientsCreate> L
+@inject AppLocalizer<ClientsCreate> L
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
 
@@ -38,7 +38,7 @@
                     </MudStack>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="3">
-                    <MudTextField @bind-Value="model.CompanyName" For="@(() => model.CompanyName)"
+                    <MudTextField @bind-Value="model.CompanyName"
                                   Variant="Variant.Outlined" Margin="Margin.Dense" Label="Empresa" Required
                                   RequiredError="El nombre de la empresa es obligatorio.">
                     </MudTextField>
@@ -352,15 +352,13 @@
 
     private async Task<bool> ConfirmExit()
     {
-        var options = new DialogOptions { CloseButton = true, NoHeader = true };
-        var parameters = new DialogParameters<ConfirmDialog>();
+        var result = await _dialogService.ShowMessageBox(
+                L["UnsavedChangesTitle"],
+                L["UnsavedChangesMessage"],
+                yesText: L["UnsavedChangesConfirm"],
+                cancelText: L["UnsavedChangesCancel"]);
 
-        parameters.Add(dialog => dialog.Message, "Los cambios no guardados se perderan. ¿Desea continuar?");
-
-        var dialog = await _dialogService.ShowAsync<ConfirmDialog>("", parameters, options);
-        var result = await dialog.Result;
-
-        return result is not null && !result.Canceled;
+        return result is true;
     }
 
     private async Task OnValidSubmit(EditContext context)

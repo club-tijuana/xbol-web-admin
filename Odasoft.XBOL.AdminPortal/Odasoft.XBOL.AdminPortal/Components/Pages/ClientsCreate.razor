@@ -11,7 +11,7 @@
 @inject ClientsService _clientService;
 @inject NavigationManager _navigationManager;
 @inject LoadingState LoadingState
-@inject IStringLocalizer<ClientsCreate> L
+@inject AppLocalizer<ClientsCreate> L
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
 
@@ -40,7 +40,6 @@
             <MudItem xs="12" md="6" lg="3">
                 <MudTextField 
                     @bind-Value="model.CompanyName"
-                    For="@(() => model.CompanyName)"
                     Variant="Variant.Outlined"
                     Margin="Margin.Dense"
                     Label="Empresa"

@@ -1,4 +1,5 @@
 @using FluentValidation
+@using Odasoft.XBOL.AdminPortal.Resources
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Common.Constants
@@ -8,7 +9,7 @@
 @inject CartState CartState
 @inject IAdminClient AdminClient
 @inject NavigationManager Navigation
-@inject IStringLocalizer<Events> Localizer
+@inject AppLocalizer<Events> L
 @inject ISnackbar Snackbar
 @inject LoadingState LoadingState
 @inject IDialogService DialogService
@@ -293,20 +294,19 @@
 
     private async Task<bool> ConfirmExit()
     {
-        var options = new DialogOptions { CloseButton = true, NoHeader = true };
-        var parameters = new DialogParameters<ConfirmDialog>();
 
-        parameters.Add(dialog => dialog.Message, "Los cambios no guardados se perderan. ¿Desea continuar?");
+        var result = await DialogService.ShowMessageBox(
+                L["UnsavedChangesTitle"],
+                L["UnsavedChangesMessage"],
+                yesText: L["UnsavedChangesConfirm"],
+                cancelText: L["UnsavedChangesCancel"]);
 
-        var dialog = await DialogService.ShowAsync<ConfirmDialog>("", parameters, options);
-        var result = await dialog.Result;
-
-        if (result is not null && !result.Canceled)
+        if (result is true)
         {
             await ReleaseToken();
         }
 
-        return result is not null && !result.Canceled;
+        return result is true;
     }
 
     private async Task OnBeforeInternalNavigation(LocationChangingContext context)
@@ -406,7 +406,7 @@
         {
             var result = await AdminClient.BookSeatsAsync(request);
 
-            Snackbar.Add(Localizer["Seats_PaymentSuccess"], configure: c =>
+            Snackbar.Add(L["Seats_PaymentSuccess"], configure: c =>
             {
                 c.SnackbarVariant = Variant.Text;
                 c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
@@ -421,7 +421,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add(Localizer["Seats_PaymentError"], MudBlazor.Severity.Error);
+            Snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
             await ReleaseToken();
             await OnReturn.InvokeAsync();
         }

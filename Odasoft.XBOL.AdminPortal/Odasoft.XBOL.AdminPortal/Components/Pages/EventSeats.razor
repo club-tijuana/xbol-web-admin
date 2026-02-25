@@ -12,7 +12,7 @@
 @inject IAdminClient AdminClient
 @inject NavigationManager Navigation
 @inject IOptions<SeatsIo> SeatsOptions
-@inject IStringLocalizer<Events> Localizer
+@inject AppLocalizer<Events> L
 
 <PageTitle>@_eventName</PageTitle>
 
@@ -43,7 +43,7 @@
                                     Color="Color.Primary"
                                     Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
                                     @onclick="NextStep">
-                                @(_holdProcessing? Localizer["Seats_HoldProcessing"] : "MÉTODO DE PAGO")
+                                @(_holdProcessing? L["Seats_HoldProcessing"] : "MÉTODO DE PAGO")
                         </MudButton>
                     </MudItem>
                     <MudItem xs="7">

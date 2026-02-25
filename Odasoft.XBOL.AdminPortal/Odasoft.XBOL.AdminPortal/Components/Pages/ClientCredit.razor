@@ -16,7 +16,7 @@
 @inject CreditTransactionsService _creditTransactionsService;
 @inject NavigationManager _navigationManager;
 @inject OrdersService _ordersService;
-@inject IStringLocalizer<ClientCredit> L
+@inject AppLocalizer<ClientCredit> L
 
 <PageTitle>Detalle cliente</PageTitle>
 
@@ -167,7 +167,7 @@
                         <PropertyColumn Property="x => x.Amount" Title="Importe" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right" />
                     </Columns>
                     <PagerContent>
-                        <CustomMudDataGridPager T="CreditOrderViewModel" />
+                        <MudDataGridPager T="CreditOrderViewModel" />
                     </PagerContent>
                 </MudDataGrid>
             </MudCard>
@@ -240,7 +240,7 @@
                         </TemplateColumn>
                     </Columns>
                     <PagerContent>
-                        <CustomMudDataGridPager T="CreditPaymentsViewModel" />
+                        <MudDataGridPager T="CreditPaymentsViewModel" />
                     </PagerContent>
                 </MudDataGrid>
             </MudCard>
