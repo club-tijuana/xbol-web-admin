@@ -5,7 +5,7 @@
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared
 @using Odasoft.XBOL.Business
-@inject IStringLocalizer<Events> L
+@inject AppLocalizer<Events> L
 @inject IEventService EventService
 @inject ISeasonService SeasonService
 @inject IDialogService DialogService
@@ -233,7 +233,7 @@
             </Columns>
 
             <PagerContent>
-                <CustomMudDataGridPager T="EventViewModel" />
+                <MudDataGridPager T="EventViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>

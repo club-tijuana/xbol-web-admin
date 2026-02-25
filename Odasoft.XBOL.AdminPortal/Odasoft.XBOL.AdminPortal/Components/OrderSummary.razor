@@ -6,7 +6,7 @@
 @implements IDisposable
 @inject CartState CartState
 @inject ISnackbar Snackbar
-@inject IStringLocalizer<Events> Localizer
+@inject AppLocalizer<Events> L
 
 <style>
     .order-item.mud-list-item:focus,
@@ -45,7 +45,7 @@
                         @if (AllowRemoval)
                         {
 
-                            <MudTooltip Text="@Localizer["Seats_RemoveSeat"]">
+                            <MudTooltip Text="@L["Seats_RemoveSeat"]">
                                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                Style="padding:0;"
                                                Color="Color.Error"
@@ -61,7 +61,7 @@
     {
         <MudStack Row="true" Justify="Justify.Center" Class="pa-4">
             <MudText Color="@(_timeLeft.TotalMinutes < 2 ? Color.Error : Color.Default)" Typo="Typo.caption">
-                @string.Format(Localizer["Seats_TimeRemaining"], _timeLeft.ToString(@"mm\:ss"))
+                @string.Format(L["Seats_TimeRemaining"], _timeLeft.ToString(@"mm\:ss"))
             </MudText>
         </MudStack>
     }
@@ -112,7 +112,7 @@
             if (_timeLeft.TotalSeconds <= 0)
             {
                 _timeLeft = TimeSpan.Zero;
-                Snackbar.Add(Localizer["Seats_SessionExpired"], Severity.Warning);
+                Snackbar.Add(L["Seats_SessionExpired"], Severity.Warning);
                 _timer?.Stop();
             }
             InvokeAsync(StateHasChanged);

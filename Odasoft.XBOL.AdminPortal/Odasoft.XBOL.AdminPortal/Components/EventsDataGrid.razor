@@ -3,7 +3,7 @@
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared
 @using Odasoft.XBOL.Business
-@inject IStringLocalizer<EventsDataGrid> L
+@inject AppLocalizer<EventsDataGrid> L
 @inject IEventService EventService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -158,7 +158,7 @@
             </Columns>
 
             <PagerContent>
-                <CustomMudDataGridPager T="EventViewModel" />
+                <MudDataGridPager T="EventViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>

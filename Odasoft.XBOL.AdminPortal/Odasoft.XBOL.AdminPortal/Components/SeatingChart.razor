@@ -11,7 +11,7 @@
 @inject CartState CartState
 @inject IAdminClient AdminClient
 @inject ISnackbar Snackbar
-@inject IStringLocalizer<Events> Localizer
+@inject AppLocalizer<Events> L
 
 <LoadingContainer HasError="_error" ErrorMessage="@_errorMessage" IsLoading="_loading">
     <PriceFilter Chart="this" Categories="Prices.Where(x => x.Category is not null)" />
@@ -168,7 +168,7 @@
     public void HandleHoldFailed(List<string> objects, object ticketTypes)
     {
         CartState.SetHoldBusyState(false);
-        InvokeAsync(() => Snackbar.Add(Localizer["Seats_HoldFailed"], Severity.Error));
+        InvokeAsync(() => Snackbar.Add(L["Seats_HoldFailed"], Severity.Error));
     }
 
     [JSInvokable]

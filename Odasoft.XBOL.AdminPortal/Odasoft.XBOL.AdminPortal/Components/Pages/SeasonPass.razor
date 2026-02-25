@@ -5,7 +5,7 @@
 @using Odasoft.XBOL.AdminPortal.ViewModels.Order
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Common.Constants
-@inject IStringLocalizer<SeasonPass> L
+@inject AppLocalizer<SeasonPass> L
 @inject ISeasonPassService SeasonPassService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -285,7 +285,7 @@
                 }
             </ChildRowRenderer>
             <PagerContent>
-                <CustomMudDataGridPager T="OrderListItem" />
+                <MudDataGridPager T="OrderListItem" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
