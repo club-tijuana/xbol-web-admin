@@ -78,21 +78,22 @@
         }
       }
     },
-    "/api/bookings/book-seats": {
+    "/api/bookings/event/book-seats": {
       "post": {
         "tags": [
           "Bookings"
         ],
-        "summary": "Books the specified seat selection for the event and returns the identifiers of the booked seats.",
-        "operationId": "BookSeatsAsync",
+        "summary": "Books seats for an event based on the provided booking request.",
+        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\r\n            codes based on the outcome of the booking request.",
+        "operationId": "BookEventSeatsAsync",
         "requestBody": {
-          "description": "The booking request containing event and seat selection details. Cannot be null.",
+          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\r\n            cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/BookingRequest"
+                    "$ref": "#/components/schemas/EventBookingRequest"
                   }
                 ]
               }
@@ -101,7 +102,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/BookingRequest"
+                    "$ref": "#/components/schemas/EventBookingRequest"
                   }
                 ]
               }
@@ -110,7 +111,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/BookingRequest"
+                    "$ref": "#/components/schemas/EventBookingRequest"
                   }
                 ]
               }
@@ -119,7 +120,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/BookingRequest"
+                    "$ref": "#/components/schemas/EventBookingRequest"
                   }
                 ]
               }
@@ -143,6 +144,177 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BookingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/ModelStateEntry"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/ModelStateEntry"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/ModelStateEntry"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookings/season/book-season": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Books seats for an event based on the provided booking request.",
+        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\r\n            codes based on the outcome of the booking request.",
+        "operationId": "BookSeasonSeatsAsync",
+        "requestBody": {
+          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\r\n            cannot be null.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SeasonBookingRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SeasonBookingRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SeasonBookingRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SeasonBookingRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/ModelStateEntry"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/ModelStateEntry"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/ModelStateEntry"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -252,6 +424,76 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ClientSeasonEvent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/search": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Searches for client contacts using the specified phone number or email address.",
+        "description": "If both phone and email are null or empty, the request returns a BadRequest response\r\n            indicating that at least one search parameter must be specified.",
+        "operationId": "SearchClientAsync",
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "query",
+            "description": "The phone number to search for. At least one of the parameters, either phone or email, must be provided.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "The email address to search for. At least one of the parameters, either phone or email, must be provided.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientContactResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientContactResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientContactResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -1002,6 +1244,109 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credit-accounts/orders": {
+      "get": {
+        "tags": [
+          "CreditAccounts"
+        ],
+        "operationId": "GetCreditOrdersAsync",
+        "parameters": [
+          {
+            "name": "ClientId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Events",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResultPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResultPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResultPagedResponse"
                 }
               }
             }
@@ -2135,107 +2480,6 @@
       }
     },
     "/api/orders": {
-      "get": {
-        "tags": [
-          "Orders"
-        ],
-        "operationId": "GetOrdersAsync",
-        "parameters": [
-          {
-            "name": "ClientId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "name": "Events",
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
-            "name": "StartDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "EndDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "SearchTerm",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "SortBy",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Descending",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "Page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderResultPagedResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderResultPagedResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderResultPagedResponse"
-                }
-              }
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "Orders"
@@ -2338,85 +2582,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ClientSeasonEvent"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/orders/book-season": {
-      "post": {
-        "tags": [
-          "Orders"
-        ],
-        "operationId": "BookSeasonAsync",
-        "requestBody": {
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/BookSeasonRequest"
-                  }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/BookSeasonRequest"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/BookSeasonRequest"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/BookSeasonRequest"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
                 }
               }
             }
@@ -3420,6 +3585,7 @@
         "tags": [
           "SuiteAgreements"
         ],
+        "summary": "Uploads the file associated with the specified suite agreement.",
         "operationId": "UploadSuiteAgreementFileAsync",
         "requestBody": {
           "content": {
@@ -3429,10 +3595,12 @@
                 "properties": {
                   "suiteAgreementId": {
                     "type": "integer",
+                    "description": "The unique identifier of the suite agreement whose file is to be downloaded.",
                     "format": "int64"
                   },
                   "agreementFile": {
                     "type": "string",
+                    "description": "The file content",
                     "format": "binary"
                   }
                 }
@@ -4326,90 +4494,6 @@
   },
   "components": {
     "schemas": {
-      "BookSeasonRequest": {
-        "required": [
-          "clientContact",
-          "eventKey",
-          "holdToken",
-          "seassonId",
-          "seats"
-        ],
-        "type": "object",
-        "properties": {
-          "clientContact": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ClientContactRequest"
-              }
-            ]
-          },
-          "seats": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "holdToken": {
-            "type": "string"
-          },
-          "eventKey": {
-            "type": "string"
-          },
-          "seassonId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "relatedOrderId": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "BookingRequest": {
-        "required": [
-          "clientContact",
-          "eventId",
-          "holdToken",
-          "paymentInfoRequest",
-          "seats"
-        ],
-        "type": "object",
-        "properties": {
-          "seats": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "holdToken": {
-            "type": "string"
-          },
-          "eventId": {
-            "type": "string"
-          },
-          "ticketType": {
-            "type": "string",
-            "nullable": true
-          },
-          "clientContact": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/EventClientContactRequest"
-              }
-            ]
-          },
-          "paymentInfoRequest": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PaymentInfoRequest"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
       "BookingResult": {
         "type": "object",
         "properties": {
@@ -4433,6 +4517,35 @@
       "ClientContactRequest": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "countryPhoneISO": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientContactResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
           "countryPhoneISO": {
             "type": "string"
           },
@@ -4544,6 +4657,12 @@
           "transactionDate": {
             "type": "string",
             "format": "date-time"
+          },
+          "referenceId": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -4661,6 +4780,41 @@
           "seasonId": {
             "type": "integer",
             "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientInfoRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "countryPhoneISO": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -5282,24 +5436,50 @@
         },
         "additionalProperties": false
       },
-      "EventClientContactRequest": {
+      "EventBookingRequest": {
+        "required": [
+          "clientContact",
+          "eventKey",
+          "paymentInfoRequest",
+          "ticketType"
+        ],
         "type": "object",
         "properties": {
-          "countryPhoneISO": {
+          "eventKey": {
+            "type": "string"
+          },
+          "seats": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "decimal"
+            },
+            "nullable": true
+          },
+          "holdToken": {
             "type": "string",
             "nullable": true
           },
-          "phoneNumber": {
-            "type": "string",
-            "nullable": true
+          "ticketType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ItemType"
+              }
+            ]
           },
-          "email": {
-            "type": "string",
-            "nullable": true
+          "clientContact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientInfoRequest"
+              }
+            ]
           },
-          "fullName": {
-            "type": "string",
-            "nullable": true
+          "paymentInfoRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentInfoRequest"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -5473,11 +5653,13 @@
           },
           "expiresAt": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "expiresInSeconds": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "workspaceKey": {
             "type": "string",
@@ -5485,6 +5667,13 @@
           }
         },
         "additionalProperties": false
+      },
+      "ItemType": {
+        "enum": [
+          "Ticket",
+          "SeasonPass"
+        ],
+        "type": "string"
       },
       "LegalRepForm": {
         "type": "object",
@@ -5643,6 +5832,66 @@
           }
         },
         "additionalProperties": false
+      },
+      "ModelError": {
+        "type": "object",
+        "properties": {
+          "exception": {
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ModelStateEntry": {
+        "type": "object",
+        "properties": {
+          "rawValue": {
+            "nullable": true
+          },
+          "attemptedValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelError"
+            },
+            "readOnly": true
+          },
+          "validationState": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ModelValidationState"
+              }
+            ]
+          },
+          "isContainerNode": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelStateEntry"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ModelValidationState": {
+        "enum": [
+          "Unvalidated",
+          "Invalid",
+          "Valid",
+          "Skipped"
+        ],
+        "type": "string"
       },
       "OrderListFilters": {
         "required": [
@@ -5841,6 +6090,10 @@
       "PaymentInfoRequest": {
         "type": "object",
         "properties": {
+          "isCourtesy": {
+            "type": "boolean",
+            "nullable": true
+          },
           "cardAmount": {
             "type": "number",
             "format": "decimal",
@@ -5852,6 +6105,11 @@
             "nullable": true
           },
           "dolarAmount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "exchangeRate": {
             "type": "number",
             "format": "decimal",
             "nullable": true
@@ -5904,6 +6162,59 @@
           }
         },
         "additionalProperties": { }
+      },
+      "SeasonBookingRequest": {
+        "required": [
+          "clientContact",
+          "paymentInfoRequest",
+          "ticketType"
+        ],
+        "type": "object",
+        "properties": {
+          "seasonKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "refereceOrderId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "seats": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "decimal"
+            },
+            "nullable": true
+          },
+          "holdToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "ticketType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ItemType"
+              }
+            ]
+          },
+          "clientContact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientInfoRequest"
+              }
+            ]
+          },
+          "paymentInfoRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentInfoRequest"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
       },
       "SeasonListItem": {
         "type": "object",

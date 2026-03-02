@@ -9,12 +9,15 @@ public interface ISeasonPassService
 
     public Task<ClientSeasonEvent> GetClientSeasonEventInfo(ClientFilter filter);
 
-    public Task<List<string>> BookSeasonAsync(BookSeasonRequest request);
+    public Task<BookingResult> BookSeasonAsync(SeasonBookingRequest request);
 
     public Task<ClientSeasonEvent> GetClientSeasonEventByOrderReference(string orderReference);
-    public Task<List<EnumItemDto>> GetSeasonPassStatusListAsync();
-    public Task<List<EnumItemDto>> GetSeasonPassSuspendedReasonListAsync();
-    public Task<List<EnumItemDto>> GetSeasonPassRenewalTypeList();
-    public Task UpdateSeasonPassStatusAsync(long id, SeasonPassStatusRequest request);
 
+    public Task<List<EnumItemDto>> GetSeasonPassStatusListAsync();
+
+    public Task<List<EnumItemDto>> GetSeasonPassSuspendedReasonListAsync();
+
+    public Task<List<EnumItemDto>> GetSeasonPassRenewalTypeList();
+
+    public Task UpdateSeasonPassStatusAsync(long id, SeasonPassStatusRequest request);
 }

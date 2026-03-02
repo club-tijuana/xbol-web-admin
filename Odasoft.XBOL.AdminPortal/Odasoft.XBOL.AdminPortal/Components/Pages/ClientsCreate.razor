@@ -29,7 +29,7 @@
 <LoadingContainer IsLoading="@_isLoading">
 <MudPaper Elevation="3" Class="pa-6">
     <EditForm FormName="ClientCreate" Model="@model" OnValidSubmit="OnValidSubmit">
-    <DataAnnotationsValidator/>
+    <DataAnnotationsValidator />
         <MudGrid Spacing="8">
             <MudItem xs="12">
                 <MudStack Spacing="0">
@@ -38,7 +38,7 @@
                 </MudStack>
             </MudItem>
             <MudItem xs="12" md="6" lg="3">
-                <MudTextField 
+                <MudTextField
                     @bind-Value="model.CompanyName"
                     Variant="Variant.Outlined"
                     Margin="Margin.Dense"
@@ -48,7 +48,7 @@
                 </MudTextField>
             </MudItem>
             <MudItem xs="12" md="6" lg="3">
-                <MudTextField 
+                <MudTextField
                     @bind-Value="model.SocialReason"
                     For="@(() => model.SocialReason)"
                     Variant="Variant.Outlined"
@@ -57,7 +57,7 @@
                 </MudTextField>
             </MudItem>
             <MudItem xs="12" md="6" lg="3">
-                <MudTextField 
+                <MudTextField
                     @bind-Value="model.Rfc"
                     For="@(() => model.Rfc)"
                     Variant="Variant.Outlined"
@@ -83,7 +83,7 @@
                 <MudText Typo="Typo.subtitle2">Dirección y contacto</MudText>
             </MudItem>
             <MudItem xs="12" md="6" lg="3">
-                <MudTextField 
+                <MudTextField
                     @bind-Value="model.City"
                     For="@(() => model.City)"
                     Variant="Variant.Outlined"
@@ -92,16 +92,16 @@
                 </MudTextField>
             </MudItem>
             <MudItem xs="12" md="6" lg="3">
-                <MudTextField 
+                <MudTextField
                     @bind-Value="model.State"
                     For="@(() => model.State)"
                     Variant="Variant.Outlined"
                     Margin="Margin.Dense"
                     Label="Estado">
                 </MudTextField>
-            </MudItem>                    
+            </MudItem>
             <MudItem xs="12" md="6" lg="3">
-                <MudTextField 
+                <MudTextField
                     @bind-Value="model.Street"
                     For="@(() => model.Street)"
                     Variant="Variant.Outlined"
@@ -112,7 +112,7 @@
             <MudItem xs="12" md="6" lg="3">
                 <MudGrid Spacing="8">
                     <MudItem xs="12" md="6">
-                        <MudTextField 
+                        <MudTextField
                             @bind-Value="model.ExtNumber"
                             For="@(() => model.ExtNumber)"
                             Variant="Variant.Outlined"
@@ -121,7 +121,7 @@
                         </MudTextField>
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField 
+                        <MudTextField
                             @bind-Value="model.IntNumber"
                             For="@(() => model.IntNumber)"
                             Variant="Variant.Outlined"
@@ -134,7 +134,7 @@
             <MudItem xs="12" lg="6">
                 <MudGrid Spacing="8">
                     <MudItem xs="12" md="6" lg="3">
-                        <MudTextField 
+                        <MudTextField
                             @bind-Value="model.PostalCode"
                             For="@(() => model.PostalCode)"
                             Variant="Variant.Outlined"
@@ -143,7 +143,7 @@
                         </MudTextField>
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField 
+                        <MudTextField
                             @bind-Value="model.Neighborhood"
                             For="@(() => model.Neighborhood)"
                             Variant="Variant.Outlined"
@@ -152,7 +152,7 @@
                         </MudTextField>
                     </MudItem>
                     <MudItem xs="12" md="6" lg="3">
-                        <MudTextField 
+                        <MudTextField
                             @bind-Value="model.City"
                             For="@(() => model.City)"
                             Variant="Variant.Outlined"
@@ -181,21 +181,23 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="6" lg="3">
-                        <MudTextField 
+                        <MudTextField
                             @bind-Value="model.Phone"
                             For="@(() => model.Phone)"
                             Variant="Variant.Outlined"
                             Margin="Margin.Dense"
-                            Label="Teléfono">
+                            Label="Teléfono"
+                            InputType="InputType.Telephone">
                         </MudTextField>
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField 
+                        <MudTextField
                             @bind-Value="model.Email"
                             For="@(() => model.Email)"
                             Variant="Variant.Outlined"
                             Margin="Margin.Dense"
-                            Label="Correo electrónico">
+                            Label="Correo electrónico"
+                        InputType="InputType.Email">
                         </MudTextField>
                     </MudItem>
                 </MudGrid>
@@ -204,7 +206,7 @@
                 <MudText Typo="Typo.subtitle2">Representante legal</MudText>
             </MudItem>
             <MudItem xs="12" md="6" lg="3">
-                <MudTextField 
+                <MudTextField
                     @bind-Value="model.LegalRep.Name"
                     For="@(() => model.LegalRep.Name)"
                     Variant="Variant.Outlined"
@@ -220,10 +222,10 @@
                                Label="Fecha de nacimiento"
                                Mask="@(new DateMask("dd/MM/yyyy"))"
                                DateFormat="dd/MM/yyyy"
-                               Clearable/>
+                               Clearable />
             </MudItem>
             <MudItem xs="12" md="6" lg="3">
-                <MudTextField 
+                <MudTextField
                     @bind-Value="model.LegalRep.Rfc"
                     For="@(() => model.LegalRep.Rfc)"
                     Variant="Variant.Outlined"
@@ -232,7 +234,7 @@
                 </MudTextField>
             </MudItem>
             <MudItem xs="12" md="6" lg="3">
-                <MudTextField 
+                <MudTextField
                     @bind-Value="model.LegalRep.Curp"
                     For="@(() => model.LegalRep.Curp)"
                     Variant="Variant.Outlined"
@@ -247,16 +249,17 @@
                 <MudText Typo="Typo.subtitle2">Datos del crédito</MudText>
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <MudTextField 
+                <MudNumericField
                     @bind-Value="model.Credit.AuthorizedAmount"
                     For="@(() => model.Credit.AuthorizedAmount)"
-                    Variant="Variant.Outlined" 
-                    Adornment="Adornment.Start" 
-                    AdornmentIcon="@Icons.Material.Filled.AttachMoney" 
-                    Margin="Margin.Dense" 
+                    Variant="Variant.Outlined"
+                    Adornment="Adornment.Start"
+                    AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                    Margin="Margin.Dense"
                     Label="Importe autorizado"
                     Placeholder="0.00"
-                    Disabled="!CreditEnabled" />
+                    Disabled="!CreditEnabled"
+                    Immediate="false" />
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
                 <MudDatePicker Variant="Variant.Outlined"
@@ -267,13 +270,13 @@
                                Mask="@(new DateMask("dd/MM/yyyy"))"
                                DateFormat="dd/MM/yyyy"
                                Disabled="!CreditEnabled"
-                               Clearable/>
+                               Clearable />
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <MudSelect 
-                    T="PaymentFrequency?"                              
+                <MudSelect
+                    T="PaymentFrequency?"
                     Label="Periodicidad de pago"
-                    Margin="Margin.Dense" 
+                    Margin="Margin.Dense"
                     Variant="Variant.Outlined"
                     @bind-Value="model.Credit.PaymentCycleTypeId"
                     For="@(() => model.Credit.PaymentCycleTypeId)"
@@ -289,7 +292,7 @@
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
                 <MudSelect Label="¿Aplica tasa de interés?"
-                            Margin="Margin.Dense" 
+                            Margin="Margin.Dense"
                             @bind-Value="model.Credit.InterestApply"
                             For="@(() => model.Credit.InterestApply)"
                             Variant="Variant.Outlined"
@@ -300,24 +303,25 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <MudTextField @bind-Value="model.Credit.TotalPlusInterest"
+                <MudNumericField @bind-Value="model.Credit.TotalPlusInterest"
                               For="@(() => model.Credit.TotalPlusInterest)"
                               Variant="Variant.Outlined"
                               Adornment="Adornment.Start"
                               AdornmentIcon="@Icons.Material.Filled.AttachMoney"
                               Margin="Margin.Dense"
                               Label="Monto total + intereses"
-                              Placeholder="0.00"                               
-                              Disabled="!CreditEnabled" />
+                              Placeholder="0.00"
+                              Disabled="!CreditEnabled"
+                              Immediate="false" />
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <MudTextField @bind-Value="model.Credit.TermInDays"
+                <MudNumericField @bind-Value="model.Credit.TermInDays"
                               For="@(() => model.Credit.TermInDays)"
                               Variant="Variant.Outlined"
                               Margin="Margin.Dense"
-                              Label="Plazo (días)" 
-                              Disabled="!CreditEnabled">
-                </MudTextField>
+                              Label="Plazo (días)"
+                              Disabled="!CreditEnabled"
+                              Immediate="false" />
             </MudItem>
             <MudItem xs="12">
                 <MudPaper Class="d-flex justify-end" Elevation="0">
@@ -370,7 +374,6 @@
 
     private DateTime? CreditStartDate { get; set; }
     private DateTime? LegalRepDOB { get; set; }
-
 
     private List<ClientType> _clientTypes = Enum.GetValues<ClientType>().ToList();
     private List<PaymentFrequency> _paymentFrequencies = Enum.GetValues<PaymentFrequency>().ToList();

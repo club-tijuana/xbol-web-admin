@@ -11,9 +11,9 @@ namespace Odasoft.XBOL.Business.Services
             _adminClient = adminClient;
         }
 
-        public async Task<OrderResultPagedResponse> GetOrdersAsync(OrdersFilterParameters parameters)
+        public async Task<OrderResultPagedResponse> GetCreditOrdersAsync(OrdersFilterParameters parameters)
         {
-            var response = await _adminClient.GetOrdersAsync(
+            var response = await _adminClient.GetCreditOrdersAsync(
                 parameters.ClientId,
                 parameters.Events,
                 parameters.StartDate,

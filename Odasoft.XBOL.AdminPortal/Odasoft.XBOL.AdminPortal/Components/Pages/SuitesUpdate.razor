@@ -15,7 +15,7 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteConfigurationsAsync())"
-                    Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+                       Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
         </LeftContent>
     </PageActionBar>
 </SectionContent>
@@ -35,7 +35,7 @@
                 <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_suiteName" Label="Palco" Required />
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudNumericField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_seats" Label="Total de asientos" Required />
+                <MudNumericField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_seats" Label="Total de asientos" Required Immediate="false" />
             </MudItem>
         </MudGrid>
     </MudCardContent>

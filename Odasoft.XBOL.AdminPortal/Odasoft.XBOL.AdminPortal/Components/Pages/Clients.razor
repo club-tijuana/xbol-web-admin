@@ -50,7 +50,7 @@
                             <!-- Level multi-select -->
                             <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                                 <ActivatorContent>
-                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" />
+                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" OnClick="@context.ToggleAsync" />
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudStack Spacing="3" Class="pa-4" Style="width:375px">
@@ -178,11 +178,11 @@
 
     private ClientFilterParameters _filters = new();
 
-    private IEnumerable<EnterpriseViewModel> _clients = [];
+    private IReadOnlyCollection<EnterpriseViewModel> _clients = [];
     private HashSet<EnterpriseViewModel> _selectedClients = [];
 
     private List<EnumItemDto> _creditStatus = [];
-    private IEnumerable<CreditStatus> _selectedCreditStatus = [];
+    private IReadOnlyCollection<CreditStatus> _selectedCreditStatus = [];
 
     private bool? _onlyCredits = null;
 
@@ -260,7 +260,7 @@
         _navigationManager.NavigateTo(SitePages.CLIENTS_CREATE);
     }
 
-    private async Task<GridData<EnterpriseViewModel>> ServerReloadAsync(GridState<EnterpriseViewModel> state)
+    private async Task<GridData<EnterpriseViewModel>> ServerReloadAsync(GridState<EnterpriseViewModel> state, CancellationToken token)
     {
         _loading = true;
 
@@ -295,6 +295,10 @@
                     CreditStatusValue = (int?)c.CreditStatus
                 }) ?? []
             };
+        }
+        catch (TaskCanceledException)
+        {
+            return new GridData<EnterpriseViewModel> { TotalItems = 0, Items = [] };
         }
         catch (Exception ex)
         {

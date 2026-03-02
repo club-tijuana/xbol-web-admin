@@ -20,7 +20,7 @@ namespace Odasoft.XBOL.AdminPortal.States
             if (currentEventId != eventId)
             {
                 ClearCart();
-                ClearToken();
+                ClearTokenAsync();
                 currentEventId = eventId;
             }
         }
@@ -90,7 +90,7 @@ namespace Odasoft.XBOL.AdminPortal.States
             }
         }
 
-        public void ClearToken()
+        public void ClearTokenAsync()
         {
             HoldToken = null;
             HoldExpirationTime = null;

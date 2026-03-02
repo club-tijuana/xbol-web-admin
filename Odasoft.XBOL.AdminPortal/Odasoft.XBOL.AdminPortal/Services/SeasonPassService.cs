@@ -6,10 +6,10 @@ namespace Odasoft.XBOL.AdminPortal.Services
 {
     public class SeasonPassService(IAdminClient apiClient) : ISeasonPassService
     {
-        public async Task<List<string>> BookSeasonAsync(BookSeasonRequest request)
+        public async Task<BookingResult> BookSeasonAsync(SeasonBookingRequest request)
         {
-            var result = await apiClient.BookSeasonAsync(request);
-            return result.ToList();
+            var result = await apiClient.BookSeasonSeatsAsync(request);
+            return result;
         }
 
         public async Task<ClientSeasonEvent> GetClientSeasonEventByOrderReference(string orderReference)
@@ -37,7 +37,7 @@ namespace Odasoft.XBOL.AdminPortal.Services
             return new GridData<OrderListItem>
             {
                 TotalItems = response.TotalItems,
-                Items = response.Items,
+                Items = response.Items ?? [],
             };
         }
 

@@ -70,6 +70,18 @@ namespace Odasoft.XBOL.Business.Services
                 return null;
             }
         }
+
+        public async Task<ClientContactResponse?> SearchClientAsync(string phone, string email)
+        {
+            if (string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(email))
+            {
+                return null;
+            }
+
+            var contactInfo = await _adminClient.SearchClientAsync(phone, email);
+
+            return contactInfo;
+        }
     }
 
     // TODO: Move this to a separate file
