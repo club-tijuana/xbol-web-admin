@@ -37,7 +37,7 @@
                   HasError="@_error"
                   ErrorMessage="@_errorMessage">
     <MudGrid>
-        <MudItem xs="12" md="6">
+        <MudItem xs="12" lg="6">
             <MudCard Elevation="3">
                 <MudCardContent>
                     <MudGrid>
@@ -74,7 +74,7 @@
             </MudCard>
         </MudItem>
 
-        <MudItem xs="12" md="6">
+        <MudItem xs="12" lg="6">
             <MudCard Elevation="3">
                 <MudCardContent>
                     <MudGrid>
@@ -128,7 +128,7 @@
                                       IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1" DebounceInterval="500" />
                         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                             <ActivatorContent>
-                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Primary" />
+                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Primary" OnClick="@context.ToggleAsync" />
                             </ActivatorContent>
                             <ChildContent>
                                 <MudStack Spacing="3" Class="pa-4" Style="width:375px">
@@ -185,7 +185,7 @@
                                       IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1" DebounceInterval="500" />
                         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                             <ActivatorContent>
-                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Primary" />
+                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Primary" OnClick="@context.ToggleAsync" />
                             </ActivatorContent>
                             <ChildContent>
                                 <MudStack Spacing="3" Class="pa-4" Style="width:375px">
@@ -290,11 +290,11 @@
     public string _creditTransactionsSearchTerm = "";
 
     private List<ListItem> _events = [];
-    private IEnumerable<string> _selectedEvents = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedEvents = [];
     private DateRange? _ordersDateRange = null;
 
     private List<PaymentType> _paymentTypes = Enum.GetValues<PaymentType>().ToList();
-    private IEnumerable<PaymentType> _selectedPaymentTypes = new HashSet<PaymentType>();
+    private IReadOnlyCollection<PaymentType> _selectedPaymentTypes = [];
     private DateRange? _creditTransactionsDateRange = null;
 
     private ClientViewModel _client = new();
@@ -535,7 +535,7 @@
         }
     }
 
-    private async Task<GridData<CreditOrderViewModel>> OrdersServerReloadAsync(GridState<CreditOrderViewModel> state)
+    private async Task<GridData<CreditOrderViewModel>> OrdersServerReloadAsync(GridState<CreditOrderViewModel> state, CancellationToken token)
     {
         var sortDefinition = state.SortDefinitions.FirstOrDefault();
 
@@ -552,7 +552,7 @@
 
         try
         {
-            OrderResultPagedResponse response = await _ordersService.GetOrdersAsync(_ordersFilters);
+            OrderResultPagedResponse response = await _ordersService.GetCreditOrdersAsync(_ordersFilters);
 
             return new GridData<CreditOrderViewModel>
             {
@@ -568,6 +568,10 @@
             };
 
         }
+        catch (TaskCanceledException)
+        {
+            return new GridData<CreditOrderViewModel> { TotalItems = 0, Items = [] };
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Error while loading orders: {ex.Message}");
@@ -580,7 +584,7 @@
         }
     }
 
-    private async Task<GridData<CreditPaymentsViewModel>> PaymentsServerReloadAsync(GridState<CreditPaymentsViewModel> state)
+    private async Task<GridData<CreditPaymentsViewModel>> PaymentsServerReloadAsync(GridState<CreditPaymentsViewModel> state, CancellationToken token)
     {
         var sortDefinition = state.SortDefinitions.FirstOrDefault();
 
@@ -614,7 +618,10 @@
                     ReceivedBy = credit.ReceivedBy ?? "-"
                 })
             };
-
+        }
+        catch (TaskCanceledException)
+        {
+            return new GridData<CreditPaymentsViewModel> { TotalItems = 0, Items = [] };
         }
         catch (Exception ex)
         {

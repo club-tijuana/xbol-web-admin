@@ -22,19 +22,19 @@
             <LeftContent>
                 <!-- TODO: Go back to upcoming/past depending on Season data -->
                 <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Href="/seasons" Color="Color.Secondary"
-                        Variant="Variant.Outlined" DropShadow="false">
+                           Variant="Variant.Outlined" DropShadow="false">
                     Regresar
                 </MudButton>
             </LeftContent>
             <RightContent>
                 <MudStack Row="true" Spacing="4">
                     <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled"
-                            Class="text-uppercase" OnClick="DeleteSeasonAsync">
+                               Class="text-uppercase" OnClick="DeleteSeasonAsync">
                         Borrar
                     </MudButton>
 
                     <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Filled"
-                            Class="text-uppercase" Href="@($"/seasons/{SeasonId}/edit")">
+                               Class="text-uppercase" Href="@($"/seasons/{SeasonId}/edit")">
                         Editar
                     </MudButton>
                 </MudStack>
@@ -115,7 +115,8 @@
                         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                             <ActivatorContent>
                                 <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt"
-                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)" />
+                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)"
+                                               OnClick="@context.ToggleAsync" />
                             </ActivatorContent>
                             <ChildContent>
                                 <MudStack Spacing="3" Class="pa-4" Style="width:375px">
@@ -251,10 +252,10 @@
     private EventFilterParameters _filters = EventFilterParameters.Empty;
 
     private List<VenueListItemDTO> _venues = [];
-    private IEnumerable<string> _selectedVenues = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedVenues = [];
 
     private List<string> _availableCategories = [];
-    private IEnumerable<string> _selectedCategories = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedCategories = [];
 
     private DateRange? _dateRange = null;
 
@@ -278,12 +279,17 @@
         }
     }
 
-    private async Task<GridData<EventViewModel>> ServerReload(GridState<EventViewModel> state)
+    private async Task<GridData<EventViewModel>> ServerReload(GridState<EventViewModel> state, CancellationToken token)
     {
         _loading = true;
+
         try
         {
             return await FetchFromServer(state);
+        }
+        catch (TaskCanceledException)
+        {
+            return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
         catch (Exception)
         {

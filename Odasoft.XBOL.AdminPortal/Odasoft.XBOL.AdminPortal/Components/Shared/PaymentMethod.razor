@@ -2,7 +2,7 @@
 @using System.Globalization
 <MudGrid>
     <MudItem xs="9">
-        <MudTextField T="decimal"
+        <MudNumericField T="decimal"
                       @bind-Value="_amount"
                       Label="@L["DebitCard"]"
                       Variant="Variant.Outlined"
@@ -20,7 +20,7 @@
         </MudButton>
     </MudItem>
     <MudItem xs="9">
-        <MudTextField T="decimal"
+        <MudNumericField T="decimal"
                       @bind-Value="_amount"
                       Label="@L["Cash"]"
                       Variant="Variant.Outlined"
@@ -38,7 +38,7 @@
         </MudButton>
     </MudItem>
     <MudItem xs="9">
-        <MudTextField T="decimal"
+        <MudNumericField T="decimal"
                       @bind-Value="_amount"
                       Label="@L["Usd"]"
                       Variant="Variant.Outlined"
@@ -56,7 +56,7 @@
         </MudButton>
     </MudItem>
     <MudItem xs="9">
-        <MudTextField T="decimal"
+        <MudNumericField T="decimal"
                       @bind-Value="_amount"
                       Label="@L["CreditCard"]"
                       Variant="Variant.Outlined"
@@ -74,7 +74,7 @@
         </MudButton>
     </MudItem>
     <MudItem xs="9">
-        <MudTextField T="decimal"
+        <MudNumericField T="decimal"
                       @bind-Value="_amount"
                       Label="@L["Other"]"
                       Variant="Variant.Outlined"
@@ -115,7 +115,6 @@
                     </MudItem>
                 </MudGrid>
             </MudCardContent>
-
         </MudCard>
     </MudItem>
 </MudGrid>

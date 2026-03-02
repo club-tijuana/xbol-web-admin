@@ -17,7 +17,7 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteAgreementsAsync())"
-                    Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+                       Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
         </LeftContent>
     </PageActionBar>
 </SectionContent>
@@ -65,12 +65,12 @@
         <MudGrid Class="mud-width-full">
             <MudItem xs="12" sm="12" md="6" lg="3">
                 <MudFileUpload T="IBrowserFile" FilesChanged="OnInputFileChanged" Required>
-                    <ActivatorContent>
+                    <CustomContent>
                         <MudButton StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Secondary"
                                    Variant="Variant.Filled" Class="text-uppercase">
                             Subir contrato
                         </MudButton>
-                    </ActivatorContent>
+                    </CustomContent>
                 </MudFileUpload>
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">

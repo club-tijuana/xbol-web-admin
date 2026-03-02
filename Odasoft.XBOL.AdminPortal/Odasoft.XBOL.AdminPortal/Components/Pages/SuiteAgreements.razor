@@ -50,13 +50,14 @@
                             <!-- Level multi-select -->
                             <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                                 <ActivatorContent>
-                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" />
+                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" OnClick="@context.ToggleAsync" />
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudStack Spacing="3" Class="pa-4" Style="width:375px">
                                         <MudSelect T="string" Label="Nivel" MultiSelection="true"
                                                    Margin="Margin.Dense" Variant="Variant.Outlined"
-                                                   ShrinkLabel @bind-SelectedValues="_selectedSuiteLevels">
+                                                   ShrinkLabel @bind-SelectedValues="_selectedSuiteLevels"
+                                                   ValueChanged="@LoadSuitesCatalogAsync">
                                             @foreach (var level in _suiteLevels)
                                             {
                                                 <MudSelectItem T="string" Value="@level.Name">
@@ -170,14 +171,14 @@
     private string _searchTerm = "";
     private bool _disableMultipleDownloads => _selectedAgreements.Count == 0;
 
-    private IEnumerable<SuiteAgreementViewModel> _suiteAgreements = [];
+    private IReadOnlyCollection<SuiteAgreementViewModel> _suiteAgreements = [];
     private HashSet<SuiteAgreementViewModel> _selectedAgreements = new();
 
     private List<ListItem> _suiteLevels = [];
-    private IEnumerable<string> _selectedSuiteLevels = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedSuiteLevels = [];
 
     private List<ListItem> _suites = [];
-    private IEnumerable<string> _selectedSuites = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedSuites = [];
 
     private DateTime? _startDate;
     private DateTime? _endDate;
@@ -197,6 +198,13 @@
         try
         {
             FileResponse? file = await _suiteAgreementsService.DownloadSuiteAgreementFileAsync(agreementId);
+
+            if (file == null)
+            {
+                Console.WriteLine("Error trying to get file: null response.");
+                _snackbar.Add("Error al tratar de descargar el archivo", Severity.Error);
+                return;
+            }
 
             await DownloadFileAsync(file);
         }
@@ -218,6 +226,7 @@
             if (file != null)
             {
                 await DownloadFileAsync(file);
+                return;
             }
 
             Console.WriteLine("Error trying to get file: null response.");
@@ -282,7 +291,7 @@
                 {
                     _snackbar.Add("Contrato de palco eliminado exitosamente.", Severity.Success);
 
-                    _suiteAgreements = _suiteAgreements.Where(x => x.Id != suiteAgreementId);
+                    await ServerReloadAsync();
                 }
                 else
                 {
@@ -385,6 +394,7 @@
 
     private async Task LoadSuitesCatalogAsync()
     {
+        _selectedSuites = [];
         _suites = [];
 
         List<long> suiteLevelIds = _suiteLevels

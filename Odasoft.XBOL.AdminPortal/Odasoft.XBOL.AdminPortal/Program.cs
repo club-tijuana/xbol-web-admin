@@ -72,7 +72,6 @@ builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 builder.Services.AddScoped<AuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEventService, ApiEventService>();
-builder.Services.AddScoped<GeneralService>();
 builder.Services.AddScoped<ISeasonPassService, SeasonPassService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
 builder.Services.AddScoped<ClientsService>();

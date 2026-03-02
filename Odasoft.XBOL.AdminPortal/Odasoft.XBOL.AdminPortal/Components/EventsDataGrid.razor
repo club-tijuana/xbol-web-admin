@@ -12,11 +12,14 @@
     <MudCardHeader>
         <CardHeaderContent>
             <MudGrid Class="align-center">
-                @if (HideTitle is false) {
+                @if (HideTitle is false)
+                {
                     <MudItem xs="12" sm="6" lg="8">
                         <MudText Class="pl-lg-4" Typo="Typo.h5">@L["PageTitle"]</MudText>
                     </MudItem>
-                } else {
+                }
+                else
+                {
                     <MudItem xs="0" sm="0" lg="6" />
                 }
                 <MudItem xs="12" sm="@(HideTitle ? 12 : 6)" lg="@(HideTitle ? 6 : 4)">
@@ -37,7 +40,8 @@
                         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                             <ActivatorContent>
                                 <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt"
-                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)" />
+                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)" 
+                                               OnClick="@context.ToggleAsync" />
                             </ActivatorContent>
                             <ChildContent>
                                 <MudStack Spacing="3" Class="pa-4" Style="width:375px">
@@ -198,9 +202,9 @@
     private MudDataGrid<EventViewModel> _dataGrid = default!;
     private EventFilterParameters _filters = EventFilterParameters.Empty;
     private List<VenueListItemDTO> _venues = [];
-    private IEnumerable<string> _selectedVenues = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedVenues = [];
     private List<string> _availableCategories = [];
-    private IEnumerable<string> _selectedCategories = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedCategories = [];
     private DateRange? _dateRange = null;
 
     protected override async Task OnInitializedAsync()
@@ -225,7 +229,7 @@
     /// <summary>
     /// Fetches data for the MudDataGrid based on current state (pagination, sorting, search).
     /// </summary>
-    private async Task<GridData<EventViewModel>> ServerReload(GridState<EventViewModel> state)
+    private async Task<GridData<EventViewModel>> ServerReload(GridState<EventViewModel> state, CancellationToken token)
     {
         _loading = true;
         try
@@ -243,6 +247,10 @@
             );
 
             return result;
+        }
+        catch (TaskCanceledException)
+        {
+            return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
         catch (Exception)
         {

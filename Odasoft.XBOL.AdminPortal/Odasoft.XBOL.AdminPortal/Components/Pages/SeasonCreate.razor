@@ -14,7 +14,7 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Secondary"
-                    Variant="Variant.Outlined" DropShadow="false" OnClick="GoBackAsync">
+                       Variant="Variant.Outlined" DropShadow="false" OnClick="GoBackAsync">
                 @L["ButtonBack"]
             </MudButton>
         </LeftContent>
@@ -33,7 +33,7 @@
                 @* Row 1: Code, Name, StartDate, EndDate *@
                 <MudItem xs="12" lg="2">
                     <MudTextField @bind-Value="_code" Label="@L["Code"]"
-                                  Variant="Variant.Outlined" Placeholder="@L["CodePlaceholder"]" 
+                                  Variant="Variant.Outlined" Placeholder="@L["CodePlaceholder"]"
                                   Required="true" RequiredError="@L["RequiredField"]"
                                   Validation="@(ValidationFor<string>("Code"))"
                                   TextChanged="@(() => ClearFieldError("Code"))" />
@@ -46,15 +46,15 @@
                                   TextChanged="@(() => ClearFieldError("Name"))" />
                 </MudItem>
                 <MudItem xs="12" lg="3">
-                    <MudDatePicker Date="_startDate" DateChanged="@(d => { _startDate = d; ClearFieldError("StartDate"); })" 
+                    <MudDatePicker Date="_startDate" DateChanged="@(d => { _startDate = d; ClearFieldError("StartDate"); })"
                                    Label="@L["StartDate"]"
                                    Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
                                    Mask="@(new DateMask("dd/MM/yyyy"))"
-                                   Required="true" RequiredError="@L["RequiredField"]" 
+                                   Required="true" RequiredError="@L["RequiredField"]"
                                    Validation="@(ValidationFor<DateTime?>("StartDate"))" />
                 </MudItem>
                 <MudItem xs="12" lg="3">
-                    <MudDatePicker Date="_endDate" DateChanged="@(d => { _endDate = d; ClearFieldError("EndDate"); })" 
+                    <MudDatePicker Date="_endDate" DateChanged="@(d => { _endDate = d; ClearFieldError("EndDate"); })"
                                    Label="@L["EndDate"]"
                                    Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
                                    Mask="@(new DateMask("dd/MM/yyyy"))"
@@ -148,7 +148,7 @@
     {
         if (HasChanges())
         {
-            var result = await DialogService.ShowMessageBox(
+            var result = await DialogService.ShowMessageBoxAsync(
                 L["UnsavedChangesTitle"],
                 L["UnsavedChangesMessage"],
                 yesText: L["UnsavedChangesConfirm"],
@@ -176,7 +176,7 @@
         if (_serverErrors.Remove(fieldName))
         {
             // Trigger state change if needed, though validation should auto-update on value change
-            StateHasChanged(); 
+            StateHasChanged();
         }
     }
 
@@ -184,7 +184,7 @@
     {
         _serverErrors.Clear();
 
-        if (ex.Result.AdditionalProperties != null && 
+        if (ex.Result.AdditionalProperties != null &&
             ex.Result.AdditionalProperties.TryGetValue("errors", out var errorsObj) &&
             errorsObj is JObject errorsJson)
         {
@@ -197,7 +197,7 @@
                 }
             }
         }
-        
+
         _form.Validate();
     }
 

@@ -25,13 +25,13 @@
     </PageActionBar>
 </SectionContent>
 
-<LoadingContainer 
-    IsLoading="_loading" 
+<LoadingContainer
+    IsLoading="_loading"
     HasError="_error"
     ErrorMessage="Error al cargar el evento"
     OnRetry="LoadEventData">
     <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
-    <MudPaper Class="pa-6" Elevation="3">   
+    <MudPaper Class="pa-6" Elevation="3">
             @if (_currentStep == 1)
             {
                 <MudGrid Justify="Justify.SpaceBetween">
@@ -109,7 +109,7 @@
             };
 
             CartState.SetEvent(Id);
-            CartState.ClearToken();
+            CartState.ClearTokenAsync();
         }
         catch (Exception ex)
         {

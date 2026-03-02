@@ -16,27 +16,28 @@
 
 <MudLayout>
     <!-- TOP BAR -->
-        <MudAppBar Elevation="1" Class="bg-secondary-darken">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                           Color="Color.Inherit"
-                           Edge="Edge.Start"
-                           OnClick="ToggleDrawer" />
-            <MudSpacer />
-            <!-- Notifications -->
-            <MudIconButton Icon="@Icons.Material.Filled.Notifications"
-                           Color="Color.Inherit" />
-            <!-- User / Logout -->
-            <MudMenu AnchorOrigin="Origin.BottomRight"
-                     TransformOrigin="Origin.TopRight">
-                <ActivatorContent>
-                    <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
-                                   Color="Color.Inherit" />
-                </ActivatorContent>
-                <ChildContent>
-                    <MudMenuItem Label="@L["Logout"]" OnClick="Logout" />
-                </ChildContent>
-            </MudMenu>
-        </MudAppBar>
+    <MudAppBar Elevation="1" Class="bg-secondary-darken">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       OnClick="ToggleDrawer" />
+        <MudSpacer />
+        <!-- Notifications -->
+        <MudIconButton Icon="@Icons.Material.Filled.Notifications"
+                       Color="Color.Inherit" />
+        <!-- User / Logout -->
+        <MudMenu AnchorOrigin="Origin.BottomRight"
+                 TransformOrigin="Origin.TopRight">
+            <ActivatorContent>
+                <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
+                               Color="Color.Inherit"
+                               OnClick="@context.ToggleAsync" />
+            </ActivatorContent>
+            <ChildContent>
+                <MudMenuItem Label="@L["Logout"]" OnClick="Logout" />
+            </ChildContent>
+        </MudMenu>
+    </MudAppBar>
 
     <!-- LEFT NAV DRAWER -->
     <MudDrawer Open="@_drawerOpen"
