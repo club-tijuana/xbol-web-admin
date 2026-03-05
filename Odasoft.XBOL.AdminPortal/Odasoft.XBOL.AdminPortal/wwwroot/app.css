@@ -102,12 +102,12 @@ h1:focus {
     color: var(--mud-palette-secondary);
 }
 
-.bg-secondary-darken {
-    background-color: var(--mud-palette-secondary-darken) !important;
-}
-
 .bg-default {
     background-color: var(--mud-palette-background);
+}
+
+.bg-primary-lighten {
+    background-color: var(--mud-palette-primary-lighten) !important;
 }
 
 .bg-primary-darken {
@@ -116,6 +116,14 @@ h1:focus {
 
 .text-primary-darken {
     color: var(--mud-palette-primary-darken) !important;
+}
+
+.text-secondary {
+    color: var(--mud-palette-secondary) !important;
+}
+
+.bg-secondary-darken {
+    background-color: var(--mud-palette-secondary-darken) !important;
 }
 
 .text-secondary-darken {
@@ -128,6 +136,18 @@ h1:focus {
 
 .border-secondary-lighten {
     border-color: var(--mud-palette-secondary-lighten) !important;
+}
+
+.bg-tertiary-lighten {
+    background-color: var(--mud-palette-tertiary-lighten) !important;
+}
+
+.text-tertiary-darken {
+    color: var(--mud-palette-tertiary-darken) !important;
+}
+
+.text-warning {
+    color: var(--mud-palette-warning) !important;
 }
 
 .mud-nav-link, .mud-nav-group > .mud-nav-link > .mud-nav-link-text {
@@ -158,4 +178,11 @@ h1:focus {
     .mud-table-pagination-caption:first-of-type {
         display: none !important;
     }
+}
+
+.truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }

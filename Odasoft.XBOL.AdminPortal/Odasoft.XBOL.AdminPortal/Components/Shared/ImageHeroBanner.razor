@@ -4,7 +4,15 @@
 <MudCard Class="mb-4 bg-white" Elevation="3">
     <MudGrid Class="m-0 p-0 align-center" Justify="Justify.FlexStart">
         <MudItem xs="12" sm="6" lg="4" Class="pb-0 mb-0 d-flex">
-            <img src="@Banner.ImageUrl" class="img-fluid banner-img" />
+            @if (string.IsNullOrEmpty(Banner.ImageUrl))
+
+            {
+                <ImagePlaceholder Height="95px" />
+            }
+            else
+            {
+                <img src="@Banner.ImageUrl" class="img-fluid banner-img" />
+            }            
         </MudItem>
         <MudItem xs="12" sm="6" lg="4" Class="pb-0 mb-0">
             <MudText Typo="Typo.h6" Color="@Color.Secondary">@Banner.Title</MudText>

@@ -22,14 +22,14 @@
 <MudForm @ref="_form" Model="_request" @bind-IsValid="_isValid" @bind-IsTouched="_isTouched" Validation="@(orderValidator.ValidateValue)">
     <MudGrid Justify="Justify.SpaceBetween">
         <MudItem xs="12" Class="d-flex justify-space-between">
-            <MudText Typo="Typo.h5">Método de pago</MudText>
-            <MudButton OnClick="ReturnAsync" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">ASIENTOS</MudButton>
+            <MudText Typo="Typo.h5">@L["PaymentMethod"]</MudText>
+            <MudButton OnClick="ReturnAsync" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
         </MudItem>
 
         <MudItem xs="3">
             <MudGrid>
                 <MudItem xs="6">
-                    <MudSelect Label="Lada*"
+                    <MudSelect Label="@(L["AreaCode"] + "*")"
                                Variant="Variant.Outlined"
                                Margin="Margin.Dense"
                                @bind-Value="_request.CountryPhoneISO"
@@ -44,7 +44,7 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="6">
-                    <MudTextField Label="Teléfono*"
+                    <MudTextField Label="@(L["Phone"] + "*")"
                                   @bind-Value="_request.PhoneNumber"
                                   For="@(() => _request.PhoneNumber)"
                                   Variant="Variant.Outlined"
@@ -54,7 +54,7 @@
                                   InputType="InputType.Telephone" />
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField Label="Correo electrónico*"
+                    <MudTextField Label="@(L["Email"] + "*")"
                                   Variant="Variant.Outlined"
                                   @bind-Value="_request.Email"
                                   For="@(() => _request.Email)"
@@ -66,7 +66,7 @@
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_request.FullName"
                                   For="@(() => _request.FullName)"
-                                  Label="Nombre del comprador"
+                                  Label="@(L["FullName"] + "*")"
                                   Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
                                   Immediate="true" />
@@ -74,7 +74,7 @@
                 <MudItem xs="6">
                     <MudTextField @bind-Value="_request.City"
                                   For="@(() => _request.City)"
-                                  Label="Ciudad"
+                                  Label="@L["City"]"
                                   Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
                                   Immediate="true" />
@@ -82,7 +82,7 @@
                 <MudItem xs="6">
                     <MudTextField @bind-Value="_request.Neighborhood"
                                   For="@(() => _request.Neighborhood)"
-                                  Label="Colonia"
+                                  Label="@L["Neighborhood"]"
                                   Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
                                   Immediate="true" />
@@ -90,7 +90,7 @@
                 <MudItem xs="12">
                     <MudSelect @bind-Value="_request.Gender"
                                For="@(() => _request.Gender)"
-                               Label="Género"
+                               Label="@L["Gender"]"
                                Variant="Variant.Outlined"
                                Margin="Margin.Dense"
                                Placeholder="Sin especificar"
@@ -122,7 +122,7 @@
                     <MudNumericField @bind-Value="_request.CardAmount"
                                      For="@(() => _request.CardAmount)"
                                      Format="N2"
-                                     Label="Tarjeta"
+                                     Label="@L["Card"]"
                                      Variant="Variant.Outlined"
                                      Adornment="Adornment.Start"
                                      AdornmentIcon="@Icons.Material.Filled.AttachMoney"
@@ -134,19 +134,63 @@
                     <MudButton Variant="Variant.Outlined" @onclick="SetAllCardAsync" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudTextField @bind-Value="_request.CashAmount" For="@(() => _request.CashAmount)" Label="Efectivo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" Format="N2" Disabled="IsFreeTicket" />
+                    <MudNumericField @bind-Value="_request.CashAmount"
+                                     For="@(() => _request.CashAmount)"
+                                     Format="N2"
+                                     Label="@L["Cash"]"
+                                     Variant="Variant.Outlined"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     Margin="Margin.Dense"
+                                     Placeholder="0.00"
+                                     HideSpinButtons="true"
+                                     Disabled="IsFreeTicket"
+                                     Immediate="false" />
                     <MudButton Variant="Variant.Outlined" @onclick="SetAllCashAsync" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudTextField @bind-Value="_request.DolarAmount" For="@(() => _request.DolarAmount)" Label="Dólares" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" Format="N2" Disabled="IsFreeTicket" />
+                    <MudNumericField @bind-Value="_request.DolarAmount"
+                                     For="@(() => _request.DolarAmount)"
+                                     Format="N2"
+                                     Label="@L["Dollars"]"
+                                     Variant="Variant.Outlined"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     Margin="Margin.Dense"
+                                     Placeholder="0.00"
+                                     HideSpinButtons="true"
+                                     Disabled="IsFreeTicket"
+                                     Immediate="false" />
                     <MudButton Variant="Variant.Outlined" @onclick="SetAllDolar" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudTextField @bind-Value="_request.CreditAmount" For="@(() => _request.CreditAmount)" Label="Crédito" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" Format="N2" Disabled="IsFreeTicket" />
+                    <MudNumericField @bind-Value="_request.CreditAmount"
+                                     For="@(() => _request.CreditAmount)"
+                                     Format="N2"
+                                     Label="@L["Credit"]"
+                                     Variant="Variant.Outlined"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     Margin="Margin.Dense"
+                                     Placeholder="0.00"
+                                     HideSpinButtons="true"
+                                     Disabled="IsFreeTicket"
+                                     Immediate="false" />
                     <MudButton Variant="Variant.Outlined" @onclick="SetAllCreditAsync" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudTextField @bind-Value="_request.OtherAmount" For="@(() => _request.OtherAmount)" Label="Otro (Cheque, SPEI)" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" Format="N2" Disabled="IsFreeTicket" />
+                    <MudNumericField @bind-Value="_request.OtherAmount"
+                                     For="@(() => _request.OtherAmount)"
+                                     Format="N2"
+                                     Label="@L["OtherPaymentMethod"]"
+                                     Variant="Variant.Outlined"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     Margin="Margin.Dense"
+                                     Placeholder="0.00"
+                                     HideSpinButtons="true"
+                                     Disabled="IsFreeTicket"
+                                     Immediate="false" />
                     <MudButton Variant="Variant.Outlined" @onclick="SetAllOtherAsync" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12">
@@ -169,7 +213,7 @@
                                 <MudRadio Value="@("Impreso")" Color="Color.Primary" UncheckedColor="Color.Secondary">
                                     <MudStack Row AlignItems="AlignItems.Center">
                                         <MudIcon Icon="@Icons.Material.Filled.Print" Title="Favorite" />
-                                        <MudText Typo="Typo.body1">Boleto impreso</MudText>
+                                        <MudText Typo="Typo.body1">@L["PrintTicket"]</MudText>
                                     </MudStack>
                                 </MudRadio>
                             </MudItem>
@@ -177,7 +221,7 @@
                                 <MudRadio Value="@("Digital")" Color="Color.Primary" UncheckedColor="Color.Secondary">
                                     <MudStack Row AlignItems="AlignItems.Center">
                                         <MudIcon Icon="@Icons.Material.Filled.Send" Title="Favorite" />
-                                        <MudText Typo="Typo.body1">Boleto digital</MudText>
+                                        <MudText Typo="Typo.body1">@L["DigitalTicket"]</MudText>
                                     </MudStack>
                                 </MudRadio>
                             </MudItem>
@@ -186,7 +230,7 @@
                 </MudItem>
                 <MudItem xs="12" Class="d-flex justify-end">
                     <MudSwitch @bind-Value="_request.AcceptTermsAndConditions" For="@(() => _request.AcceptTermsAndConditions)" UncheckedColor="Color.Secondary" Color="Color.Primary">
-                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Acepto términos y condiciones</MudText>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">@L["AcceptTermsAndConditions"]</MudText>
                     </MudSwitch>
                 </MudItem>
                 <MudItem xs="12" Class="d-flex justify-end">
@@ -195,7 +239,7 @@
                                StartIcon="@Icons.Material.Outlined.Save"
                                Color="Color.Tertiary"
                                Disabled="@SubmitDisabled"
-                               @onclick="SubmitAsync">@(_isSubmitting ? "Procesando..." : "PAGAR")</MudButton>
+                               @onclick="SubmitAsync">@(_isSubmitting? L["Processing"] + "..." : @L["Pay"])</MudButton>
                 </MudItem>
             </MudGrid>
         </MudItem>
@@ -282,7 +326,7 @@
         }
         catch (Exception ex)
         {
-            _snackbar.Add("No se pueden reservar los asientos", MudBlazor.Severity.Error);
+            _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
             await ReturnAsync();
         }
     }
