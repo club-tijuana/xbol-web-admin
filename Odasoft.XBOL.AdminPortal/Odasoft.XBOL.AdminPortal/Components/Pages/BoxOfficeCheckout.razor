@@ -1,0 +1,70 @@
+@using Microsoft.Extensions.Options
+@using Odasoft.XBOL.AdminPortal.Configs
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.Business
+
+@* @implements IDisposable *@
+@inject CartState CartState
+@inject ISnackbar Snackbar
+@inject IAdminClient AdminClient
+@inject NavigationManager Navigation
+@inject IOptions<SeatsIo> SeatsOptions
+@inject AppLocalizer<BoxOfficeCheckout> L
+@inject IDialogService _dialogService
+
+
+<MudGrid Justify="Justify.SpaceBetween">
+    <MudItem xs="12" Class="d-flex justify-space-between align-start mb-4">
+        <MudStack>
+            <MudText Typo="Typo.h5"><b>Tijuana vs. America</b></MudText>
+            <MudStack Row>
+                <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600
+;">Estadio Caliente</MudText>
+                <MudText Typo="Typo.body1">15/11/2025 07:00 pm</MudText>
+            </MudStack>
+        </MudStack>
+        <MudButton OnClick="ReturnAsync" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
+    </MudItem>
+    <MudItem xs="4">
+        <MudText Typo="Typo.h5" Class="text-primary-darken">@L["BuyerInfo"]</MudText>
+    </MudItem>
+    <MudItem xs="4">
+        <MudText Typo="Typo.h5" Class="text-primary-darken">@L["Summary"]</MudText>
+    </MudItem>
+    <MudItem xs="4">
+        <MudText Typo="Typo.h5" Class="text-primary-darken">@L["PaymentMethod"]</MudText>
+    </MudItem>
+</MudGrid>
+
+@code {
+
+    [Parameter]
+    public EventCallback OnReturn { get; set; }
+
+    private async Task ReturnAsync()
+    {
+        bool exit = await ConfirmExitAsync();
+
+        if (exit)
+        {
+            await OnReturn.InvokeAsync();
+        }
+    }
+
+    private async Task<bool> ConfirmExitAsync()
+    {
+
+        var result = await _dialogService.ShowMessageBoxAsync(
+                L["UnsavedChangesTitle"],
+                L["UnsavedChangesMessage"],
+                yesText: L["UnsavedChangesConfirm"],
+                cancelText: L["UnsavedChangesCancel"]);
+
+        if (result is true)
+        {
+            // await ReleaseTokenAsync();
+        }
+
+        return result is true;
+    }
+}
