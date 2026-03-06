@@ -11,7 +11,8 @@
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
-@using Odasoft.XBOL.Models.Constants;
+@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Common.Helpers
 
 @inject AppLocalizer<SeasonPassCheckout> L
 @inject IOptions<SeatsIo> _seatsOptions;
@@ -22,6 +23,7 @@
 @inject ISnackbar _snackbar;
 @inject NavigationManager _navigationManager;
 @inject ClientsService _clientService;
+@inject CatalogsService _catalogsService;
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
@@ -46,19 +48,19 @@
     </MudGrid>
     <MudGrid>
         <MudItem xs="12" sm="12" md="6" lg="1">
-            <MudSelect T="string"
+            <MudSelect T="long?"
                        Label="Lada"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Disabled="IsRenovation"
-                       @bind-Value="_request.ClientContact.CountryPhoneISO"
+                       @bind-Value="_request.ClientContact.PhoneRegionCodeId"
                        ShrinkLabel
                        Required>
 
-                @foreach (var item in CountryDialCodes.Map)
+                @foreach (var regionCode in _phoneRegionCodes)
                 {
-                    <MudSelectItem T="string" Value="item.Value">
-                        @item.Value
+                    <MudSelectItem T="long?" Value="regionCode.Id">
+                        <MudImage Src="@FlagHelper.GetFlagImageUrl(regionCode.RegionCode ?? "")" Height="15" Elevation="1" ObjectFit="ObjectFit.Fill" /> @($"+{regionCode.DialCode}")
                     </MudSelectItem>
                 }
             </MudSelect>
@@ -172,9 +174,12 @@
     private List<SeatInfo> _selectedSeats { get; set; } = [];
     private bool _showValidationError = false;
     private bool _isSubmitting = false;
+    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
     protected override async Task OnInitializedAsync()
     {
+        _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+
         _cartState.OnChange += async () =>
         {
             await InvokeAsync(StateHasChanged);
@@ -186,7 +191,8 @@
 
     private async Task SearchOnBlur(FocusEventArgs args)
     {
-        if (string.IsNullOrWhiteSpace(_request.ClientContact.PhoneNumber)
+        if (_request.ClientContact.PhoneRegionCodeId.HasValue == false
+            && string.IsNullOrWhiteSpace(_request.ClientContact.PhoneNumber)
             && string.IsNullOrWhiteSpace(_request.ClientContact.Email))
         {
             return;
@@ -257,7 +263,7 @@
                     _request.SeasonKey = _clientSeasonEvent.SeasonKey ?? "";
                     _request.ClientContact = new ClientInfoRequest
                     {
-                        CountryPhoneISO = _clientSeasonEvent.ClientContact?.CountryPhoneISO ?? "",
+                        PhoneRegionCodeId = _clientSeasonEvent.ClientContact?.PhoneRegionCodeId,
                         PhoneNumber = _clientSeasonEvent.ClientContact?.PhoneNumber ?? "",
                         Email = _clientSeasonEvent.ClientContact?.Email ?? "",
                         FirstName = _clientSeasonEvent.ClientContact?.Name ?? "",
@@ -334,7 +340,7 @@
 
         try
         {
-            if (string.IsNullOrWhiteSpace(_request.ClientContact.CountryPhoneISO)
+            if (_request.ClientContact.PhoneRegionCodeId.HasValue == false
                 || string.IsNullOrWhiteSpace(_request.ClientContact.PhoneNumber)
                 || string.IsNullOrWhiteSpace(_request.ClientContact.Email)
                 || string.IsNullOrWhiteSpace(_request.ClientContact.FirstName)
@@ -386,7 +392,10 @@
     {
         try
         {
-            ClientContactResponse? client = await _clientService.SearchClientAsync(_request.ClientContact.PhoneNumber ?? "", _request.ClientContact.Email ?? "");
+            ClientContactResponse? client = await _clientService.SearchClientAsync(
+                                                    _request.ClientContact.PhoneRegionCodeId,
+                                                    _request.ClientContact.PhoneNumber ?? "",
+                                                    _request.ClientContact.Email ?? "");
 
             if (client is not null)
             {
@@ -394,6 +403,9 @@
                 _request.ClientContact.FirstName = client.Name ?? "";
                 _request.ClientContact.LastName = client.LastName ?? "";
                 _request.ClientContact.Email = client.Email ?? "";
+                _request.ClientContact.FullName = $"{client.Name} {client.LastName}".Trim();
+                _request.ClientContact.PhoneRegionCodeId = client.PhoneRegionCodeId;
+                _request.ClientContact.PhoneNumber = client.PhoneNumber ?? "";
             }
         }
         catch (ApiException ex)

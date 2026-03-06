@@ -120,9 +120,9 @@
                     <CellTemplate>
                         <MudText Typo="Typo.body2">@context.Item.OwnerName</MudText>
                         <MudFlexBreak />
-                        <MudText Typo="Typo.caption">@context.Item.OwnerEmail</MudText>
+                        <MudText Typo="Typo.caption">@context.Item.Email</MudText>
                         <MudFlexBreak />
-                        <MudText Typo="Typo.caption">@context.Item.OwnerPhone</MudText>
+                        <MudText Typo="Typo.caption">@($"+{context.Item.DialCode} {context.Item.PhoneNumber}")</MudText>
                     </CellTemplate>
                 </PropertyColumn>
 
@@ -329,14 +329,16 @@
             {
                 Id = sa.Id,
                 SuiteId = sa.SuiteId,
-                SuiteLevel = sa.SuiteLevel,
-                SuiteName = sa.SuiteName,
-                OwnerName = sa.OwnerName,
-                OwnerEmail = sa.OwnerEmail,
-                OwnerPhone = sa.OwnerPhone,
+                SuiteLevel = sa.SuiteLevel ?? "",
+                SuiteName = sa.SuiteName ?? "",
+                OwnerName = sa.OwnerName ?? "",
+                Email = sa.Email ?? "",
+                PhoneRegionCodeId = sa.PhoneRegionCodeId,
+                DialCode = sa.DialCode ?? "",
+                PhoneNumber = sa.PhoneNumber ?? "",
                 StartDate = sa.StartDate.ToString(FormatConstants.DATE_ONLY),
                 EndDate = sa.EndDate.ToString(FormatConstants.DATE_ONLY),
-                FileName = sa.FileName
+                FileName = sa.FileName ?? ""
 
             }).ToArray() ?? [];
         }
@@ -417,7 +419,7 @@
             return true;
         }
 
-        if (x.OwnerEmail.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+        if (x.Email.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -427,7 +429,7 @@
             return true;
         }
 
-        if (x.OwnerPhone.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+        if (x.PhoneNumber.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }

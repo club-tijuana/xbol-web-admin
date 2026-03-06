@@ -3,8 +3,7 @@
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
-@* TODO: Remove this when country dial codes are moved to a more appropriate place *@
-@using Odasoft.XBOL.Models.Constants;
+@using Odasoft.XBOL.Common.Helpers
 
 @implements IAsyncDisposable;
 
@@ -16,6 +15,7 @@
 @inject LoadingState _loadingState;
 @inject IDialogService _dialogService;
 @inject ClientsService _clientsService;
+@inject CatalogsService _catalogsService;
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
 
@@ -32,13 +32,13 @@
                     <MudSelect Label="@(L["AreaCode"] + "*")"
                                Variant="Variant.Outlined"
                                Margin="Margin.Dense"
-                               @bind-Value="_request.CountryPhoneISO"
-                               For="@(() => _request.CountryPhoneISO)">
+                               @bind-Value="_request.PhoneRegionCodeId"
+                               For="@(() => _request.PhoneRegionCodeId)">
 
-                        @foreach (var item in CountryDialCodes.Map)
+                        @foreach (var regionCode in _phoneRegionCodes)
                         {
-                            <MudSelectItem T="string" Value="item.Value">
-                                @item.Value
+                            <MudSelectItem T="long?" Value="regionCode.Id">
+                                <MudImage Src="@FlagHelper.GetFlagImageUrl(regionCode.RegionCode ?? "")" Height="15" Elevation="1" ObjectFit="ObjectFit.Fill" /> @($"+{regionCode.DialCode}")
                             </MudSelectItem>
                         }
                     </MudSelect>
@@ -308,6 +308,7 @@
     private string FormattedPendingPay => Math.Abs(PendingPay).ToString(FormatConstants.CURRENCY);
     private Color PendingPayColor => IsFreeTicket ? Color.Secondary : PendingPay > 0 ? Color.Error : PendingPay < 0 ? Color.Tertiary : Color.Secondary;
     private bool IsFreeTicket => TicketType == "Cortesía";
+    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -315,6 +316,8 @@
 
         try
         {
+            _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+
             // TODO: Move this to a proper service
             var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
             {
@@ -340,12 +343,12 @@
 
         try
         {
-            ClientContactResponse? client = await _clientsService.SearchClientAsync(_request.PhoneNumber ?? "", _request.Email ?? "");
+            ClientContactResponse? client = await _clientsService.SearchClientAsync(_request.PhoneRegionCodeId, _request.PhoneNumber ?? "", _request.Email ?? "");
 
             if (client is not null)
             {
-                _request.CountryPhoneISO = client.CountryPhoneISO;
                 _request.FullName = $"{client.Name} {client.LastName}";
+                _request.PhoneRegionCodeId = client.PhoneRegionCodeId;
                 _request.PhoneNumber = client.PhoneNumber;
                 _request.Email = client.Email;
                 _request.ClientId = client.Id;
@@ -485,7 +488,7 @@
             ClientContact = new ClientInfoRequest
             {
                 Id = _request.ClientId,
-                CountryPhoneISO = _request.CountryPhoneISO,
+                PhoneRegionCodeId = _request.PhoneRegionCodeId,
                 PhoneNumber = _request.PhoneNumber,
                 Email = _request.Email,
                 FullName = _request.FullName
@@ -535,10 +538,8 @@
         public string? TicketType { get; set; } = "Boleto";
         public string? DeliveryType { get; set; } = "Impreso";
         public bool AcceptTermsAndConditions { get; set; } = false;
-        // public EventClientForm ClientContact { get; set; } = new();
-        // public PaymentInfoRequest PaymentInfoForm { get; set; } = new();
         public long? ClientId { get; set; }
-        public string? CountryPhoneISO { get; set; }
+        public long? PhoneRegionCodeId { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Email { get; set; }
         public string? FullName { get; set; }
@@ -576,8 +577,8 @@
     {
         public BookingFormFluentValidator()
         {
-            RuleFor(x => x.CountryPhoneISO)
-                .NotEmpty().WithMessage("El codigo de país es requerido.");
+            RuleFor(x => x.PhoneRegionCodeId)
+                .NotNull().WithMessage("El codigo de país es requerido.");
 
             RuleFor(x => x.PhoneNumber)
                 .NotEmpty().WithMessage("El número de teléfono es requerido.")

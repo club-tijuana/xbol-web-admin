@@ -32,5 +32,11 @@ namespace Odasoft.XBOL.Business.Services
             var events = await _adminClient.GetEventCatalogAsync();
             return events.OrderBy(x => x.Name).ToList();
         }
+
+        public async Task<List<PhoneRegionCodeResponse>> GetPhoneRegionCodesAsync()
+        {
+            var regionCodes = await _adminClient.GetPhoneRegionCodesAsync();
+            return regionCodes.OrderBy(x => x.RegionCode).ToList();
+        }
     }
 }

@@ -71,14 +71,14 @@ namespace Odasoft.XBOL.Business.Services
             }
         }
 
-        public async Task<ClientContactResponse?> SearchClientAsync(string phone, string email)
+        public async Task<ClientContactResponse?> SearchClientAsync(long? phoneRegionCodeId, string phoneNumber, string email)
         {
-            if (string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(email))
+            if (phoneRegionCodeId.HasValue == false && string.IsNullOrWhiteSpace(phoneNumber) && string.IsNullOrWhiteSpace(email))
             {
                 return null;
             }
 
-            var contactInfo = await _adminClient.SearchClientAsync(phone, email);
+            var contactInfo = await _adminClient.SearchClientAsync(phoneRegionCodeId, phoneNumber, email);
 
             return contactInfo;
         }

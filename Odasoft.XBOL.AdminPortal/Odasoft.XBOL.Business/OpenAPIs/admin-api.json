@@ -443,7 +443,16 @@
         "operationId": "SearchClientAsync",
         "parameters": [
           {
-            "name": "phone",
+            "name": "phoneRegionCodeId",
+            "in": "query",
+            "description": "The country code associated with the phone number. This parameter is optional but should be provided if phoneNumber is used for searching.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "phoneNumber",
             "in": "query",
             "description": "The phone number to search for. At least one of the parameters, either phone or email, must be provided.",
             "schema": {
@@ -2702,6 +2711,46 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ClientSeasonEvent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/phone-region-codes": {
+      "get": {
+        "tags": [
+          "PhoneNumbers"
+        ],
+        "summary": "Gets a list of phone region codes, including their corresponding dial codes and flag emojis.",
+        "operationId": "GetPhoneRegionCodesAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PhoneRegionCodeResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PhoneRegionCodeResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PhoneRegionCodeResponse"
+                  }
                 }
               }
             }
@@ -5052,8 +5101,10 @@
             "type": "integer",
             "format": "int64"
           },
-          "countryPhoneISO": {
-            "type": "string"
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           },
           "phoneNumber": {
             "type": "string"
@@ -5077,8 +5128,10 @@
             "type": "integer",
             "format": "int64"
           },
-          "countryPhoneISO": {
-            "type": "string"
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           },
           "phoneNumber": {
             "type": "string"
@@ -5227,7 +5280,12 @@
             "type": "string",
             "nullable": true
           },
-          "countryPhoneCode": {
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "dialCode": {
             "type": "string",
             "nullable": true
           },
@@ -5296,8 +5354,9 @@
         ],
         "type": "object",
         "properties": {
-          "countryPhoneISO": {
-            "type": "string",
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           },
           "phoneNumber": {
@@ -5323,8 +5382,9 @@
             "format": "int64",
             "nullable": true
           },
-          "countryPhoneISO": {
-            "type": "string",
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           },
           "phoneNumber": {
@@ -5542,11 +5602,12 @@
             "type": "string",
             "nullable": true
           },
-          "countryPhoneCode": {
-            "type": "string",
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           },
-          "phone": {
+          "phoneNumber": {
             "type": "string",
             "nullable": true
           },
@@ -5575,20 +5636,12 @@
         "additionalProperties": false
       },
       "CreateSeasonRequest": {
-        "required": [
-          "code",
-          "endDate",
-          "name",
-          "startDate"
-        ],
         "type": "object",
         "properties": {
           "name": {
-            "minLength": 1,
             "type": "string"
           },
           "code": {
-            "minLength": 1,
             "type": "string"
           },
           "description": {
@@ -5609,11 +5662,13 @@
           },
           "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "endDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "publishedDate": {
             "type": "string",
@@ -5640,10 +5695,10 @@
       },
       "CreateSuiteAgreementRequest": {
         "required": [
+          "email",
           "endDate",
-          "ownerEmail",
           "ownerName",
-          "ownerPhone",
+          "phoneNumber",
           "startDate",
           "suiteId"
         ],
@@ -5656,11 +5711,16 @@
           "ownerName": {
             "type": "string"
           },
-          "ownerEmail": {
+          "email": {
             "type": "string",
             "format": "email"
           },
-          "ownerPhone": {
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "phoneNumber": {
             "type": "string",
             "format": "tel"
           },
@@ -6484,8 +6544,10 @@
           "order": {
             "type": "string"
           },
-          "countryPhoneISO": {
-            "type": "string"
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           },
           "phoneNumber": {
             "type": "string"
@@ -6666,6 +6728,27 @@
           "Spei"
         ],
         "type": "string"
+      },
+      "PhoneRegionCodeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "regionCode": {
+            "type": "string",
+            "description": "Region code like \"US\", \"GB\", etc."
+          },
+          "dialCode": {
+            "type": "string",
+            "description": "Dial code like \"+1\", \"+44\", etc."
+          },
+          "flagEmoji": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       },
       "ProblemDetails": {
         "type": "object",
@@ -7132,10 +7215,18 @@
           "ownerName": {
             "type": "string"
           },
-          "ownerEmail": {
+          "email": {
             "type": "string"
           },
-          "ownerPhone": {
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "dialCode": {
+            "type": "string"
+          },
+          "phoneNumber": {
             "type": "string"
           },
           "startDate": {
@@ -7326,11 +7417,12 @@
             "type": "string",
             "nullable": true
           },
-          "countryPhoneCode": {
-            "type": "string",
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           },
-          "phone": {
+          "phoneNumber": {
             "type": "string",
             "nullable": true
           },
@@ -7359,20 +7451,12 @@
         "additionalProperties": false
       },
       "UpdateSeasonRequest": {
-        "required": [
-          "code",
-          "endDate",
-          "name",
-          "startDate"
-        ],
         "type": "object",
         "properties": {
           "name": {
-            "minLength": 1,
             "type": "string"
           },
           "code": {
-            "minLength": 1,
             "type": "string"
           },
           "description": {
@@ -7393,11 +7477,13 @@
           },
           "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "endDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "publishedDate": {
             "type": "string",
@@ -7424,11 +7510,11 @@
       },
       "UpdateSuiteAgreementRequest": {
         "required": [
+          "email",
           "endDate",
           "id",
-          "ownerEmail",
           "ownerName",
-          "ownerPhone",
+          "phoneNumber",
           "startDate",
           "suiteId"
         ],
@@ -7445,11 +7531,16 @@
           "ownerName": {
             "type": "string"
           },
-          "ownerEmail": {
+          "email": {
             "type": "string",
             "format": "email"
           },
-          "ownerPhone": {
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "phoneNumber": {
             "type": "string",
             "format": "tel"
           },
@@ -7616,6 +7707,9 @@
     },
     {
       "name": "Orders"
+    },
+    {
+      "name": "PhoneNumbers"
     },
     {
       "name": "SeasonPass"
