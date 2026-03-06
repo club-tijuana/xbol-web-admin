@@ -1,17 +1,19 @@
 @page "/clients/create"
-@using Odasoft.XBOL.AdminPortal.Components.Shared
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Business.Services
-@using Odasoft.XBOL.Common.Constants
-@using Odasoft.XBOL.Models.Constants
-@using Odasoft.XBOL.Models.ViewModels
-@using System.ComponentModel.DataAnnotations
+
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
+@using Odasoft.XBOL.Common.Helpers
+@using Odasoft.XBOL.Models.ViewModels;
+@using System.ComponentModel.DataAnnotations:
 
 @inject ClientsService _clientService;
+@inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
-@inject LoadingState LoadingState
-@inject AppLocalizer<ClientsCreate> L
+@inject LoadingState LoadingState;
+@inject AppLocalizer<ClientsCreate> L;
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
 
@@ -169,21 +171,21 @@
                             Label="Lada"
                             Variant="Variant.Outlined"
                             Margin="Margin.Dense"
-                            @bind-Value="model.CountryPhoneCode"
-                            For="@(() => model.CountryPhoneCode)"
+                            @bind-Value="model.PhoneRegionCodeId"
+                                       For="@(() => model.PhoneRegionCodeId)"
                             Clearable>
-                            @foreach (var item in CountryDialCodes.Map)
-                            {
-                                <MudSelectItem T="string" Value="item.Value">
-                                    @item.Value
-                                </MudSelectItem>
-                            }
+                                @foreach (var regionCode in _phoneRegionCodes)
+                                {
+                                    <MudSelectItem T="long?" Value="regionCode.Id">
+                                        <MudImage Src="@FlagHelper.GetFlagImageUrl(regionCode.RegionCode ?? "")" Height="15" Elevation="1" ObjectFit="ObjectFit.Fill" /> @($"+{regionCode.DialCode}")
+                                    </MudSelectItem>
+                                }
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="6" lg="3">
                         <MudTextField
-                            @bind-Value="model.Phone"
-                            For="@(() => model.Phone)"
+                            @bind-Value="model.PhoneNumber"
+                            For="@(() => model.PhoneNumber)"
                             Variant="Variant.Outlined"
                             Margin="Margin.Dense"
                             Label="Teléfono"
@@ -377,10 +379,13 @@
 
     private List<ClientType> _clientTypes = Enum.GetValues<ClientType>().ToList();
     private List<PaymentFrequency> _paymentFrequencies = Enum.GetValues<PaymentFrequency>().ToList();
+    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
     protected override async Task OnInitializedAsync()
     {
         _isLoading = true;
+
+        _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
 
         model.LegalRep = new();
         model.Credit = new();

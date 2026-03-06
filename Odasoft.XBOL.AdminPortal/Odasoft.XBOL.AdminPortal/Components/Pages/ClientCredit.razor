@@ -356,7 +356,7 @@
             ContactEmail = clientDetails.Email,
             Id = clientDetails.Id,
             Name = clientDetails.ClientName,
-            Phone = $"({clientDetails.CountryPhoneCode}) {clientDetails.PhoneNumber}"
+            Phone = $"({clientDetails.DialCode}) {clientDetails.PhoneNumber}"
         } : new();
 
         _clientCredit = clientDetails?.ClientCredit is not null ? new ClientCreditViewModel
