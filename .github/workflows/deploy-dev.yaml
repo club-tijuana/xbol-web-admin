@@ -87,7 +87,8 @@ jobs:
           docker build \
             --build-arg DOCKER_IMAGE_VERSION="${IMAGE_VERSION}" \
             -t "${IMAGE_TAG}" \
-            -f Odasoft.XBOL.AdminPortal/Dockerfile .
+            -f Odasoft.XBOL.AdminPortal/Dockerfile \
+            Odasoft.XBOL.AdminPortal
           docker push "${IMAGE_TAG}"
       - name: Update image version in infra-cloud deployment
         env:
