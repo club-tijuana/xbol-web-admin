@@ -6,8 +6,7 @@ on:
       - dev
 env:
   IMAGE_VERSION: '0.0.0001'
-  IMAGE_NAME: dev-kashless
-  IMAGE_NAME_NGINX: dev-nginx-kashless
+  IMAGE_NAME: dev-xbol-web-admin
   IMAGE_BASE: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/club-tijuana-docker-repo/
 
 jobs:
