@@ -97,7 +97,7 @@ jobs:
             echo "⚠️ INFRA_CLOUD_REPO_TOKEN no configurado, se omite actualización"
             exit 0
           fi
-          DEPLOY_FILE="workloads/cashless/dev/web/deployment.yaml"
+          DEPLOY_FILE="workloads/boletera/dev/xbol-web-admin/deployment.yaml"
           git clone --depth 1 "https://x-access-token:${INFRA_REPO_TOKEN}@github.com/club-tijuana/infra-cloud.git" infra-cloud
           cd infra-cloud
           if [ ! -f "$DEPLOY_FILE" ]; then
