@@ -66,7 +66,7 @@
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_request.FullName"
                                   For="@(() => _request.FullName)"
-                                  Label="@(L["FullName"] + "*")"
+                                  Label="@(L["BuyerFullName"] + "*")"
                                   Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
                                   Immediate="true" />
@@ -239,7 +239,7 @@
                                StartIcon="@Icons.Material.Outlined.Save"
                                Color="Color.Tertiary"
                                Disabled="@SubmitDisabled"
-                               @onclick="SubmitAsync">@(_isSubmitting? L["Processing"] + "..." : @L["Pay"])</MudButton>
+                               @onclick="SubmitAsync">@(_isSubmitting? L["Processing"] + "..." : L["Pay"])</MudButton>
                 </MudItem>
             </MudGrid>
         </MudItem>
@@ -260,7 +260,7 @@
     private bool _isValid = false;
     private bool _isTouched = false;
     private bool _isSubmitting = false;
-    private bool _succesfulPurchase = false;
+    private bool _successfulPurchase = false;
 
     private string? _ticketType = "Boleto";
 
@@ -398,7 +398,7 @@
 
     private async Task OnBeforeInternalNavigationAsync(LocationChangingContext context)
     {
-        if (_succesfulPurchase)
+        if (_successfulPurchase)
         {
             return;
         }
@@ -507,7 +507,7 @@
                 c.IconColor = Color.Success;
             });
 
-            _succesfulPurchase = true;
+            _successfulPurchase = true;
             _cartState.ClearCart();
             _cartState.ClearTokenAsync();
 

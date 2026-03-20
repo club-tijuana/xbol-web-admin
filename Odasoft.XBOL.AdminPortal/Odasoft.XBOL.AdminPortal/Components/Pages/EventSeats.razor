@@ -20,7 +20,7 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToEvents())"
-                        Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+                        Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">@L["GoBack"]</MudButton>
         </LeftContent>
     </PageActionBar>
 </SectionContent>
@@ -28,7 +28,7 @@
 <LoadingContainer
     IsLoading="_loading"
     HasError="_error"
-    ErrorMessage="Error al cargar el evento"
+    ErrorMessage="@L["ErrorLoadingEvent"]"
     OnRetry="LoadEventData">
     <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
     <MudPaper Class="pa-6" Elevation="3">
@@ -36,14 +36,14 @@
             {
                 <MudGrid Justify="Justify.SpaceBetween">
                     <MudItem xs="12" Class="d-flex justify-space-between">
-                        <MudText Typo="Typo.h5">Asientos</MudText>
+                        <MudText Typo="Typo.h5">@L["Seats"]</MudText>
                         <MudButton Variant="Variant.Filled"
                                     DropShadow="false"
                                     EndIcon="@Icons.Material.Filled.NavigateNext"
                                     Color="Color.Primary"
                                     Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
                                     @onclick="NextStep">
-                                @(_holdProcessing? L["Seats_HoldProcessing"] : "MÉTODO DE PAGO")
+                            @(_holdProcessing? L["Seats_HoldProcessing"] : L["PaymentMethod"])
                         </MudButton>
                     </MudItem>
                     <MudItem xs="7">
