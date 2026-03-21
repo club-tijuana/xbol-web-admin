@@ -48,16 +48,6 @@ jobs:
           fi
           echo "IMAGE_VERSION=${IMAGE_VERSION}" >> $GITHUB_ENV
           echo "✅ Versión para esta ejecución: ${IMAGE_VERSION}"
-      - name: Prepare .env file
-        run: |
-          if [ -f .env.example.dev ]; then
-            cp .env.example.dev .env
-            echo "DOCKER_IMAGE_VERSION=${IMAGE_VERSION}" >> .env
-            echo "✅ .env preparado (credenciales DB + ${DOCKER_IMAGE_VERSION})"
-          else
-            echo "❌ Error: .env.example.dev no encontrado"
-            exit 1
-          fi
       - name: Debug Secret Check
         run: |
           if [ -z "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ]; then
