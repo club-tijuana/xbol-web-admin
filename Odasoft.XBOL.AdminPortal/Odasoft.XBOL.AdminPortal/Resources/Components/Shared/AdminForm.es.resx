@@ -39,64 +39,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PageTitle" xml:space="preserve">
-    <value>Editar Torneo</value>
+  <data name="RequiredFieldsNote" xml:space="preserve">
+    <value>*Campos obligatorios</value>
   </data>
-  <data name="Code" xml:space="preserve">
-    <value>ID</value>
+  <data name="RequiredField" xml:space="preserve">
+    <value>Este campo es obligatorio</value>
   </data>
-  <data name="Name" xml:space="preserve">
-    <value>Nombre del torneo</value>
-  </data>
-  <data name="StartDate" xml:space="preserve">
-    <value>Fecha de inicio</value>
-  </data>
-  <data name="EndDate" xml:space="preserve">
-    <value>Fecha final</value>
-  </data>
-  <data name="Description" xml:space="preserve">
-    <value>Descripción</value>
-  </data>
-  <data name="BannerImageUrl" xml:space="preserve">
-    <value>URL imagen banner</value>
-  </data>
-  <data name="PosterImageUrl" xml:space="preserve">
-    <value>URL imagen póster</value>
-  </data>
-  <data name="LandingUrl" xml:space="preserve">
-    <value>URL landing</value>
-  </data>
-  <data name="PublishedDate" xml:space="preserve">
-    <value>Fecha de publicación</value>
-  </data>
-  <data name="OnSaleDate" xml:space="preserve">
-    <value>Fecha de venta</value>
-  </data>
-  <data name="PreSaleDate" xml:space="preserve">
-    <value>Fecha de preventa</value>
-  </data>
-  <data name="OffSaleDate" xml:space="preserve">
-    <value>Fecha fin de venta</value>
+  <data name="ButtonSave" xml:space="preserve">
+    <value>GUARDAR</value>
   </data>
   <data name="ButtonBack" xml:space="preserve">
     <value>REGRESAR</value>
   </data>
-  <data name="UpdateSuccess" xml:space="preserve">
-    <value>Torneo actualizado exitosamente.</value>
+  <data name="UnsavedChangesTitle" xml:space="preserve">
+    <value>Cambios sin guardar</value>
   </data>
-  <data name="UpdateError" xml:space="preserve">
-    <value>Error al actualizar el torneo.</value>
+  <data name="UnsavedChangesMessage" xml:space="preserve">
+    <value>Tiene cambios sin guardar. ¿Desea salir sin guardar?</value>
   </data>
-  <data name="LoadError" xml:space="preserve">
-    <value>Error al cargar el torneo.</value>
+  <data name="UnsavedChangesConfirm" xml:space="preserve">
+    <value>Salir</value>
   </data>
-  <data name="CodePlaceholder" xml:space="preserve">
-    <value>AP2044</value>
-  </data>
-  <data name="NamePlaceholder" xml:space="preserve">
-    <value>Nombre del torneo</value>
-  </data>
-  <data name="DescriptionPlaceholder" xml:space="preserve">
-    <value>Descripción del torneo</value>
+  <data name="UnsavedChangesCancel" xml:space="preserve">
+    <value>Cancelar</value>
   </data>
 </root>

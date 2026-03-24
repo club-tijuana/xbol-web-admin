@@ -1,6 +1,7 @@
 @page "/suites/settings"
 
 @using Odasoft.XBOL.AdminPortal.Extensions;
+@using Odasoft.XBOL.Business.Services.Contracts;
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants
@@ -8,7 +9,7 @@
 @using Odasoft.XBOL.Models.ViewModels;
 
 @inject CatalogsService _catalogsService;
-@inject SuitesService _suitesService;
+@inject ISuitesService _suitesService;
 @inject ISnackbar _snackbar;
 @inject NavigationManager _navigationManager;
 @inject IDialogService _dialogService;
@@ -234,20 +235,12 @@
         {
             try
             {
-                bool result = await _suitesService.DeleteSuiteAsync(suiteId);
-                if (result)
-                {
-                    _snackbar.Add("Palco eliminado exitosamente.", Severity.Success);
-                    await _dataGrid.ReloadServerData();
-                }
-                else
-                {
-                    _snackbar.Add("Error al eliminar el palco.", Severity.Error);
-                }
+                await _suitesService.DeleteSuiteAsync(suiteId);
+                _snackbar.Add("Palco eliminado exitosamente.", Severity.Success);
+                await _dataGrid.ReloadServerData();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Error deleting suite: {ex.Message}");
                 _snackbar.Add("Error al eliminar el palco.", Severity.Error);
             }
         }
