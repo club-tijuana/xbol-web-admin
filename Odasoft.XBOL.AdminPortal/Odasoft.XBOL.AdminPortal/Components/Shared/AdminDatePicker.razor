@@ -1,0 +1,26 @@
+@using Odasoft.XBOL.AdminPortal.Helpers
+@inject IStringLocalizer<AdminForm> FormL
+
+<MudDatePicker Date="Date" DateChanged="HandleDateChanged"
+               Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
+               Mask="@(new DateMask("dd/MM/yyyy"))"
+               Required="@Required" RequiredError="@FormL["RequiredField"]"
+               Validation="@(Field?.ValidationFor<DateTime?>())"
+               @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public DateTime? Date { get; set; }
+    [Parameter] public EventCallback<DateTime?> DateChanged { get; set; }
+    [Parameter] public FieldBinding? Field { get; set; }
+    [Parameter] public bool Required { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private async Task HandleDateChanged(DateTime? value)
+    {
+        Date = value;
+        await DateChanged.InvokeAsync(value);
+        Field?.OnChanged();
+    }
+}
