@@ -228,6 +228,10 @@
                                 <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium"
                                                OnClick="@(() => Navigation.NavigateTo($"/events/{context.Item.Id}/seats"))" />
                             </MudTooltip>
+                            <MudTooltip Text="Disponibilidad" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Map" Size="Size.Medium"
+                                               OnClick="@(() => Navigation.NavigateTo($"/events/{context.Item.Id}/availability"))" />
+                            </MudTooltip>
                         </MudStack>
                     </CellTemplate>
                 </TemplateColumn>

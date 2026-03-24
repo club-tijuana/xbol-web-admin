@@ -25,8 +25,7 @@ dotnet watch --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
 Configure secrets using .NET Secret Manager:
 
 ```bash
-dotnet user-secrets set "SeatsIo:WorkspaceKey" "YOUR_KEY" --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
-dotnet user-secrets set "SeatsIo:EventKey" "f12eb747-67fd-457f-98a2-9857e422f55b" --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
+dotnet user-secrets set "SeatsIo:SecretKey" "YOUR_KEY" --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
 ```
 
 List configured secrets:

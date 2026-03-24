@@ -468,4 +468,13 @@
   <data name="Payment" xml:space="preserve">
     <value>Abono</value>
   </data>
+  <data name="Selected" xml:space="preserve">
+    <value>Seleccionados</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="RemoveSelection" xml:space="preserve">
+    <value>Remover selección</value>
+  </data>
 </root>
