@@ -11,10 +11,10 @@
           "Accounts"
         ],
         "summary": "Registers a new user account using the specified registration details.",
-        "description": "This method creates a new user account with the provided credentials. The\n            registration may fail if the user name or email address is already in use, or if the password does not meet\n            the required criteria. The response does not include detailed error information; for more granular feedback,\n            consider extending the response model.",
+        "description": "This method creates a new user account with the provided credentials. The\r\n            registration may fail if the user name or email address is already in use, or if the password does not meet\r\n            the required criteria. The response does not include detailed error information; for more granular feedback,\r\n            consider extending the response model.",
         "operationId": "CreateUserAsync",
         "requestBody": {
-          "description": "An object containing the user registration information, including user name, email address, and password.\n            Cannot be null.",
+          "description": "An object containing the user registration information, including user name, email address, and password.\r\n            Cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -84,10 +84,10 @@
           "Bookings"
         ],
         "summary": "Books seats for an event based on the provided booking request.",
-        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\n            codes based on the outcome of the booking request.",
+        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\r\n            codes based on the outcome of the booking request.",
         "operationId": "BookEventSeatsAsync",
         "requestBody": {
-          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\n            cannot be null.",
+          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\r\n            cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -206,10 +206,10 @@
           "Bookings"
         ],
         "summary": "Books seats for an event based on the provided booking request.",
-        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\n            codes based on the outcome of the booking request.",
+        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\r\n            codes based on the outcome of the booking request.",
         "operationId": "BookSeasonSeatsAsync",
         "requestBody": {
-          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\n            cannot be null.",
+          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\r\n            cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -328,7 +328,7 @@
           "Categories"
         ],
         "summary": "Retrieves a collection of category names.",
-        "description": "Use this method to obtain a list of category names for display in user interfaces or\n            for reporting purposes. The returned collection does not include additional category details beyond the\n            name.",
+        "description": "Use this method to obtain a list of category names for display in user interfaces or\r\n            for reporting purposes. The returned collection does not include additional category details beyond the\r\n            name.",
         "operationId": "GetCategoriesNamesAsync",
         "responses": {
           "200": {
@@ -439,7 +439,7 @@
           "Clients"
         ],
         "summary": "Searches for client contacts using the specified phone number or email address.",
-        "description": "If both phone and email are null or empty, the request returns a BadRequest response\n            indicating that at least one search parameter must be specified.",
+        "description": "If both phone and email are null or empty, the request returns a BadRequest response\r\n            indicating that at least one search parameter must be specified.",
         "operationId": "SearchClientAsync",
         "parameters": [
           {
@@ -538,7 +538,7 @@
           "Clients"
         ],
         "summary": "Asynchronously retrieves a paginated list of clients that match the specified query parameters.",
-        "description": "Use this method to obtain a subset of clients based on filtering and pagination\n            options. Ensure that the query parameters are set appropriately to retrieve the desired results.",
+        "description": "Use this method to obtain a subset of clients based on filtering and pagination\r\n            options. Ensure that the query parameters are set appropriately to retrieve the desired results.",
         "operationId": "GetClientsAsync",
         "parameters": [
           {
@@ -624,10 +624,10 @@
           "Clients"
         ],
         "summary": "Creates a new client using the specified request data.",
-        "description": "This method is asynchronous and processes the client creation request using the\n            injected client service. Ensure that the request data is valid to avoid errors during processing.",
+        "description": "This method is asynchronous and processes the client creation request using the\r\n            injected client service. Ensure that the request data is valid to avoid errors during processing.",
         "operationId": "CreateClientAsync",
         "requestBody": {
-          "description": "The request object containing the information required to create a new client. This parameter must not be\n            null.",
+          "description": "The request object containing the information required to create a new client. This parameter must not be\r\n            null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -697,7 +697,7 @@
           "Clients"
         ],
         "summary": "Retrieves the details of a client specified by the unique client identifier.",
-        "description": "This method asynchronously obtains client details from the client service. Ensure\n            that the provided client ID is valid and exists in the system.",
+        "description": "This method asynchronously obtains client details from the client service. Ensure\r\n            that the provided client ID is valid and exists in the system.",
         "operationId": "GetClientDetailById",
         "parameters": [
           {
@@ -761,7 +761,7 @@
           "Clients"
         ],
         "summary": "Updates the client information for the specified client identifier with the provided data.",
-        "description": "This method performs an asynchronous update operation. If the update fails, an error\n            message is returned indicating that the client could not be updated.",
+        "description": "This method performs an asynchronous update operation. If the update fails, an error\r\n            message is returned indicating that the client could not be updated.",
         "operationId": "UpdateClientAsync",
         "parameters": [
           {
@@ -847,7 +847,7 @@
           "Clients"
         ],
         "summary": "Deletes the client with the specified identifier.",
-        "description": "This method is asynchronous. If the specified client does not exist, a 404 Not Found\n            response is returned.",
+        "description": "This method is asynchronous. If the specified client does not exist, a 404 Not Found\r\n            response is returned.",
         "operationId": "DeleteClientAsync",
         "parameters": [
           {
@@ -897,7 +897,7 @@
           "Clients"
         ],
         "summary": "Generates and returns a CSV file containing client information for the specified client IDs.",
-        "description": "Use this endpoint to export client records as a CSV file for the provided client IDs.\n            The response includes a UTF-8 encoded CSV file named 'clients.csv'. Ensure that the client IDs correspond to\n            existing clients to receive data.",
+        "description": "Use this endpoint to export client records as a CSV file for the provided client IDs.\r\n            The response includes a UTF-8 encoded CSV file named 'clients.csv'. Ensure that the client IDs correspond to\r\n            existing clients to receive data.",
         "operationId": "DownloadClientsCsvAsync",
         "requestBody": {
           "description": "A list of client IDs for which to retrieve and export client data. Cannot be null or empty.",
@@ -980,8 +980,8 @@
         "tags": [
           "Clients"
         ],
-        "summary": "Retrieves a list of available credit status options, each represented by an integer value and a localized\nlabel.",
-        "description": "The returned labels are localized according to the current culture, enabling\n            appropriate display in different languages. The list is generated from the Odasoft.XBOL.Commons.Enums.CreditStatus\n            enumeration, ensuring that all defined statuses are included.",
+        "summary": "Retrieves a list of available credit status options, each represented by an integer value and a localized\r\nlabel.",
+        "description": "The returned labels are localized according to the current culture, enabling\r\n            appropriate display in different languages. The list is generated from the Odasoft.XBOL.Commons.Enums.CreditStatus\r\n            enumeration, ensuring that all defined statuses are included.",
         "operationId": "GetCreditStatusList",
         "responses": {
           "200": {
@@ -1022,7 +1022,7 @@
           "Clients"
         ],
         "summary": "Retrieves a list of available client types, each represented by an integer value and a localized label.",
-        "description": "The labels for each client type are localized based on the current culture using the\n            application's localization resources. This method is intended to provide user-friendly, culture-aware\n            options for client type selection in user interfaces.",
+        "description": "The labels for each client type are localized based on the current culture using the\r\n            application's localization resources. This method is intended to provide user-friendly, culture-aware\r\n            options for client type selection in user interfaces.",
         "operationId": "GetClientTypeList",
         "responses": {
           "200": {
@@ -1062,8 +1062,8 @@
         "tags": [
           "Clients"
         ],
-        "summary": "Retrieves a list of available payment frequency options, each represented by an integer value and a\nlocalized label.",
-        "description": "The labels for each payment frequency are localized according to the current culture,\n            ensuring that the returned text is appropriate for the user's language settings. The list is generated from\n            the PaymentFrequency enumeration.",
+        "summary": "Retrieves a list of available payment frequency options, each represented by an integer value and a\r\nlocalized label.",
+        "description": "The labels for each payment frequency are localized according to the current culture,\r\n            ensuring that the returned text is appropriate for the user's language settings. The list is generated from\r\n            the PaymentFrequency enumeration.",
         "operationId": "GetPaymentFrequencyList",
         "responses": {
           "200": {
@@ -1332,7 +1332,7 @@
           "CreditAccounts"
         ],
         "summary": "Retrieves a paginated list of credit orders that match the specified query parameters.",
-        "description": "This method is asynchronous and returns an HTTP 200 response with the paginated\n            results if successful. Ensure that the provided query parameters are valid to avoid unexpected\n            results.",
+        "description": "This method is asynchronous and returns an HTTP 200 response with the paginated\r\n            results if successful. Ensure that the provided query parameters are valid to avoid unexpected\r\n            results.",
         "operationId": "GetCreditOrdersAsync",
         "parameters": [
           {
@@ -1437,7 +1437,7 @@
           "CreditTransactions"
         ],
         "summary": "Retrieves a paged list of credit transactions that match the specified query parameters.",
-        "description": "This method is asynchronous and may take additional time to complete depending on the\n            number of transactions and the complexity of the query parameters.",
+        "description": "This method is asynchronous and may take additional time to complete depending on the\r\n            number of transactions and the complexity of the query parameters.",
         "operationId": "GetCreditTransactionsAsync",
         "parameters": [
           {
@@ -1816,7 +1816,7 @@
           {
             "name": "venues",
             "in": "query",
-            "description": "A comma-separated list of venue identifiers used to filter events by their associated venues. If null or\n            empty, events from all venues are included.",
+            "description": "A comma-separated list of venue identifiers used to filter events by their associated venues. If null or\r\n            empty, events from all venues are included.",
             "schema": {
               "type": "string"
             }
@@ -1824,7 +1824,7 @@
           {
             "name": "categories",
             "in": "query",
-            "description": "A comma-separated list of category identifiers used to filter events by their associated categories. If null\n            or empty, events from all categories are included.",
+            "description": "A comma-separated list of category identifiers used to filter events by their associated categories. If null\r\n            or empty, events from all categories are included.",
             "schema": {
               "type": "string"
             }
@@ -1832,7 +1832,7 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "The start date and time for filtering events. Only events occurring on or after this date are included. If\n            null, no lower date bound is applied.",
+            "description": "The start date and time for filtering events. Only events occurring on or after this date are included. If\r\n            null, no lower date bound is applied.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -1841,7 +1841,7 @@
           {
             "name": "endDate",
             "in": "query",
-            "description": "The end date and time for filtering events. Only events occurring on or before this date are included. If\n            null, no upper date bound is applied.",
+            "description": "The end date and time for filtering events. Only events occurring on or before this date are included. If\r\n            null, no upper date bound is applied.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -1850,7 +1850,7 @@
           {
             "name": "search",
             "in": "query",
-            "description": "A search term used to filter events by their title or description. If null or empty, no search filtering is\n            applied.",
+            "description": "A search term used to filter events by their title or description. If null or empty, no search filtering is\r\n            applied.",
             "schema": {
               "type": "string"
             }
@@ -1858,7 +1858,7 @@
           {
             "name": "sortBy",
             "in": "query",
-            "description": "The property name by which to sort the events. Valid options include 'date', 'name', and others supported by\n            the API. If null or empty, a default sort order is applied.",
+            "description": "The property name by which to sort the events. Valid options include 'date', 'name', and others supported by\r\n            the API. If null or empty, a default sort order is applied.",
             "schema": {
               "type": "string"
             }
@@ -1866,7 +1866,7 @@
           {
             "name": "descending",
             "in": "query",
-            "description": "Indicates whether the sorting should be in descending order. If true, results are sorted in descending\n            order; otherwise, ascending order is used. If null, the default sort direction is applied.",
+            "description": "Indicates whether the sorting should be in descending order. If true, results are sorted in descending\r\n            order; otherwise, ascending order is used. If null, the default sort direction is applied.",
             "schema": {
               "type": "boolean"
             }
@@ -1874,7 +1874,7 @@
           {
             "name": "page",
             "in": "query",
-            "description": "The page number of results to retrieve. Must be a positive integer if specified. If null, the first page is\n            returned.",
+            "description": "The page number of results to retrieve. Must be a positive integer if specified. If null, the first page is\r\n            returned.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1883,7 +1883,7 @@
           {
             "name": "pageSize",
             "in": "query",
-            "description": "The number of events to include per page. Must be a positive integer if specified. If null, a default page\n            size is used.",
+            "description": "The number of events to include per page. Must be a positive integer if specified. If null, a default page\r\n            size is used.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1901,7 +1901,7 @@
           {
             "name": "status",
             "in": "query",
-            "description": "The status value used to filter events (such as Active, Cancelled, etc.). If null, events of all statuses\n            are included.",
+            "description": "The status value used to filter events (such as Active, Cancelled, etc.). If null, events of all statuses\r\n            are included.",
             "schema": {
               "allOf": [
                 {
@@ -1941,7 +1941,7 @@
           "Events"
         ],
         "summary": "Retrieves the event details for the specified event identifier.",
-        "description": "This method asynchronously fetches event information from the event service. If the\n            event is not found, a 404 response is returned.",
+        "description": "This method asynchronously fetches event information from the event service. If the\r\n            event is not found, a 404 response is returned.",
         "operationId": "GetEventByIdAsync",
         "parameters": [
           {
@@ -2149,10 +2149,10 @@
           "Hold"
         ],
         "summary": "Initiates a request to hold the specified seats for an event and returns a token representing the seat hold.",
-        "description": "This method is asynchronous and may involve network communication with the ticketing\n            service. Ensure that the request contains valid seat information to avoid errors.",
+        "description": "This method is asynchronous and may involve network communication with the ticketing\r\n            service. Ensure that the request contains valid seat information to avoid errors.",
         "operationId": "HoldSeatsAsync",
         "requestBody": {
-          "description": "An object containing details about the seats to be held, including event and seat identifiers. Must not be\n            null.",
+          "description": "An object containing details about the seats to be held, including event and seat identifiers. Must not be\r\n            null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -2220,7 +2220,7 @@
           "Hold"
         ],
         "summary": "Retrieves a hold token associated with the specified token string.",
-        "description": "This method asynchronously obtains a hold token from the ticketing client. Ensure\n            that the holdToken parameter is valid to prevent errors.",
+        "description": "This method asynchronously obtains a hold token from the ticketing client. Ensure\r\n            that the holdToken parameter is valid to prevent errors.",
         "operationId": "GetHoldTokenAsync",
         "parameters": [
           {
@@ -2260,7 +2260,7 @@
           "Hold"
         ],
         "summary": "Releases the seats held by the specified hold token.",
-        "description": "This asynchronous operation releases all seats associated with the provided hold\n            token. Ensure that the hold token is valid and corresponds to an active hold before calling this\n            method.",
+        "description": "This asynchronous operation releases all seats associated with the provided hold\r\n            token. Ensure that the hold token is valid and corresponds to an active hold before calling this\r\n            method.",
         "operationId": "ReleaseHoldSeatsAsync",
         "parameters": [
           {
@@ -2608,10 +2608,10 @@
           "Orders"
         ],
         "summary": "Retrieves a paginated list of orders that match the specified filter criteria.",
-        "description": "This method is asynchronous and should be awaited. Ensure that the filter criteria\n            are valid to avoid unexpected results. The returned list may be empty if no orders match the specified\n            filters.",
+        "description": "This method is asynchronous and should be awaited. Ensure that the filter criteria\r\n            are valid to avoid unexpected results. The returned list may be empty if no orders match the specified\r\n            filters.",
         "operationId": "GetOrderListAsync",
         "requestBody": {
-          "description": "An object containing the filter criteria to apply when retrieving the order list, such as date range, order\n            status, and customer identifier. Cannot be null.",
+          "description": "An object containing the filter criteria to apply when retrieving the order list, such as date range, order\r\n            status, and customer identifier. Cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -2681,13 +2681,13 @@
           "Orders"
         ],
         "summary": "Retrieves the season event information associated with the specified order reference for a client.",
-        "description": "This method is intended to provide information about the season pass linked to the\n            client's order reference. It is recommended to refactor this method to retrieve season pass information\n            using client ID and season ID to reduce dependency on the order reference.",
+        "description": "This method is intended to provide information about the season pass linked to the\r\n            client's order reference. It is recommended to refactor this method to retrieve season pass information\r\n            using client ID and season ID to reduce dependency on the order reference.",
         "operationId": "GetClientSeasonEventByOrderReferenceAsync",
         "parameters": [
           {
             "name": "orderReference",
             "in": "path",
-            "description": "The unique identifier for the order reference used to fetch the corresponding season event information. This\n            parameter cannot be null or empty.",
+            "description": "The unique identifier for the order reference used to fetch the corresponding season event information. This\r\n            parameter cannot be null or empty.",
             "required": true,
             "schema": {
               "type": "string"
@@ -2763,8 +2763,8 @@
         "tags": [
           "SeasonPass"
         ],
-        "summary": "Retrieves a list of available season pass statuses, each represented by its enumeration value and a\nlocalized label.",
-        "description": "The labels for each status are localized according to the current culture. Ensure\n            that localization resources for season pass statuses are properly configured to provide accurate\n            labels.",
+        "summary": "Retrieves a list of available season pass statuses, each represented by its enumeration value and a\r\nlocalized label.",
+        "description": "The labels for each status are localized according to the current culture. Ensure\r\n            that localization resources for season pass statuses are properly configured to provide accurate\r\n            labels.",
         "operationId": "GetSeasonPassStatusList",
         "responses": {
           "200": {
@@ -2805,7 +2805,7 @@
           "SeasonPass"
         ],
         "summary": "Retrieves a list of reasons for which a season pass may be suspended.",
-        "description": "The method uses the SeasonPassSuspendedReason enumeration to generate\n            the list of reasons. The labels are localized based on the current culture.",
+        "description": "The method uses the SeasonPassSuspendedReason enumeration to generate\r\n            the list of reasons. The labels are localized based on the current culture.",
         "operationId": "GetSeasonPassSuspendedReasonList",
         "responses": {
           "200": {
@@ -2846,7 +2846,7 @@
           "SeasonPass"
         ],
         "summary": "Retrieves a list of available season pass renewal types, each represented by an enumeration item.",
-        "description": "This method uses localization to provide user-friendly labels for each renewal type\n            based on the current culture.",
+        "description": "This method uses localization to provide user-friendly labels for each renewal type\r\n            based on the current culture.",
         "operationId": "GetSeasonPassRenewalTypeList",
         "responses": {
           "200": {
@@ -2887,13 +2887,13 @@
           "SeasonPass"
         ],
         "summary": "Updates the status of a season pass identified by the specified ID.",
-        "description": "If the provided ID does not match the ID in the request body, a 400 Bad Request\n            response is returned. If the season pass is not found, a 404 Not Found response is returned.",
+        "description": "If the provided ID does not match the ID in the request body, a 400 Bad Request\r\n            response is returned. If the season pass is not found, a 404 Not Found response is returned.",
         "operationId": "UpdateSeasonPassStatusAsync",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "The unique identifier of the season pass to update. This value must match the ID provided in the request\n            body.",
+            "description": "The unique identifier of the season pass to update. This value must match the ID provided in the request\r\n            body.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -2902,7 +2902,7 @@
           }
         ],
         "requestBody": {
-          "description": "An object containing the new status information for the season pass. This object must include a valid\n            SeasonPassId that corresponds to the ID in the route.",
+          "description": "An object containing the new status information for the season pass. This object must include a valid\r\n            SeasonPassId that corresponds to the ID in the route.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -2995,7 +2995,7 @@
           "Seasons"
         ],
         "summary": "Retrieves a paginated list of seasons that match the specified query parameters.",
-        "description": "This method is asynchronous and may take additional time to complete depending on the\n            data source and query complexity. Ensure that the provided query parameters are valid to avoid unexpected\n            results.",
+        "description": "This method is asynchronous and may take additional time to complete depending on the\r\n            data source and query complexity. Ensure that the provided query parameters are valid to avoid unexpected\r\n            results.",
         "operationId": "GetSeasonsAsync",
         "parameters": [
           {
@@ -3102,10 +3102,10 @@
           "Seasons"
         ],
         "summary": "Creates a new season using the specified request data and returns the result of the operation.",
-        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\n            successful creation, a 201 Created response is returned with the location of the newly created season. If\n            the creation fails, a 422 Unprocessable Entity response is returned.",
+        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\r\n            successful creation, a 201 Created response is returned with the location of the newly created season. If\r\n            the creation fails, a 422 Unprocessable Entity response is returned.",
         "operationId": "CreateSeasonAsync",
         "requestBody": {
-          "description": "The request object containing the details required to create a new season. Must not be null and must satisfy\n            model validation requirements.",
+          "description": "The request object containing the details required to create a new season. Must not be null and must satisfy\r\n            model validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -3215,7 +3215,7 @@
           "Seasons"
         ],
         "summary": "Retrieves the details of a season specified by its unique identifier.",
-        "description": "This method performs an asynchronous lookup for the season using the provided\n            identifier. If no season exists for the given identifier, the response will indicate that the resource was\n            not found.",
+        "description": "This method performs an asynchronous lookup for the season using the provided\r\n            identifier. If no season exists for the given identifier, the response will indicate that the resource was\r\n            not found.",
         "operationId": "GetSeasonByIdAsync",
         "parameters": [
           {
@@ -3277,7 +3277,7 @@
           "Seasons"
         ],
         "summary": "Updates the details of an existing season identified by its unique identifier.",
-        "description": "The method validates the input model state before attempting to update the season. If\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\n            UnprocessableEntity response is returned.",
+        "description": "The method validates the input model state before attempting to update the season. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
         "operationId": "UpdateSeasonAsync",
         "parameters": [
           {
@@ -3383,13 +3383,13 @@
           "Seasons"
         ],
         "summary": "Deletes the season identified by the specified unique identifier.",
-        "description": "This method does not delete a season if the specified identifier does not match any\n            existing season.",
+        "description": "This method does not delete a season if the specified identifier does not match any\r\n            existing season.",
         "operationId": "DeleteSeasonAsync",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "The unique identifier of the season to delete. Must be a valid long integer corresponding to an existing\n            season.",
+            "description": "The unique identifier of the season to delete. Must be a valid long integer corresponding to an existing\r\n            season.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3430,7 +3430,7 @@
           "SeasonSeats"
         ],
         "summary": "Retrieves the list of seat prices for the specified season.",
-        "description": "This method performs an asynchronous operation to fetch seat prices associated with\n            the provided season ID. The returned list reflects the current pricing for all seats in the specified\n            season.",
+        "description": "This method performs an asynchronous operation to fetch seat prices associated with\r\n            the provided season ID. The returned list reflects the current pricing for all seats in the specified\r\n            season.",
         "operationId": "GetSeatPricesBySeasonIdAsync",
         "parameters": [
           {
@@ -3483,7 +3483,7 @@
           "SeasonSection"
         ],
         "summary": "Retrieves the collection of zone prices associated with the specified season identifier.",
-        "description": "This method is asynchronous and responds to an HTTP GET request. Ensure that the\n            provided season identifier exists to avoid receiving an empty result.",
+        "description": "This method is asynchronous and responds to an HTTP GET request. Ensure that the\r\n            provided season identifier exists to avoid receiving an empty result.",
         "operationId": "GetZonePricesBySeasonIdAsync",
         "parameters": [
           {
@@ -4033,7 +4033,7 @@
           "SuiteAgreements"
         ],
         "summary": "Downloads multiple suite agreement files as a single ZIP archive.",
-        "description": "The ZIP archive will contain one entry for each suite agreement file found. The file\n            name of the ZIP will include a timestamp to ensure uniqueness. If any of the specified IDs do not correspond\n            to existing files, only the files that are found will be included in the archive.",
+        "description": "The ZIP archive will contain one entry for each suite agreement file found. The file\r\n            name of the ZIP will include a timestamp to ensure uniqueness. If any of the specified IDs do not correspond\r\n            to existing files, only the files that are found will be included in the archive.",
         "operationId": "DownloadMultipleSuiteAgreementsAsync",
         "parameters": [
           {
@@ -4130,7 +4130,7 @@
           "SuiteLevels"
         ],
         "summary": "Creates a new suite level using the specified request data.",
-        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\n            Unprocessable Entity response if the suite level could not be created.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the suite level could not be created.",
         "operationId": "CreateSuiteLevelAsync",
         "requestBody": {
           "description": "The request object containing the details required to create the suite level. Cannot be null.",
@@ -4241,10 +4241,10 @@
           "SuiteLevels"
         ],
         "summary": "Updates the suite level with the specified details.",
-        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\n            Unprocessable Entity response if the update operation fails.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the update operation fails.",
         "operationId": "UpdateSuiteLevelAsync",
         "requestBody": {
-          "description": "An object containing the updated suite level information. Must not be null and must satisfy all model\n            validation requirements.",
+          "description": "An object containing the updated suite level information. Must not be null and must satisfy all model\r\n            validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -4470,17 +4470,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResultPagedResponse"
+                  "$ref": "#/components/schemas/SuiteResponsePagedResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResultPagedResponse"
+                  "$ref": "#/components/schemas/SuiteResponsePagedResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResultPagedResponse"
+                  "$ref": "#/components/schemas/SuiteResponsePagedResponse"
                 }
               }
             }
@@ -4500,7 +4500,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateSuiteRequest"
+                    "$ref": "#/components/schemas/SuiteRequest"
                   }
                 ]
               }
@@ -4509,7 +4509,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateSuiteRequest"
+                    "$ref": "#/components/schemas/SuiteRequest"
                   }
                 ]
               }
@@ -4518,7 +4518,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateSuiteRequest"
+                    "$ref": "#/components/schemas/SuiteRequest"
                   }
                 ]
               }
@@ -4527,7 +4527,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateSuiteRequest"
+                    "$ref": "#/components/schemas/SuiteRequest"
                   }
                 ]
               }
@@ -4540,17 +4540,20 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResult"
+                  "type": "integer",
+                  "format": "int64"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResult"
+                  "type": "integer",
+                  "format": "int64"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResult"
+                  "type": "integer",
+                  "format": "int64"
                 }
               }
             }
@@ -4580,17 +4583,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string"
                 }
               }
             }
@@ -4623,17 +4626,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResult"
+                  "$ref": "#/components/schemas/SuiteResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResult"
+                  "$ref": "#/components/schemas/SuiteResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResult"
+                  "$ref": "#/components/schemas/SuiteResponse"
                 }
               }
             }
@@ -4670,7 +4673,7 @@
           {
             "name": "suiteId",
             "in": "path",
-            "description": "The unique identifier of the suite to update. Must be a positive long value.",
+            "description": "The unique Id of the Suite.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -4679,13 +4682,13 @@
           }
         ],
         "requestBody": {
-          "description": "The request object containing the updated suite information. Must not be null and must satisfy all\n            validation requirements.",
+          "description": "The request object containing the updated suite information. Must not be null and must satisfy all\r\n            validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateSuiteRequest"
+                    "$ref": "#/components/schemas/SuiteRequest"
                   }
                 ]
               }
@@ -4694,7 +4697,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateSuiteRequest"
+                    "$ref": "#/components/schemas/SuiteRequest"
                   }
                 ]
               }
@@ -4703,7 +4706,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateSuiteRequest"
+                    "$ref": "#/components/schemas/SuiteRequest"
                   }
                 ]
               }
@@ -4712,7 +4715,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateSuiteRequest"
+                    "$ref": "#/components/schemas/SuiteRequest"
                   }
                 ]
               }
@@ -4748,17 +4751,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string"
                 }
               }
             }
@@ -4792,17 +4795,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string"
                 }
               }
             }
@@ -4862,13 +4865,364 @@
         }
       }
     },
+    "/api/venue-images/{venueId}": {
+      "get": {
+        "tags": [
+          "VenueImages"
+        ],
+        "summary": "Retrieves a list of the venue's images.",
+        "operationId": "GetVenueImagesAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "description": "The unique Id of the venue.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueImageResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueImageResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueImageResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "VenueImages"
+        ],
+        "summary": "Creates a new venue image with the specified info in each request.",
+        "operationId": "UploadVenueImageAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "description": "The unique Id of the Venue.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "imageType": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ImageType"
+                      }
+                    ],
+                    "description": "The type of the image."
+                  },
+                  "order": {
+                    "type": "integer",
+                    "description": "Order of the image when display.",
+                    "format": "int32"
+                  },
+                  "imageFile": {
+                    "type": "string",
+                    "description": "Image content.",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "imageType": {
+                  "style": "form"
+                },
+                "order": {
+                  "style": "form"
+                },
+                "imageFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/venue-images/{venueId}/image-type/{imageType}": {
+      "get": {
+        "tags": [
+          "VenueImages"
+        ],
+        "summary": "Retrieves a list of the venue`s images filtered by image type.",
+        "operationId": "GetVenueImagesByImageTypeAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "description": "The unique Id of the venue.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "imageType",
+            "in": "path",
+            "description": "The ImageType of the images wanted.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ImageType"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueImageResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueImageResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueImageResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/venue-images/{venueImageId}": {
+      "put": {
+        "tags": [
+          "VenueImages"
+        ],
+        "summary": "Updates an exisiting venue image with the specified details.",
+        "operationId": "UpdateVenueImageByIdAsync",
+        "parameters": [
+          {
+            "name": "venueImageId",
+            "in": "path",
+            "description": "The unique Id of the Venue.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "imageType": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ImageType"
+                      }
+                    ],
+                    "description": "The type of the image."
+                  },
+                  "order": {
+                    "type": "integer",
+                    "description": "Order of the image when display.",
+                    "format": "int32"
+                  },
+                  "imageFile": {
+                    "type": "string",
+                    "description": "Image content.",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "imageType": {
+                  "style": "form"
+                },
+                "order": {
+                  "style": "form"
+                },
+                "imageFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "VenueImages"
+        ],
+        "summary": "Deletes and existing venue image with the specified Id.",
+        "operationId": "DeleteVenueImageByIdAsync",
+        "parameters": [
+          {
+            "name": "venueImageId",
+            "in": "path",
+            "description": "The unique Venue Image Id.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/venue-maps": {
       "get": {
         "tags": [
           "VenueMaps"
         ],
         "summary": "Retrieves a collection of venue maps.",
-        "description": "This method calls the underlying venue map service to obtain the data. Ensure that\n            the service is properly configured to return the expected results. The response is returned with an HTTP 200\n            status code on success.",
+        "description": "This method calls the underlying venue map service to obtain the data. Ensure that\r\n            the service is properly configured to return the expected results. The response is returned with an HTTP 200\r\n            status code on success.",
         "operationId": "GetVenueMapsAsync",
         "responses": {
           "200": {
@@ -4878,7 +5232,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VenueMapListItemDTO"
+                    "$ref": "#/components/schemas/VenueMapResponse"
                   }
                 }
               },
@@ -4886,7 +5240,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VenueMapListItemDTO"
+                    "$ref": "#/components/schemas/VenueMapResponse"
                   }
                 }
               },
@@ -4894,8 +5248,97 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VenueMapListItemDTO"
+                    "$ref": "#/components/schemas/VenueMapResponse"
                   }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "VenueMaps"
+        ],
+        "summary": "Creates a new Venue Map or Maps using the specified request data.",
+        "operationId": "CreateVenueMapAsync",
+        "requestBody": {
+          "description": "The list of details of the Venue Map or Maps to create.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/VenueMapRequest"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/VenueMapRequest"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/VenueMapRequest"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/VenueMapRequest"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -4909,7 +5352,7 @@
           "VenueMaps"
         ],
         "summary": "Retrieves the venue map details for the specified identifier.",
-        "description": "This method performs an asynchronous lookup for the venue map. If no venue map is\n            found for the given identifier, the response will be 404 Not Found.",
+        "description": "This method performs an asynchronous lookup for the venue map. If no venue map is\r\n            found for the given identifier, the response will be 404 Not Found.",
         "operationId": "GetVenueMapsByIdAsync",
         "parameters": [
           {
@@ -4929,17 +5372,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/VenueMapListItemDTO"
+                  "$ref": "#/components/schemas/VenueMapResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VenueMapListItemDTO"
+                  "$ref": "#/components/schemas/VenueMapResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VenueMapListItemDTO"
+                  "$ref": "#/components/schemas/VenueMapResponse"
                 }
               }
             }
@@ -4965,6 +5408,175 @@
             }
           }
         }
+      },
+      "put": {
+        "tags": [
+          "VenueMaps"
+        ],
+        "summary": "Updates an existing Venue Map with the specified details.",
+        "operationId": "UpdateVenueMapAsync",
+        "parameters": [
+          {
+            "name": "venueMapId",
+            "in": "path",
+            "description": "Unique Id of the Venue Map.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The request object containing the updated Venue Map information.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueMapRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueMapRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueMapRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueMapRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "VenueMaps"
+        ],
+        "summary": "Deletes the Venue Map with the specified Id.",
+        "operationId": "DeleteVenueMapAsync",
+        "parameters": [
+          {
+            "name": "venueMapId",
+            "in": "path",
+            "description": "The unique Id of the Venue Map.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/venue-maps/{chartKey}/validate": {
+      "get": {
+        "tags": [
+          "VenueMaps"
+        ],
+        "operationId": "GetVenueMapChartByKeyAsync",
+        "parameters": [
+          {
+            "name": "chartKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/venues": {
@@ -4973,34 +5585,409 @@
           "Venues"
         ],
         "summary": "Retrieves a list of venues asynchronously.",
-        "description": "This method calls the venue service to obtain the venue list. The response will\n            contain the venue data if the operation is successful.",
+        "description": "This method calls the venue service to obtain the venue list. The response will\r\n            contain the venue data if the operation is successful.",
         "operationId": "GetVenuesAsync",
+        "parameters": [
+          {
+            "name": "Cities",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "Categories",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/VenueCategory"
+              }
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/VenueListItemDTO"
-                  }
+                  "$ref": "#/components/schemas/VenueResponsePagedResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/VenueListItemDTO"
-                  }
+                  "$ref": "#/components/schemas/VenueResponsePagedResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/VenueListItemDTO"
+                  "$ref": "#/components/schemas/VenueResponsePagedResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Venues"
+        ],
+        "summary": "Creates a new Venue using the specified request data.",
+        "operationId": "CreateVenueAsync",
+        "requestBody": {
+          "description": "The details of the Venue to create.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueRequest"
                   }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/venues/{venueId}": {
+      "get": {
+        "tags": [
+          "Venues"
+        ],
+        "summary": "Retrieves a venue with the specified identifier.",
+        "operationId": "GetVenueByIdAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "description": "The unique identifier of the venue.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Venues"
+        ],
+        "summary": "Updates an existing Venue with the specified details.",
+        "operationId": "UpdateVenueAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "description": "Unique Id of the Venue.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The request object containing the updated Venue information.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Venues"
+        ],
+        "summary": "Deletes the Venue with the specified Id.",
+        "operationId": "DeleteVenuAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "description": "The unique Id of the Venue.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -5014,7 +6001,7 @@
           "Venues"
         ],
         "summary": "Retrieves a collection of venue catalog items for use in selection lists or dropdowns.",
-        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\n            such as dropdowns. The returned items typically include venue identifiers and display names.",
+        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\r\n            such as dropdowns. The returned items typically include venue identifiers and display names.",
         "operationId": "GetVenueCatalogAsync",
         "responses": {
           "200": {
@@ -5042,6 +6029,105 @@
                   "items": {
                     "$ref": "#/components/schemas/ListItem"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cities": {
+      "get": {
+        "tags": [
+          "Venues"
+        ],
+        "summary": "Retrieves a list of venue cities for use in selection lists or dropdowns.",
+        "operationId": "GetVenueCitiesCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/venues/{venueId}/status/{venueStatus}": {
+      "patch": {
+        "tags": [
+          "Venues"
+        ],
+        "summary": "Updaes the venue status.",
+        "operationId": "UpdateVenueStatusAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "description": "The unique Id of the Venue.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "venueStatus",
+            "in": "path",
+            "description": "The new venue status.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/VenueStatus"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -5730,28 +6816,6 @@
         },
         "additionalProperties": false
       },
-      "CreateSuiteRequest": {
-        "required": [
-          "name",
-          "seats",
-          "suiteLevelId"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "suiteLevelId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "seats": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
       "CreateUserRequest": {
         "type": "object",
         "properties": {
@@ -6236,6 +7300,16 @@
           }
         },
         "additionalProperties": false
+      },
+      "ImageType": {
+        "enum": [
+          "Banner",
+          "Gallery",
+          "Logo",
+          "GeneralView",
+          "Facade"
+        ],
+        "type": "string"
       },
       "ItemType": {
         "enum": [
@@ -6753,7 +7827,7 @@
             "nullable": true
           }
         },
-        "additionalProperties": {}
+        "additionalProperties": { }
       },
       "SeasonBookingRequest": {
         "required": [
@@ -7221,17 +8295,61 @@
         },
         "additionalProperties": false
       },
-      "SuiteResult": {
+      "SuiteRequest": {
         "required": [
+          "capacity",
+          "name",
+          "suiteLevelId",
+          "suiteType"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "suiteLevelId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "suiteType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SuiteType"
+              }
+            ]
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "policies": {
+            "type": "string"
+          },
+          "amenities": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SuiteResponse": {
+        "required": [
+          "capacity",
           "id",
-          "seats",
-          "suiteLevelId"
+          "suiteLevelId",
+          "venueId"
         ],
         "type": "object",
         "properties": {
           "id": {
             "type": "integer",
             "format": "int64"
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venueName": {
+            "type": "string"
           },
           "suiteLevelId": {
             "type": "integer",
@@ -7243,14 +8361,27 @@
           "name": {
             "type": "string"
           },
-          "seats": {
+          "suiteType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SuiteType"
+              }
+            ]
+          },
+          "capacity": {
             "type": "integer",
             "format": "int32"
+          },
+          "policies": {
+            "type": "string"
+          },
+          "amenities": {
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
-      "SuiteResultPagedResponse": {
+      "SuiteResponsePagedResponse": {
         "required": [
           "page",
           "pageSize",
@@ -7261,7 +8392,7 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SuiteResult"
+              "$ref": "#/components/schemas/SuiteResponse"
             }
           },
           "totalCount": {
@@ -7278,6 +8409,15 @@
           }
         },
         "additionalProperties": false
+      },
+      "SuiteType": {
+        "enum": [
+          "Suite",
+          "PresidentialBox",
+          "GeneralBox",
+          "Terrace"
+        ],
+        "type": "string"
       },
       "TicketTypePriceDTO": {
         "type": "object",
@@ -7555,46 +8695,67 @@
         },
         "additionalProperties": false
       },
-      "UpdateSuiteRequest": {
-        "required": [
-          "name",
-          "seats",
-          "suiteLevelId"
+      "VenueCategory": {
+        "enum": [
+          "Stadium",
+          "Arena",
+          "Theater",
+          "Club",
+          "ConventionCenter",
+          "Hotel",
+          "Explanade"
         ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "suiteLevelId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "seats": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
+        "type": "string"
       },
-      "VenueListItemDTO": {
-        "required": [
-          "id"
-        ],
+      "VenueImageResponse": {
         "type": "object",
         "properties": {
           "id": {
             "type": "integer",
             "format": "int64"
           },
-          "name": {
-            "type": "string",
-            "nullable": true
+          "venueId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "imageBase64": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
-      "VenueMapListItemDTO": {
+      "VenueMapRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "externalMapKey": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueMapResponse": {
         "required": [
           "id",
           "venueId"
@@ -7616,9 +8777,221 @@
           "externalMapKey": {
             "type": "string",
             "nullable": true
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
+      },
+      "VenueRequest": {
+        "required": [
+          "category",
+          "city",
+          "country",
+          "extNum",
+          "latitude",
+          "longitude",
+          "name",
+          "neighborhood",
+          "state",
+          "status",
+          "streetAddress",
+          "zipCode"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueCategory"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueStatus"
+              }
+            ]
+          },
+          "country": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "string"
+          },
+          "streetAddress": {
+            "type": "string"
+          },
+          "extNum": {
+            "type": "string"
+          },
+          "intNum": {
+            "type": "string"
+          },
+          "zipCode": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "landingUrl": {
+            "type": "string"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": "string"
+          },
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "dialCode": {
+            "type": "string"
+          },
+          "contactPhoneNumber": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueResponse": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "string"
+          },
+          "streetAddress": {
+            "type": "string"
+          },
+          "extNum": {
+            "type": "string"
+          },
+          "intNum": {
+            "type": "string"
+          },
+          "zipCode": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "landingUrl": {
+            "type": "string"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": "string"
+          },
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "dialCode": {
+            "type": "string"
+          },
+          "contactPhoneNumber": {
+            "type": "string"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueCategory"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueStatus"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueResponsePagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VenueResponse"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueStatus": {
+        "enum": [
+          "Draft",
+          "Active",
+          "Inactive"
+        ],
+        "type": "string"
       },
       "ZonePriceDTO": {
         "type": "object",
@@ -7704,6 +9077,9 @@
     },
     {
       "name": "Suites"
+    },
+    {
+      "name": "VenueImages"
     },
     {
       "name": "VenueMaps"

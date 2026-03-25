@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Active" xml:space="preserve">
+    <value>Activo</value>
+  </data>
   <data name="Address" xml:space="preserve">
     <value>Dirección</value>
   </data>
@@ -137,6 +140,9 @@
   </data>
   <data name="AreaCode" xml:space="preserve">
     <value>Lada</value>
+  </data>
+  <data name="Arena" xml:space="preserve">
+    <value>Arena</value>
   </data>
   <data name="Availability" xml:space="preserve">
     <value>Disponibilidad</value>
@@ -159,6 +165,12 @@
   <data name="CityNeighborhood" xml:space="preserve">
     <value>Ciudad / Colonia</value>
   </data>
+  <data name="Club" xml:space="preserve">
+    <value>Club</value>
+  </data>
+  <data name="ConventionCenter" xml:space="preserve">
+    <value>Centro de convenciones</value>
+	</data>
   <data name="Clear" xml:space="preserve">
     <value>Limpiar</value>
   </data>
@@ -201,6 +213,9 @@
   <data name="Dollars" xml:space="preserve">
     <value>Dólares</value>
   </data>
+  <data name="Draft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
   <data name="Edit" xml:space="preserve">
     <value>Editar</value>
   </data>
@@ -216,6 +231,12 @@
   <data name="ErrorLoadingEvents" xml:space="preserve">
     <value>Error al cargar eventos</value>
   </data>
+  <data name="Event" xml:space="preserve">
+    <value>Evento</value>
+  </data>
+  <data name="Explanade" xml:space="preserve">
+    <value>Explanada</value>
+  </data>
   <data name="FullName" xml:space="preserve">
     <value>Nombre completo</value>
   </data>
@@ -228,6 +249,12 @@
   <data name="History" xml:space="preserve">
     <value>Historial</value>
   </data>
+  <data name="Hotel" xml:space="preserve">
+    <value>Hotel</value>
+  </data>
+  <data name="Inactive" xml:space="preserve">
+    <value>Deshabilitado</value>
+	</data>
   <data name="MakeCreditPayment" xml:space="preserve">
     <value>Abonar crédito</value>
   </data>
@@ -248,6 +275,9 @@
   </data>
   <data name="New" xml:space="preserve">
     <value>Nuevo</value>
+  </data>
+  <data name="NewVenue" xml:space="preserve">
+    <value>Nuevo recinto</value>
   </data>
   <data name="Order" xml:space="preserve">
     <value>Orden</value>
@@ -318,6 +348,12 @@
   <data name="SessionExpiredMessage" xml:space="preserve">
     <value>Su sesión ha expirado o no es válida. Por favor recargue la página.</value>
   </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Configuración</value>
+  </data>
+  <data name="Stadium" xml:space="preserve">
+    <value>Estadio</value>
+	</data>
   <data name="StartDate" xml:space="preserve">
     <value>Fecha de inicio</value>
   </data>
@@ -330,6 +366,9 @@
   <data name="Summary" xml:space="preserve">
     <value>Resumen</value>
   </data>
+  <data name="Theater" xml:space="preserve">
+    <value>Teatro</value>
+</data>
   <data name="Tickets" xml:space="preserve">
     <value>Boletos</value>
   </data>
@@ -345,6 +384,9 @@
   <data name="TrackingNumber" xml:space="preserve">
     <value>Localizador</value>
   </data>
+  <data name="Type" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
   <data name="UnsavedChangesCancel" xml:space="preserve">
     <value>Cancelar</value>
   </data>
@@ -356,6 +398,18 @@
   </data>
   <data name="UnsavedChangesTitle" xml:space="preserve">
     <value>Cambios sin guardar</value>
+  </data>
+  <data name="Venue" xml:space="preserve">
+    <value>Recinto</value>
+  </data>
+  <data name="Venues" xml:space="preserve">
+    <value>Recintos</value>
+  </data>
+  <data name="VenuesAndSuites" xml:space="preserve">
+    <value>Recintos y palcos</value>
+  </data>
+  <data name="VenueType" xml:space="preserve">
+    <value>Tipo de recinto</value>
   </data>
   <data name="Zone" xml:space="preserve">
     <value>Zona</value>
@@ -392,9 +446,6 @@
   </data>
   <data name="UpdateSuccess" xml:space="preserve">
     <value>{0} actualizado exitosamente.</value>
-  </data>
-  <data name="Event" xml:space="preserve">
-    <value>Evento</value>
   </data>
   <data name="AcceptTermsAndConditions" xml:space="preserve">
     <value>Acepto términos y condiciones</value>

@@ -61,11 +61,11 @@
 
     private async Task SaveAsync()
     {
-        var request = new CreateSuiteRequest
+        var request = new SuiteRequest
         {
             SuiteLevelId = _suiteLevelId,
-            Name = _name,
-            Seats = _seats
+            Name = _name ?? "",
+            Capacity = _seats
         };
 
         await SuitesService.CreateSuiteAsync(request);

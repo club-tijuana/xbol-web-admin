@@ -1,12 +1,15 @@
-@using Odasoft.XBOL.AdminPortal.Components.Shared
-@using Odasoft.XBOL.AdminPortal.Extensions
-@using Odasoft.XBOL.AdminPortal.Services.Contracts
-@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
-@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.Extensions;
+@using Odasoft.XBOL.AdminPortal.Services.Contracts;
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+
 @inject AppLocalizer<EventsDataGrid> L
-@inject IEventService EventService
-@inject ISnackbar Snackbar
-@inject NavigationManager Navigation
+@inject IEventService _eventService;
+@inject CatalogsService _catalogsService;
+@inject ISnackbar _snackbar;
+@inject NavigationManager _navigationManager;
 
 <MudCard Elevation="0">
     <MudCardHeader>
@@ -40,7 +43,7 @@
                         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                             <ActivatorContent>
                                 <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt"
-                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)" 
+                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)"
                                                OnClick="@context.ToggleAsync" />
                             </ActivatorContent>
                             <ChildContent>
@@ -154,11 +157,11 @@
                         <MudStack Row Spacing="2">
                             <MudTooltip Text="@L["ActionBoletos"]" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium"
-                                               OnClick="@(() => Navigation.NavigateTo($"/events/{context.Item.Id}/seats"))" />
+                                               OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/seats"))" />
                             </MudTooltip>
                             <MudTooltip Text="Disponibilidad" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.Map" Size="Size.Medium"
-                                               OnClick="@(() => Navigation.NavigateTo($"/events/{context.Item.Id}/availability"))" />
+                                               OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/availability"))" />
                             </MudTooltip>
                         </MudStack>
                     </CellTemplate>
@@ -205,7 +208,7 @@
     private string _searchString = "";
     private MudDataGrid<EventViewModel> _dataGrid = default!;
     private EventFilterParameters _filters = EventFilterParameters.Empty;
-    private List<VenueListItemDTO> _venues = [];
+    private List<ListItem> _venues = [];
     private IReadOnlyCollection<string> _selectedVenues = [];
     private List<string> _availableCategories = [];
     private IReadOnlyCollection<string> _selectedCategories = [];
@@ -216,8 +219,8 @@
         try
         {
             // Load filter options (Venues/Categories) in parallel
-            var venueTask = EventService.GetVenuesAsync();
-            var catTask = EventService.GetCategoriesAsync();
+            var venueTask = _catalogsService.GetVenuesAsync();
+            var catTask = _eventService.GetCategoriesAsync();
 
             await Task.WhenAll(venueTask, catTask);
 
@@ -226,7 +229,7 @@
         }
         catch (Exception)
         {
-            Snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
+            _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
         }
     }
 
@@ -240,7 +243,7 @@
         {
             var sortDefinition = state.SortDefinitions.FirstOrDefault();
 
-            var result = await EventService.GetEventsAsync(
+            var result = await _eventService.GetEventsAsync(
                 page: state.Page,
                 pageSize: state.PageSize,
                 sortColumn: sortDefinition?.SortBy,
@@ -258,7 +261,7 @@
         }
         catch (Exception)
         {
-            Snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
+            _snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
             return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
         finally

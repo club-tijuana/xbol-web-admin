@@ -15,7 +15,7 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Secondary"
-                    Variant="Variant.Outlined" DropShadow="false" OnClick="@(() => _adminForm.GoBackAsync())">
+                       Variant="Variant.Outlined" DropShadow="false" OnClick="@(() => _adminForm.GoBackAsync())">
                 @L["ButtonBack"]
             </MudButton>
         </LeftContent>
@@ -71,7 +71,7 @@
 
             _suiteLevelId = suite.SuiteLevelId;
             _name = suite.Name;
-            _seats = suite.Seats;
+            _seats = suite.Capacity;
         }
         catch (Exception)
         {
@@ -83,11 +83,11 @@
 
     private async Task SaveAsync()
     {
-        var request = new UpdateSuiteRequest
+        var request = new SuiteRequest
         {
             SuiteLevelId = _suiteLevelId,
-            Name = _name,
-            Seats = _seats
+            Name = _name ?? "",
+            Capacity = _seats
         };
 
         await SuitesService.UpdateSuiteAsync(Id, request);

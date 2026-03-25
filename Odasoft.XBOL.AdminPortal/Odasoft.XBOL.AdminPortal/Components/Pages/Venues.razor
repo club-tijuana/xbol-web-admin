@@ -1,0 +1,311 @@
+@page "/venues"
+
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.Extensions;
+@using Odasoft.XBOL.AdminPortal.Services.Contracts;
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services
+@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Models.ViewModels;
+
+@inject AppLocalizer<Venues> _localizer;
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+@inject NavigationManager _navigationManager;
+@inject CatalogsService _catalogsService;
+@inject VenuesService _venuesService;
+
+<PageTitle>@_localizer["Venues"]</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <RightContent>
+            <MudStack Row="true" Spacing="4">
+                <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateVenue())"
+                           Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">@_localizer["NewVenue"]</MudButton>
+            </MudStack>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
+    <MudCardContent Class="pa-0">
+        <MudDataGrid T="VenueResponse" @ref="_dataGrid" ServerData="ServerReloadAsync" Loading="_loading" Filterable="false"
+                     FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0">
+            <ToolBarContent>
+                <MudGrid Class="align-center">
+                    <MudItem xs="12" sm="6" lg="8">
+                        <MudText Class="pl-lg-4" Typo="Typo.h5">@_localizer["Venues"]</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" lg="4">
+                        <MudStack Row AlignItems="AlignItems.Center">
+
+                            <MudTextField @bind-Value="_searchTerm"
+                                          @bind-Value:after="@(() => _dataGrid.ReloadServerData())" Placeholder="@_localizer["Search"]"
+                                          Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
+                                          AdornmentAriaLabel="@_localizer["Search"]" AdornmentIcon="@Icons.Material.Filled.Search"
+                                          IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1"
+                                          DebounceInterval="500" />
+
+                            <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                                <ActivatorContent>
+                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Secondary" OnClick="@context.ToggleAsync" />
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudStack Spacing="3" Class="pa-4" Style="width:375px">
+
+                                        <MudSelect T="string" Label="@_localizer["City"]" MultiSelection="true"
+                                                   Margin="Margin.Dense" @bind-SelectedValues="_selectedCities"
+                                                   Variant="Variant.Outlined" ShrinkLabel>
+                                            @foreach (var city in _selectedCities)
+                                            {
+                                                <MudSelectItem T="string" Value="@city">
+                                                    <MudText Typo="Typo.body2">@city.ToUpper()</MudText>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+
+                                        <MudSelect T="VenueCategory?" Label="@_localizer["VenueType"]" MultiSelection="true"
+                                                   Margin="Margin.Dense" @bind-SelectedValues="_selectedVenueCategories"
+                                                   Variant="Variant.Outlined" ShrinkLabel
+                                                   ToStringFunc="@(category => category.HasValue ? _localizer[category.Value.ToString()].Value : string.Empty)">
+                                            @foreach (var venueCategory in _venueCategories)
+                                            {
+                                                <MudSelectItem T="VenueCategory?" Value="@venueCategory">
+                                                    <MudText Typo="Typo.body2">@_localizer[venueCategory.ToString()]</MudText>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+
+                                        <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
+                                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
+                                                       Class="mud-no-activator" OnClick="ClearFiltersAsync">
+                                                Limpiar
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
+                                                       StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyFiltersAsync">
+                                                Aplicar
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudStack>
+                                </ChildContent>
+                            </MudMenu>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </ToolBarContent>
+            <Columns>
+                <PropertyColumn Title="@_localizer["Venue"]" Property="x => x.Name" Sortable="true" Filterable="false" InitialDirection="SortDirection.Ascending">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.Name</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <TemplateColumn Title="@_localizer["Address"]" Sortable="true" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">
+                            @($"{context.Item.StreetAddress} {context.Item.ExtNum}, {context.Item.Neighborhood}, {context.Item.ZipCode} {context.Item.City}, {context.Item.State} {context.Item.Country}")
+                        </MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <PropertyColumn Title="@_localizer["Type"]" Property="x => x.Category" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">
+                            @_localizer[context.Item.Category.ToString()]
+                        </MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Title="@_localizer["Status"]" Property="x => x.Status" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">
+                            @_localizer[context.Item.Status.ToString()]
+                        </MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <TemplateColumn Filterable="false" Sortable="false">
+                    <CellTemplate>
+                        <MudStack Row>
+                            <MudTooltip Text="@_localizer["Edit"]" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Medium"
+                                               OnClick="@(() => _navigationManager.NavigateTo($"/venues/{context.Item.Id}/update"))" />
+                            </MudTooltip>
+
+                            @if (context.Item.Status == VenueStatus.Active)
+                            {
+                                <MudTooltip Text="Deshabilitar" Placement="Placement.Top">
+                                    <MudIconButton Icon="@Icons.Material.Outlined.Block" Size="Size.Medium" OnClick="@(() => InactivateVenueAsync(context.Item.Id))" />
+                                </MudTooltip>
+                            }
+                            else if (context.Item.Status == VenueStatus.Inactive)
+                            {
+                                <MudTooltip Text="Activar" Placement="Placement.Top">
+                                    <MudIconButton Icon="@Icons.Material.Outlined.PowerSettingsNew" Size="Size.Medium" OnClick="@(() => ActivateVenueAsync(context.Item.Id))" />
+                                </MudTooltip>
+                            }
+                            else if (context.Item.Status == VenueStatus.Draft)
+                            {
+                                <MudTooltip Text="Activar" Placement="Placement.Top">
+                                    <MudIconButton Icon="@Icons.Material.Outlined.PowerSettingsNew" Size="Size.Medium" OnClick="@(() => ActivateVenueAsync(context.Item.Id))" />
+                                </MudTooltip>
+
+                                <MudTooltip Text="Borrar" Placement="Placement.Top">
+                                    <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Medium" OnClick="@(() => DeleteVenueAsync(context.Item.Id))" />
+                                </MudTooltip>
+                            }
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+
+            <PagerContent>
+                <MudDataGridPager T="VenueResponse" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+
+    private bool _loading = false;
+    private string _searchTerm = "";
+
+    private MudDataGrid<VenueResponse> _dataGrid = default!;
+
+    public IReadOnlyCollection<string> _selectedCities = [];
+    public List<string> _cities = [];
+
+    public IReadOnlyCollection<VenueCategory?> _selectedVenueCategories = [];
+    public List<VenueCategory> _venueCategories = Enum.GetValues<VenueCategory>().ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        _cities = await _catalogsService.GetVenueCitiesAsync();
+
+        _loading = false;
+
+        StateHasChanged();
+
+    }
+
+    private void CreateVenue()
+    {
+        _navigationManager.NavigateTo(SitePages.VENUE_CREATE);
+    }
+
+    private async Task<GridData<VenueResponse>> ServerReloadAsync(GridState<VenueResponse> state, CancellationToken token)
+    {
+        _loading = true;
+
+        try
+        {
+            var data = await FetchFromServerAsync(state);
+            return data;
+        }
+        catch (TaskCanceledException)
+        {
+            return new GridData<VenueResponse> { TotalItems = 0, Items = new List<VenueResponse>() };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching venues. {ex.Message}");
+
+            _snackbar.Add(_localizer["UnableToLoadVenues"], Severity.Error);
+
+            return new GridData<VenueResponse> { TotalItems = 0, Items = new List<VenueResponse>() };
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task<GridData<VenueResponse>> FetchFromServerAsync(GridState<VenueResponse> state)
+    {
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+
+        VenueResponsePagedResponse result = await _venuesService.GetVenuesAsync(
+            _selectedCities.ToList(),
+            _selectedVenueCategories
+                .OfType<VenueCategory>()
+                .ToList(),
+            _searchTerm,
+            sortDefinition?.SortBy ?? "",
+            sortDefinition?.Descending ?? false,
+            state.Page,
+            state.PageSize);
+
+        return new GridData<VenueResponse>
+        {
+            TotalItems = result.TotalCount,
+            Items = result.Items ?? []
+        };
+    }
+
+    private async Task ClearFiltersAsync()
+    {
+        _selectedCities = [];
+        _selectedVenueCategories = [];
+        _searchTerm = "";
+
+        await _dataGrid.ReloadServerData();
+    }
+
+    private async Task ApplyFiltersAsync()
+    {
+        await _dataGrid.ReloadServerData();
+    }
+
+    public async Task DeleteVenueAsync(long venueId)
+    {
+        try
+        {
+            await _venuesService.DeleteVenueAsync(venueId);
+            await _dataGrid.ReloadServerData();
+
+            _snackbar.Add("El recinto fue borrado satisfactoriamente.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unable to delete venue '{venueId}'. Error: {ex.Message}");
+            _snackbar.Add("Ocurrio un error al tratar de borrar el recinto.", Severity.Error);
+        }
+    }
+
+    public async Task ActivateVenueAsync(long venueId)
+    {
+        try
+        {
+            await _venuesService.UpdateVenueStatusAsync(venueId, VenueStatus.Active);
+            await _dataGrid.ReloadServerData();
+
+            _snackbar.Add("El recinto fue activado satisfactoriamente.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unable to activate venue '{venueId}'. Error: {ex.Message}");
+            _snackbar.Add("Ocurrio un error al tratar de activar el recinto.", Severity.Error);
+        }
+    }
+
+    public async Task InactivateVenueAsync(long venueId)
+    {
+        try
+        {
+            await _venuesService.UpdateVenueStatusAsync(venueId, VenueStatus.Inactive);
+            await _dataGrid.ReloadServerData();
+
+            _snackbar.Add("El recinto fue deshabilitado satisfactoriamente.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unable to inactivate venue '{venueId}'. Error: {ex.Message}");
+            _snackbar.Add("Ocurrio un error al tratar de deshabilitar el recinto.", Severity.Error);
+        }
+    }
+}

@@ -1,4 +1,7 @@
 @using Odasoft.XBOL.Common.Constants
+
+@inject AppLocalizer<NavMenu> _localizer;
+
 <MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All" IconColor="Color.Primary"
                 Icon="@Icons.Material.Filled.Dashboard" Class="nav-link pt-1">
@@ -31,12 +34,12 @@
                 Disabled Icon="@Icons.Material.Filled.InsertChart">
         Reportes
     </MudNavLink>
-    <MudNavGroup Title="Configuración"
+    <MudNavGroup Title="@_localizer["Settings"]"
                  Icon="@Icons.Material.Filled.Settings"
                  IconColor="Color.Primary"
                  Class="nav-link-rounded pt-1">
-        <MudNavLink Href="@SitePages.SUITES_SETTINGS" Class="nav-link pt-1">
-            Recintos y palcos
+        <MudNavLink Href="@SitePages.VENUES" Class="nav-link pt-1">
+            @_localizer["VenuesAndSuites"]
         </MudNavLink>
         <MudNavLink Href="/settings/dinamyc-prices" Class="pt-1" Disabled>
             Precios dinámicos

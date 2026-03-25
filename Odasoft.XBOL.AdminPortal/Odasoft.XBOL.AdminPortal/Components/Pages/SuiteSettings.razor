@@ -161,7 +161,7 @@
             PageSize = state.PageSize
         };
 
-        SuiteResultPagedResponse result = await _suitesService.GetSuitesAsync(_filters);
+        SuiteResponsePagedResponse result = await _suitesService.GetSuitesAsync(_filters);
 
         return new GridData<SuitesViewModel>
         {
@@ -171,7 +171,7 @@
                 Id = suite.Id,
                 Name = suite.Name,
                 Level = suite.SuiteLevelName,
-                Seats = suite.Seats
+                Seats = suite.Capacity
             }).ToArray() ?? []
         };
     }
