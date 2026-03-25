@@ -48,12 +48,6 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         };
     }
 
-    public async Task<List<VenueListItemDTO>> GetVenuesAsync()
-    {
-        var result = await adminClient.GetVenuesAsync();
-        return result.ToList();
-    }
-
     public async Task<List<string>> GetCategoriesAsync()
     {
         var result = await adminClient.GetCategoriesNamesAsync();
