@@ -14,7 +14,8 @@ public interface IEventService
         bool sortDescending,
         string? search = null,
         EventFilterParameters? filters = null,
-        int? seasonId = null
+        int? seasonId = null,
+        bool? onSale = null
     );
 
     Task<List<string>> GetCategoriesAsync();

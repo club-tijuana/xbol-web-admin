@@ -322,7 +322,8 @@
             var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
             {
                 EventId = _cartState.CurrentEventId.Value,
-                Seats = _cartState.SelectedSeats.Select(x => x.SeatId).ToList()
+                Seats = _cartState.SelectedSeats.Select(x => x.SeatId).ToList(),
+                SaleType = SaleType.Event
             });
 
             _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());

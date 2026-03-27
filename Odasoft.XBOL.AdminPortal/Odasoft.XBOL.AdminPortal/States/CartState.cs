@@ -13,7 +13,31 @@ namespace Odasoft.XBOL.AdminPortal.States
         private decimal totalPrice;
         private long? currentEventId;
 
-        public List<string> SelectedSeatsKeys => selectedSeats.Select(x => x.SeatId).ToList();
+        public List<string> SelectedSeatsKeys => FinalSeatsSelection
+            .Select(x => x.SeatId)
+            .ToList();
+
+        public List<SeatInfo> FinalSeatsSelection => SelectedSeats
+            .Where(x => x.IsSelected == true && x.IsSold != true)
+            .ToList();
+
+        public bool? AllSeatsSelected { get; private set; }
+
+        public decimal TotalPrice
+        {
+            get => totalPrice;
+            private set => totalPrice = value;
+        }
+
+        public List<SeatInfo> SelectedSeats
+        {
+            get => selectedSeats;
+            set
+            {
+                selectedSeats = value;
+                RecalculateState();
+            }
+        }
 
         public void SetEvent(long eventId)
         {
@@ -25,48 +49,84 @@ namespace Odasoft.XBOL.AdminPortal.States
             }
         }
 
+        public void LoadOrder(long newEventId, List<SeatInfo> seats)
+        {
+            SetEvent(newEventId);
+
+            foreach (var seat in seats)
+            {
+                seat.IsSelected = seat.IsSold != true;
+            }
+
+            SelectedSeats = seats;
+        }
+
         public void ClearCart()
         {
-            selectedSeats.Clear();
-            totalPrice = 0;
+            SelectedSeats.Clear();
+            RecalculateState();
             NotifyStateChanged();
-        }
-
-        public List<SeatInfo> SelectedSeats
-        {
-            get => selectedSeats;
-            set
-            {
-                selectedSeats = value;
-                TotalPrice = selectedSeats.Sum(seat => seat.Price);
-                NotifyStateChanged();
-            }
-        }
-
-        public decimal TotalPrice
-        {
-            get => totalPrice;
-            private set => totalPrice = value;
         }
 
         public void AddSelectedSeat(SeatInfo item)
         {
-            if (!SelectedSeats.Any(x => x.SeatId == item.SeatId))
+            var existingSeat = SelectedSeats.FirstOrDefault(x => x.SeatId == item.SeatId);
+
+            if (existingSeat != null)
             {
+                if (existingSeat.IsSold != true)
+                {
+                    existingSeat.IsSelected = true;
+                    existingSeat.Price = item.Price;
+                    RecalculateState();
+                }
+            }
+            else
+            {
+                item.IsSelected = true;
                 SelectedSeats.Add(item);
-                TotalPrice = selectedSeats.Sum(seat => seat.Price);
-                NotifyStateChanged();
+                RecalculateState();
             }
         }
 
         public void RemoveSelectedSeat(string seatId)
         {
-            if (SelectedSeats.Any(x => x.SeatId == seatId))
+            var seat = SelectedSeats.FirstOrDefault(x => x.SeatId == seatId);
+            if (seat is not null && seat.IsSold != true)
             {
-                SelectedSeats.RemoveAll(seat => seat.SeatId == seatId);
-                TotalPrice = selectedSeats.Sum(seat => seat.Price);
-                NotifyStateChanged();
+                if (seat.SourceOrderItemId is not null)
+                {
+                    seat.IsSelected = false;
+                }
+                else
+                {
+                    selectedSeats.Remove(seat);
+                }
+
+                RecalculateState();
             }
+        }
+
+        private void RecalculateState()
+        {
+            TotalPrice = SelectedSeats
+                .Where(seat => seat.IsSelected == true && seat.IsSold != true)
+                .Sum(seat => seat.Price);
+
+            if (SelectedSeats.All(i => i.IsSelected == true))
+            {
+                AllSeatsSelected = true;
+            }
+            else if (SelectedSeats.Any(i => i.IsSelected == true))
+            {
+                AllSeatsSelected = null;
+            }
+            else
+            {
+                AllSeatsSelected = false;
+            }
+
+            NotifyStateChanged();
         }
 
         public void SetHoldToken(string token, int expiresInSeconds)
@@ -115,5 +175,8 @@ namespace Odasoft.XBOL.AdminPortal.States
         public required string SeatId { get; set; }
         public decimal Price { get; set; }
         public string? Category { get; set; }
+        public bool? IsSold { get; set; }
+        public bool IsSelected { get; set; }
+        public long? SourceOrderItemId { get; set; }
     }
 }

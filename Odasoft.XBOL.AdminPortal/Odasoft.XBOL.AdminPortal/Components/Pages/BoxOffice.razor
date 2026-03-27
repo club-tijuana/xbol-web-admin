@@ -1,9 +1,13 @@
 @page "/box-office"
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Business.Services
 
 @inject AppLocalizer<BoxOffice> L
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService;
+@inject IEventService EventService
+@inject OrdersService OrdersService;
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -21,7 +25,8 @@
                               Placeholder="@L["TrackingInputPlaceholder"]"
                               Adornment="Adornment.End"
                               AdornmentIcon="@Icons.Material.Filled.Search"
-                              Style="min-width: 370px;">
+                              Style="min-width: 370px;"
+                              OnAdornmentClick="@SearchOrder">
                 </MudTextField>
             </MudStack>
         </RightContent>
@@ -31,49 +36,23 @@
                   HasError="@_error"
                   ErrorMessage="@_errorMessage">
     <MudGrid Spacing="4">
-        @foreach (var @event in Events)
-        {            
-            <MudItem xs="12" md="6" lg="3">
-                <MudCard Elevation="3" Style="cursor: pointer;" @onclick="@(() => Navigation.NavigateTo($"/box-office/{@event.Id}/seats"))">
-                    @if (string.IsNullOrEmpty(@event.PosterImageUrl))
-                    {
-                        <ImagePlaceholder Height="@(_thumbnailHeight + "px")" />
-                    }
-                    else
-                    {
-                        <MudCardMedia Image="@(@event.PosterImageUrl)" Height="@_thumbnailHeight" />
-                    }
-                    <MudCardContent Class="py-2 px-3">
-                        <MudGrid>
-                            <MudItem xs="6">
-                                <MudStack>
-                                    <MudTooltip Text="@(@event.EventName)">
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="truncate-text"><b>@(@event.EventName)</b></MudText>
-                                    </MudTooltip>
-                                    <MudText Typo="Typo.caption">@(@event.Date.ToString("d MMM yyyy"))</MudText>
-                                </MudStack>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex justify-end">
-                                <MudStack>
-                                    <MudText Typo="Typo.caption">@L["Availability"]</MudText>
-                                    <MudStack Row Justify="Justify.FlexEnd" AlignItems="AlignItems.Center" Spacing="1">
-                                        <MudIcon Color="Color.Tertiary" Icon="@Icons.Material.Filled.EventSeat" Size="Size.Small" />
-                                        <MudText Color="Color.Tertiary" Typo="Typo.body2"><b>@(@event.AvailableSeats)</b></MudText>
-                                    </MudStack>
-                                </MudStack>
-                            </MudItem>
-                        </MudGrid>
-                    </MudCardContent>
-                </MudCard>
+        @if (Events.Any())
+        {
+            @foreach (var eventItem in Events)
+            {
+
+                <MudItem xs="12" md="6" lg="3">
+                    <EventCard Event="eventItem" OnClick="@(() => GoToSeats(eventItem))"></EventCard>                    
+                </MudItem>
+            }
+        }
+        else
+        {
+            // TODO: Add UI for no events currently on sale
+            <MudItem xs="12">
+                <MudText>@L["NoEventsFound"]</MudText>
             </MudItem>
         }
-        <MudItem xs="12">
-            <MudStack Row>
-                <MudButton OnClick="ShowOrderDetail">Mostrar Orden</MudButton>
-                <MudButton OnClick="ShowSeasonPassDetail">Mostrar Season Pass</MudButton>
-                <MudButton OnClick="ShowSuccesfulOrder">Mostrar Orden completada</MudButton>
-            </MudStack>
-        </MudItem>
     </MudGrid>
 </LoadingContainer>
 @code {
@@ -82,16 +61,25 @@
     private bool _isSubmitting = false;
     private bool _error = false;
     private string _errorMessage = string.Empty;
-    private int _thumbnailHeight = 120;
 
-    private IEnumerable<EventInfo> Events { get; set; } = [];
+    private IEnumerable<EventViewModel> Events { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
     {
         _isLoading = true;
         try
         {
-            Events = [new EventInfo { Id = 1, EventName = "Shakira en Tijuana", AvailableSeats = 16523, Date = new DateTimeOffset(2025, 11, 15, 0, 0, 0, default) }, new EventInfo { Id = 2, EventName = "Apertura Play-in: Club Tijuana", AvailableSeats = 16523, Date = new DateTimeOffset(2025, 11, 15, 0, 0, 0, default) }];
+            var result = await EventService.GetEventsAsync(
+            page: 0,
+            pageSize: 100,
+            sortColumn: null,
+            sortDescending: true,
+            search: null,
+            filters: null,
+            seasonId: null,
+            onSale: null);
+
+            Events = result.Items;
         }
         catch (Exception)
         {
@@ -105,30 +93,63 @@
         }
     }
 
-    private Task ShowOrderDetail()
+    private Task ShowOrderDetail(string reference)
     {
+        var parameters = new DialogParameters<OrderDetailDialog> { { x => x.OrderReference, reference } };
         DialogOptions options = new() { CloseButton = true };
-        return DialogService.ShowAsync<OrderDetailDialog>(string.Empty, options);
+        return DialogService.ShowAsync<OrderDetailDialog>(string.Empty, parameters, options);
     }
 
-    private Task ShowSeasonPassDetail()
+    private async Task GoToSeats(EventViewModel e)
     {
-        DialogOptions options = new() { CloseButton = true };
-        return DialogService.ShowAsync<SeasonPassDetailDialog>(string.Empty, options);
+        if (e.IsSeason == true)
+        {
+            Navigation.NavigateTo($"/box-office/seasons/{e.Id}/seats");
+        }
+        else
+        {
+            Navigation.NavigateTo($"/box-office/{e.Id}/seats");
+        }
     }
 
-    private Task ShowSuccesfulOrder()
+    private async Task SearchOrder()
     {
-        DialogOptions options = new() { CloseButton = true, Position = DialogPosition.TopRight };
-        return DialogService.ShowAsync<SuccesfulOrderDialog>(string.Empty, options);
+        if (string.IsNullOrWhiteSpace(Search))
+        {
+            return;
+        }
+
+        try
+        {
+            var canRenew = await OrdersService.CanOrderBeRenewedAsync(Search);
+
+            if(canRenew.CanRenew == true)
+            {
+                Navigation.NavigateTo($"/box-office/seasons/renovate/{canRenew.NewSeasonId}/{canRenew.Reference}");
+            }
+            else if(!string.IsNullOrWhiteSpace(canRenew.Reference))
+            {
+                await ShowOrderDetail(canRenew.Reference);
+            }
+            else
+            {
+                Snackbar.Add(L["OrderNotFound", Search], Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {            
+            Console.WriteLine($"Error searching for order: {ex.Message}");
+            Snackbar.Add(L["OrderNotFound", Search], Severity.Warning);
+        }
     }
 
     public class EventInfo
     {
         public long Id { get; set; }
-            public string? PosterImageUrl { get; set; }
+        public string? PosterImageUrl { get; set; }
         public required string EventName { get; set; }
         public DateTimeOffset Date { get; set; }
         public int AvailableSeats { get; set; }
+        public bool? IsSeason { get; set; }
     }
 }

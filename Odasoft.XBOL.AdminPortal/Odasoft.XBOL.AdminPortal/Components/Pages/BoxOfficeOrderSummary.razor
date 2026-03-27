@@ -2,6 +2,7 @@
 @using Odasoft.XBOL.AdminPortal.States
 @using System.Globalization
 @using Odasoft.XBOL.Common.Constants
+@using System.Text.Json
 
 @implements IDisposable
 @inject CartState CartState
@@ -22,10 +23,18 @@
 <MudPaper Outlined="true" Class="rounded overflow-hidden">
     <MudPaper Class="rounded-0">
         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class=@($"mud-info {(AllowRemoval && CartState.SelectedSeats.Any() ? "py-2 pl-4 pr-3" : "py-3 px-4")}")>
+            @if (IsPreviousOrder)
+            {
+                <MudCheckBox T="bool?"
+                             Value="@CartState.AllSeatsSelected"
+                             ValueChanged="@OnSelectAllChanged"
+                             Color="Color.Primary"
+                             TriState="true" />
+            }
             <MudText Typo="Typo.body1" Style="color: var(--mud-palette-white)">TOTAL</MudText>
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                <MudText Typo="Typo.body1" Style="color: var(--mud-palette-white)"><b>@CartState.TotalPrice.ToString(FormatConstants.CURRENCY)</b></MudText>
-                @if (AllowRemoval && CartState.SelectedSeats.Any())
+                <MudText Typo="Typo.body1" Style="color: var(--mud-palette-white); font-size:20px;"><b>@CartState.TotalPrice.ToString(FormatConstants.CURRENCY)</b></MudText>
+                @if (AllowRemoval && !IsPreviousOrder && CartState.SelectedSeats.Any())
                 {
                     <MudIconButton Icon="@Icons.Material.Outlined.DeleteSweep"
                                    Style="color: var(--mud-palette-secondary-lighten); padding:0;"
@@ -38,12 +47,22 @@
     <MudList T="string" Dense="true" Gutters="false">
         @foreach (var item in CartState.SelectedSeats)
         {
-            <MudListItem T="string" Class="@($"order-item{(_previousFocusedSeatId == item.SeatId ? " selected" : "")} {(AllowRemoval ? "py-1 pl-4 pr-3" : "py-2 px-4")}")" Value="@item.SeatId">
+            <MudListItem T="string" Class="@($"order-item{(_previousFocusedSeatId == item.SeatId ? " selected" : "")} {(AllowRemoval && !IsPreviousOrder ? "py-2 pl-4 pr-3" : !IsPreviousOrder ? "py-2 px-4" : "py-0 px-4")}")" Value="@item.SeatId">
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                    <MudText Typo="Typo.body1" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
+                    <MudStack Row AlignItems="AlignItems.Center">
+                        @if (IsPreviousOrder)
+                        {
+                            <MudCheckBox T="bool"
+                                         Value="@item.IsSelected"
+                                         ValueChanged="@( (bool isChecked) => OnItemCheckedChanged(item, isChecked) )"
+                                         Color="Color.Primary"
+                                         Disabled="@(item.IsSold == true)" />
+                        }
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
+                    </MudStack>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                         <MudText Typo="Typo.body1" Color="Color.Secondary">@item.Price.ToString(FormatConstants.CURRENCY)</MudText>
-                        @if (AllowRemoval)
+                        @if (AllowRemoval && !IsPreviousOrder)
                         {
 
                             <MudTooltip Text="@L["RemoveSeat"]">
@@ -52,6 +71,10 @@
                                                Color="Color.Error"
                                                OnClick="@(() => RemoveSeat(item.SeatId))" />
                             </MudTooltip>
+                        }
+                        else if (IsPreviousOrder)
+                        {
+                            <MudIcon Class="@(item.IsSold == true ? "" : "invisible")" Icon="@Icons.Material.Filled.PriceCheck" Color="Color.Tertiary"></MudIcon>
                         }
                     </MudStack>
                 </MudStack>
@@ -73,6 +96,8 @@
     public SeatingChart? Chart { get; set; }
     [Parameter]
     public bool AllowRemoval { get; set; } = true;
+
+    public bool IsPreviousOrder => CartState.SelectedSeats.Any(x => x.SourceOrderItemId != null);
 
     private System.Timers.Timer? _timer;
     private TimeSpan _timeLeft = TimeSpan.Zero;
@@ -146,6 +171,10 @@
         {
             await Chart.DeselectSeatAsync(seatId);
         }
+        else
+        {
+            CartState.RemoveSelectedSeat(seatId);
+        }
     }
 
     private async Task RemoveAllSeats()
@@ -155,6 +184,57 @@
         if (Chart is not null)
         {
             await Chart.ClearSelection();
+        }
+        else
+        {
+            var seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList();
+            foreach (var item in seats)
+            {
+                CartState.RemoveSelectedSeat(item);
+            }
+        }
+    }
+
+    private async Task OnSelectAllChanged(bool? value)
+    {
+        bool isChecked = value ?? false;
+
+        if (isChecked == true)
+        {
+            var json = JsonSerializer.Serialize(CartState.SelectedSeats);
+            var seats = JsonSerializer.Deserialize<List<SeatInfo>>(json);
+            foreach (var item in seats)
+            {
+                await AddSeat(item);
+            }
+        }
+        else if (isChecked == false)
+        {
+            await RemoveAllSeats();
+        }
+    }
+
+    private async Task AddSeat(SeatInfo seat)
+    {
+        if (Chart is not null)
+        {
+            await Chart.TrySelectObjectsAsync([seat.SeatId]);
+        }
+        else
+        {
+            CartState.AddSelectedSeat(seat);
+        }
+    }
+
+    private async Task OnItemCheckedChanged(SeatInfo item, bool isChecked)
+    {
+        if (isChecked)
+        {
+            await AddSeat(item);
+        }
+        else
+        {
+            await RemoveSeat(item.SeatId);
         }
     }
 }
