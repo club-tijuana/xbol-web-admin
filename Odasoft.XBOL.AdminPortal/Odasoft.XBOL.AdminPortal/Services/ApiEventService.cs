@@ -15,7 +15,8 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         bool sortDescending,
         string? search = null,
         EventFilterParameters? filters = null,
-        int? seasonId = null)
+        int? seasonId = null,
+        bool? onSale = null)
     {
         var response = await adminClient.GetEventsAsync(
             venues: filters?.Venues != null && filters.Venues.Count > 0 ? string.Join(",", filters.Venues) : null,
@@ -28,7 +29,8 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             page: page + 1,
             pageSize: pageSize,
             seasonId: seasonId,
-            status: null
+            status: null,
+            onSale: onSale
         );
 
         var items = response.Items?.Select(e => new EventViewModel(
@@ -38,7 +40,9 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.Category ?? "",
             e.VenueName ?? "",
             e.AvailableSeats,
-            e.TotalSeats
+            e.TotalSeats,
+            e.PosterImageUrl ?? "",
+            e.IsSeason
         )).ToArray() ?? [];
 
         return new GridData<EventViewModel>

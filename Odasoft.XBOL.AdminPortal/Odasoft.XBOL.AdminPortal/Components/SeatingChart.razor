@@ -113,7 +113,6 @@
                 _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
 
                 var selectedSeats = SelectedSeats;
-                CartState.ClearCart();
 
                 await TrySelectObjectsAsync(selectedSeats.ToArray());
             }
@@ -145,7 +144,8 @@
         {
             SeatId = seatId,
             Price = price,
-            Category = category
+            Category = category,
+            IsSelected = true
         };
 
         CartState.AddSelectedSeat(seat);

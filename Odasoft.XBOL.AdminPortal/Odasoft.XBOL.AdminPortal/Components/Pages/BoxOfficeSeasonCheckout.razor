@@ -19,6 +19,7 @@
 @inject IDialogService _dialogService
 @inject ClientsService _clientsService
 @inject CatalogsService _catalogsService
+@inject OrdersService OrdersService;
 
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
@@ -30,8 +31,8 @@
                 <MudText Typo="Typo.h5"><b>@_eventInfo.Name</b></MudText>
                 <MudStack Row>
                     <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600
-    ;">@_eventInfo.VenueName</MudText>
-                    <MudText Typo="Typo.body1">@_eventInfo.ScheduledStartDate?.ToString("dd/MM/yyyy h:mm tt")</MudText>
+                    ;">@_eventInfo.Venue</MudText>
+                    <MudText Typo="Typo.body1">@_eventInfo.StartDate?.ToString("dd/MM/yyyy h:mm tt")</MudText>
                 </MudStack>
             </MudStack>
             <MudButton OnClick="ReturnAsync" Variant="Variant.Filled" DropShadow="false" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
@@ -250,7 +251,7 @@
 @code {
     [Parameter]
     [EditorRequired]
-    public EventInfoDTO _eventInfo { get; set; }
+    public SeasonResult _eventInfo { get; set; }
 
     [EditorRequired]
     [Parameter]
@@ -258,6 +259,12 @@
 
     [Parameter]
     public EventCallback OnReturn { get; set; }
+
+    [Parameter]
+    public bool IsRenewal { get; set; } = false;
+
+    [Parameter]
+    public OrderRenewalInfoResponse? OrderInfo { get; set; }
 
     MudForm _form = default!;
 
@@ -281,18 +288,27 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _cartState.OnChange += StateHasChanged;
+        _cartState.OnChange += HandleCartChange;
 
         try
         {
             _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
 
+            if (IsRenewal && OrderInfo is not null)
+            {   
+                _request.FullName = OrderInfo.ClientName;
+                _request.PhoneRegionCodeId = OrderInfo.PhoneRegionCodeId;
+                _request.PhoneNumber = OrderInfo.PhoneNumber;
+                _request.Email = OrderInfo.Email;
+                _request.ClientId = OrderInfo.ClientId;
+            }
+
             // TODO: Move this to a proper service
             var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
             {
                 EventId = _cartState.CurrentEventId.Value,
-                Seats = _cartState.FinalSeatsSelection.Select(x => x.SeatId).ToList(),
-                SaleType = SaleType.Event
+                Seats = _cartState.SelectedSeatsKeys,
+                SaleType = SaleType.SeasonPass
             });
 
             _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
@@ -300,7 +316,7 @@
         catch (Exception ex)
         {
             _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
-            await ReturnAsync();
+            await OnReturn.InvokeAsync();
         }
     }
 
@@ -397,6 +413,12 @@
         }
     }
 
+    private void HandleCartChange()
+    {
+        ClearAmountsAsync();
+        StateHasChanged();
+    }
+
     private async void ClearAmountsAsync()
     {
         _request.CardAmount = null;
@@ -442,11 +464,11 @@
         }
 
         // TODO: Add this validation to the FluentValidator
-        if(TotalPay < PendingPay)
+        if (TotalPay < PendingPay)
         {
             return;
         }
-        if(_cartState.FinalSeatsSelection.Count == 0)
+        if (_cartState.FinalSeatsSelection.Count == 0)
         {
             _snackbar.Add(L["SelectSeatsMessage"], MudBlazor.Severity.Warning);
             return;
@@ -455,11 +477,11 @@
         _isSubmitting = true;
         _loadingState.Show();
 
-        var request = new EventBookingRequest
+        var request = new SeasonBookingRequest
         {
             Seats = _cartState.FinalSeatsSelection.ToDictionary(x => x.SeatId, x => x.Price),
             HoldToken = _cartState.HoldToken ?? "",
-            EventKey = EventKey,
+            SeasonKey = EventKey,
             ClientContact = new ClientInfoRequest
             {
                 Id = _request.ClientId,
@@ -473,12 +495,7 @@
         try
         {
             // TODO: Move to a proper service
-            var result = await _adminClient.BookEventSeatsAsync(request);
-
-
-            // TODO: Show a proper success dialog with order details
-            // DialogOptions options = new() { CloseButton = true, Position = DialogPosition.TopRight };
-            // await _dialogService.ShowAsync<SuccesfulOrderDialog>(string.Empty, options);
+            var result = await _adminClient.BookSeasonSeatsAsync(request);
 
             _snackbar.Add(L["Seats_PaymentSuccess"], configure: c =>
             {

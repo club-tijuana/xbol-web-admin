@@ -1,13 +1,13 @@
 @using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Business.Services
 @inject AppLocalizer<OrderDetailDialog> L
+@inject ISnackbar Snackbar
+@inject OrdersService OrdersService;
 
 <MudDialog>
     <TitleContent>
         <MudStack Row AlignItems="AlignItems.Center">
-            <MudText Typo="Typo.h5">@Order.TrackingNumber</MudText>
-            <MudChip T="string" Class="@GetRenewalTypeColor(Order.LastSeasonRenewalType)" Size="Size.Small">
-                @L[Order.LastSeasonRenewalType.ToString()]
-            </MudChip>
+            <MudText Typo="Typo.h5">@Order.Reference</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
@@ -15,35 +15,35 @@
             <MudItem xs="12" md="6">
                 <MudStack>
                     <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Name"]</b></MudText>
-                    <MudText Color="Color.Secondary" Typo="Typo.body1"><b>@Order.ClientName</b></MudText>
+                    <MudText Color="Color.Secondary" Typo="Typo.body1"><b>@(!string.IsNullOrWhiteSpace(Order.ClientName) ? Order.ClientName : "-")</b></MudText>
                 </MudStack>
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudStack>
                     <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Phone"]</b></MudText>
-                    <MudText Color="Color.Secondary" Typo="Typo.body1">@Order.PhoneNumber</MudText>
+                    <MudText Color="Color.Secondary" Typo="Typo.body1">@(!string.IsNullOrWhiteSpace(Order.PhoneNumber) ? Order.PhoneNumber : "-")</MudText>
                 </MudStack>
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudStack>
                     <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Email"]</b></MudText>
-                    <MudText Color="Color.Secondary" Typo="Typo.body1">@Order.Email</MudText>
+                    <MudText Color="Color.Secondary" Typo="Typo.body1">@(!string.IsNullOrWhiteSpace(Order.Email) ? Order.Email : "-")</MudText>
                 </MudStack>
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudStack>
                     <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["CityNeighborhood"]</b></MudText>
-                    <MudText Color="Color.Secondary" Typo="Typo.body1">@Order.CityNeighborhood</MudText>
+                    <MudText Color="Color.Secondary" Typo="Typo.body1">@($"{(!string.IsNullOrWhiteSpace(Order.City) ? Order.City : "-")} / {(!string.IsNullOrWhiteSpace(Order.Neighbourhood) ? Order.Neighbourhood : "-")}")</MudText>
                 </MudStack>
             </MudItem>
             <MudItem xs="12">
                 <MudStack>
                     <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Event"]</b></MudText>
-                    <MudText Color="Color.Secondary" Typo="Typo.body1"><b>@Order.EventName</b></MudText>
+                    <MudText Color="Color.Secondary" Typo="Typo.body1"><b>@Order.Event</b></MudText>
                 </MudStack>
             </MudItem>
             <MudItem xs="12">
-                <MudTable Items="@Order.Tickets" Hover="true" Breakpoint="Breakpoint.None" CellClass="border-none px-0 py-2" Elevation="0">
+                <MudTable Items="@Order.Items" Hover="true" Breakpoint="Breakpoint.None" CellClass="border-none px-0 py-2" Elevation="0">
                     <ColGroup>
                         <col style="width: 100px;" />
                         <col style="width: 100px;" />
@@ -68,71 +68,42 @@
             <MudButton StartIcon="@Icons.Material.Filled.Send" OnClick="SendDigitalTicket"
                        Color="Color.Default" Variant="Variant.Outlined" Class="text-uppercase">@L["SendDigitalTicket"]</MudButton>
             <MudButton StartIcon="@Icons.Material.Filled.Print" OnClick="PrintTicket"
-                       Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">@L["Print"]</MudButton>
+                       Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase" Disabled>@L["Print"]</MudButton>
         </div>
     </DialogActions>
 </MudDialog>
 
 @code {
-    public OrderInfo Order { get; set; } = new();
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public string OrderReference { get; set; } = string.Empty;
+
+    private OrderRenewalInfoResponse Order = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Order = new()
-            {
-                Id = 1,
-                ClientName = "Juan Antonio Pérez López",
-                PhoneNumber = "+1 (61) 1245-6789",
-                Email = "juanperez@gmail.com",
-                CityNeighborhood = "San Diego / Downtown",
-                EventName = "Pase de Temporada CL2026",
-                TrackingNumber = "CAL178700",
-            Tickets = [new() { Zone = "Platea", Section = "Platea D", Seat = "Platea D-A-1" }, new() { Zone = "Platea", Section = "Platea D", Seat = "Platea D-A-2" }, new() { Zone = "Platea", Section = "Platea D", Seat = "Platea D-A-3" }, new() { Zone = "Platea", Section = "Platea D", Seat = "Platea D-A-4" }]
-            };
+        try
+        {
+            Order = await OrdersService.FindOrder(OrderReference);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching for order: {ex.Message}");
+            Snackbar.Add(L["OrderNotFound", OrderReference], Severity.Warning);
+            MudDialog.Cancel();
+        }
     }
 
     private Task SendDigitalTicket()
     {
+        // TODO: Implement sending digital ticket functionality
         return Task.CompletedTask;
     }
 
     private Task PrintTicket()
     {
         return Task.CompletedTask;
-    }
-
-    private static string GetRenewalTypeColor(SeasonPassRenewalType? status) => status switch
-    {
-        SeasonPassRenewalType.New => "text-secondary",
-        SeasonPassRenewalType.Renewal => "bg-primary-lighten text-warning",
-        SeasonPassRenewalType.Replacement => "bg-tertiary-lighten text-tertiary-darken",
-        _ => string.Empty
-    };
-
-    public class OrderInfo
-    {
-        public double Id { get; set; }
-        public string TrackingNumber { get; set; }
-        public string ClientName { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Email { get; set; }
-        public string CityNeighborhood { get; set; }
-        public string EventName { get; set; }
-        public SeasonPassRenewalType LastSeasonRenewalType { get; set; }
-        public IEnumerable<TicketInfo> Tickets { get; set; }
-    }
-
-    public class TicketInfo
-    {
-        public string Zone { get; set; }
-        public string Section { get; set; }
-        public string Seat { get; set; }
-    }
-
-    public enum SeasonPassRenewalType
-    {
-        New,
-        Renewal,
-        Replacement
     }
 }

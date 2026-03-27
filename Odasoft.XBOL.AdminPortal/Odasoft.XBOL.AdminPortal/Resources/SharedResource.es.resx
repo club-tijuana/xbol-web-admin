@@ -117,11 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Active" xml:space="preserve">
-    <value>Activo</value>
-  </data>
   <data name="Address" xml:space="preserve">
     <value>Dirección</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Activo</value>
   </data>
   <data name="AllEvents" xml:space="preserve">
     <value>Todos los eventos</value>
@@ -170,7 +170,7 @@
   </data>
   <data name="ConventionCenter" xml:space="preserve">
     <value>Centro de convenciones</value>
-	</data>
+  </data>
   <data name="Clear" xml:space="preserve">
     <value>Limpiar</value>
   </data>
@@ -254,7 +254,7 @@
   </data>
   <data name="Inactive" xml:space="preserve">
     <value>Deshabilitado</value>
-	</data>
+  </data>
   <data name="MakeCreditPayment" xml:space="preserve">
     <value>Abonar crédito</value>
   </data>
@@ -353,7 +353,7 @@
   </data>
   <data name="Stadium" xml:space="preserve">
     <value>Estadio</value>
-	</data>
+  </data>
   <data name="StartDate" xml:space="preserve">
     <value>Fecha de inicio</value>
   </data>
@@ -368,7 +368,7 @@
   </data>
   <data name="Theater" xml:space="preserve">
     <value>Teatro</value>
-</data>
+  </data>
   <data name="Tickets" xml:space="preserve">
     <value>Boletos</value>
   </data>
@@ -527,5 +527,20 @@
   </data>
   <data name="RemoveSelection" xml:space="preserve">
     <value>Remover selección</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Cambio</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>Pendiente</value>
+  </data>
+  <data name="SelectSeatsMessage" xml:space="preserve">
+    <value>Seleccione uno o más asientos a pagar</value>
+  </data>
+  <data name="Received" xml:space="preserve">
+    <value>Recibido</value>
+  </data>
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>No se encontro orden con el numero {0}</value>
   </data>
 </root>

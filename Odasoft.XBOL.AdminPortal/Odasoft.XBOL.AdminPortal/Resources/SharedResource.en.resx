@@ -519,4 +519,28 @@
   <data name="Payment" xml:space="preserve">
     <value>Payment</value>
   </data>
+  <data name="Selected" xml:space="preserve">
+    <value>Selected</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="RemoveSelection" xml:space="preserve">
+    <value>Remove Selection</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="SelectSeatsMessage" xml:space="preserve">
+    <value>Select one or more seats to pay</value>
+  </data>
+  <data name="Received" xml:space="preserve">
+    <value>Received</value>
+  </data>
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>Order number {0} not found</value>
+  </data>
 </root>

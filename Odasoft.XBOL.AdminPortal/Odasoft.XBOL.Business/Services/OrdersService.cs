@@ -26,5 +26,15 @@ namespace Odasoft.XBOL.Business.Services
 
             return response;
         }
+
+        public async Task<OrderRenewalInfoResponse> FindOrder(string orderReference)
+        {
+            return await _adminClient.GetOrderDetailsByReferenceAsync(orderReference);
+        }
+
+        public async Task<CanRenewOrderResponse> CanOrderBeRenewedAsync(string orderReference)
+        {
+            return await _adminClient.CanOrderBeRenewedAsync(orderReference);
+        }
     }
 }

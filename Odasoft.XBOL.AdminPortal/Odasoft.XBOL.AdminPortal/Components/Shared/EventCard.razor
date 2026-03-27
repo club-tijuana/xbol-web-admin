@@ -1,0 +1,50 @@
+@inject AppLocalizer<EventCard> L
+
+<MudCard Elevation="3" Style="cursor: pointer;" @onclick="@HandleOnClick">
+    @if (string.IsNullOrEmpty(Event.PosterImageUrl))
+    {
+        <ImagePlaceholder Height="@(ThumbnailHeight + "px")" />
+    }
+    else
+    {
+        <MudCardMedia Image="@(Event.PosterImageUrl)" Height="@ThumbnailHeight" />
+    }
+    <MudCardContent Class="py-2 px-3">
+        <MudGrid>
+            <MudItem xs="6">
+                <MudStack>
+                    <MudTooltip Text="@(Event.EventName)">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="truncate-text"><b>@(Event.EventName)</b></MudText>
+                    </MudTooltip>
+                    <MudText Typo="Typo.caption">@(Event.DateTime.ToString("d MMM yyyy"))</MudText>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="6" Class="d-flex justify-end">
+                <MudStack>
+                    <MudText Typo="Typo.caption">@L["Availability"]</MudText>
+                    <MudStack Row Justify="Justify.FlexEnd" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudIcon Color="Color.Tertiary" Icon="@Icons.Material.Filled.EventSeat" Size="Size.Small" />
+                        <MudText Color="Color.Tertiary" Typo="Typo.body2"><b>@(Event.Available)</b></MudText>
+                    </MudStack>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public EventViewModel Event { get; set; }
+
+    [Parameter]
+    public int ThumbnailHeight { get; set; } = 120;
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    private async Task HandleOnClick()
+    {
+        await OnClick.InvokeAsync();
+    }
+}
