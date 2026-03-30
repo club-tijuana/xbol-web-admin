@@ -53,6 +53,12 @@
                 <MudText>@L["NoEventsFound"]</MudText>
             </MudItem>
         }
+        @if (TotalPages > 1)
+        {
+            <MudItem xs="12" Class="d-flex justify-center mt-4">
+                <MudPagination Color="Color.Primary" Count="TotalPages" @bind-Selected="@_page" />
+            </MudItem>
+        }
     </MudGrid>
 </LoadingContainer>
 @code {
@@ -61,6 +67,11 @@
     private bool _isSubmitting = false;
     private bool _error = false;
     private string _errorMessage = string.Empty;
+    private int _page = 1;
+    private int _pageSize = 10;
+    private int _totalItems = 0;
+
+    private int TotalPages => (int)Math.Ceiling((double)_totalItems / _pageSize);
 
     private IEnumerable<EventViewModel> Events { get; set; } = [];
 
@@ -69,17 +80,16 @@
         _isLoading = true;
         try
         {
-            var result = await EventService.GetEventsAsync(
-            page: 0,
-            pageSize: 100,
+            var result = await EventService.GetEventsOnSaleAsync(
+            page: _page - 1,
+            pageSize: _pageSize,
             sortColumn: null,
             sortDescending: true,
             search: null,
-            filters: null,
-            seasonId: null,
-            onSale: null);
+            filters: null);
 
             Events = result.Items;
+            _totalItems = result.TotalItems;
         }
         catch (Exception)
         {
