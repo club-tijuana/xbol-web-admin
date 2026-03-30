@@ -18,5 +18,14 @@ public interface IEventService
         bool? onSale = null
     );
 
+    Task<GridData<EventViewModel>> GetEventsOnSaleAsync(
+        int page,
+        int pageSize,
+        string? sortColumn,
+        bool sortDescending,
+        string? search = null,
+        EventFilterParameters? filters = null
+    );
+
     Task<List<string>> GetCategoriesAsync();
 }
