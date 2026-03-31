@@ -81,3 +81,7 @@ logs/
 
 # Git worktrees
 .worktrees
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

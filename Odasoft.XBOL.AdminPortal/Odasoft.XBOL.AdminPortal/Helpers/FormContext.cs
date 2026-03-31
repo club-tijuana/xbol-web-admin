@@ -57,7 +57,11 @@ public class FormContext
 
     internal async Task<bool> ValidateAsync()
     {
-        if (_form == null) return false;
+        if (_form == null)
+        {
+            return false;
+        }
+
         await _form.Validate();
         return _form.IsValid;
     }

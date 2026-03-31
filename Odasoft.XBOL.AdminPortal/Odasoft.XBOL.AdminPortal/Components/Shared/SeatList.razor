@@ -88,7 +88,7 @@
 
     private async Task HandleClearAll()
     {
-        ClearFocus();
+        await ClearFocus();
         await OnClearAll.InvokeAsync();
     }
 

@@ -239,7 +239,6 @@
 
     private string _pageTitle = "";
     private bool _isLoading = true;
-    private bool _success = false;
 
     private MudStepper _stepper = null!;
     private MudForm _venueForm = null!;
@@ -293,7 +292,7 @@
             }
 
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             Console.WriteLine("An error occurred while trying to load the venue page.");
             _snackbar.Add("Ocurrio un error al tratar de cargar la pagina, redireccionando a la vista de recintos pirncipal.", Severity.Error);
@@ -308,7 +307,8 @@
     private void GoToVenues()
     {
 
-        _navigationManager.NavigateTo(SitePages.VENUES);
+        var url = venueId.HasValue ? $"{SitePages.VENUES}/{venueId.Value}" : SitePages.VENUES;
+        _navigationManager.NavigateTo(url);
     }
 
     private async Task LoadVenueDataAsync()
