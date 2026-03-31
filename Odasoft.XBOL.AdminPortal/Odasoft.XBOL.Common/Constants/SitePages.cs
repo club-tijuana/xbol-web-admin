@@ -11,6 +11,7 @@ namespace Odasoft.XBOL.Common.Constants
 
         public const string VENUES = "/venues";
         public const string VENUE_CREATE = "/venues/create";
+        public const string VENUE_DETAIL = "/venues";
 
         public const string CLIENTS_LIST = "/clients";
         public const string CLIENTS_CREATE = "/clients/create";

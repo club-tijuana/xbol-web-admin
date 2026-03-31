@@ -201,7 +201,7 @@
                     <th class="mud-table-cell" colspan="@(_orderListFilters.RenovationMode ? 2 : 1)">
                     </th>
                 </tr>
-                @foreach (var seasonPass in context.Item.SeasonPasses)
+                @foreach (var seasonPass in context.Item.SeasonPasses ?? [])
                 {
                     <tr class="mud-table-row">
                         <td class="mud-table-cell mud-table-child-content" colspan="2">

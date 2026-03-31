@@ -202,7 +202,7 @@
         if (isChecked == true)
         {
             var json = JsonSerializer.Serialize(CartState.SelectedSeats);
-            var seats = JsonSerializer.Deserialize<List<SeatInfo>>(json);
+            var seats = JsonSerializer.Deserialize<List<SeatInfo>>(json) ?? [];
             foreach (var item in seats)
             {
                 await AddSeat(item);

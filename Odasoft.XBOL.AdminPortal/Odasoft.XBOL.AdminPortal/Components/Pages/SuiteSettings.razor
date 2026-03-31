@@ -166,7 +166,7 @@
         return new GridData<SuitesViewModel>
         {
             TotalItems = result.TotalCount,
-            Items = result.Items.Select(suite => new SuitesViewModel
+            Items = result.Items?.Select(suite => new SuitesViewModel
             {
                 Id = suite.Id,
                 Name = suite.Name,
