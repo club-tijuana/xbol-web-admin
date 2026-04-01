@@ -1,4 +1,5 @@
 @inject AppLocalizer<EventCard> L
+@inject NavigationManager _navigationManager;
 
 <MudCard Elevation="3" Style="cursor: pointer;" @onclick="@HandleOnClick">
     @if (string.IsNullOrEmpty(Event.PosterImageUrl))
@@ -30,7 +31,51 @@
             </MudItem>
         </MudGrid>
     </MudCardContent>
-</MudCard>
+    @if (ShowActions)
+    {
+        <MudDivider />
+        <MudCardActions>
+            <MudGrid Justify="Justify.SpaceEvenly">
+                <MudItem>
+                    <MudTooltip Text="@L["Edit"]" Placement="Placement.Top">
+                        <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                                       Size="Size.Small"
+                                       Color="Color.Secondary"
+                                       Disabled
+                                       OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/edit"))" />
+                    </MudTooltip>
+                </MudItem>
+                <MudItem>
+                    <MudTooltip Text="@L["Tickets"]" Placement="Placement.Top">
+                        <MudIconButton
+                            Icon="@Icons.Material.Outlined.ShoppingCart" 
+                            Size="Size.Small"
+                            Color="Color.Secondary"
+                            OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/seats"))" />
+                    </MudTooltip>
+                </MudItem>
+                <MudItem>
+                    <MudTooltip Text="@L["Suites"]" Placement="Placement.Top">
+                        <MudIconButton Icon="@Icons.Material.Outlined.LocalActivity"
+                                       Size="Size.Small"
+                                       Color="Color.Secondary"
+                                       Disabled
+                                       OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/suites"))" />
+                    </MudTooltip>
+                </MudItem>
+                <MudItem>
+                    <MudTooltip Text="@L["Availability"]" Placement="Placement.Top">
+                        <MudIconButton
+                            Icon="@Icons.Material.Outlined.Map"
+                            Size="Size.Small"
+                            Color="Color.Secondary"
+                            OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/availability"))" />
+                    </MudTooltip>
+                </MudItem>
+            </MudGrid>
+        </MudCardActions>
+    }
+    </MudCard>
 
 @code {
     [Parameter]
@@ -42,6 +87,9 @@
 
     [Parameter]
     public EventCallback OnClick { get; set; }
+
+    [Parameter]
+    public bool ShowActions { get; set; } = false;
 
     private async Task HandleOnClick()
     {

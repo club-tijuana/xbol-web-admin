@@ -2,7 +2,9 @@
 @inject IStringLocalizer<AdminForm> FormL
 
 <MudDatePicker Date="Date" DateChanged="HandleDateChanged"
-               Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
+               Variant="Variant.Outlined" 
+               Margin="Margin.Dense"
+               DateFormat="dd/MM/yyyy"
                Mask="@(new DateMask("dd/MM/yyyy"))"
                Required="@Required" RequiredError="@FormL["RequiredField"]"
                Validation="@(Field?.ValidationFor<DateTime?>())"

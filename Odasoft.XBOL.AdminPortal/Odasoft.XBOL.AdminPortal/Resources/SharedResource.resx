@@ -543,6 +543,20 @@
   <data name="OrderNotFound" xml:space="preserve">
     <value>No se encontro orden con el numero {0}</value>
   </data>
+  <data name="TabUpcoming" xml:space="preserve">
+    <value>Próximos</value>
+  </data>
+  <data name="TabPast" xml:space="preserve">
+    <value>Pasados</value>
+  </data>
+  <data name="NewEvent" xml:space="preserve">
+    <value>Nuevo evento</value>
+  </data>
+  <data name="Suites" xml:space="preserve">
+    <value>Palcos</value>
+  </data>
+  <data name="PastEvents" xml:space="preserve">
+    <value>Eventos pasados</value>
   <data name="SearchByOrderNumber" xml:space="preserve">
     <value>Buscar por número de orden</value>
   </data>

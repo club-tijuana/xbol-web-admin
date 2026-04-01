@@ -15,6 +15,13 @@ namespace Odasoft.XBOL.Business.Services
             return venues.OrderBy(x => x.Name).ToList();
         }
 
+        public async Task<List<ListItem>> GetVenueMapsByVenueId(long venueId)
+        {
+            var venueMaps = await _adminClient.GetVenueMapCatalogByVenueIdAsync(venueId);
+
+            return venueMaps.OrderBy(x => x.Name).ToList();
+        }
+
         public async Task<List<string>> GetVenueCitiesAsync()
         {
             var venueCities = await _adminClient.GetVenueCitiesCatalogAsync();
