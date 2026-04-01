@@ -15,5 +15,7 @@ namespace Odasoft.XBOL.Common.Constants
 
         public const string CLIENTS_LIST = "/clients";
         public const string CLIENTS_CREATE = "/clients/create";
+
+        public const string SUPPORT = "/support";
     }
 }

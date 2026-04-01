@@ -29,7 +29,7 @@ namespace Odasoft.XBOL.Business.Services
 
         public async Task<OrderRenewalInfoResponse> FindOrder(string orderReference)
         {
-            return await _adminClient.GetOrderDetailsByReferenceAsync(orderReference);
+            return await _adminClient.GetOrderRenawalInfoByReferenceAsync(orderReference);
         }
 
         public async Task<CanRenewOrderResponse> CanOrderBeRenewedAsync(string orderReference)

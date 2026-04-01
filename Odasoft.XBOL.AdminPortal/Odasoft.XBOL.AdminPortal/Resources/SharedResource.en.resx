@@ -543,4 +543,49 @@
   <data name="OrderNotFound" xml:space="preserve">
     <value>Order number {0} not found</value>
   </data>
+  <data name="SearchByOrderNumber" xml:space="preserve">
+    <value>Search by order's number</value>
+  </data>
+  <data name="CancelOrder" xml:space="preserve">
+    <value>Cancel order</value>
+  </data>
+  <data name="CancelWithoutRefund" xml:space="preserve">
+    <value>Cancel without refund</value>
+  </data>
+  <data name="Female" xml:space="preserve">
+    <value>Female</value>
+  </data>
+  <data name="Male" xml:space="preserve">
+    <value>Male</value>
+  </data>
+  <data name="OrderCreated" xml:space="preserve">
+    <value>New order</value>
+  </data>
+  <data name="OrderRenewed" xml:space="preserve">
+    <value>Order renewed</value>
+  </data>
+  <data name="ResendReceipt" xml:space="preserve">
+    <value>Resend receipt</value>
+  </data>
+  <data name="UpdateOrderHolder" xml:space="preserve">
+    <value>Update order's holder</value>
+  </data>
+  <data name="ReissueTickets" xml:space="preserve">
+    <value>Reissue tickets</value>
+  </data>
+  <data name="SendIndividualTickets" xml:space="preserve">
+    <value>Send individual tickets</value>
+  </data>
+  <data name="ResendCourtesyTickets" xml:space="preserve">
+    <value>Resend courtesies</value>
+  </data>
+  <data name="ConvertToDigitalPhysical" xml:space="preserve">
+    <value>Convert digital / physical</value>
+  </data>
+  <data name="CancelTickets" xml:space="preserve">
+    <value>Cancel tickets</value>
+  </data>
+  <data name="Physical" xml:space="preserve">
+    <value>Physical</value>
+  </data>
 </root>
