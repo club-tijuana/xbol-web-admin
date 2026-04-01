@@ -16,7 +16,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         string? search = null,
         EventFilterParameters? filters = null,
         int? seasonId = null,
-        bool? onSale = null)
+        bool? upcoming = null)
     {
         var response = await adminClient.GetEventsAsync(
             venues: filters?.Venues != null && filters.Venues.Count > 0 ? string.Join(",", filters.Venues) : null,
@@ -30,7 +30,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             pageSize: pageSize,
             seasonId: seasonId,
             status: null,
-            onSale: onSale
+            upcoming: upcoming
         );
 
         var items = response.Items?.Select(e => new EventViewModel(
@@ -96,4 +96,11 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         var result = await adminClient.GetCategoriesNamesAsync();
         return result.ToList();
     }
+
+    public async Task<EventResult> CreateEventAsync(CreateEventRequest request) => await adminClient.CreateEventAsync(request);
+
+    public async Task UpdateEventAsync(long id, UpdateEventRequest request) => await adminClient.UpdateEventAsync(id, request);
+
+    public async Task DeleteEventAsync(long id)
+            => await adminClient.DeleteEventAsync(id);
 }

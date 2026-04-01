@@ -4,6 +4,7 @@
 
 <MudTextField T="T" Value="Value" ValueChanged="HandleValueChanged"
               Variant="Variant.Outlined"
+              Margin="Margin.Dense"
               Required="@Required" RequiredError="@FormL["RequiredField"]"
               Validation="@(Field?.ValidationFor<T>())"
               @attributes="AdditionalAttributes" />

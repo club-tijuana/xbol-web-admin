@@ -1,5 +1,6 @@
 using MudBlazor;
 using Odasoft.XBOL.AdminPortal.ViewModels;
+using Odasoft.XBOL.Business;
 
 namespace Odasoft.XBOL.AdminPortal.Services;
 
@@ -15,7 +16,7 @@ public interface IEventService
         string? search = null,
         EventFilterParameters? filters = null,
         int? seasonId = null,
-        bool? onSale = null
+        bool? upcoming = null
     );
 
     Task<GridData<EventViewModel>> GetEventsOnSaleAsync(
@@ -28,4 +29,7 @@ public interface IEventService
     );
 
     Task<List<string>> GetCategoriesAsync();
+    Task<EventResult> CreateEventAsync(CreateEventRequest request);
+    Task UpdateEventAsync(long id, UpdateEventRequest request);
+    Task DeleteEventAsync(long id);
 }

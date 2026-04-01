@@ -75,6 +75,7 @@ builder.Services.AddScoped<IEventService, ApiEventService>();
 builder.Services.AddScoped<ISeasonPassService, SeasonPassService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
 builder.Services.AddScoped<ClientsService>();
+builder.Services.AddScoped<EventScheduleService>();
 
 builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<LoadingState>();
