@@ -64,7 +64,7 @@
                     @foreach (var regionCode in _phoneRegionCodes)
                     {
                         <MudSelectItem T="long?" Value="regionCode.Id">
-                            <MudImage Src="@FlagHelper.GetFlagImageUrl(regionCode.RegionCode ?? "")" Height="15" Elevation="1" ObjectFit="ObjectFit.Fill" /> @($"+{regionCode.DialCode}")
+                            @($"+{regionCode.DialCode} {regionCode.RegionCode}")
                         </MudSelectItem>
                     }
                 </MudSelect>

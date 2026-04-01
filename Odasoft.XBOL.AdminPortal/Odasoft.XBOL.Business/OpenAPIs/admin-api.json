@@ -2719,6 +2719,165 @@
         }
       }
     },
+    "/api/order-actions/{orderId}/action": {
+      "post": {
+        "tags": [
+          "OrderActions"
+        ],
+        "summary": "Performs the specified action on the order identified by the given order ID.",
+        "operationId": "PerformOrderActionAsync",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "description": "The unique identifier of the order on which to perform the action.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "An object containing the details of the action to perform on the order. Cannot be null.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderActionRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderActionRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderActionRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderActionRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/order-actions/{orderId}": {
+      "get": {
+        "tags": [
+          "OrderActions"
+        ],
+        "summary": "Retrieves the list of available actions and logs associated with the specified order.",
+        "operationId": "GetOrderActionsAsync",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "description": "The unique identifier of the order for which to retrieve actions and logs.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderActionResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderActionResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderActionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/orders": {
       "post": {
         "tags": [
@@ -2841,7 +3000,7 @@
           "Orders"
         ],
         "summary": "Retrieves the information of the order to be renewed and to display the information that order.",
-        "operationId": "GetOrderDetailsByReferenceAsync",
+        "operationId": "GetOrderRenawalInfoByReferenceAsync",
         "parameters": [
           {
             "name": "orderReference",
@@ -2870,6 +3029,68 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderRenewalInfoResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/info/{orderReference}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Retrieves detailed information about an order using the specified order reference.",
+        "operationId": "GetOrderInfoByReferenceAsync",
+        "parameters": [
+          {
+            "name": "orderReference",
+            "in": "path",
+            "description": "The unique reference identifier of the order to retrieve information for. Cannot be null or empty.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderInfoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderInfoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderInfoResponse"
                 }
               }
             }
@@ -6744,6 +6965,19 @@
             "type": "string",
             "nullable": true
           },
+          "gender": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ],
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "email": {
             "type": "string",
             "nullable": true
@@ -7021,6 +7255,19 @@
           "companyName": {
             "minLength": 1,
             "type": "string"
+          },
+          "gender": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ],
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           },
           "socialReason": {
             "type": "string",
@@ -7678,6 +7925,13 @@
         ],
         "type": "string"
       },
+      "Gender": {
+        "enum": [
+          "Female",
+          "Male"
+        ],
+        "type": "string"
+      },
       "HoldSeatsRequest": {
         "required": [
           "saleType",
@@ -7964,6 +8218,180 @@
         ],
         "type": "string"
       },
+      "OrderAction": {
+        "enum": [
+          "OrderCreated",
+          "OrderRenewed",
+          "CancelOrder",
+          "CancelWithoutRefund",
+          "ResendReceipt",
+          "UpdateOrderHolder",
+          "ReissueTickets",
+          "SendIndiviualTickets",
+          "ResendCourtesyTickets",
+          "ConvertToDigitalPyshical",
+          "CancelTickets"
+        ],
+        "type": "string"
+      },
+      "OrderActionRequest": {
+        "required": [
+          "action",
+          "actionName",
+          "changeToDigital",
+          "comments",
+          "newEmail",
+          "seats"
+        ],
+        "type": "object",
+        "properties": {
+          "seats": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderAction"
+              }
+            ]
+          },
+          "actionName": {
+            "type": "string"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "changeToDigital": {
+            "type": "boolean"
+          },
+          "newEmail": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderActionResponse": {
+        "required": [
+          "action",
+          "actionName",
+          "comments",
+          "createdAt",
+          "orderId",
+          "seats"
+        ],
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "seats": {
+            "type": "string"
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderAction"
+              }
+            ]
+          },
+          "actionName": {
+            "type": "string"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderInfoResponse": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderType"
+              }
+            ]
+          },
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PayformType"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            ]
+          },
+          "reference": {
+            "type": "string"
+          },
+          "orderDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "itemQuantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "seller": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "paymentMethod": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemResponse"
+            }
+          },
+          "event": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientName": {
+            "type": "string"
+          },
+          "dialCode": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "OrderItemResponse": {
         "type": "object",
         "properties": {
@@ -7989,12 +8417,21 @@
           "seat": {
             "type": "string"
           },
-          "isSold": {
+          "isDigital": {
+            "type": "boolean"
+          },
+          "isCancelled": {
             "type": "boolean"
           },
           "price": {
             "type": "number",
             "format": "decimal"
+          },
+          "isCourtesy": {
+            "type": "boolean"
+          },
+          "isSold": {
+            "type": "boolean"
           },
           "renewalPrice": {
             "type": "number",
@@ -8262,6 +8699,29 @@
           }
         },
         "additionalProperties": false
+      },
+      "OrderStatus": {
+        "enum": [
+          "Pending",
+          "Paid",
+          "Cancelled",
+          "Refunded"
+        ],
+        "type": "string"
+      },
+      "OrderType": {
+        "enum": [
+          "Ticket",
+          "SeasonPass"
+        ],
+        "type": "string"
+      },
+      "PayformType": {
+        "enum": [
+          "Online",
+          "BoxOffice"
+        ],
+        "type": "string"
       },
       "PaymentFrequency": {
         "enum": [
@@ -8562,7 +9022,8 @@
       "SeasonPassStatus": {
         "enum": [
           "Active",
-          "Suspended"
+          "Suspended",
+          "Cancelled"
         ],
         "type": "string"
       },
@@ -9105,6 +9566,19 @@
             "type": "string",
             "nullable": true
           },
+          "gender": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ],
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "hasCredit": {
             "type": "boolean"
           },
@@ -9607,6 +10081,9 @@
     },
     {
       "name": "LegalRepresentatives"
+    },
+    {
+      "name": "OrderActions"
     },
     {
       "name": "Orders"
