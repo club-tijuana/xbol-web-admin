@@ -246,6 +246,15 @@
   <data name="GoBack" xml:space="preserve">
     <value>Go back</value>
   </data>
+  <data name="Block" xml:space="preserve">
+    <value>Block</value>
+  </data>
+  <data name="Unblock" xml:space="preserve">
+    <value>Unblock</value>
+  </data>
+  <data name="Sell" xml:space="preserve">
+    <value>Sell</value>
+  </data>
   <data name="History" xml:space="preserve">
     <value>History</value>
   </data>
@@ -557,6 +566,7 @@
   </data>
   <data name="PastEvents" xml:space="preserve">
     <value>Past events</value>
+  </data>
   <data name="SearchByOrderNumber" xml:space="preserve">
     <value>Search by order's number</value>
   </data>
@@ -601,5 +611,8 @@
   </data>
   <data name="Physical" xml:space="preserve">
     <value>Physical</value>
+  </data>
+  <data name="Support" xml:space="preserve">
+    <value>Support</value>
   </data>
 </root>

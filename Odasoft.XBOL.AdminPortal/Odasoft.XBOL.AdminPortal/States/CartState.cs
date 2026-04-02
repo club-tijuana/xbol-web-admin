@@ -177,6 +177,9 @@ namespace Odasoft.XBOL.AdminPortal.States
         public string? Category { get; set; }
         public bool? IsSold { get; set; }
         public bool IsSelected { get; set; }
+        public bool ForSale { get; set; }
+        public string? Reason { get; set; }
+        public string? Color { get; set; }
         public long? SourceOrderItemId { get; set; }
     }
 }

@@ -18,14 +18,13 @@
         }
 
         @if (OrderAction == OrderAction.ResendReceipt
-            || OrderAction == OrderAction.ReissueTickets
-            || OrderAction == OrderAction.SendIndiviualTickets
+            || OrderAction == OrderAction.SendIndividualTickets
             || OrderAction == OrderAction.ResendCourtesyTickets)
         {
             <MudTextField @bind-Value="_email" Label="Correo electrónico" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
         }
 
-        @if (OrderAction == OrderAction.ConvertToDigitalPyshical)
+        @if (OrderAction == OrderAction.ConvertToDigitalPhysical)
         {
             <MudRadioGroup @bind-Value="_convertToDigital">
                 <MudRadio Value="false" Color="Color.Primary">
@@ -40,21 +39,20 @@
     <DialogActions>
         <div class="d-flex justify-center w-100 pa-4">
             @if (OrderAction == OrderAction.CancelOrder
-                || OrderAction == OrderAction.CancelWithoutRefund
-                || OrderAction == OrderAction.CancelTickets)
+                || OrderAction == OrderAction.CancelWithoutRefund)
             {
-                <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Cancel" OnClick="Submit">CANCELAR ORDEN</MudButton>
+                <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete" OnClick="Submit">CANCELAR ORDEN</MudButton>
             }
 
             @if (OrderAction == OrderAction.ResendReceipt
                 || OrderAction == OrderAction.ReissueTickets
-                || OrderAction == OrderAction.SendIndiviualTickets
+                || OrderAction == OrderAction.SendIndividualTickets
                 || OrderAction == OrderAction.ResendCourtesyTickets)
             {
                 <MudButton Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Send" OnClick="Submit">ENVIAR</MudButton>
             }
 
-            @if (OrderAction == OrderAction.ConvertToDigitalPyshical)
+            @if (OrderAction == OrderAction.ConvertToDigitalPhysical)
             {
                 <MudButton Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save" OnClick="Submit">GUARDAR</MudButton>
             }
@@ -94,7 +92,7 @@
 
         if (OrderAction == OrderAction.ResendReceipt
             || OrderAction == OrderAction.ReissueTickets
-            || OrderAction == OrderAction.SendIndiviualTickets
+            || OrderAction == OrderAction.SendIndividualTickets
             || OrderAction == OrderAction.ResendCourtesyTickets)
         {
             if (string.IsNullOrWhiteSpace(_email))

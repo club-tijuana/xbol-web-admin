@@ -306,7 +306,6 @@
 
     private void GoToVenues()
     {
-
         var url = venueId.HasValue ? $"{SitePages.VENUES}/{venueId.Value}" : SitePages.VENUES;
         _navigationManager.NavigateTo(url);
     }

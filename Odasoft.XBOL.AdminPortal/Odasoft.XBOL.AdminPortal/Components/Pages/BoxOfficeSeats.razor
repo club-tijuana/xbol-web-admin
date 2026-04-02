@@ -38,7 +38,7 @@
                         <MudStack Row>
                             <MudText  Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600
 ;">@_eventInfo.VenueName</MudText>
-                            <MudText Typo="Typo.body1">@_eventInfo.ScheduledStartDate?.ToString("dd/MM/yyyy h:mm tt")</MudText>
+                            <MudText Typo="Typo.body1">@_eventScheduleInfo.StartDateTime.ToString("dd/MM/yyyy h:mm tt")</MudText>
                         </MudStack>
                     </MudStack>
                     <MudButton Variant="Variant.Filled"
@@ -81,6 +81,7 @@
     private int _currentStep = 1;
 
     private EventInfoDTO? _eventInfo;
+    private EventScheduleDTO _eventScheduleInfo;
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,8 +99,9 @@
         try
         {
             _eventInfo = await AdminClient.GetEventByIdAsync(Id);
+            _eventScheduleInfo = _eventInfo.Schedules.First();
             _eventName = _eventInfo.Name ?? string.Empty;
-            _eventKey = _eventInfo.ExternalEventKey ?? string.Empty;
+            _eventKey = _eventScheduleInfo.ExternalEventKey ?? string.Empty;
             _secretKey = SeatsOptions.Value.SecretKey;
 
             CartState.SetEvent(Id);

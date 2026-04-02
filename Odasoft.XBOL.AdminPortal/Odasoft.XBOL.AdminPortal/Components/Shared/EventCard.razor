@@ -69,7 +69,7 @@
                             Icon="@Icons.Material.Outlined.Map"
                             Size="Size.Small"
                             Color="Color.Secondary"
-                            OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/availability"))" />
+                            OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/key/{Event.ExternalEventKey}/availability"))" />
                     </MudTooltip>
                 </MudItem>
             </MudGrid>

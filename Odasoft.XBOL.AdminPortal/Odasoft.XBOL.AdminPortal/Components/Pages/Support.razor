@@ -180,6 +180,7 @@
 
         _orderId = searchResult.OrderId;
         _orderInfoResponse = searchResult;
+        _orderInfo.Clear();
         _orderInfo.Add(searchResult);
         _orderItems = searchResult.Items?.Count() > 0 ? searchResult.Items.ToList() : [];
         _activeTabIndex = 0;
@@ -214,6 +215,7 @@
                 if (_orderInfoResponse.ClientId.HasValue)
                 {
                     await _clientService.UpdateClientAsync(_orderInfoResponse.ClientId.Value, clientRequest);
+                    _selectedItems.Clear();
                     await PerformOrderActionAsync(OrderAction.UpdateOrderHolder);
                     await SearchOrderAsync();
 
@@ -232,6 +234,7 @@
 
     private async Task CancelOrderAsync()
     {
+        _selectedItems.Clear();
         bool? result = await OpenOrderActionDialogAsync(OrderAction.CancelOrder);
 
         if (result.HasValue)
@@ -239,6 +242,7 @@
             if (result.Value)
             {
                 _snackbar.Add("La orden ha sido cancelada.", Severity.Success);
+                await SearchOrderAsync();
                 return;
             }
 
@@ -248,6 +252,7 @@
 
     private async Task CancelOrderWithoutRefundAsync()
     {
+        _selectedItems.Clear();
         bool? result = await OpenOrderActionDialogAsync(OrderAction.CancelWithoutRefund);
 
         if (result.HasValue)
@@ -255,6 +260,7 @@
             if (result.Value)
             {
                 _snackbar.Add("La orden ha sido cancelada.", Severity.Success);
+                await SearchOrderAsync();
                 return;
             }
 
@@ -264,6 +270,7 @@
 
     private async Task ResendReceiptAsync()
     {
+        _selectedItems.Clear();
         bool? result = await OpenOrderActionDialogAsync(OrderAction.ResendReceipt);
 
         if (result.HasValue)
@@ -271,6 +278,7 @@
             if (result.Value)
             {
                 _snackbar.Add("El recibo ha sido reenviado.", Severity.Success);
+                await SearchOrderAsync();
                 return;
             }
 
@@ -295,7 +303,7 @@
 
     private async Task SendTicketsAsync()
     {
-        bool? result = await OpenOrderActionDialogAsync(OrderAction.SendIndiviualTickets);
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.SendIndividualTickets);
 
         if (result.HasValue)
         {
@@ -329,7 +337,7 @@
 
     private async Task ConvertTicketsAsync()
     {
-        bool? result = await OpenOrderActionDialogAsync(OrderAction.ConvertToDigitalPyshical);
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.ConvertToDigitalPhysical);
 
         if (result.HasValue)
         {

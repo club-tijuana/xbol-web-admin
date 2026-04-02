@@ -509,10 +509,10 @@
 
     private void GoToCheckoutSeasonpass()
     {
-        if (_orderListFilters.SeasonId is null)
+        if (_orderListFilters.SeasonId is null || _selectedSeason.ExternalSeasonKey is null)
             return;
 
-        NavigationManager.NavigateTo($"/xolopass/checkout/{_selectedSeason.Id}");
+        NavigationManager.NavigateTo($"/xolopass/{_selectedSeason.Id}/key/{_selectedSeason.ExternalSeasonKey}/booking");
     }
 
     private void OnRenewClick(OrderListItem item)
