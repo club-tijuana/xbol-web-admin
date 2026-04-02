@@ -34,10 +34,10 @@
     }
 
     [JSInvokable]
-    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null)
+    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null, bool forSale = true, string? reason = null, string? color = null)
     {
         if (OnSeatSelected.HasDelegate)
-            await OnSeatSelected.InvokeAsync(new SeatInfo { SeatId = seatId, Price = price, Category = category });
+            await OnSeatSelected.InvokeAsync(new SeatInfo { SeatId = seatId, Price = price, Category = category, ForSale = forSale, Reason = reason, Color = color });
     }
 
     [JSInvokable]

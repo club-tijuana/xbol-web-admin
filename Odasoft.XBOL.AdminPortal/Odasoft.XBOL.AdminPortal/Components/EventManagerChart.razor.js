@@ -42,12 +42,21 @@ export async function renderChart(containerId, config, dotNetHelper) {
     event: config.event,
     language: config.language,
     mode: config.mode,
+    objectColor: (obj, defaultColor, extraConfig) => {
+      if (!obj.forSale && obj.extraData?.color) {
+        return obj.extraData.color;
+      }
+      return defaultColor;
+    },
     onObjectSelected: (obj) => {
       dotNetHelper.invokeMethodAsync(
         "HandleSeatSelected",
         obj.id,
         obj.pricing?.price ?? 0,
         obj.category?.label,
+        obj.forSale ?? true,
+        obj.extraData?.reason ?? null,
+        obj.extraData?.color ?? null,
       );
     },
     onObjectDeselected: (obj) => {

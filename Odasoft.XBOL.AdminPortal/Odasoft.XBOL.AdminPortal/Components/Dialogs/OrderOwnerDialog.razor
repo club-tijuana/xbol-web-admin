@@ -80,6 +80,8 @@
         _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
         ClientDetailResult client = await _clientsService.GetClientDetailsAsync(ClientId);
 
+        _dob = client.DateOfBirth?.DateTime ?? null;
+
         _clientRequest = new UpdateClientRequest
         {
             PhoneRegionCodeId = client.PhoneRegionCodeId,
@@ -100,7 +102,6 @@
             Rfc = client.TaxId,
             SocialReason = client.BusinessName,
             State = client.State
-
         };
     }
 

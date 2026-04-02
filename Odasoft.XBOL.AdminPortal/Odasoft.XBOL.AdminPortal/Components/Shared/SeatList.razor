@@ -37,7 +37,13 @@
                          Class="@($"order-item{(item.SeatId == _focusedSeatId ? " selected" : "")} py-1 pl-4 pr-3")" Value="@item"
                          OnClick="@(() => HandleFocus(item.SeatId))">
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
+                        @if (RowStatusContent != null)
+                        {
+                            @RowStatusContent(item)
+                        }
+                    </MudStack>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                         @if (RowActionContent != null)
                         {
@@ -68,6 +74,9 @@
     public EventCallback OnClearAll { get; set; }
 
     [Parameter]
+    public RenderFragment<SeatInfo>? RowStatusContent { get; set; }
+
+    [Parameter]
     public RenderFragment<SeatInfo>? RowActionContent { get; set; }
 
     [Parameter]
@@ -88,7 +97,7 @@
 
     private async Task HandleClearAll()
     {
-        await ClearFocus();
+        ClearFocus();
         await OnClearAll.InvokeAsync();
     }
 

@@ -60,7 +60,7 @@
                                         <MudSelect T="string" Label="@_localizer["City"]" MultiSelection="true"
                                                    Margin="Margin.Dense" @bind-SelectedValues="_selectedCities"
                                                    Variant="Variant.Outlined" ShrinkLabel>
-                                            @foreach (var city in _selectedCities)
+                                            @foreach (var city in _cities)
                                             {
                                                 <MudSelectItem T="string" Value="@city">
                                                     <MudText Typo="Typo.body2">@city.ToUpper()</MudText>

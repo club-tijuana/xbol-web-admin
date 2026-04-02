@@ -10,8 +10,9 @@ public record EventViewModel(
     string Venue,
     int Available,
     int Total,
-    string PosterImageUrl,
-    bool? IsSeason
+    string? ExternalEventKey,
+    string? PosterImageUrl = null,
+    bool? IsSeason = null
 )
 {
     public string Availability => $"{Available:D3}/{Total:D3}";

@@ -11,10 +11,10 @@
           "Accounts"
         ],
         "summary": "Registers a new user account using the specified registration details.",
-        "description": "This method creates a new user account with the provided credentials. The\r\n            registration may fail if the user name or email address is already in use, or if the password does not meet\r\n            the required criteria. The response does not include detailed error information; for more granular feedback,\r\n            consider extending the response model.",
+        "description": "This method creates a new user account with the provided credentials. The\n            registration may fail if the user name or email address is already in use, or if the password does not meet\n            the required criteria. The response does not include detailed error information; for more granular feedback,\n            consider extending the response model.",
         "operationId": "CreateUserAsync",
         "requestBody": {
-          "description": "An object containing the user registration information, including user name, email address, and password.\r\n            Cannot be null.",
+          "description": "An object containing the user registration information, including user name, email address, and password.\n            Cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -84,10 +84,10 @@
           "Bookings"
         ],
         "summary": "Books seats for an event based on the provided booking request.",
-        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\r\n            codes based on the outcome of the booking request.",
+        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\n            codes based on the outcome of the booking request.",
         "operationId": "BookEventSeatsAsync",
         "requestBody": {
-          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\r\n            cannot be null.",
+          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\n            cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -197,7 +197,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/bookings/season/book-season": {
@@ -206,10 +207,10 @@
           "Bookings"
         ],
         "summary": "Books seats for an event based on the provided booking request.",
-        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\r\n            codes based on the outcome of the booking request.",
+        "description": "This method processes the booking asynchronously and returns appropriate HTTP status\n            codes based on the outcome of the booking request.",
         "operationId": "BookSeasonSeatsAsync",
         "requestBody": {
-          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\r\n            cannot be null.",
+          "description": "The event booking request containing details such as event ID and number of seats to book. This parameter\n            cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -319,7 +320,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/categories/names": {
@@ -328,7 +330,7 @@
           "Categories"
         ],
         "summary": "Retrieves a collection of category names.",
-        "description": "Use this method to obtain a list of category names for display in user interfaces or\r\n            for reporting purposes. The returned collection does not include additional category details beyond the\r\n            name.",
+        "description": "Use this method to obtain a list of category names for display in user interfaces or\n            for reporting purposes. The returned collection does not include additional category details beyond the\n            name.",
         "operationId": "GetCategoriesNamesAsync",
         "responses": {
           "200": {
@@ -439,7 +441,7 @@
           "Clients"
         ],
         "summary": "Searches for client contacts using the specified phone number or email address.",
-        "description": "If both phone and email are null or empty, the request returns a BadRequest response\r\n            indicating that at least one search parameter must be specified.",
+        "description": "If both phone and email are null or empty, the request returns a BadRequest response\n            indicating that at least one search parameter must be specified.",
         "operationId": "SearchClientAsync",
         "parameters": [
           {
@@ -538,7 +540,7 @@
           "Clients"
         ],
         "summary": "Asynchronously retrieves a paginated list of clients that match the specified query parameters.",
-        "description": "Use this method to obtain a subset of clients based on filtering and pagination\r\n            options. Ensure that the query parameters are set appropriately to retrieve the desired results.",
+        "description": "Use this method to obtain a subset of clients based on filtering and pagination\n            options. Ensure that the query parameters are set appropriately to retrieve the desired results.",
         "operationId": "GetClientsAsync",
         "parameters": [
           {
@@ -624,10 +626,10 @@
           "Clients"
         ],
         "summary": "Creates a new client using the specified request data.",
-        "description": "This method is asynchronous and processes the client creation request using the\r\n            injected client service. Ensure that the request data is valid to avoid errors during processing.",
+        "description": "This method is asynchronous and processes the client creation request using the\n            injected client service. Ensure that the request data is valid to avoid errors during processing.",
         "operationId": "CreateClientAsync",
         "requestBody": {
-          "description": "The request object containing the information required to create a new client. This parameter must not be\r\n            null.",
+          "description": "The request object containing the information required to create a new client. This parameter must not be\n            null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -697,7 +699,7 @@
           "Clients"
         ],
         "summary": "Retrieves the details of a client specified by the unique client identifier.",
-        "description": "This method asynchronously obtains client details from the client service. Ensure\r\n            that the provided client ID is valid and exists in the system.",
+        "description": "This method asynchronously obtains client details from the client service. Ensure\n            that the provided client ID is valid and exists in the system.",
         "operationId": "GetClientDetailById",
         "parameters": [
           {
@@ -761,7 +763,7 @@
           "Clients"
         ],
         "summary": "Updates the client information for the specified client identifier with the provided data.",
-        "description": "This method performs an asynchronous update operation. If the update fails, an error\r\n            message is returned indicating that the client could not be updated.",
+        "description": "This method performs an asynchronous update operation. If the update fails, an error\n            message is returned indicating that the client could not be updated.",
         "operationId": "UpdateClientAsync",
         "parameters": [
           {
@@ -847,7 +849,7 @@
           "Clients"
         ],
         "summary": "Deletes the client with the specified identifier.",
-        "description": "This method is asynchronous. If the specified client does not exist, a 404 Not Found\r\n            response is returned.",
+        "description": "This method is asynchronous. If the specified client does not exist, a 404 Not Found\n            response is returned.",
         "operationId": "DeleteClientAsync",
         "parameters": [
           {
@@ -897,7 +899,7 @@
           "Clients"
         ],
         "summary": "Generates and returns a CSV file containing client information for the specified client IDs.",
-        "description": "Use this endpoint to export client records as a CSV file for the provided client IDs.\r\n            The response includes a UTF-8 encoded CSV file named 'clients.csv'. Ensure that the client IDs correspond to\r\n            existing clients to receive data.",
+        "description": "Use this endpoint to export client records as a CSV file for the provided client IDs.\n            The response includes a UTF-8 encoded CSV file named 'clients.csv'. Ensure that the client IDs correspond to\n            existing clients to receive data.",
         "operationId": "DownloadClientsCsvAsync",
         "requestBody": {
           "description": "A list of client IDs for which to retrieve and export client data. Cannot be null or empty.",
@@ -980,8 +982,8 @@
         "tags": [
           "Clients"
         ],
-        "summary": "Retrieves a list of available credit status options, each represented by an integer value and a localized\r\nlabel.",
-        "description": "The returned labels are localized according to the current culture, enabling\r\n            appropriate display in different languages. The list is generated from the Odasoft.XBOL.Commons.Enums.CreditStatus\r\n            enumeration, ensuring that all defined statuses are included.",
+        "summary": "Retrieves a list of available credit status options, each represented by an integer value and a localized\nlabel.",
+        "description": "The returned labels are localized according to the current culture, enabling\n            appropriate display in different languages. The list is generated from the Odasoft.XBOL.Commons.Enums.CreditStatus\n            enumeration, ensuring that all defined statuses are included.",
         "operationId": "GetCreditStatusList",
         "responses": {
           "200": {
@@ -1022,7 +1024,7 @@
           "Clients"
         ],
         "summary": "Retrieves a list of available client types, each represented by an integer value and a localized label.",
-        "description": "The labels for each client type are localized based on the current culture using the\r\n            application's localization resources. This method is intended to provide user-friendly, culture-aware\r\n            options for client type selection in user interfaces.",
+        "description": "The labels for each client type are localized based on the current culture using the\n            application's localization resources. This method is intended to provide user-friendly, culture-aware\n            options for client type selection in user interfaces.",
         "operationId": "GetClientTypeList",
         "responses": {
           "200": {
@@ -1062,8 +1064,8 @@
         "tags": [
           "Clients"
         ],
-        "summary": "Retrieves a list of available payment frequency options, each represented by an integer value and a\r\nlocalized label.",
-        "description": "The labels for each payment frequency are localized according to the current culture,\r\n            ensuring that the returned text is appropriate for the user's language settings. The list is generated from\r\n            the PaymentFrequency enumeration.",
+        "summary": "Retrieves a list of available payment frequency options, each represented by an integer value and a\nlocalized label.",
+        "description": "The labels for each payment frequency are localized according to the current culture,\n            ensuring that the returned text is appropriate for the user's language settings. The list is generated from\n            the PaymentFrequency enumeration.",
         "operationId": "GetPaymentFrequencyList",
         "responses": {
           "200": {
@@ -1332,7 +1334,7 @@
           "CreditAccounts"
         ],
         "summary": "Retrieves a paginated list of credit orders that match the specified query parameters.",
-        "description": "This method is asynchronous and returns an HTTP 200 response with the paginated\r\n            results if successful. Ensure that the provided query parameters are valid to avoid unexpected\r\n            results.",
+        "description": "This method is asynchronous and returns an HTTP 200 response with the paginated\n            results if successful. Ensure that the provided query parameters are valid to avoid unexpected\n            results.",
         "operationId": "GetCreditOrdersAsync",
         "parameters": [
           {
@@ -1437,7 +1439,7 @@
           "CreditTransactions"
         ],
         "summary": "Retrieves a paged list of credit transactions that match the specified query parameters.",
-        "description": "This method is asynchronous and may take additional time to complete depending on the\r\n            number of transactions and the complexity of the query parameters.",
+        "description": "This method is asynchronous and may take additional time to complete depending on the\n            number of transactions and the complexity of the query parameters.",
         "operationId": "GetCreditTransactionsAsync",
         "parameters": [
           {
@@ -1816,7 +1818,7 @@
           {
             "name": "venues",
             "in": "query",
-            "description": "A comma-separated list of venue identifiers used to filter events by their associated venues. If null or\r\n            empty, events from all venues are included.",
+            "description": "A comma-separated list of venue identifiers used to filter events by their associated venues. If null or\n            empty, events from all venues are included.",
             "schema": {
               "type": "string"
             }
@@ -1824,7 +1826,7 @@
           {
             "name": "categories",
             "in": "query",
-            "description": "A comma-separated list of category identifiers used to filter events by their associated categories. If null\r\n            or empty, events from all categories are included.",
+            "description": "A comma-separated list of category identifiers used to filter events by their associated categories. If null\n            or empty, events from all categories are included.",
             "schema": {
               "type": "string"
             }
@@ -1832,7 +1834,7 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "The start date and time for filtering events. Only events occurring on or after this date are included. If\r\n            null, no lower date bound is applied.",
+            "description": "The start date and time for filtering events. Only events occurring on or after this date are included. If\n            null, no lower date bound is applied.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -1841,7 +1843,7 @@
           {
             "name": "endDate",
             "in": "query",
-            "description": "The end date and time for filtering events. Only events occurring on or before this date are included. If\r\n            null, no upper date bound is applied.",
+            "description": "The end date and time for filtering events. Only events occurring on or before this date are included. If\n            null, no upper date bound is applied.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -1850,7 +1852,7 @@
           {
             "name": "search",
             "in": "query",
-            "description": "A search term used to filter events by their title or description. If null or empty, no search filtering is\r\n            applied.",
+            "description": "A search term used to filter events by their title or description. If null or empty, no search filtering is\n            applied.",
             "schema": {
               "type": "string"
             }
@@ -1858,7 +1860,7 @@
           {
             "name": "sortBy",
             "in": "query",
-            "description": "The property name by which to sort the events. Valid options include 'date', 'name', and others supported by\r\n            the API. If null or empty, a default sort order is applied.",
+            "description": "The property name by which to sort the events. Valid options include 'date', 'name', and others supported by\n            the API. If null or empty, a default sort order is applied.",
             "schema": {
               "type": "string"
             }
@@ -1866,7 +1868,7 @@
           {
             "name": "descending",
             "in": "query",
-            "description": "Indicates whether the sorting should be in descending order. If true, results are sorted in descending\r\n            order; otherwise, ascending order is used. If null, the default sort direction is applied.",
+            "description": "Indicates whether the sorting should be in descending order. If true, results are sorted in descending\n            order; otherwise, ascending order is used. If null, the default sort direction is applied.",
             "schema": {
               "type": "boolean"
             }
@@ -1874,7 +1876,7 @@
           {
             "name": "page",
             "in": "query",
-            "description": "The page number of results to retrieve. Must be a positive integer if specified. If null, the first page is\r\n            returned.",
+            "description": "The page number of results to retrieve. Must be a positive integer if specified. If null, the first page is\n            returned.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1883,7 +1885,7 @@
           {
             "name": "pageSize",
             "in": "query",
-            "description": "The number of events to include per page. Must be a positive integer if specified. If null, a default page\r\n            size is used.",
+            "description": "The number of events to include per page. Must be a positive integer if specified. If null, a default page\n            size is used.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1901,7 +1903,7 @@
           {
             "name": "status",
             "in": "query",
-            "description": "The status value used to filter events (such as Active, Cancelled, etc.). If null, events of all statuses\r\n            are included.",
+            "description": "The status value used to filter events (such as Active, Cancelled, etc.). If null, events of all statuses\n            are included.",
             "schema": {
               "allOf": [
                 {
@@ -1947,10 +1949,10 @@
           "Events"
         ],
         "summary": "Creates a new event using the specified request data and returns the result of the operation.",
-        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\r\n            successful creation, a 201 Created response is returned with the location of the newly created event. If\r\n            the creation fails, a 422 Unprocessable Entity response is returned.",
+        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\n            successful creation, a 201 Created response is returned with the location of the newly created event. If\n            the creation fails, a 422 Unprocessable Entity response is returned.",
         "operationId": "CreateEventAsync",
         "requestBody": {
-          "description": "The request object containing the details required to create a new event. Must not be null and must satisfy\r\n            model validation requirements.",
+          "description": "The request object containing the details required to create a new event. Must not be null and must satisfy\n            model validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -2058,7 +2060,7 @@
           "Events"
         ],
         "summary": "Updates the details of an existing event identified by its unique identifier.",
-        "description": "The method validates the input model state before attempting to update the event. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
+        "description": "The method validates the input model state before attempting to update the event. If\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\n            UnprocessableEntity response is returned.",
         "operationId": "UpdateEventAsync",
         "parameters": [
           {
@@ -2174,7 +2176,7 @@
           {
             "name": "venues",
             "in": "query",
-            "description": "A comma-separated list of venue identifiers used to filter events by their associated venues. If null or\r\n             empty, events from all venues are included.",
+            "description": "A comma-separated list of venue identifiers used to filter events by their associated venues. If null or\n             empty, events from all venues are included.",
             "schema": {
               "type": "string"
             }
@@ -2182,7 +2184,7 @@
           {
             "name": "categories",
             "in": "query",
-            "description": "A comma-separated list of category identifiers used to filter events by their associated categories. If null\r\n             or empty, events from all categories are included.",
+            "description": "A comma-separated list of category identifiers used to filter events by their associated categories. If null\n             or empty, events from all categories are included.",
             "schema": {
               "type": "string"
             }
@@ -2190,7 +2192,7 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "The start date and time for filtering events. Only events occurring on or after this date are included. If\r\n             null, no lower date bound is applied.",
+            "description": "The start date and time for filtering events. Only events occurring on or after this date are included. If\n             null, no lower date bound is applied.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -2199,7 +2201,7 @@
           {
             "name": "endDate",
             "in": "query",
-            "description": "The end date and time for filtering events. Only events occurring on or before this date are included. If\r\n             null, no upper date bound is applied.",
+            "description": "The end date and time for filtering events. Only events occurring on or before this date are included. If\n             null, no upper date bound is applied.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -2208,7 +2210,7 @@
           {
             "name": "search",
             "in": "query",
-            "description": "A search term used to filter events by their title or description. If null or empty, no search filtering is\r\n             applied.",
+            "description": "A search term used to filter events by their title or description. If null or empty, no search filtering is\n             applied.",
             "schema": {
               "type": "string"
             }
@@ -2216,7 +2218,7 @@
           {
             "name": "sortBy",
             "in": "query",
-            "description": "The property name by which to sort the events. Valid options include 'date', 'name', and others supported by\r\n             the API. If null or empty, a default sort order is applied.",
+            "description": "The property name by which to sort the events. Valid options include 'date', 'name', and others supported by\n             the API. If null or empty, a default sort order is applied.",
             "schema": {
               "type": "string"
             }
@@ -2224,7 +2226,7 @@
           {
             "name": "descending",
             "in": "query",
-            "description": "Indicates whether the sorting should be in descending order. If true, results are sorted in descending\r\n             order; otherwise, ascending order is used. If null, the default sort direction is applied.",
+            "description": "Indicates whether the sorting should be in descending order. If true, results are sorted in descending\n             order; otherwise, ascending order is used. If null, the default sort direction is applied.",
             "schema": {
               "type": "boolean"
             }
@@ -2232,7 +2234,7 @@
           {
             "name": "page",
             "in": "query",
-            "description": "The page number of results to retrieve. Must be a positive integer if specified. If null, the first page is\r\n             returned.",
+            "description": "The page number of results to retrieve. Must be a positive integer if specified. If null, the first page is\n             returned.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -2241,7 +2243,7 @@
           {
             "name": "pageSize",
             "in": "query",
-            "description": "The number of events to include per page. Must be a positive integer if specified. If null, a default page\r\n             size is used.",
+            "description": "The number of events to include per page. Must be a positive integer if specified. If null, a default page\n             size is used.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -2278,7 +2280,7 @@
           "Events"
         ],
         "summary": "Retrieves the event details for the specified event identifier.",
-        "description": "This method asynchronously fetches event information from the event service. If the\r\n            event is not found, a 404 response is returned.",
+        "description": "This method asynchronously fetches event information from the event service. If the\n            event is not found, a 404 response is returned.",
         "operationId": "GetEventByIdAsync",
         "parameters": [
           {
@@ -2382,13 +2384,13 @@
           "Events"
         ],
         "summary": "Deletes the event identified by the specified unique identifier.",
-        "description": "This method does not delete a event if the specified identifier does not match any\r\n            existing event.",
+        "description": "This method does not delete a event if the specified identifier does not match any\n            existing event.",
         "operationId": "DeleteEventAsync",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "The unique identifier of the event to delete. Must be a valid long integer corresponding to an existing\r\n            event.",
+            "description": "The unique identifier of the event to delete. Must be a valid long integer corresponding to an existing\n            event.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -2490,10 +2492,10 @@
           "EventSchedule"
         ],
         "summary": "Creates a new event schedule using the specified request data and returns the result of the operation.",
-        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\r\n            successful creation, a 201 Created response is returned with the location of the newly created event schedule. If\r\n            the creation fails, a 422 Unprocessable Entity response is returned.",
+        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\n            successful creation, a 201 Created response is returned with the location of the newly created event schedule. If\n            the creation fails, a 422 Unprocessable Entity response is returned.",
         "operationId": "CreateScheduleAsync",
         "requestBody": {
-          "description": "The request object containing the details required to create a new event schedule. Must not be null and must satisfy\r\n            model validation requirements.",
+          "description": "The request object containing the details required to create a new event schedule. Must not be null and must satisfy\n            model validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -2603,7 +2605,7 @@
           "EventSchedule"
         ],
         "summary": "Updates the details of an existing event schedule identified by its unique identifier.",
-        "description": "The method validates the input model state before attempting to update the event schedule. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
+        "description": "The method validates the input model state before attempting to update the event schedule. If\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\n            UnprocessableEntity response is returned.",
         "operationId": "UpdateScheduleAsync",
         "parameters": [
           {
@@ -2709,13 +2711,13 @@
           "EventSchedule"
         ],
         "summary": "Deletes the event schedule identified by the specified unique identifier.",
-        "description": "This method does not delete a event schedule if the specified identifier does not match any\r\n            existing event schedule.",
+        "description": "This method does not delete a event schedule if the specified identifier does not match any\n            existing event schedule.",
         "operationId": "DeleteScheduleAsync",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "The unique identifier of the event schedule to delete. Must be a valid long integer corresponding to an existing\r\n            event schedule.",
+            "description": "The unique identifier of the event schedule to delete. Must be a valid long integer corresponding to an existing\n            event schedule.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -2860,10 +2862,10 @@
           "Hold"
         ],
         "summary": "Initiates a request to hold the specified seats for an event and returns a token representing the seat hold.",
-        "description": "This method is asynchronous and may involve network communication with the ticketing\r\n            service. Ensure that the request contains valid seat information to avoid errors.",
+        "description": "This method is asynchronous and may involve network communication with the ticketing\n            service. Ensure that the request contains valid seat information to avoid errors.",
         "operationId": "HoldSeatsAsync",
         "requestBody": {
-          "description": "An object containing details about the seats to be held, including event and seat identifiers. Must not be\r\n            null.",
+          "description": "An object containing details about the seats to be held, including event and seat identifiers. Must not be\n            null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -2924,14 +2926,15 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       },
       "get": {
         "tags": [
           "Hold"
         ],
         "summary": "Retrieves a hold token associated with the specified token string.",
-        "description": "This method asynchronously obtains a hold token from the ticketing client. Ensure\r\n            that the holdToken parameter is valid to prevent errors.",
+        "description": "This method asynchronously obtains a hold token from the ticketing client. Ensure\n            that the holdToken parameter is valid to prevent errors.",
         "operationId": "GetHoldTokenAsync",
         "parameters": [
           {
@@ -2964,14 +2967,15 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       },
       "delete": {
         "tags": [
           "Hold"
         ],
         "summary": "Releases the seats held by the specified hold token.",
-        "description": "This asynchronous operation releases all seats associated with the provided hold\r\n            token. Ensure that the hold token is valid and corresponds to an active hold before calling this\r\n            method.",
+        "description": "This asynchronous operation releases all seats associated with the provided hold\n            token. Ensure that the hold token is valid and corresponds to an active hold before calling this\n            method.",
         "operationId": "ReleaseHoldSeatsAsync",
         "parameters": [
           {
@@ -3004,7 +3008,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/legal-representatives/{clientId}": {
@@ -3478,10 +3483,10 @@
           "Orders"
         ],
         "summary": "Retrieves a paginated list of orders that match the specified filter criteria.",
-        "description": "This method is asynchronous and should be awaited. Ensure that the filter criteria\r\n            are valid to avoid unexpected results. The returned list may be empty if no orders match the specified\r\n            filters.",
+        "description": "This method is asynchronous and should be awaited. Ensure that the filter criteria\n            are valid to avoid unexpected results. The returned list may be empty if no orders match the specified\n            filters.",
         "operationId": "GetOrderListAsync",
         "requestBody": {
-          "description": "An object containing the filter criteria to apply when retrieving the order list, such as date range, order\r\n            status, and customer identifier. Cannot be null.",
+          "description": "An object containing the filter criteria to apply when retrieving the order list, such as date range, order\n            status, and customer identifier. Cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -3551,13 +3556,13 @@
           "Orders"
         ],
         "summary": "Retrieves the season event information associated with the specified order reference for a client.",
-        "description": "This method is intended to provide information about the season pass linked to the\r\n            client's order reference. It is recommended to refactor this method to retrieve season pass information\r\n            using client ID and season ID to reduce dependency on the order reference.",
+        "description": "This method is intended to provide information about the season pass linked to the\n            client's order reference. It is recommended to refactor this method to retrieve season pass information\n            using client ID and season ID to reduce dependency on the order reference.",
         "operationId": "GetClientSeasonEventByOrderReferenceAsync",
         "parameters": [
           {
             "name": "orderReference",
             "in": "path",
-            "description": "The unique identifier for the order reference used to fetch the corresponding season event information. This\r\n            parameter cannot be null or empty.",
+            "description": "The unique identifier for the order reference used to fetch the corresponding season event information. This\n            parameter cannot be null or empty.",
             "required": true,
             "schema": {
               "type": "string"
@@ -3819,8 +3824,8 @@
         "tags": [
           "SeasonPass"
         ],
-        "summary": "Retrieves a list of available season pass statuses, each represented by its enumeration value and a\r\nlocalized label.",
-        "description": "The labels for each status are localized according to the current culture. Ensure\r\n            that localization resources for season pass statuses are properly configured to provide accurate\r\n            labels.",
+        "summary": "Retrieves a list of available season pass statuses, each represented by its enumeration value and a\nlocalized label.",
+        "description": "The labels for each status are localized according to the current culture. Ensure\n            that localization resources for season pass statuses are properly configured to provide accurate\n            labels.",
         "operationId": "GetSeasonPassStatusList",
         "responses": {
           "200": {
@@ -3861,7 +3866,7 @@
           "SeasonPass"
         ],
         "summary": "Retrieves a list of reasons for which a season pass may be suspended.",
-        "description": "The method uses the SeasonPassSuspendedReason enumeration to generate\r\n            the list of reasons. The labels are localized based on the current culture.",
+        "description": "The method uses the SeasonPassSuspendedReason enumeration to generate\n            the list of reasons. The labels are localized based on the current culture.",
         "operationId": "GetSeasonPassSuspendedReasonList",
         "responses": {
           "200": {
@@ -3902,7 +3907,7 @@
           "SeasonPass"
         ],
         "summary": "Retrieves a list of available season pass renewal types, each represented by an enumeration item.",
-        "description": "This method uses localization to provide user-friendly labels for each renewal type\r\n            based on the current culture.",
+        "description": "This method uses localization to provide user-friendly labels for each renewal type\n            based on the current culture.",
         "operationId": "GetSeasonPassRenewalTypeList",
         "responses": {
           "200": {
@@ -3943,13 +3948,13 @@
           "SeasonPass"
         ],
         "summary": "Updates the status of a season pass identified by the specified ID.",
-        "description": "If the provided ID does not match the ID in the request body, a 400 Bad Request\r\n            response is returned. If the season pass is not found, a 404 Not Found response is returned.",
+        "description": "If the provided ID does not match the ID in the request body, a 400 Bad Request\n            response is returned. If the season pass is not found, a 404 Not Found response is returned.",
         "operationId": "UpdateSeasonPassStatusAsync",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "The unique identifier of the season pass to update. This value must match the ID provided in the request\r\n            body.",
+            "description": "The unique identifier of the season pass to update. This value must match the ID provided in the request\n            body.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -3958,7 +3963,7 @@
           }
         ],
         "requestBody": {
-          "description": "An object containing the new status information for the season pass. This object must include a valid\r\n            SeasonPassId that corresponds to the ID in the route.",
+          "description": "An object containing the new status information for the season pass. This object must include a valid\n            SeasonPassId that corresponds to the ID in the route.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -4051,7 +4056,7 @@
           "Seasons"
         ],
         "summary": "Retrieves a paginated list of seasons that match the specified query parameters.",
-        "description": "This method is asynchronous and may take additional time to complete depending on the\r\n            data source and query complexity. Ensure that the provided query parameters are valid to avoid unexpected\r\n            results.",
+        "description": "This method is asynchronous and may take additional time to complete depending on the\n            data source and query complexity. Ensure that the provided query parameters are valid to avoid unexpected\n            results.",
         "operationId": "GetSeasonsAsync",
         "parameters": [
           {
@@ -4158,10 +4163,10 @@
           "Seasons"
         ],
         "summary": "Creates a new season using the specified request data and returns the result of the operation.",
-        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\r\n            successful creation, a 201 Created response is returned with the location of the newly created season. If\r\n            the creation fails, a 422 Unprocessable Entity response is returned.",
+        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\n            successful creation, a 201 Created response is returned with the location of the newly created season. If\n            the creation fails, a 422 Unprocessable Entity response is returned.",
         "operationId": "CreateSeasonAsync",
         "requestBody": {
-          "description": "The request object containing the details required to create a new season. Must not be null and must satisfy\r\n            model validation requirements.",
+          "description": "The request object containing the details required to create a new season. Must not be null and must satisfy\n            model validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -4271,7 +4276,7 @@
           "Seasons"
         ],
         "summary": "Retrieves the details of a season specified by its unique identifier.",
-        "description": "This method performs an asynchronous lookup for the season using the provided\r\n            identifier. If no season exists for the given identifier, the response will indicate that the resource was\r\n            not found.",
+        "description": "This method performs an asynchronous lookup for the season using the provided\n            identifier. If no season exists for the given identifier, the response will indicate that the resource was\n            not found.",
         "operationId": "GetSeasonByIdAsync",
         "parameters": [
           {
@@ -4333,7 +4338,7 @@
           "Seasons"
         ],
         "summary": "Updates the details of an existing season identified by its unique identifier.",
-        "description": "The method validates the input model state before attempting to update the season. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
+        "description": "The method validates the input model state before attempting to update the season. If\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\n            UnprocessableEntity response is returned.",
         "operationId": "UpdateSeasonAsync",
         "parameters": [
           {
@@ -4439,13 +4444,13 @@
           "Seasons"
         ],
         "summary": "Deletes the season identified by the specified unique identifier.",
-        "description": "This method does not delete a season if the specified identifier does not match any\r\n            existing season.",
+        "description": "This method does not delete a season if the specified identifier does not match any\n            existing season.",
         "operationId": "DeleteSeasonAsync",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "The unique identifier of the season to delete. Must be a valid long integer corresponding to an existing\r\n            season.",
+            "description": "The unique identifier of the season to delete. Must be a valid long integer corresponding to an existing\n            season.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -4486,7 +4491,7 @@
           "SeasonSeats"
         ],
         "summary": "Retrieves the list of seat prices for the specified season.",
-        "description": "This method performs an asynchronous operation to fetch seat prices associated with\r\n            the provided season ID. The returned list reflects the current pricing for all seats in the specified\r\n            season.",
+        "description": "This method performs an asynchronous operation to fetch seat prices associated with\n            the provided season ID. The returned list reflects the current pricing for all seats in the specified\n            season.",
         "operationId": "GetSeatPricesBySeasonIdAsync",
         "parameters": [
           {
@@ -4539,7 +4544,7 @@
           "SeasonSection"
         ],
         "summary": "Retrieves the collection of zone prices associated with the specified season identifier.",
-        "description": "This method is asynchronous and responds to an HTTP GET request. Ensure that the\r\n            provided season identifier exists to avoid receiving an empty result.",
+        "description": "This method is asynchronous and responds to an HTTP GET request. Ensure that the\n            provided season identifier exists to avoid receiving an empty result.",
         "operationId": "GetZonePricesBySeasonIdAsync",
         "parameters": [
           {
@@ -4579,6 +4584,765 @@
                   "items": {
                     "$ref": "#/components/schemas/ZonePriceDTO"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seat-management/{externalKey}": {
+      "get": {
+        "tags": [
+          "SeatManagement"
+        ],
+        "summary": "Retrieves the seat management detail for a bookable unit identified by its Seats.io external key.",
+        "description": "Resolves the external key against event schedules first, then seasons.\n            Returns the data needed to render the seat selector/availability page.",
+        "operationId": "GetSeatManagementDetailAsync",
+        "parameters": [
+          {
+            "name": "externalKey",
+            "in": "path",
+            "description": "The Seats.io external key identifying the event schedule or season.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeatManagementDetailDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeatManagementDetailDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeatManagementDetailDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seat-management/{externalKey}/block": {
+      "post": {
+        "tags": [
+          "SeatManagement"
+        ],
+        "summary": "Blocks the specified seats, setting reason and color metadata in Seats.io\nand marking them as not for sale in the local database.",
+        "operationId": "BlockSeatsAsync",
+        "parameters": [
+          {
+            "name": "externalKey",
+            "in": "path",
+            "description": "The Seats.io external key identifying the event schedule or season.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The seat keys to block along with the reason and color for visual identification.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockSeatsRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockSeatsRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockSeatsRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockSeatsRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "SeatManagement"
+        ],
+        "summary": "Updates the reason and color metadata of already-blocked seats without changing their for-sale status.",
+        "operationId": "EditBlockedSeatsAsync",
+        "parameters": [
+          {
+            "name": "externalKey",
+            "in": "path",
+            "description": "The Seats.io external key identifying the event schedule or season.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The seat keys along with the updated reason and color.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockSeatsRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockSeatsRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockSeatsRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockSeatsRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seat-management/{externalKey}/unblock": {
+      "post": {
+        "tags": [
+          "SeatManagement"
+        ],
+        "summary": "Unblocks the specified seats, making them available for sale again\nand clearing their metadata from Seats.io.",
+        "operationId": "UnblockSeatsAsync",
+        "parameters": [
+          {
+            "name": "externalKey",
+            "in": "path",
+            "description": "The Seats.io external key identifying the event schedule or season.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The seat keys to unblock.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnblockSeatsRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnblockSeatsRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnblockSeatsRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnblockSeatsRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seat-management/{externalKey}/hold": {
+      "post": {
+        "tags": [
+          "SeatManagement"
+        ],
+        "summary": "Holds the specified seats by creating a temporary hold token.",
+        "operationId": "HoldSeatsByKeyAsync",
+        "parameters": [
+          {
+            "name": "externalKey",
+            "in": "path",
+            "description": "The Seats.io external key identifying the event schedule or season.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The seat labels to hold.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HoldSeatsBody"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HoldSeatsBody"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HoldSeatsBody"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HoldSeatsBody"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldToken"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldToken"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldToken"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seat-management/{externalKey}/release": {
+      "post": {
+        "tags": [
+          "SeatManagement"
+        ],
+        "summary": "Releases the specified seats, resetting their status to free.",
+        "operationId": "ReleaseSeatsByKeyAsync",
+        "parameters": [
+          {
+            "name": "externalKey",
+            "in": "path",
+            "description": "The Seats.io external key identifying the event schedule or season.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The seat labels to release, with an optional hold token to scope the release.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReleaseSeatsBody"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReleaseSeatsBody"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReleaseSeatsBody"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReleaseSeatsBody"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seat-management/hold/{holdToken}": {
+      "get": {
+        "tags": [
+          "SeatManagement"
+        ],
+        "summary": "Retrieves the hold token details for the specified token string.",
+        "operationId": "GetHoldTokenByKeyAsync",
+        "parameters": [
+          {
+            "name": "holdToken",
+            "in": "path",
+            "description": "The hold token string to look up.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldToken"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldToken"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldToken"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SeatManagement"
+        ],
+        "summary": "Expires the specified hold token, releasing all seats held by it.",
+        "operationId": "ExpireHoldTokenByKeyAsync",
+        "parameters": [
+          {
+            "name": "holdToken",
+            "in": "path",
+            "description": "The hold token to expire.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldToken"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldToken"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldToken"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seat-management/{externalKey}/book": {
+      "post": {
+        "tags": [
+          "SeatManagement"
+        ],
+        "summary": "Books the specified seats, optionally consuming a hold token,\nand creates the corresponding Order in the database.",
+        "operationId": "BookSeatsByKeyAsync",
+        "parameters": [
+          {
+            "name": "externalKey",
+            "in": "path",
+            "description": "The Seats.io external key identifying the event schedule or season.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The seats with prices, optional hold token, and booking details.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookSeatsBody"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookSeatsBody"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookSeatsBody"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BookSeatsBody"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -5089,7 +5853,7 @@
           "SuiteAgreements"
         ],
         "summary": "Downloads multiple suite agreement files as a single ZIP archive.",
-        "description": "The ZIP archive will contain one entry for each suite agreement file found. The file\r\n            name of the ZIP will include a timestamp to ensure uniqueness. If any of the specified IDs do not correspond\r\n            to existing files, only the files that are found will be included in the archive.",
+        "description": "The ZIP archive will contain one entry for each suite agreement file found. The file\n            name of the ZIP will include a timestamp to ensure uniqueness. If any of the specified IDs do not correspond\n            to existing files, only the files that are found will be included in the archive.",
         "operationId": "DownloadMultipleSuiteAgreementsAsync",
         "parameters": [
           {
@@ -5186,7 +5950,7 @@
           "SuiteLevels"
         ],
         "summary": "Creates a new suite level using the specified request data.",
-        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the suite level could not be created.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\n            Unprocessable Entity response if the suite level could not be created.",
         "operationId": "CreateSuiteLevelAsync",
         "requestBody": {
           "description": "The request object containing the details required to create the suite level. Cannot be null.",
@@ -5297,10 +6061,10 @@
           "SuiteLevels"
         ],
         "summary": "Updates the suite level with the specified details.",
-        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\r\n            Unprocessable Entity response if the update operation fails.",
+        "description": "Returns a 400 Bad Request response if the request model is invalid, or a 422\n            Unprocessable Entity response if the update operation fails.",
         "operationId": "UpdateSuiteLevelAsync",
         "requestBody": {
-          "description": "An object containing the updated suite level information. Must not be null and must satisfy all model\r\n            validation requirements.",
+          "description": "An object containing the updated suite level information. Must not be null and must satisfy all model\n            validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -5738,7 +6502,7 @@
           }
         ],
         "requestBody": {
-          "description": "The request object containing the updated suite information. Must not be null and must satisfy all\r\n            validation requirements.",
+          "description": "The request object containing the updated suite information. Must not be null and must satisfy all\n            validation requirements.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -6023,6 +6787,70 @@
             "schema": {
               "type": "integer",
               "format": "int64"
+            }
+          },
+          {
+            "name": "culture",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "es-MX"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Tests/email/support/{orderId}/preview": {
+      "get": {
+        "tags": [
+          "Tests"
+        ],
+        "summary": "Renders the support email template as HTML for design iteration based on the order's action.",
+        "operationId": "PreviewSupportEmail",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/OrderAction"
+                }
+              ]
             }
           },
           {
@@ -6418,7 +7246,7 @@
           "VenueMaps"
         ],
         "summary": "Retrieves a collection of venue maps.",
-        "description": "This method calls the underlying venue map service to obtain the data. Ensure that\r\n            the service is properly configured to return the expected results. The response is returned with an HTTP 200\r\n            status code on success.",
+        "description": "This method calls the underlying venue map service to obtain the data. Ensure that\n            the service is properly configured to return the expected results. The response is returned with an HTTP 200\n            status code on success.",
         "operationId": "GetVenueMapsAsync",
         "responses": {
           "200": {
@@ -6548,7 +7376,7 @@
           "VenueMaps"
         ],
         "summary": "Retrieves the venue map details for the specified identifier.",
-        "description": "This method performs an asynchronous lookup for the venue map. If no venue map is\r\n            found for the given identifier, the response will be 404 Not Found.",
+        "description": "This method performs an asynchronous lookup for the venue map. If no venue map is\n            found for the given identifier, the response will be 404 Not Found.",
         "operationId": "GetVenueMapsByIdAsync",
         "parameters": [
           {
@@ -6741,7 +7569,7 @@
           "VenueMaps"
         ],
         "summary": "Retrieves a collection of venue map catalog items for use in selection lists or dropdowns.",
-        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\r\n            such as dropdowns. The returned items typically include venue map identifiers and display names.",
+        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\n            such as dropdowns. The returned items typically include venue map identifiers and display names.",
         "operationId": "GetVenueMapCatalogByVenueIdAsync",
         "parameters": [
           {
@@ -6834,7 +7662,7 @@
           "Venues"
         ],
         "summary": "Retrieves a list of venues asynchronously.",
-        "description": "This method calls the venue service to obtain the venue list. The response will\r\n            contain the venue data if the operation is successful.",
+        "description": "This method calls the venue service to obtain the venue list. The response will\n            contain the venue data if the operation is successful.",
         "operationId": "GetVenuesAsync",
         "parameters": [
           {
@@ -7250,7 +8078,7 @@
           "Venues"
         ],
         "summary": "Retrieves a collection of venue catalog items for use in selection lists or dropdowns.",
-        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\r\n            such as dropdowns. The returned items typically include venue identifiers and display names.",
+        "description": "Use this endpoint to obtain a list of venues formatted for display in UI components\n            such as dropdowns. The returned items typically include venue identifiers and display names.",
         "operationId": "GetVenueCatalogAsync",
         "responses": {
           "200": {
@@ -7285,7 +8113,7 @@
         }
       }
     },
-    "/cities": {
+    "/api/venues/cities-catalog": {
       "get": {
         "tags": [
           "Venues"
@@ -7395,6 +8223,92 @@
         ],
         "type": "string"
       },
+      "BlockSeatsRequest": {
+        "type": "object",
+        "properties": {
+          "seatKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BookSeatsBody": {
+        "required": [
+          "clientContact",
+          "paymentInfoRequest",
+          "seats",
+          "ticketType"
+        ],
+        "type": "object",
+        "properties": {
+          "seats": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "decimal"
+            }
+          },
+          "holdToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventScheduleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "ticketType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ItemType"
+              }
+            ]
+          },
+          "clientContact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientInfoRequest"
+              }
+            ]
+          },
+          "paymentInfoRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentInfoRequest"
+              }
+            ]
+          },
+          "localizer": {
+            "type": "string",
+            "nullable": true
+          },
+          "referenceOrderId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BookableUnitType": {
+        "enum": [
+          "Schedule",
+          "Season"
+        ],
+        "type": "string"
+      },
       "BookingResult": {
         "required": [
           "localizer"
@@ -7404,6 +8318,10 @@
           "bookingId": {
             "type": "integer",
             "format": "int64",
+            "nullable": true
+          },
+          "reference": {
+            "type": "string",
             "nullable": true
           },
           "message": {
@@ -8007,14 +8925,16 @@
               {
                 "$ref": "#/components/schemas/LegalRepForm"
               }
-            ]
+            ],
+            "nullable": true
           },
           "credit": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/CreditForm"
               }
-            ]
+            ],
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -8553,29 +9473,17 @@
             "type": "integer",
             "format": "int64"
           },
-          "scheduledStartDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "scheduledEndDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
           "name": {
             "type": "string"
           },
           "subtitle": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "bannerImageUrl": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "category": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "venueMapId": {
             "type": "integer",
@@ -8583,25 +9491,18 @@
             "nullable": true
           },
           "venueName": {
-            "type": "string",
-            "nullable": true
-          },
-          "externalEventKey": {
-            "type": "string",
-            "nullable": true
-          },
-          "availableSeats": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalSeats": {
-            "type": "integer",
-            "format": "int32"
+            "type": "string"
           },
           "prices": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SeatsIoPriceDTO"
+            }
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventScheduleDTO"
             }
           }
         },
@@ -8737,6 +9638,51 @@
         },
         "additionalProperties": false
       },
+      "EventScheduleDTO": {
+        "required": [
+          "availableSeats",
+          "externalEventKey",
+          "id",
+          "startDateTime",
+          "status",
+          "totalSeats"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "startDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "externalEventKey": {
+            "type": "string"
+          },
+          "totalSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScheduleStatus"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
       "EventScheduleResult": {
         "type": "object",
         "properties": {
@@ -8761,6 +9707,21 @@
           "Male"
         ],
         "type": "string"
+      },
+      "HoldSeatsBody": {
+        "required": [
+          "seats"
+        ],
+        "type": "object",
+        "properties": {
+          "seats": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "HoldSeatsRequest": {
         "required": [
@@ -9061,9 +10022,9 @@
           "ResendReceipt",
           "UpdateOrderHolder",
           "ReissueTickets",
-          "SendIndiviualTickets",
+          "SendIndividualTickets",
           "ResendCourtesyTickets",
-          "ConvertToDigitalPyshical",
+          "ConvertToDigitalPhysical",
           "CancelTickets"
         ],
         "type": "string"
@@ -9663,11 +10624,39 @@
         },
         "additionalProperties": { }
       },
+      "ReleaseSeatsBody": {
+        "required": [
+          "seats"
+        ],
+        "type": "object",
+        "properties": {
+          "seats": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "holdToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "SaleType": {
         "enum": [
           "Event",
           "SeasonPass",
           "EventGroup"
+        ],
+        "type": "string"
+      },
+      "ScheduleStatus": {
+        "enum": [
+          "Draft",
+          "OnSale",
+          "Closed",
+          "Completed"
         ],
         "type": "string"
       },
@@ -9759,6 +10748,10 @@
             "nullable": true
           },
           "posterImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalSeasonKey": {
             "type": "string",
             "nullable": true
           }
@@ -10021,6 +11014,68 @@
           "category": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SeatManagementDetailDTO": {
+        "required": [
+          "availableSeats",
+          "externalKey",
+          "name",
+          "startDate",
+          "totalSeats",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BookableUnitType"
+              }
+            ]
+          },
+          "externalKey": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "venueName": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "totalSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeatsIoPriceDTO"
+            }
           }
         },
         "additionalProperties": false
@@ -10296,6 +11351,23 @@
         },
         "additionalProperties": false
       },
+      "UnblockSeatsRequest": {
+        "type": "object",
+        "properties": {
+          "seatKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateClientCreditAccountRequest": {
         "required": [
           "creditLimit",
@@ -10421,14 +11493,16 @@
               {
                 "$ref": "#/components/schemas/LegalRepUdpateForm"
               }
-            ]
+            ],
+            "nullable": true
           },
           "credit": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/CreditUpdateForm"
               }
-            ]
+            ],
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -11046,6 +12120,9 @@
     },
     {
       "name": "SeasonSection"
+    },
+    {
+      "name": "SeatManagement"
     },
     {
       "name": "SuiteAgreements"

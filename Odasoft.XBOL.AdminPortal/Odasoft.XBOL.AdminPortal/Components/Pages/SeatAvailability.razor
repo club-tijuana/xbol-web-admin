@@ -1,0 +1,247 @@
+@page "/events/{Id:long}/key/{ExternalKey}/availability"
+@using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.AdminPortal.Configs
+@using Microsoft.Extensions.Options
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.AdminPortal.States
+
+@inject IAdminClient AdminClient
+@inject NavigationManager Navigation
+@inject IOptions<SeatsIo> SeatsOptions
+@inject IJSRuntime JS
+@inject AppLocalizer<Events> L
+@inject IDialogService DialogService
+
+<PageTitle>@L["Availability"] - @_eventName</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoBack" Color="Color.Secondary"
+                       Variant="Variant.Outlined" Class="text-uppercase">@L["GoBack"]</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<LoadingContainer IsLoading="_loading" HasError="_error" ErrorMessage="@L["ErrorLoadingEvent"]" OnRetry="LoadData">
+    <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
+    <MudPaper Class="pa-6" Elevation="3">
+        <MudGrid Justify="Justify.SpaceBetween">
+            <MudItem xs="12" Class="d-flex justify-space-between mb-4">
+                <MudText Typo="Typo.h5">@L["Availability"]</MudText>
+                @if (CurrentToolbarState is ToolbarState.AllBlocked)
+                {
+                    <div>
+                        <MudButton StartIcon="@Icons.Material.Outlined.Edit"
+                                   Color="Color.Secondary" Variant="Variant.Filled"
+                                   OnClick="OpenEditDialog"
+                                   Class="text-uppercase mr-4">@L["Edit"]</MudButton>
+                        <MudButton StartIcon="@Icons.Material.Outlined.LockOpen"
+                                   Color="Color.Tertiary" Variant="Variant.Filled"
+                                   OnClick="OpenUnblockDialog"
+                                   Class="text-uppercase mr-4">@L["Unblock"]</MudButton>
+                        <MudButton StartIcon="@Icons.Material.Outlined.ShoppingCart"
+                                   Color="Color.Primary" Variant="Variant.Filled"
+                                   Disabled="true"
+                                   Class="text-uppercase">@L["Sell"]</MudButton>
+                    </div>
+                }
+                else
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
+                        @if (CurrentToolbarState is ToolbarState.Mixed)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Warning">
+                                <MudIcon Icon="@Icons.Material.Outlined.Warning" Size="Size.Small" Class="mr-1" />
+                                @L["MixedSelectionWarning"]
+                            </MudText>
+                        }
+                        <MudButton StartIcon="@Icons.Material.Outlined.Lock"
+                                   Color="Color.Error" Variant="Variant.Filled"
+                                   Disabled="@(CurrentToolbarState != ToolbarState.AllForSale)"
+                                   OnClick="OpenBlockDialog"
+                                   Class="text-uppercase">@L["Block"]</MudButton>
+                    </MudStack>
+                }
+            </MudItem>
+            <MudItem xs="7">
+                <EventManagerChart @ref="_chartComponent" SecretKey="@_secretKey" EventKey="@ExternalKey" EventId="0"
+                                   Mode="select" OnSeatSelected="HandleSeatSelected"
+                                   OnSeatDeselected="HandleSeatDeselected" />
+            </MudItem>
+            <MudItem xs="4" Class="mt-8">
+                <SeatList @ref="_seatsList" Items="_selectedSeats" Chart="_chartComponent" Title="@L["Selected"]"
+                          OnClearAll="RemoveAllSelectionAsync">
+                    <RowStatusContent Context="item">
+                        <MudIcon Icon="@(item.ForSale ? Icons.Material.Outlined.LockOpen : Icons.Material.Outlined.Lock)"
+                                 Size="Size.Small" Class="ml-2" />
+                    </RowStatusContent>
+                    <RowActionContent Context="item">
+                        <SeatListActions Tooltip="@L["RemoveSelection"]"
+                                         OnRemove="@(() => RemoveSelectionAsync(item.SeatId))" />
+                    </RowActionContent>
+                </SeatList>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</LoadingContainer>
+
+@code {
+    [Parameter]
+    public long Id { get; set; }
+
+    [Parameter]
+    public string ExternalKey { get; set; } = default!;
+
+    private ImageHeroBannerViewModel _banner = new();
+    private string _secretKey = string.Empty;
+    private string _eventName = string.Empty;
+    private bool _loading = true;
+    private bool _error = false;
+
+    private enum ToolbarState { NoSelection, AllForSale, AllBlocked, Mixed }
+
+    private ToolbarState CurrentToolbarState
+    {
+        get
+        {
+            if (_selectedSeats.Count == 0)
+                return ToolbarState.NoSelection;
+
+            bool allForSale = _selectedSeats.All(s => s.ForSale);
+            bool allBlocked = _selectedSeats.All(s => !s.ForSale);
+
+            if (allForSale) return ToolbarState.AllForSale;
+            if (allBlocked) return ToolbarState.AllBlocked;
+            return ToolbarState.Mixed;
+        }
+    }
+
+    private EventManagerChart? _chartComponent;
+    private SeatList? _seatsList;
+    private List<SeatInfo> _selectedSeats = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private void HandleSeatSelected(SeatInfo seat)
+    {
+        _selectedSeats.Add(seat);
+        StateHasChanged();
+    }
+
+    private void HandleSeatDeselected(string seatId)
+    {
+        _selectedSeats.RemoveAll(s => s.SeatId == seatId);
+        StateHasChanged();
+    }
+
+    private async Task RemoveSelectionAsync(string objectId)
+    {
+        _seatsList?.ClearFocus();
+
+        if (_chartComponent is not null)
+            await _chartComponent.DeselectSeatAsync(objectId);
+    }
+
+    private async Task RemoveAllSelectionAsync()
+    {
+        _seatsList?.ClearFocus();
+
+        if (_chartComponent is not null)
+            await _chartComponent.ClearSelection();
+    }
+
+    private static readonly DialogOptions _dialogOptions = new() { CloseButton = true };
+
+    private List<string> SelectedSeatKeys => _selectedSeats.Select(s => s.SeatId).ToList();
+
+    private async Task OpenBlockDialog()
+    {
+        var parameters = new DialogParameters<Dialogs.BlockSeatDialog>
+        {
+            { x => x.SeatKeys, SelectedSeatKeys },
+            { x => x.ExternalKey, ExternalKey },
+        };
+        var dialog = await DialogService.ShowAsync<Dialogs.BlockSeatDialog>(null, parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await HandleDialogSuccess();
+    }
+
+    private async Task OpenEditDialog()
+    {
+        var firstSeat = _selectedSeats.FirstOrDefault();
+        var parameters = new DialogParameters<Dialogs.EditBlockedSeatDialog>
+        {
+            { x => x.SeatKeys, SelectedSeatKeys },
+            { x => x.ExternalKey, ExternalKey },
+            { x => x.InitialReason, firstSeat?.Reason },
+            { x => x.InitialColor, firstSeat?.Color },
+        };
+        var dialog = await DialogService.ShowAsync<Dialogs.EditBlockedSeatDialog>(null, parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await HandleDialogSuccess();
+    }
+
+    private async Task OpenUnblockDialog()
+    {
+        var parameters = new DialogParameters<Dialogs.UnblockSeatDialog>
+        {
+            { x => x.SeatKeys, SelectedSeatKeys },
+            { x => x.ExternalKey, ExternalKey },
+        };
+        var dialog = await DialogService.ShowAsync<Dialogs.UnblockSeatDialog>(null, parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await HandleDialogSuccess();
+    }
+
+    private async Task HandleDialogSuccess()
+    {
+        _selectedSeats.Clear();
+        if (_chartComponent is not null)
+            await _chartComponent.ClearSelection();
+        StateHasChanged();
+    }
+
+    private async Task GoBack() => await JS.InvokeVoidAsync("history.back");
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        _error = false;
+        StateHasChanged();
+
+        try
+        {
+            var detail = await AdminClient.GetSeatManagementDetailAsync(ExternalKey);
+            _eventName = detail.Name;
+            _secretKey = SeatsOptions.Value.SecretKey;
+
+            _banner = new()
+            {
+                Title = detail.Name,
+                Subtitle = detail.Subtitle,
+                StartDateTime = detail.StartDate.UtcDateTime,
+                EndDateTime = detail.EndDate?.UtcDateTime,
+                ImageUrl = detail.BannerImageUrl,
+                Venue = detail.VenueName,
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading seat management data: {ex.Message}");
+            _error = true;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+}

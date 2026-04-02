@@ -29,9 +29,11 @@ namespace Odasoft.XBOL.Business.Services
             }
         }
 
-        public async Task<ICollection<OrderActionResponse>> GetOrderActionLogAsync(long orderId)
+        public async Task<List<OrderActionResponse>> GetOrderActionLogAsync(long orderId)
         {
-            return await _adminClient.GetOrderActionsAsync(orderId);
+            ICollection<OrderActionResponse> logs = await _adminClient.GetOrderActionsAsync(orderId);
+
+            return logs.OrderByDescending(x => x.CreatedAt).ToList();
         }
 
         public async Task<bool> PerformOrderActionAsync(long orderId, OrderActionRequest request)

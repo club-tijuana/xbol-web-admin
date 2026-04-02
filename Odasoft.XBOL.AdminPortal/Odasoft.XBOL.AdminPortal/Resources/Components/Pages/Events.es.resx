@@ -132,4 +132,7 @@
   <data name="DeleteError" xml:space="preserve">
     <value>Error al eliminar el torneo.</value>
   </data>
+  <data name="MixedSelectionWarning" xml:space="preserve">
+    <value>Selección mixta: elija solo asientos disponibles o solo bloqueados</value>
+  </data>
 </root>

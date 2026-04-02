@@ -280,7 +280,7 @@ else if(_selectedTab == TabPast)
                                 </MudTooltip>
                                 <MudTooltip Text="Disponibilidad" Placement="Placement.Top">
                                     <MudIconButton Icon="@Icons.Material.Outlined.Map" Size="Size.Medium"
-                                    OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/availability"))" />
+                                    OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/key/{context.Item.ExternalEventKey}/availability"))" />
                                 </MudTooltip>
                             </MudStack>
                         </CellTemplate>

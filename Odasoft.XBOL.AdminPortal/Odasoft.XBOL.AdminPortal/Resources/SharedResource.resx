@@ -246,6 +246,15 @@
   <data name="GoBack" xml:space="preserve">
     <value>Regresar</value>
   </data>
+  <data name="Block" xml:space="preserve">
+    <value>Bloquear</value>
+  </data>
+  <data name="Unblock" xml:space="preserve">
+    <value>Desbloquear</value>
+  </data>
+  <data name="Sell" xml:space="preserve">
+    <value>Vender</value>
+  </data>
   <data name="History" xml:space="preserve">
     <value>Historial</value>
   </data>
@@ -557,6 +566,7 @@
   </data>
   <data name="PastEvents" xml:space="preserve">
     <value>Eventos pasados</value>
+  </data>
   <data name="SearchByOrderNumber" xml:space="preserve">
     <value>Buscar por número de orden</value>
   </data>
@@ -601,5 +611,8 @@
   </data>
   <data name="Physical" xml:space="preserve">
     <value>Fisico</value>
+  </data>
+  <data name="Support" xml:space="preserve">
+    <value>Soporte</value>
   </data>
 </root>
