@@ -28,7 +28,7 @@ public interface IEventService
         EventFilterParameters? filters = null
     );
 
-    Task<List<string>> GetCategoriesAsync();
+    Task<List<EventCategoryResult>> GetCategoriesAsync();
     Task<EventResult> CreateEventAsync(CreateEventRequest request);
     Task UpdateEventAsync(long id, UpdateEventRequest request);
     Task DeleteEventAsync(long id);

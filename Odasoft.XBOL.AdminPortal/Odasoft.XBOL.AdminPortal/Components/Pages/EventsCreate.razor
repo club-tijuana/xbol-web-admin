@@ -51,20 +51,20 @@
                                             Field="@_descriptionFormContext.Field("Subtitle")" />
                                     </MudItem>
                                     <MudItem xs="12">
-                                        <MudSelect 
-                                            Label="@L["EventType"]" 
-                                            T="EventCategory?" 
-                                            @bind-Value="_category"
+                                        <MudSelect
+                                            Label="@L["EventType"]"
+                                            T="EventCategoryResult"
+                                            MultiSelection="true"
+                                            @bind-SelectedValues="_selectedCategories"
                                             Variant="Variant.Outlined"
                                             Margin="Margin.Dense"
-                                            Validation="@(_descriptionFormContext.Field("Subtitle").ValidationFor<EventCategory?>())"
-                                            ToStringFunc="@(category => L[category.ToString()].Value)"
+                                            ToStringFunc="@(c => c?.DisplayName ?? "")"
                                             Required>
 
                                             @foreach (var category in _eventCategories)
                                             {
-                                                <MudSelectItem T="EventCategory?" Value="category">
-                                                    @L[category.ToString()]
+                                                <MudSelectItem T="EventCategoryResult" Value="category">
+                                                    @category.DisplayName
                                                 </MudSelectItem>
                                             }
                                         </MudSelect>
@@ -256,7 +256,7 @@
                                            @bind-Value="_ageRestriction"
                                            Variant="Variant.Outlined"
                                            Margin="Margin.Dense"
-                                           Validation="@(_descriptionFormContext.Field("AgeRestriction").ValidationFor<EventCategory?>())"
+                                           Validation="@(_descriptionFormContext.Field("AgeRestriction").ValidationFor<AgeRestriction?>())"
                                            ToStringFunc="@(restriction => L[restriction.ToString()].Value)"
                                            >
 
@@ -335,7 +335,8 @@
     private bool _datesAndSalePoliciesValid;
     private FormContext _datesAndSalePoliciesFormContext = default!;
 
-    private List<EventCategory> _eventCategories = Enum.GetValues<EventCategory>().ToList();
+    private List<EventCategoryResult> _eventCategories = [];
+    private IReadOnlyCollection<EventCategoryResult> _selectedCategories = [];
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
     private List<ListItem> _venues = [];
     private List<ListItem> _venueMaps = [];
@@ -343,7 +344,6 @@
 
     private string? _name;
     private string? _subtitle;
-    private EventCategory? _category;
     private string? _shortDescription;
     private string? _longDescription;
     private DateTime? _startDate;
@@ -375,11 +375,16 @@
         _datesAndSalePoliciesFormContext = new FormContext(StateHasChanged);
         try
         {
-            _venues = await CatalogsService.GetVenuesAsync();
+            var venueTask = CatalogsService.GetVenuesAsync();
+            var catTask = EventService.GetCategoriesAsync();
+            await Task.WhenAll(venueTask, catTask);
+
+            _venues = await venueTask;
+            _eventCategories = (await catTask).Where(c => c.IsActive == true).ToList();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading venues: {ex.Message}");
+            Console.WriteLine($"Error loading data: {ex.Message}");
         }
     }
 
@@ -475,7 +480,7 @@
                 {
                     Name = _name,
                     Subtitle = _subtitle,
-                    Category = _category,
+                    CategoryIds = _selectedCategories.Where(c => c.Id.HasValue).Select(c => c.Id!.Value).ToList(),
                     ShortDescription = _shortDescription,
                     LongDescription = _longDescription,
                     VenueMapId = _selectedVenueMapId

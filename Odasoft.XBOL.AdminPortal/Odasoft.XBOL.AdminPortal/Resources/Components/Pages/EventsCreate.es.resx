@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:element msdata:IsDataSet="true" name="root">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" msdata:Ordinal="1" name="value" type="xsd:string"/>
+                <xsd:element minOccurs="0" msdata:Ordinal="2" name="comment" type="xsd:string"/>
+              </xsd:sequence>
+              <xsd:attribute msdata:Ordinal="0" name="name" type="xsd:string"/>
+              <xsd:attribute msdata:Ordinal="3" name="type" type="xsd:string"/>
+              <xsd:attribute msdata:Ordinal="4" name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" msdata:Ordinal="1" name="value" type="xsd:string"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Crear Evento</value>
+  </data>
+  <data name="GoBack" xml:space="preserve">
+    <value>Regresar</value>
+  </data>
+  <data name="RequiredFieldsNote" xml:space="preserve">
+    <value>* Campos requeridos</value>
+  </data>
+  <data name="DescriptionAndVenue" xml:space="preserve">
+    <value>Descripción y Recinto</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Subtítulo</value>
+  </data>
+  <data name="EventType" xml:space="preserve">
+    <value>Tipo de Evento</value>
+  </data>
+  <data name="EventSummary" xml:space="preserve">
+    <value>Resumen del Evento</value>
+  </data>
+  <data name="EventDescription" xml:space="preserve">
+    <value>Descripción del Evento</value>
+  </data>
+  <data name="Venue" xml:space="preserve">
+    <value>Recinto</value>
+  </data>
+  <data name="Map" xml:space="preserve">
+    <value>Mapa</value>
+  </data>
+  <data name="DatesAndSalePolicies" xml:space="preserve">
+    <value>Fechas y Políticas de Venta</value>
+  </data>
+  <data name="EventSchedule" xml:space="preserve">
+    <value>Horario del Evento</value>
+  </data>
+  <data name="StartDate" xml:space="preserve">
+    <value>Fecha de inicio</value>
+  </data>
+  <data name="EndDate" xml:space="preserve">
+    <value>Fecha de fin</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Hora</value>
+  </data>
+  <data name="TicketsPreSale" xml:space="preserve">
+    <value>Preventa de Boletos</value>
+  </data>
+  <data name="TicketsSale" xml:space="preserve">
+    <value>Venta de Boletos</value>
+  </data>
+  <data name="WebSitePublishing" xml:space="preserve">
+    <value>Publicación en Sitio Web</value>
+  </data>
+  <data name="PublishDate" xml:space="preserve">
+    <value>Fecha de publicación</value>
+  </data>
+  <data name="VenueAccess" xml:space="preserve">
+    <value>Acceso al Recinto</value>
+  </data>
+  <data name="AccessDate" xml:space="preserve">
+    <value>Fecha de acceso</value>
+  </data>
+  <data name="AgeRestrictions" xml:space="preserve">
+    <value>Restricciones de Edad</value>
+  </data>
+  <data name="SecurityPolicies" xml:space="preserve">
+    <value>Políticas de Seguridad</value>
+  </data>
+  <data name="AdditionalComments" xml:space="preserve">
+    <value>Comentarios Adicionales</value>
+  </data>
+</root>

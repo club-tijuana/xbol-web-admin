@@ -6,7 +6,7 @@ public record EventViewModel(
     long Id,
     DateTime DateTime,
     string EventName,
-    string Category,
+    string Categories,
     string Venue,
     int Available,
     int Total,
