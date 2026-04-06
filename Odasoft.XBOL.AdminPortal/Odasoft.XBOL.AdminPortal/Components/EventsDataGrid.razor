@@ -64,8 +64,8 @@
                                                Variant="Variant.Outlined" ShrinkLabel>
                                         @foreach (var category in _availableCategories)
                                         {
-                                            <MudSelectItem T="string" Value="@category">
-                                                <MudText Typo="Typo.body2">@category</MudText>
+                                            <MudSelectItem T="string" Value="@category.Name">
+                                                <MudText Typo="Typo.body2">@category.DisplayName</MudText>
                                             </MudSelectItem>
                                         }
                                     </MudSelect>
@@ -126,9 +126,9 @@
 
                 @if (IsVisible(EventColumn.Category))
                 {
-                    <TemplateColumn Title="@L["ColumnCategory"]" Sortable="false" Filterable="false">
+                    <TemplateColumn Title="@L["ColumnCategory"]" SortBy="@(new Func<EventViewModel, object>(x => x.Categories))" Filterable="false">
                         <CellTemplate>
-                            <MudText Typo="Typo.body2">@context.Item.Category</MudText>
+                            <MudText Typo="Typo.body2">@context.Item.Categories</MudText>
                         </CellTemplate>
                     </TemplateColumn>
                 }
@@ -202,7 +202,7 @@
     private EventFilterParameters _filters = EventFilterParameters.Empty;
     private List<ListItem> _venues = [];
     private IReadOnlyCollection<string> _selectedVenues = [];
-    private List<string> _availableCategories = [];
+    private List<EventCategoryResult> _availableCategories = [];
     private IReadOnlyCollection<string> _selectedCategories = [];
     private DateRange? _dateRange = null;
 
@@ -217,7 +217,7 @@
             await Task.WhenAll(venueTask, catTask);
 
             _venues = await venueTask;
-            _availableCategories = await catTask;
+            _availableCategories = (await catTask).Where(c => c.IsActive == true).ToList();
         }
         catch (Exception)
         {

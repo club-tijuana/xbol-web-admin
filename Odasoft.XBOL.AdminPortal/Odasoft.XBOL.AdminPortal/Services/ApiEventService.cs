@@ -37,7 +37,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.Id,
             e.ScheduledStartDate.DateTime,
             e.Name ?? "",
-            e.Category ?? "",
+            FormatCategories(e.Categories),
             e.VenueName ?? "",
             e.AvailableSeats,
             e.TotalSeats,
@@ -76,7 +76,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.Id,
             e.ScheduledStartDate.DateTime,
             e.Name ?? "",
-            e.Category ?? "",
+            FormatCategories(e.Categories),
             e.VenueName ?? "",
             e.AvailableSeats,
             e.TotalSeats,
@@ -92,9 +92,9 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         };
     }
 
-    public async Task<List<string>> GetCategoriesAsync()
+    public async Task<List<EventCategoryResult>> GetCategoriesAsync()
     {
-        var result = await adminClient.GetCategoriesNamesAsync();
+        var result = await adminClient.GetCategoriesAsync();
         return result.ToList();
     }
 
@@ -104,4 +104,9 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
 
     public async Task DeleteEventAsync(long id)
             => await adminClient.DeleteEventAsync(id);
+
+    private static string FormatCategories(ICollection<EventCategoryResult>? categories)
+        => categories is { Count: > 0 }
+            ? string.Join(", ", categories.Select(c => c.DisplayName))
+            : "";
 }

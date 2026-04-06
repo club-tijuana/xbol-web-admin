@@ -188,8 +188,8 @@ else if(_selectedTab == TabPast)
                                         Variant="Variant.Outlined" ShrinkLabel>
                                             @foreach (var category in _availableCategories)
                                             {
-                                                <MudSelectItem T="string" Value="@category">
-                                                    <MudText Typo="Typo.body2">@category</MudText>
+                                                <MudSelectItem T="string" Value="@category.Name">
+                                                    <MudText Typo="Typo.body2">@category.DisplayName</MudText>
                                                 </MudSelectItem>
                                             }
                                         </MudSelect>
@@ -247,10 +247,10 @@ else if(_selectedTab == TabPast)
                         </CellTemplate>
                     </TemplateColumn>
 
-                    <TemplateColumn Title="@L["ColumnCategory"]" Sortable="false" Filterable="false">
+                    <TemplateColumn Title="@L["ColumnCategory"]" SortBy="@(new Func<EventViewModel, object>(x => x.Categories))" Filterable="false">
                         <CellTemplate>
                             <MudText Typo="Typo.body2">
-                                @context.Item.Category
+                                @context.Item.Categories
                             </MudText>
                         </CellTemplate>
                     </TemplateColumn>
@@ -299,7 +299,7 @@ else if(_selectedTab == TabPast)
     private List<ListItem> _venues = [];
     private IReadOnlyCollection<string> _selectedVenues = [];
 
-    private List<string> _availableCategories = [];
+    private List<EventCategoryResult> _availableCategories = [];
     private IReadOnlyCollection<string> _selectedCategories = [];
 
     private DateRange? _dateRange = null;
@@ -354,7 +354,8 @@ else if(_selectedTab == TabPast)
             }
 
             _venues = await _catalogsService.GetVenuesAsync();
-            _availableCategories = await _eventService.GetCategoriesAsync();
+            _availableCategories = (await _eventService.GetCategoriesAsync())
+                .Where(c => c.IsActive == true).ToList();
         }
         catch (Exception)
         {
