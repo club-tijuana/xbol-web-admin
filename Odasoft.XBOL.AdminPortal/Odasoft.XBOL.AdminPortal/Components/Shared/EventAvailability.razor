@@ -1,0 +1,83 @@
+@namespace Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.Business
+@inject IAdminClient AdminClient
+
+<MudStack Spacing="0" Class="@Class">
+    <div class="d-flex align-center">
+        <MudIcon Icon="@Icons.Material.Filled.EventSeat" Size="Size.Small" Color="Color.Tertiary" Class="mr-1" />
+        <!-- TODO: Remove the loading indicator and trust the database values on first load -->
+        @if (_loading)
+        {
+            <MudSkeleton Width="50px" Height="20px" />
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Color="Color.Tertiary">
+                <strong>@_available.ToString("N0")</strong>
+            </MudText>
+            @if (_total.HasValue && !OmitTotal)
+            {
+                <MudText Typo="Typo.body2" Style="padding: 0 2px; color: var(--mud-palette-text-disabled);">
+                    /
+                </MudText>
+                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-disabled);">
+                    @_total.Value.ToString("N0")
+                </MudText>
+            }
+        }
+    </div>
+</MudStack>
+
+@code {
+    /// <summary>Initial available count (shown immediately, before live fetch completes).</summary>
+    [Parameter] public int Available { get; set; }
+
+    /// <summary>Initial total count (shown immediately, before live fetch completes).</summary>
+    [Parameter] public int? Total { get; set; }
+
+    /// <summary>External key used to fetch live availability from Seats.io.</summary>
+    [Parameter] public string? ExternalKey { get; set; }
+
+    /// <summary>Hide the total count (e.g. in card views).</summary>
+    [Parameter] public bool OmitTotal { get; set; } = false;
+
+    /// <summary>CSS class passed to the root element.</summary>
+    [Parameter] public string Class { get; set; } = "";
+
+    private int _available;
+    private int? _total;
+    private bool _loading;
+
+    protected override void OnInitialized()
+    {
+        _available = Available;
+        _total = Total;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || string.IsNullOrEmpty(ExternalKey)) return;
+
+        _loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var dict = await AdminClient.GetAvailabilitySummaryAsync(ExternalKey);
+            if (dict != null)
+            {
+                _available = dict.TryGetValue("available", out var avail) ? (avail.Count ?? 0) : 0;
+                _total = dict.Values.Sum(v => v.Count ?? 0);
+            }
+        }
+        catch (Exception)
+        {
+            // Keep the initial values from the API as fallback
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+}

@@ -137,17 +137,7 @@
                 {
                     <TemplateColumn Title="@L["ColumnAvailability"]" Filterable="false" Sortable="false">
                         <CellTemplate>
-                            <div class="d-flex">
-                                <MudText Typo="Typo.body2" Color="Color.Tertiary">
-                                    <strong>@context.Item.Available</strong>
-                                </MudText>
-                                <MudText Typo="Typo.body2" Style="padding: 0 2px; color: var(--mud-palette-text-disabled);">
-                                    /
-                                </MudText>
-                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-disabled);">
-                                    @context.Item.Total
-                                </MudText>
-                            </div>
+                            <EventAvailability Available="@context.Item.Available" Total="@context.Item.Total" ExternalKey="@context.Item.ExternalEventKey" />
                         </CellTemplate>
                     </TemplateColumn>
                 }

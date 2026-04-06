@@ -10,11 +10,12 @@
 @implements IAsyncDisposable;
 
 @inject CartState _cartState
+@inject PersistentDialogState _persistentDialogState;
 @inject ISnackbar _snackbar
 @inject IAdminClient _adminClient
 @inject NavigationManager _navigation
 @inject IOptions<SeatsIo> SeatsOptions
-@inject AppLocalizer<BoxOfficeCheckout> L
+@inject AppLocalizer<Events> L
 @inject LoadingState _loadingState;
 @inject IDialogService _dialogService
 @inject ClientsService _clientsService
@@ -474,7 +475,8 @@
                 PhoneNumber = _request.PhoneNumber,
                 Email = _request.Email,
                 FullName = _request.FullName
-            }
+            }, 
+            TicketType = ItemType.Ticket,
         };
 
         try
@@ -482,17 +484,7 @@
             // TODO: Move to a proper service
             var result = await _adminClient.BookEventSeatsAsync(request);
 
-
-            // TODO: Show a proper success dialog with order details
-            // DialogOptions options = new() { CloseButton = true, Position = DialogPosition.TopRight };
-            // await _dialogService.ShowAsync<SuccesfulOrderDialog>(string.Empty, options);
-
-            _snackbar.Add(L["Seats_PaymentSuccess"], configure: c =>
-            {
-                c.SnackbarVariant = Variant.Text;
-                c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
-                c.IconColor = Color.Success;
-            });
+            _persistentDialogState.SetBookingResult(result);
 
             _successfulPurchase = true;
             _cartState.ClearCart();

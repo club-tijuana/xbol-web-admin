@@ -3,7 +3,7 @@
 
 <MudCard Class="mb-4 bg-white" Elevation="3">
     <MudGrid Class="m-0 p-0 align-center" Justify="Justify.FlexStart">
-        <MudItem xs="12" sm="6" lg="4" Class="pb-0 mb-0 d-flex">
+        <MudItem xs="12" sm="4" lg="3" Class="pb-0 mb-0 d-flex">
             @if (string.IsNullOrEmpty(Banner.ImageUrl))
 
             {
@@ -12,24 +12,31 @@
             else
             {
                 <img src="@Banner.ImageUrl" class="img-fluid banner-img" />
-            }            
+            }
         </MudItem>
-        <MudItem xs="12" sm="6" lg="4" Class="pb-0 mb-0">
+        <MudItem xs="12" sm="4" lg="3" Class="pb-0 mb-0">
             <MudText Typo="Typo.h6" Color="@Color.Secondary">@Banner.Title</MudText>
         </MudItem>
-        <MudItem xs="12" sm="6" lg="4">
-            <MudItem xs="12" sm="6" lg="4" Class="d-flex flex-column pb-0 mb-0 justify-center">
-                @if (!string.IsNullOrWhiteSpace(Banner.Venue))
-                {
-                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken">@Banner.Venue</MudText>
-                }
-                @if (Banner.StartDateTime.HasValue)
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        @EventDisplayDateHelper.GetDateRange(Banner.StartDateTime, Banner.EndDateTime)
-                    </MudText>
-                }
-            </MudItem>
+        <MudItem xs="12" sm="4" lg="3" Class="d-flex flex-column pb-0 mb-0 justify-center">
+            @if (!string.IsNullOrWhiteSpace(Banner.Venue))
+            {
+                <MudText Typo="Typo.subtitle2" Class="text-secondary-darken">@Banner.Venue</MudText>
+            }
+            @if (Banner.StartDateTime.HasValue)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @EventDisplayDateHelper.GetDateRange(Banner.StartDateTime, Banner.EndDateTime)
+                </MudText>
+            }
+        </MudItem>
+        <MudItem xs="12" sm="12" lg="3" Class="d-flex justify-end pb-0 mb-0 pr-4 mt-2 mt-lg-0">
+            @if (!string.IsNullOrEmpty(Banner.ExternalKey))
+            {
+                <MudStack>
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-disabled);">Disponibilidad</MudText>
+                    <EventAvailability Available="@(Banner.AvailableSeats ?? 0)" Total="@Banner.TotalSeats" ExternalKey="@Banner.ExternalKey" />
+                </MudStack>
+            }
         </MudItem>
     </MudGrid>
 </MudCard>

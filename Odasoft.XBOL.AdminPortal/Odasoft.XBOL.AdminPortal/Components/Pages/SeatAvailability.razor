@@ -12,6 +12,7 @@
 @inject IJSRuntime JS
 @inject AppLocalizer<Events> L
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>@L["Availability"] - @_eventName</PageTitle>
 
@@ -43,8 +44,15 @@
                                    Class="text-uppercase mr-4">@L["Unblock"]</MudButton>
                         <MudButton StartIcon="@Icons.Material.Outlined.ShoppingCart"
                                    Color="Color.Primary" Variant="Variant.Filled"
-                                   Disabled="true"
-                                   Class="text-uppercase">@L["Sell"]</MudButton>
+                                   Disabled="_sellProcessing"
+                                   OnClick="SellSelectedSeatsAsync"
+                                   Class="text-uppercase">
+                            @if (_sellProcessing)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            }
+                            @L["Sell"]
+                        </MudButton>
                     </div>
                 }
                 else
@@ -67,7 +75,8 @@
             </MudItem>
             <MudItem xs="7">
                 <EventManagerChart @ref="_chartComponent" SecretKey="@_secretKey" EventKey="@ExternalKey" EventId="0"
-                                   Mode="select" OnSeatSelected="HandleSeatSelected"
+                                   Mode="select" BlockReasonLabel="@L["BlockReason"]"
+                                   OnSeatSelected="HandleSeatSelected"
                                    OnSeatDeselected="HandleSeatDeselected" />
             </MudItem>
             <MudItem xs="4" Class="mt-8">
@@ -99,6 +108,7 @@
     private string _eventName = string.Empty;
     private bool _loading = true;
     private bool _error = false;
+    private bool _sellProcessing = false;
 
     private enum ToolbarState { NoSelection, AllForSale, AllBlocked, Mixed }
 
@@ -209,6 +219,40 @@
         StateHasChanged();
     }
 
+    private async Task SellSelectedSeatsAsync()
+    {
+        if (_selectedSeats.Count == 0) return;
+
+        _sellProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            var seatKeys = SelectedSeatKeys;
+            await AdminClient.UnblockSeatsAsync(ExternalKey, new UnblockSeatsRequest
+            {
+                SeatKeys = seatKeys,
+                Reason = "Unblocked for sale",
+            });
+
+            var seatsParam = Uri.EscapeDataString(string.Join(",", seatKeys));
+            Navigation.NavigateTo($"/events/{Id}/seats?seats={seatsParam}");
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            Snackbar.Add(ex.Result.Title ?? L["ErrorUnblockingSeats"].Value, Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["ErrorUnblockingSeats"].Value, Severity.Error);
+        }
+        finally
+        {
+            _sellProcessing = false;
+            StateHasChanged();
+        }
+    }
+
     private async Task GoBack() => await JS.InvokeVoidAsync("history.back");
 
     private async Task LoadData()
@@ -231,6 +275,7 @@
                 EndDateTime = detail.EndDate?.UtcDateTime,
                 ImageUrl = detail.BannerImageUrl,
                 Venue = detail.VenueName,
+                ExternalKey = ExternalKey,
             };
         }
         catch (Exception ex)

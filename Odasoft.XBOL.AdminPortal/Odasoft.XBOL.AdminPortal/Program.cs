@@ -79,6 +79,7 @@ builder.Services.AddScoped<EventScheduleService>();
 
 builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<LoadingState>();
+builder.Services.AddScoped<PersistentDialogState>();
 
 builder.Services.AddTransient(typeof(AppLocalizer<>));
 builder.Services.AddLocalizationInterceptor<CustomLocalizationInterceptor>();

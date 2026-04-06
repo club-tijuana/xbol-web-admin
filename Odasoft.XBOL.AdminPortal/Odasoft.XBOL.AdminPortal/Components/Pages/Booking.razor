@@ -6,6 +6,7 @@
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.AdminPortal.States
+@using Microsoft.AspNetCore.WebUtilities
 
 @implements IDisposable
 @inject CartState CartState
@@ -49,7 +50,7 @@
                         </MudButton>
                     </MudItem>
                     <MudItem xs="7">
-                        <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@ExternalKey" EventId="Id" Prices="_detail?.Prices" SelectedSeats="@CartState.SelectedSeatsKeys" />
+                        <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@ExternalKey" EventId="Id" Prices="_detail?.Prices" SelectedSeats="@GetInitialSelectedSeats()" />
                     </MudItem>
                     <MudItem xs="4" Class="mt-8">
                         <OrderSummary Chart="_seatingChart" />
@@ -82,10 +83,12 @@
 
     private SeatManagementDetailDTO? _detail;
     private string _successUrl = "/events";
+    private List<string> _preselectedSeats = [];
 
     protected override async Task OnInitializedAsync()
     {
         _successUrl = Navigation.Uri.Contains("/xolopass/") ? "/xolopass" : "/events";
+        _preselectedSeats = ParseSeatsFromQuery();
         CartState.OnChange += StateHasChanged;
         CartState.ClearCart();
         CartState.SetEvent(Id);
@@ -113,6 +116,7 @@
                 EndDateTime = _detail.EndDate?.UtcDateTime,
                 ImageUrl = _detail.BannerImageUrl,
                 Venue = _detail.VenueName,
+                ExternalKey = ExternalKey,
             };
         }
         catch (Exception ex)
@@ -142,6 +146,22 @@
             _currentStep--;
         }
     }
+
+    private List<string> ParseSeatsFromQuery()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var queryDict = QueryHelpers.ParseQuery(uri.Query);
+        if (queryDict.TryGetValue("seats", out var seatsValue) && !string.IsNullOrWhiteSpace(seatsValue))
+        {
+            return seatsValue.ToString()
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+        }
+        return [];
+    }
+
+    private List<string> GetInitialSelectedSeats() =>
+        _preselectedSeats.Count > 0 ? _preselectedSeats : CartState.SelectedSeatsKeys;
 
     private async Task GoBack() => await JS.InvokeVoidAsync("history.back");
 

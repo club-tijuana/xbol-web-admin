@@ -40,7 +40,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="RequiredFieldsNote" xml:space="preserve">
-    <value>*Campos obligatorios</value>
+    <value>Campos obligatorios</value>
   </data>
   <data name="RequiredField" xml:space="preserve">
     <value>Este campo es obligatorio</value>
