@@ -11,6 +11,7 @@
 @inject IEventService EventService
 @inject OrdersService OrdersService;
 @inject LoadingState LoadingState;
+@inject PersistentDialogState PersistentDialogState;
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -30,7 +31,8 @@
                               AdornmentIcon="@Icons.Material.Filled.Search"
                               Style="min-width: 370px;"
                               OnAdornmentClick="@SearchOrder"
-                              OnKeyDown="HandleKeyDown">
+                              OnKeyDown="HandleKeyDown"
+                              Immediate>
                 </MudTextField>
             </MudStack>
         </RightContent>
@@ -104,6 +106,21 @@
         {
             _isLoading = false;
         }
+
+        ShowOrderConfirmation();
+    }
+
+    private async Task ShowOrderConfirmation()
+    {
+        if (PersistentDialogState.BookingResult is not null)
+        {
+            var parameters = new DialogParameters<SuccesfulOrderDialog> { { x => x.Booking, PersistentDialogState.BookingResult } };
+            DialogOptions options = new() { CloseButton = true, Position = DialogPosition.TopRight };
+            var dialog = await DialogService.ShowAsync<SuccesfulOrderDialog>(string.Empty, parameters, options);
+            var dialogResult = await dialog.Result;
+
+            PersistentDialogState.ClearBookingResult();
+        }
     }
 
     private Task ShowOrderDetail(string reference)
@@ -167,15 +184,5 @@
         {
             await SearchOrder();
         }
-    }
-
-    public class EventInfo
-    {
-        public long Id { get; set; }
-        public string? PosterImageUrl { get; set; }
-        public required string EventName { get; set; }
-        public DateTimeOffset Date { get; set; }
-        public int AvailableSeats { get; set; }
-        public bool? IsSeason { get; set; }
     }
 }

@@ -52,7 +52,7 @@
 
     @if (_seasonLoading)
     {
-        <MudCard Elevation="2" Class="rounded-md" Style="height:75px; overflow:hidden;">
+        <MudCard Elevation="2" Class="rounded-md mb-4" Style="height:75px; overflow:hidden;">
             <MudGrid Spacing="0" Style="height:100%;">
                 <MudItem xs="12" sm="3" Style="height:100%;">
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100%" />
@@ -68,7 +68,7 @@
     }
     else if (_season is not null)
     {
-        <MudCard Elevation="2" Class="rounded-md" Style="height:75px; overflow:hidden;">
+        <MudCard Elevation="2" Class="rounded-md mb-4" Style="height:75px; overflow:hidden;">
             <MudGrid Spacing="0" Style="height:100%;">
 
                 <MudItem xs="12" sm="3" Style="height:100%;">
@@ -257,17 +257,7 @@ else if(_selectedTab == TabPast)
 
                     <TemplateColumn Title="@L["ColumnAvailability"]" Filterable="false" Sortable="false">
                         <CellTemplate>
-                            <div class="d-flex">
-                                <MudText Typo="Typo.body2" Color="Color.Tertiary">
-                                    <strong>@context.Item.Available</strong>
-                                </MudText>
-                                <MudText Typo="Typo.body2" Style="padding: 0 2px; color: var(--mud-palette-text-disabled);">
-                                    /
-                                </MudText>
-                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-disabled);">
-                                    @context.Item.Total
-                                </MudText>
-                            </div>
+                            <EventAvailability Available="@context.Item.Available" Total="@context.Item.Total" ExternalKey="@context.Item.ExternalEventKey" />
                         </CellTemplate>
                     </TemplateColumn>
 
@@ -329,11 +319,18 @@ else if(_selectedTab == TabPast)
 
     protected override void OnParametersSet()
     {
-        _selectedTab = Tab?.ToLowerInvariant() switch
+        if (SeasonId is not null)
         {
-            TabPast => TabPast,
-            _ => TabUpcoming
-        };
+            _selectedTab = TabPast;
+        }
+        else
+        {
+            _selectedTab = Tab?.ToLowerInvariant() switch
+            {
+                TabPast => TabPast,
+                _ => TabUpcoming
+            };
+        }
 
         UpdateItems();
     }
@@ -369,7 +366,10 @@ else if(_selectedTab == TabPast)
     {
         if(_selectedTab == TabPast)
         {
-            await _dataGrid.ReloadServerData();
+            if (_dataGrid is not null)
+            {
+                await _dataGrid.ReloadServerData();
+            }
         } 
         else
         {

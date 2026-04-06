@@ -24,8 +24,7 @@
                 <MudStack>
                     <MudText Typo="Typo.caption">@L["Availability"]</MudText>
                     <MudStack Row Justify="Justify.FlexEnd" AlignItems="AlignItems.Center" Spacing="1">
-                        <MudIcon Color="Color.Tertiary" Icon="@Icons.Material.Filled.EventSeat" Size="Size.Small" />
-                        <MudText Color="Color.Tertiary" Typo="Typo.body2"><b>@(Event.Available)</b></MudText>
+                        <EventAvailability Available="@(Event.Available)" OmitTotal ExternalKey="@Event.ExternalEventKey" />
                     </MudStack>
                 </MudStack>
             </MudItem>

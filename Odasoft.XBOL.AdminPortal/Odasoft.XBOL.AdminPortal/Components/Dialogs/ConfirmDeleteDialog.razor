@@ -1,10 +1,14 @@
-<BaseDialog Title="@Title">
+<BaseDialog>
+    <TitleContent>
+        <MudText Typo="Typo.subtitle2">@Title</MudText>
+    </TitleContent>
     <ChildContent>
         <MudText Typo="Typo.body2">@Message</MudText>
     </ChildContent>
     <Actions>
         <MudButton OnClick="Cancel">CANCELAR</MudButton>
-        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete" OnClick="Confirm">BORRAR</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete"
+                   OnClick="Confirm">BORRAR</MudButton>
     </Actions>
 </BaseDialog>
 

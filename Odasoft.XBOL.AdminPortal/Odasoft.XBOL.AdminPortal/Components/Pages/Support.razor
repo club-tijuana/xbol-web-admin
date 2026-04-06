@@ -19,9 +19,9 @@
 
     @* Search Section *@
     <MudPaper Class="pa-4 mb-4 d-flex align-center gap-4" Elevation="1">
-        <MudTextField @bind-Value="_searchQuery" Label="@_localizer["SearchByOrderNumber"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" ShrinkLabel />
+        <MudTextField @bind-Value="_searchText" Label="@_localizer["SearchByOrderNumber"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" ShrinkLabel />
         <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Outlined.ClearAll">@_localizer["Clear"]</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Outlined.Search" OnClick="SearchOrderAsync">@_localizer["Search"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Outlined.Search" OnClick="DoSearchAsync">@_localizer["Search"]</MudButton>
     </MudPaper>
 
     @if (_orderId.HasValue)
@@ -147,7 +147,7 @@
 </MudContainer>
 
 @code {
-
+    private string _searchText = "";
     private string _searchQuery = "";
     private int _activeTabIndex = 0;
 
@@ -186,6 +186,13 @@
         _activeTabIndex = 0;
     }
 
+    private async Task DoSearchAsync()
+    {
+        _searchQuery = _searchText;
+
+        await SearchOrderAsync();
+    }
+
     private void ClearData()
     {
         _orderId = null;
@@ -197,7 +204,7 @@
 
     private async Task OpenOrderOwnerDiagloAsync()
     {
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         var parameters = new DialogParameters { ["ClientId"] = _orderInfoResponse.ClientId };
 
         var dialog = await _dialogService.ShowAsync<OrderOwnerDialog>("Actualizar titular", parameters, options);
@@ -234,7 +241,6 @@
 
     private async Task CancelOrderAsync()
     {
-        _selectedItems.Clear();
         bool? result = await OpenOrderActionDialogAsync(OrderAction.CancelOrder);
 
         if (result.HasValue)
@@ -252,7 +258,6 @@
 
     private async Task CancelOrderWithoutRefundAsync()
     {
-        _selectedItems.Clear();
         bool? result = await OpenOrderActionDialogAsync(OrderAction.CancelWithoutRefund);
 
         if (result.HasValue)
@@ -270,7 +275,6 @@
 
     private async Task ResendReceiptAsync()
     {
-        _selectedItems.Clear();
         bool? result = await OpenOrderActionDialogAsync(OrderAction.ResendReceipt);
 
         if (result.HasValue)
@@ -397,6 +401,24 @@
 
     private async Task<bool> PerformOrderActionAsync(OrderAction action)
     {
+
+        Dictionary<string, string> seats = [];
+
+        if (action == OrderAction.CancelOrder
+            || action == OrderAction.CancelWithoutRefund
+            || action == OrderAction.ReissueTickets)
+        {
+            seats = _orderItems
+                    .Where(i => i.IsCancelled == false)
+                    .ToDictionary(i => i.Id?.ToString() ?? "", i => i.SeatObjectKey ?? "");
+        }
+        else
+        {
+            seats = _selectedItems
+                    .Where(i => i.IsCancelled == false)
+                    .ToDictionary(i => i.Id?.ToString() ?? "", i => i.SeatObjectKey ?? "");
+        }
+
         return await _supportService.PerformOrderActionAsync(_orderId.Value,
             new OrderActionRequest
             {
@@ -405,7 +427,7 @@
                 ChangeToDigital = _changeToDigital,
                 Comments = _comments,
                 NewEmail = _newEmail,
-                Seats = _selectedItems.ToDictionary(i => i.Id?.ToString() ?? "", i => i.SeatObjectKey ?? "")
+                Seats = seats
             });
     }
 }

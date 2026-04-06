@@ -41,7 +41,8 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.VenueName ?? "",
             e.AvailableSeats,
             e.TotalSeats,
-            e.ExternalEventKey
+            e.ExternalEventKey,
+            e.PosterImageUrl ?? ""
         )).ToArray() ?? [];
 
         return new GridData<EventViewModel>

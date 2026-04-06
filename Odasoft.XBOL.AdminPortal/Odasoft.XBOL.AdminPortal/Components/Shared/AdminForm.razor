@@ -56,10 +56,10 @@
         if (_form.IsTouched)
         {
             var result = await DialogService.ShowMessageBoxAsync(
-                L["UnsavedChangesTitle"],
-                L["UnsavedChangesMessage"],
-                yesText: L["UnsavedChangesConfirm"],
-                cancelText: L["UnsavedChangesCancel"]);
+            L["UnsavedChangesTitle"],
+            L["UnsavedChangesMessage"],
+            yesText: L["UnsavedChangesConfirm"],
+            cancelText: L["UnsavedChangesCancel"]);
 
             if (result is not true) return;
         }

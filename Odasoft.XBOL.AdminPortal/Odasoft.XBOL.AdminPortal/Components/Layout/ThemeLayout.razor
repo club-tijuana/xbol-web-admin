@@ -2,7 +2,7 @@
 
 <MudThemeProvider Theme="_theme" />
 <MudPopoverProvider />
-<MudDialogProvider />
+<MudDialogProvider CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
 
 @Body
@@ -30,7 +30,8 @@
             Info = "#378CED",
             Success = "#2EBE51",
             Warning = "#F78E21",
-            Error = "#E94035"
+            Error = "#E94035",
+            LinesInputs = "#ECEFF1"
         },
         Typography = new Typography
         {

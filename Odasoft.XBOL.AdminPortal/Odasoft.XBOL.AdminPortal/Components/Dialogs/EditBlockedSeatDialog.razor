@@ -6,27 +6,22 @@
 @inject IStringLocalizer<AdminForm> FormL
 @inject AppLocalizer<EditBlockedSeatDialog> L
 
-<BaseDialog Title="@L["Edit"].Value">
+<BaseDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5">@L["Edit"].Value</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Error">*</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RequiredFieldsNote"]</MudText>
+    </TitleContent>
     <ChildContent>
-        <MudText Typo="Typo.caption" Color="Color.Error" Class="mb-2">@L["RequiredFieldsNote"]</MudText>
-        <MudText Typo="Typo.body2" Class="mb-4">@L["SeatCountMessage", SeatKeys.Count]</MudText>
-        <MudForm @ref="_form">
-            <MudStack Spacing="4">
-                <AdminTextField @bind-Value="_reason" Label="@L["ReasonLabel"].Value"
-                                Placeholder="@L["BlockReasonPlaceholder"].Value"
-                                Field="@_formContext.Field("Reason")" Required />
-                <MudColorPicker @bind-Value="_color" Label="@L["ColorLabel"].Value" Variant="Variant.Outlined"
-                                Required RequiredError="@FormL["RequiredField"]"
-                                Validation="@(_formContext.Field("Color").ValidationFor<MudColor>())"
-                                ColorPickerMode="ColorPickerMode.HEX" />
-            </MudStack>
-        </MudForm>
+        <SeatActionForm @ref="_seatActionForm" FormContext="_formContext"
+                        @bind-Reason="_reason" @bind-Color="_color"
+                        ReasonLabel="@L["ReasonLabel"].Value"
+                        ReasonPlaceholder="@L["BlockReasonPlaceholder"].Value"
+                        ColorLabel="@L["ColorLabel"].Value" />
     </ChildContent>
     <Actions>
-        <MudButton Color="Color.Tertiary" Variant="Variant.Filled"
-                   StartIcon="@Icons.Material.Outlined.Save"
-                   Disabled="_formContext.IsSaving"
-                   OnClick="SubmitAsync" Class="text-uppercase">@L["Save"]</MudButton>
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save"
+                   Disabled="_formContext.IsSaving" OnClick="SubmitAsync" Class="text-uppercase">@L["Save"]</MudButton>
     </Actions>
 </BaseDialog>
 
@@ -39,7 +34,7 @@
     [Parameter] public string? InitialReason { get; set; }
     [Parameter] public string? InitialColor { get; set; }
 
-    private MudForm _form = default!;
+    private SeatActionForm _seatActionForm = default!;
     private FormContext _formContext = default!;
     private string? _reason;
     private MudColor _color = new("#FF0000");
@@ -54,7 +49,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender) _formContext.SetForm(_form);
+        if (firstRender) _formContext.SetForm(_seatActionForm.InnerForm);
     }
 
     private async Task SubmitAsync()

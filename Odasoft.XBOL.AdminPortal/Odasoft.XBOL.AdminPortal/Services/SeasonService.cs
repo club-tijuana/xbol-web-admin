@@ -46,6 +46,7 @@ namespace Odasoft.XBOL.AdminPortal.Services
                 Venue = season.Venue,
                 StartDateTime = season.StartDate?.UtcDateTime,
                 EndDateTime = season.EndDate?.UtcDateTime,
+                ExternalKey = season.ExternalSeasonKey,
             };
         }
     }

@@ -5,6 +5,8 @@
 @inject CatalogsService _catalogsService;
 @inject ClientsService _clientsService;
 
+@inject ISnackbar _snackbar;
+
 <MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">Actualizar titular</MudText>
@@ -24,7 +26,7 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="8">
-                <MudTextField @bind-Value="_clientRequest.PhoneNumber" Label="Teléfono" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required />
+                <MudNumericField @bind-Value="_clientRequest.PhoneNumber" Label="Teléfono" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Telephone" ShrinkLabel Required />
             </MudItem>
 
             <MudItem xs="12" sm="12">
@@ -32,10 +34,10 @@
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="_clientRequest.Email" Label="Correo electrónico" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required />
+                <MudTextField @bind-Value="_clientRequest.Email" Label="Correo electrónico" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Email" ShrinkLabel Required />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudSelect T="Gender?" @bind-Value="_clientRequest.Gender" Label="Genero" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Clearable Required>
+                <MudSelect T="Gender?" @bind-Value="_clientRequest.Gender" Label="Genero" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Clearable>
                     @foreach (var gender in genders)
                     {
                         <MudSelectItem T="Gender?" Value="@gender">
@@ -46,21 +48,21 @@
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="_clientRequest.City" Label="Ciudad" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required />
+                <MudTextField @bind-Value="_clientRequest.City" Label="Ciudad" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="_clientRequest.Neighborhood" Label="Colonia" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required />
+                <MudTextField @bind-Value="_clientRequest.Neighborhood" Label="Colonia" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <MudDatePicker @bind-Date="_dob" Label="Fecha de nacimiento" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required />
+                <MudDatePicker @bind-Date="_dob" Label="Fecha de nacimiento" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
             </MudItem>
         </MudGrid>
     </DialogContent>
     <DialogActions>
-        <div class="d-flex justify-center w-100 pa-4">
-            <MudButton Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save" OnClick="Submit">GUARDAR</MudButton>
-        </div>
+        <MudStack AlignItems="AlignItems.Center">
+            <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save" OnClick="Submit">GUARDAR</MudButton>
+        </MudStack>
     </DialogActions>
 </MudDialog>
 
@@ -107,6 +109,13 @@
 
     private void Submit()
     {
+        if (string.IsNullOrWhiteSpace(_clientRequest.PhoneNumber)
+            || string.IsNullOrWhiteSpace(_clientRequest.CompanyName)
+            || string.IsNullOrWhiteSpace(_clientRequest.Email))
+        {
+            _snackbar.Add("Nombre, teléfono y correo electrónico son requeridos.", Severity.Error);
+            return;        }
+
         if (_dob.HasValue)
         {
             _clientRequest.DateOfBirth = _dob.Value.ToUniversalTime();

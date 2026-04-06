@@ -7,6 +7,7 @@
 
 @code {
     [Parameter] public string Mode { get; set; } = "manageForSaleConfig";
+    [Parameter] public string? BlockReasonLabel { get; set; }
     [Parameter] public EventCallback<SeatInfo> OnSeatSelected { get; set; }
     [Parameter] public EventCallback<string> OnSeatDeselected { get; set; }
 
@@ -26,7 +27,8 @@
                 secretKey = SecretKey,
                 @event = EventKey,
                 language = Language,
-                mode = Mode
+                mode = Mode,
+                blockReasonLabel = BlockReasonLabel
             };
 
             _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);

@@ -42,11 +42,24 @@ export async function renderChart(containerId, config, dotNetHelper) {
     event: config.event,
     language: config.language,
     mode: config.mode,
+    objectIcon: (obj, defaultIcon, extraConfig) => {
+      if (obj.objectType === 'Seat' && !obj.forSale) {
+        return 'lock';
+      }
+      return defaultIcon;
+    },
     objectColor: (obj, defaultColor, extraConfig) => {
       if (!obj.forSale && obj.extraData?.color) {
         return obj.extraData.color;
       }
       return defaultColor;
+    },
+    tooltipInfo: (obj) => {
+      if (!obj.forSale && obj.extraData?.reason) {
+        const label = config.blockReasonLabel;
+        return label ? `${label}: ${obj.extraData.reason}` : obj.extraData.reason;
+      }
+      return '';
     },
     onObjectSelected: (obj) => {
       dotNetHelper.invokeMethodAsync(

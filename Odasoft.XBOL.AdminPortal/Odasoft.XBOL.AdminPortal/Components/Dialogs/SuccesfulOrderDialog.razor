@@ -1,3 +1,4 @@
+@using Odasoft.XBOL.Business
 @inject AppLocalizer<SuccesfulOrderDialog> L
 
 <MudDialog>
@@ -12,19 +13,19 @@
             <MudItem xs="12">
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.caption" Color="Color.Primary" Class="text-uppercase">@L["TrackingNumber"]</MudText>
-                    <MudText Typo="Typo.h5">CAL178700</MudText>
+                    <MudText Typo="Typo.h5">@Booking.Localizer</MudText>
                 </MudStack>
             </MudItem>
             <MudItem xs="12">
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.caption" Color="Color.Primary" Class="text-uppercase">@L["Phone"]</MudText>
-                    <MudText Typo="Typo.body1">+52 (664) 123 4567</MudText>
+                    <MudText Typo="Typo.body1">@(Booking.ClientPhone ?? "-")</MudText>
                 </MudStack>
             </MudItem>
             <MudItem xs="12">
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.caption" Color="Color.Primary" Class="text-uppercase">@L["Email"]</MudText>
-                    <MudText Typo="Typo.body1">juanperez@gmail.com</MudText>
+                    <MudText Typo="Typo.body1">@(Booking.ClientEmail ?? "-")</MudText>
                 </MudStack>
             </MudItem>
         </MudGrid>
@@ -32,5 +33,6 @@
 </MudDialog>
 
 @code {
-
+    [Parameter]
+    public BookingResult Booking { get; set; } = new();
 }
