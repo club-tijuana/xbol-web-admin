@@ -1,22 +1,28 @@
-@using Odasoft.XBOL.AdminPortal.Components.Shared
-@using Odasoft.XBOL.AdminPortal.Extensions
-@using Odasoft.XBOL.AdminPortal.Services.Contracts
-@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
-@using Odasoft.XBOL.Business
-@inject IStringLocalizer<EventsDataGrid> L
-@inject IEventService EventService
-@inject ISnackbar Snackbar
-@inject NavigationManager Navigation
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.Extensions;
+@using Odasoft.XBOL.AdminPortal.Services.Contracts;
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+
+@inject AppLocalizer<EventsDataGrid> L
+@inject IEventService _eventService;
+@inject CatalogsService _catalogsService;
+@inject ISnackbar _snackbar;
+@inject NavigationManager _navigationManager;
 
 <MudCard Elevation="0">
     <MudCardHeader>
         <CardHeaderContent>
             <MudGrid Class="align-center">
-                @if (HideTitle is false) {
+                @if (HideTitle is false)
+                {
                     <MudItem xs="12" sm="6" lg="8">
                         <MudText Class="pl-lg-4" Typo="Typo.h5">@L["PageTitle"]</MudText>
                     </MudItem>
-                } else {
+                }
+                else
+                {
                     <MudItem xs="0" sm="0" lg="6" />
                 }
                 <MudItem xs="12" sm="@(HideTitle ? 12 : 6)" lg="@(HideTitle ? 6 : 4)">
@@ -37,7 +43,8 @@
                         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                             <ActivatorContent>
                                 <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt"
-                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)" />
+                                               Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)"
+                                               OnClick="@context.ToggleAsync" />
                             </ActivatorContent>
                             <ChildContent>
                                 <MudStack Spacing="3" Class="pa-4" Style="width:375px">
@@ -130,17 +137,7 @@
                 {
                     <TemplateColumn Title="@L["ColumnAvailability"]" Filterable="false" Sortable="false">
                         <CellTemplate>
-                            <div class="d-flex">
-                                <MudText Typo="Typo.body2" Color="Color.Tertiary">
-                                    <strong>@context.Item.Available</strong>
-                                </MudText>
-                                <MudText Typo="Typo.body2" Style="padding: 0 2px; color: var(--mud-palette-text-disabled);">
-                                    /
-                                </MudText>
-                                <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-disabled);">
-                                    @context.Item.Total
-                                </MudText>
-                            </div>
+                            <EventAvailability Available="@context.Item.Available" Total="@context.Item.Total" ExternalKey="@context.Item.ExternalEventKey" />
                         </CellTemplate>
                     </TemplateColumn>
                 }
@@ -150,7 +147,13 @@
                         <MudStack Row Spacing="2">
                             <MudTooltip Text="@L["ActionBoletos"]" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium"
-                                               OnClick="@(() => Navigation.NavigateTo($"/events/{context.Item.Id}/seats"))" />
+                                               Disabled="@(context.Item.ExternalEventKey is null)"
+                                               OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/seats"))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Disponibilidad" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Map" Size="Size.Medium"
+                                               Disabled="@(context.Item.ExternalEventKey is null)"
+                                               OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/key/{context.Item.ExternalEventKey}/availability"))" />
                             </MudTooltip>
                         </MudStack>
                     </CellTemplate>
@@ -158,7 +161,7 @@
             </Columns>
 
             <PagerContent>
-                <CustomMudDataGridPager T="EventViewModel" />
+                <MudDataGridPager T="EventViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
@@ -197,10 +200,10 @@
     private string _searchString = "";
     private MudDataGrid<EventViewModel> _dataGrid = default!;
     private EventFilterParameters _filters = EventFilterParameters.Empty;
-    private List<VenueListItemDTO> _venues = [];
-    private IEnumerable<string> _selectedVenues = new HashSet<string>();
+    private List<ListItem> _venues = [];
+    private IReadOnlyCollection<string> _selectedVenues = [];
     private List<string> _availableCategories = [];
-    private IEnumerable<string> _selectedCategories = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedCategories = [];
     private DateRange? _dateRange = null;
 
     protected override async Task OnInitializedAsync()
@@ -208,8 +211,8 @@
         try
         {
             // Load filter options (Venues/Categories) in parallel
-            var venueTask = EventService.GetVenuesAsync();
-            var catTask = EventService.GetCategoriesAsync();
+            var venueTask = _catalogsService.GetVenuesAsync();
+            var catTask = _eventService.GetCategoriesAsync();
 
             await Task.WhenAll(venueTask, catTask);
 
@@ -218,21 +221,21 @@
         }
         catch (Exception)
         {
-            Snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
+            _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
         }
     }
 
     /// <summary>
     /// Fetches data for the MudDataGrid based on current state (pagination, sorting, search).
     /// </summary>
-    private async Task<GridData<EventViewModel>> ServerReload(GridState<EventViewModel> state)
+    private async Task<GridData<EventViewModel>> ServerReload(GridState<EventViewModel> state, CancellationToken token)
     {
         _loading = true;
         try
         {
             var sortDefinition = state.SortDefinitions.FirstOrDefault();
 
-            var result = await EventService.GetEventsAsync(
+            var result = await _eventService.GetEventsAsync(
                 page: state.Page,
                 pageSize: state.PageSize,
                 sortColumn: sortDefinition?.SortBy,
@@ -244,9 +247,13 @@
 
             return result;
         }
+        catch (TaskCanceledException)
+        {
+            return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
+        }
         catch (Exception)
         {
-            Snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
+            _snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
             return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
         finally

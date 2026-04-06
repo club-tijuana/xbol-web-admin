@@ -1,0 +1,114 @@
+@using Odasoft.XBOL.Business
+
+@inject AppLocalizer<OrderActionDialog> _localizer;
+@inject ISnackbar _snackbar;
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@_localizer[OrderAction.ToString()]</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Error">*Campos obligatorios</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (OrderAction == OrderAction.CancelOrder
+            || OrderAction == OrderAction.CancelWithoutRefund
+            || OrderAction == OrderAction.ReissueTickets
+            || OrderAction == OrderAction.CancelTickets)
+        {
+            <MudTextField @bind-Value="_comments" Label="Observaciones" Variant="Variant.Outlined" Lines="6" Margin="Margin.Dense" ShrinkLabel />
+        }
+
+        @if (OrderAction == OrderAction.ResendReceipt
+            || OrderAction == OrderAction.SendIndividualTickets
+            || OrderAction == OrderAction.ResendCourtesyTickets)
+        {
+            <MudTextField @bind-Value="_email" Label="Correo electrónico" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
+        }
+
+        @if (OrderAction == OrderAction.ConvertToDigitalPhysical)
+        {
+            <MudRadioGroup @bind-Value="_convertToDigital">
+                <MudRadio Value="false" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Print" Color="@Color.Secondary" />@_localizer["Physical"]
+                </MudRadio>
+                <MudRadio Value="true" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Send" Color="@Color.Secondary" />@_localizer["Digital"]
+                </MudRadio>
+            </MudRadioGroup>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudStack AlignItems="AlignItems.Center">
+            @if (OrderAction == OrderAction.CancelOrder
+                || OrderAction == OrderAction.CancelWithoutRefund)
+            {
+                <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete" OnClick="Submit">CANCELAR ORDEN</MudButton>
+            }
+
+            @if (OrderAction == OrderAction.ResendReceipt
+                || OrderAction == OrderAction.ReissueTickets
+                || OrderAction == OrderAction.SendIndividualTickets
+                || OrderAction == OrderAction.ResendCourtesyTickets)
+            {
+                <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Send" OnClick="Submit">ENVIAR</MudButton>
+            }
+
+            @if (OrderAction == OrderAction.ConvertToDigitalPhysical)
+            {
+                <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save" OnClick="Submit">GUARDAR</MudButton>
+            }
+
+            @if (OrderAction == OrderAction.CancelTickets)
+            {
+                <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete" OnClick="Submit">CANCELAR ASIENTOS</MudButton>
+            }
+        </MudStack>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public OrderAction OrderAction { get; set; } = default!;
+
+    private string _comments { get; set; } = "";
+
+    private string _email { get; set; } = "";
+
+    private bool _convertToDigital { get; set; } = true;
+
+    private void Submit()
+    {
+        if (OrderAction == OrderAction.CancelOrder
+            || OrderAction == OrderAction.CancelWithoutRefund
+            || OrderAction == OrderAction.ReissueTickets
+            || OrderAction == OrderAction.CancelTickets)
+        {
+            if (string.IsNullOrWhiteSpace(_comments))
+            {
+                _snackbar.Add("Las observaciones son obligatorias para esta acción.", Severity.Error);
+                return;
+            }
+        }
+
+        if (OrderAction == OrderAction.ResendReceipt
+            || OrderAction == OrderAction.SendIndividualTickets
+            || OrderAction == OrderAction.ResendCourtesyTickets)
+        {
+            if (string.IsNullOrWhiteSpace(_email))
+            {
+                _snackbar.Add("El correo electrónico es obligatorio para esta acción.", Severity.Error);
+                return;
+            }
+        }
+
+        OrderActionDialogResult result = new OrderActionDialogResult
+        {
+            Comments = string.IsNullOrWhiteSpace(_comments) ? _email : _comments,
+            Email = _email,
+            ConvertToDigital = _convertToDigital
+        };
+
+        // Add ticket reissue logic here
+        MudDialog.Close(DialogResult.Ok((result)));
+    }
+}

@@ -1,0 +1,101 @@
+@using Odasoft.XBOL.AdminPortal.Helpers
+@using Odasoft.XBOL.Business
+@inject IStringLocalizer<AdminForm> L
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<MudCard Elevation="3">
+    <MudCardContent>
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+            <MudText Typo="Typo.h5">@Title</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RequiredFieldsNote"]</MudText>
+        </MudStack>
+
+        <MudForm @ref="_form" @bind-IsValid="_formValid">
+            <MudGrid Spacing="4" @onkeydown="OnKeyDownAsync">
+                @ChildContent(_formContext)
+            </MudGrid>
+        </MudForm>
+    </MudCardContent>
+
+    <MudCardActions Class="justify-end pa-4">
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" Disabled="@_formContext.IsSaving"
+                   OnClick="SubmitAsync" Class="text-uppercase">
+            @L["ButtonSave"]
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment<FormContext> ChildContent { get; set; } = default!;
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public Func<Task> OnSubmit { get; set; } = default!;
+    [Parameter, EditorRequired] public string BackUrl { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string ErrorMessage { get; set; } = string.Empty;
+
+    private MudForm _form = default!;
+    private bool _formValid;
+    private FormContext _formContext = default!;
+
+    protected override void OnInitialized()
+    {
+        _formContext = new FormContext(StateHasChanged);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _formContext.SetForm(_form);
+        }
+    }
+
+    public async Task GoBackAsync()
+    {
+        if (_form.IsTouched)
+        {
+            var result = await DialogService.ShowMessageBoxAsync(
+            L["UnsavedChangesTitle"],
+            L["UnsavedChangesMessage"],
+            yesText: L["UnsavedChangesConfirm"],
+            cancelText: L["UnsavedChangesCancel"]);
+
+            if (result is not true) return;
+        }
+
+        Navigation.NavigateTo(BackUrl);
+    }
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e is { Key: "Enter", CtrlKey: true })
+        {
+            await SubmitAsync();
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (!await _formContext.ValidateAsync()) return;
+
+        _formContext.SetSaving(true);
+        try
+        {
+            await OnSubmit();
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _formContext.HandleApiException(ex);
+            Snackbar.Add(ex.Result.Title ?? ErrorMessage, Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(ErrorMessage, Severity.Error);
+        }
+        finally
+        {
+            _formContext.SetSaving(false);
+        }
+    }
+}

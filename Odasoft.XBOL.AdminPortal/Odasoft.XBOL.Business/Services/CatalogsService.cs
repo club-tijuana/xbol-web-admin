@@ -9,10 +9,23 @@ namespace Odasoft.XBOL.Business.Services
             _adminClient = adminClient;
         }
 
-        public async Task<ICollection<ListItem>> GetVenuesAsync()
+        public async Task<List<ListItem>> GetVenuesAsync()
         {
             var venues = await _adminClient.GetVenueCatalogAsync();
             return venues.OrderBy(x => x.Name).ToList();
+        }
+
+        public async Task<List<ListItem>> GetVenueMapsByVenueId(long venueId)
+        {
+            var venueMaps = await _adminClient.GetVenueMapCatalogByVenueIdAsync(venueId);
+
+            return venueMaps.OrderBy(x => x.Name).ToList();
+        }
+
+        public async Task<List<string>> GetVenueCitiesAsync()
+        {
+            var venueCities = await _adminClient.GetVenueCitiesCatalogAsync();
+            return venueCities.Order().ToList();
         }
 
         public async Task<List<ListItem>> GetSuiteLevelsAsync()
@@ -31,6 +44,12 @@ namespace Odasoft.XBOL.Business.Services
         {
             var events = await _adminClient.GetEventCatalogAsync();
             return events.OrderBy(x => x.Name).ToList();
+        }
+
+        public async Task<List<PhoneRegionCodeResponse>> GetPhoneRegionCodesAsync()
+        {
+            var regionCodes = await _adminClient.GetPhoneRegionCodesAsync();
+            return regionCodes.OrderBy(x => x.RegionCode).ToList();
         }
     }
 }

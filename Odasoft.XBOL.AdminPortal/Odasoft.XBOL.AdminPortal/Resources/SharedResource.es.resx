@@ -1,26 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:element name="root" msdata:IsDataSet="true">
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element msdata:IsDataSet="true" name="root">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" name="value" type="xsd:string"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element minOccurs="0" msdata:Ordinal="1" name="value" type="xsd:string"/>
+                <xsd:element minOccurs="0" msdata:Ordinal="2" name="comment" type="xsd:string"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute msdata:Ordinal="1" name="name" type="xsd:string" use="required"/>
+              <xsd:attribute msdata:Ordinal="3" name="type" type="xsd:string"/>
+              <xsd:attribute msdata:Ordinal="4" name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element minOccurs="0" msdata:Ordinal="1" name="value" type="xsd:string"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -39,7 +117,517 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Address" xml:space="preserve">
+    <value>Dirección</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Activo</value>
+  </data>
+  <data name="AllEvents" xml:space="preserve">
+    <value>Todos los eventos</value>
+  </data>
+  <data name="Amount" xml:space="preserve">
+    <value>Importe</value>
+  </data>
+  <data name="AmountPaid" xml:space="preserve">
+    <value>Importe pagado</value>
+  </data>
+  <data name="AmountPending" xml:space="preserve">
+    <value>Importe pendiente</value>
+  </data>
   <data name="AppName" xml:space="preserve">
     <value>XBOL Admin Portal</value>
+  </data>
+  <data name="AreaCode" xml:space="preserve">
+    <value>Lada</value>
+  </data>
+  <data name="Arena" xml:space="preserve">
+    <value>Arena</value>
+  </data>
+  <data name="Availability" xml:space="preserve">
+    <value>Disponibilidad</value>
+  </data>
+  <data name="BuyerFullName" xml:space="preserve">
+    <value>Nombre completo del comprador</value>
+  </data>
+  <data name="BuyerInfo" xml:space="preserve">
+    <value>Datos del comprador</value>
+  </data>
+  <data name="Card" xml:space="preserve">
+    <value>Tarjeta</value>
+  </data>
+  <data name="Cash" xml:space="preserve">
+    <value>Efectivo</value>
+  </data>
+  <data name="City" xml:space="preserve">
+    <value>Ciudad</value>
+  </data>
+  <data name="CityNeighborhood" xml:space="preserve">
+    <value>Ciudad / Colonia</value>
+  </data>
+  <data name="Club" xml:space="preserve">
+    <value>Club</value>
+  </data>
+  <data name="ConventionCenter" xml:space="preserve">
+    <value>Centro de convenciones</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Limpiar</value>
+  </data>
+  <data name="ClientDetail" xml:space="preserve">
+    <value>Detalle del cliente</value>
+  </data>
+  <data name="CompanyName" xml:space="preserve">
+    <value>Razón social</value>
+  </data>
+  <data name="CompanyTaxId" xml:space="preserve">
+    <value>RFC</value>
+  </data>
+  <data name="Credit" xml:space="preserve">
+    <value>Crédito</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Fecha</value>
+  </data>
+  <data name="DateRange" xml:space="preserve">
+    <value>Rango de fecha</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Borrar</value>
+  </data>
+  <data name="DeleteDialogMessage" xml:space="preserve">
+    <value>¿Desea borrar esta información? Esta acción no se puede revertir.</value>
+  </data>
+  <data name="DeleteDialogTitle" xml:space="preserve">
+    <value>Borrar: {0}</value>
+  </data>
+  <data name="DeleteError" xml:space="preserve">
+    <value>Error al eliminar el elemento.</value>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Elemento eliminado exitosamente.</value>
+  </data>
+  <data name="DigitalTicket" xml:space="preserve">
+    <value>Boleto digital</value>
+  </data>
+  <data name="Dollars" xml:space="preserve">
+    <value>Dólares</value>
+  </data>
+  <data name="Draft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Correo electrónico</value>
+  </data>
+  <data name="ErrorBookingTickets" xml:space="preserve">
+    <value>No se pueden reservar los asientos</value>
+  </data>
+  <data name="ErrorLoadingEvent" xml:space="preserve">
+    <value>Error al cargar el evento</value>
+  </data>
+  <data name="ErrorLoadingEvents" xml:space="preserve">
+    <value>Error al cargar eventos</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>Evento</value>
+  </data>
+  <data name="Explanade" xml:space="preserve">
+    <value>Explanada</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>Nombre completo</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Género</value>
+  </data>
+  <data name="GoBack" xml:space="preserve">
+    <value>Regresar</value>
+  </data>
+  <data name="History" xml:space="preserve">
+    <value>Historial</value>
+  </data>
+  <data name="Hotel" xml:space="preserve">
+    <value>Hotel</value>
+  </data>
+  <data name="Inactive" xml:space="preserve">
+    <value>Deshabilitado</value>
+  </data>
+  <data name="MakeCreditPayment" xml:space="preserve">
+    <value>Abonar crédito</value>
+  </data>
+  <data name="ModifyAndPurchase" xml:space="preserve">
+    <value>Modificar y comprar</value>
+  </data>
+  <data name="MudDataGridPager_InfoFormat" xml:space="preserve">
+    <value>{0}-{1} de {2}</value>
+  </data>
+  <data name="MudDataGridPager_RowsPerPage" xml:space="preserve">
+    <value>Mostrar:</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="Neighborhood" xml:space="preserve">
+    <value>Colonia</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>Nuevo</value>
+  </data>
+  <data name="NewVenue" xml:space="preserve">
+    <value>Nuevo recinto</value>
+  </data>
+  <data name="Order" xml:space="preserve">
+    <value>Orden</value>
+  </data>
+  <data name="OtherPaymentMethod" xml:space="preserve">
+    <value>Otro (Cheque, SPEI)</value>
+  </data>
+  <data name="Pay" xml:space="preserve">
+    <value>Pagar</value>
+  </data>
+  <data name="PaymentMethod" xml:space="preserve">
+    <value>Método de pago</value>
+  </data>
+  <data name="CreditPayments" xml:space="preserve">
+    <value>Abonos</value>
+  </data>
+  <data name="PaymentTerm" xml:space="preserve">
+    <value>Periodicidad de pago</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Teléfono</value>
+  </data>
+  <data name="Print" xml:space="preserve">
+    <value>Imprimir</value>
+  </data>
+  <data name="PrintTicket" xml:space="preserve">
+    <value>Boleto impreso</value>
+  </data>
+  <data name="Processing" xml:space="preserve">
+    <value>Procesando</value>
+  </data>
+  <data name="Purchases" xml:space="preserve">
+    <value>Compras</value>
+  </data>
+  <data name="ReceivedBy" xml:space="preserve">
+    <value>Recibido por</value>
+  </data>
+  <data name="RemoveSeat" xml:space="preserve">
+    <value>Quitar asiento</value>
+  </data>
+  <data name="Renew" xml:space="preserve">
+    <value>Renovar</value>
+  </data>
+  <data name="Renewal" xml:space="preserve">
+    <value>Renovación</value>
+  </data>
+  <data name="Replacement" xml:space="preserve">
+    <value>Reposición</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Buscar</value>
+  </data>
+  <data name="Seat" xml:space="preserve">
+    <value>Asiento</value>
+  </data>
+  <data name="Seats" xml:space="preserve">
+    <value>Asientos</value>
+  </data>
+  <data name="Section" xml:space="preserve">
+    <value>Sección</value>
+  </data>
+  <data name="SendDigitalTicket" xml:space="preserve">
+    <value>Enviar boleto digital</value>
+  </data>
+  <data name="SessionExpiredMessage" xml:space="preserve">
+    <value>Su sesión ha expirado o no es válida. Por favor recargue la página.</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Configuración</value>
+  </data>
+  <data name="Stadium" xml:space="preserve">
+    <value>Estadio</value>
+  </data>
+  <data name="StartDate" xml:space="preserve">
+    <value>Fecha de inicio</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Estatus</value>
+  </data>
+  <data name="SuccessfulPurchase" xml:space="preserve">
+    <value>Compra exitosa.</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>Resumen</value>
+  </data>
+  <data name="Theater" xml:space="preserve">
+    <value>Teatro</value>
+  </data>
+  <data name="Tickets" xml:space="preserve">
+    <value>Boletos</value>
+  </data>
+  <data name="TimeRemaining" xml:space="preserve">
+    <value>Tiempo restante: {0}</value>
+  </data>
+  <data name="TrackingInputLabel" xml:space="preserve">
+    <value>Localizador de venta</value>
+  </data>
+  <data name="TrackingInputPlaceholder" xml:space="preserve">
+    <value>Buscar por número o nombre</value>
+  </data>
+  <data name="TrackingNumber" xml:space="preserve">
+    <value>Localizador</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="UnsavedChangesCancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="UnsavedChangesConfirm" xml:space="preserve">
+    <value>Salir</value>
+  </data>
+  <data name="UnsavedChangesMessage" xml:space="preserve">
+    <value>Tiene cambios sin guardar. ¿Desea salir sin guardar?</value>
+  </data>
+  <data name="UnsavedChangesTitle" xml:space="preserve">
+    <value>Cambios sin guardar</value>
+  </data>
+  <data name="Venue" xml:space="preserve">
+    <value>Recinto</value>
+  </data>
+  <data name="Venues" xml:space="preserve">
+    <value>Recintos</value>
+  </data>
+  <data name="VenuesAndSuites" xml:space="preserve">
+    <value>Recintos y palcos</value>
+  </data>
+  <data name="VenueType" xml:space="preserve">
+    <value>Tipo de recinto</value>
+  </data>
+  <data name="Zone" xml:space="preserve">
+    <value>Zona</value>
+  </data>
+  <data name="CreditPaymentAmount" xml:space="preserve">
+    <value>Monto</value>
+  </data>
+  <data name="LegalRepresentative" xml:space="preserve">
+    <value>Representante legal</value>
+  </data>
+  <data name="DateOfBirth" xml:space="preserve">
+    <value>Fecha de nacimiento</value>
+  </data>
+  <data name="TaxId" xml:space="preserve">
+    <value>RFC</value>
+  </data>
+  <data name="SSN" xml:space="preserve">
+    <value>CURP</value>
+  </data>
+  <data name="ErrorLoadingData" xml:space="preserve">
+    <value>Error al cargar los datos</value>
+  </data>
+  <data name="ErrorLoadingDataMessage" xml:space="preserve">
+    <value>Hubo un error al cargar datos, intenta mas tarde.</value>
+  </data>
+  <data name="CreateError" xml:space="preserve">
+    <value>Error al crear {0}.</value>
+  </data>
+  <data name="CreateSuccess" xml:space="preserve">
+    <value>{0} creado exitosamente.</value>
+  </data>
+  <data name="UpdateError" xml:space="preserve">
+    <value>Error al actualizar {0}.</value>
+  </data>
+  <data name="UpdateSuccess" xml:space="preserve">
+    <value>{0} actualizado exitosamente.</value>
+  </data>
+  <data name="AcceptTermsAndConditions" xml:space="preserve">
+    <value>Acepto términos y condiciones</value>
+  </data>
+  <data name="BadRequestMessage" xml:space="preserve">
+    <value>No se puede procesar la peticion con los datos proporcionados.</value>
+  </data>
+  <data name="CreateBadRequest" xml:space="preserve">
+    <value>No se puede guardar {0} con los datos proporcionados.</value>
+  </data>
+  <data name="UpdateBadRequest" xml:space="preserve">
+    <value>No se puede actualizar {0} con los datos proporcionados.</value>
+  </data>
+  <data name="Business" xml:space="preserve">
+    <value>Empresa</value>
+  </data>
+  <data name="ClientType" xml:space="preserve">
+    <value>Tipo de persona</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>País</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="Street" xml:space="preserve">
+    <value>Calle</value>
+  </data>
+  <data name="Number" xml:space="preserve">
+    <value>Número</value>
+  </data>
+  <data name="InteriorNumber" xml:space="preserve">
+    <value>Número interior</value>
+  </data>
+  <data name="PostalCode" xml:space="preserve">
+    <value>Código postal</value>
+  </data>
+  <data name="CreditInfo" xml:space="preserve">
+    <value>Datos del crédito</value>
+  </data>
+  <data name="AuthorizedAmount" xml:space="preserve">
+    <value>Importe autorizado</value>
+  </data>
+  <data name="InterestApply" xml:space="preserve">
+    <value>¿Aplica tasa de interés?</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Sí</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="TermInDays" xml:space="preserve">
+    <value>Plazo (días)</value>
+  </data>
+  <data name="TotalPlusInterest" xml:space="preserve">
+    <value>Monto total + intereses</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>{0} no encontrado</value>
+  </data>
+  <data name="NewBusiness" xml:space="preserve">
+    <value>Nueva Empresa</value>
+  </data>
+  <data name="RequiredFieldsNote" xml:space="preserve">
+    <value>Campos obligatorios</value>
+  </data>
+  <data name="Client" xml:space="preserve">
+    <value>Cliente</value>
+  </data>
+  <data name="Payment" xml:space="preserve">
+    <value>Abono</value>
+  </data>
+  <data name="Selected" xml:space="preserve">
+    <value>Seleccionados</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="RemoveSelection" xml:space="preserve">
+    <value>Remover selección</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Cambio</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>Pendiente</value>
+  </data>
+  <data name="SelectSeatsMessage" xml:space="preserve">
+    <value>Seleccione uno o más asientos a pagar</value>
+  </data>
+  <data name="Received" xml:space="preserve">
+    <value>Recibido</value>
+  </data>
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>No se encontro orden con el numero {0}</value>
+  </data>
+  <data name="TabUpcoming" xml:space="preserve">
+    <value>Próximos</value>
+  </data>
+  <data name="TabPast" xml:space="preserve">
+    <value>Pasados</value>
+  </data>
+  <data name="NewEvent" xml:space="preserve">
+    <value>Nuevo evento</value>
+  </data>
+  <data name="Suites" xml:space="preserve">
+    <value>Palcos</value>
+  </data>
+  <data name="PastEvents" xml:space="preserve">
+    <value>Eventos pasados</value>
+  </data>
+  <data name="SearchByOrderNumber" xml:space="preserve">
+    <value>Buscar por número de orden</value>
+  </data>
+  <data name="CancelOrder" xml:space="preserve">
+    <value>Cancelar orden</value>
+  </data>
+  <data name="CancelWithoutRefund" xml:space="preserve">
+    <value>Cancelar sin reembolso</value>
+  </data>
+  <data name="Female" xml:space="preserve">
+    <value>Mujer</value>
+  </data>
+  <data name="Male" xml:space="preserve">
+    <value>Hombre</value>
+  </data>
+  <data name="OrderCreated" xml:space="preserve">
+    <value>Nueva Orden</value>
+  </data>
+  <data name="OrderRenewed" xml:space="preserve">
+    <value>Orden renovada</value>
+  </data>
+  <data name="ResendReceipt" xml:space="preserve">
+    <value>Reenviar recibo</value>
+  </data>
+  <data name="UpdateOrderHolder" xml:space="preserve">
+    <value>Actualizar titular de la orden</value>
+  </data>
+  <data name="ReissueTickets" xml:space="preserve">
+    <value>Reemitir boletos</value>
+  </data>
+  <data name="SendIndividualTickets" xml:space="preserve">
+    <value>Enviar boletaje individual</value>
+  </data>
+  <data name="ResendCourtesyTickets" xml:space="preserve">
+    <value>Reenviar cortesías</value>
+  </data>
+  <data name="ConvertToDigitalPhysical" xml:space="preserve">
+    <value>Convertir digital / físico</value>
+  </data>
+  <data name="CancelTickets" xml:space="preserve">
+    <value>Cancelar boletos</value>
+  </data>
+  <data name="Physical" xml:space="preserve">
+    <value>Fisico</value>
+  </data>
+  <data name="Support" xml:space="preserve">
+    <value>Soporte</value>
+  </data>
+  <data name="Block" xml:space="preserve">
+    <value>Bloquear</value>
+  </data>
+  <data name="Unblock" xml:space="preserve">
+    <value>Desbloquear</value>
+  </data>
+  <data name="Sell" xml:space="preserve">
+    <value>Vender</value>
+  </data>
+  <data name="BoxOffice" xml:space="preserve">
+    <value>Taquilla</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>En línea</value>
+  </data>
+  <data name="NoEventsFound" xml:space="preserve">
+    <value>No se encontraron eventos</value>
+  </data>
+  <data name="ErrorUnblockingSeats" xml:space="preserve">
+    <value>Error al desbloquear asientos</value>
+  </data>
+  <data name="BlockReason" xml:space="preserve">
+    <value>Razón de bloqueo</value>
   </data>
 </root>

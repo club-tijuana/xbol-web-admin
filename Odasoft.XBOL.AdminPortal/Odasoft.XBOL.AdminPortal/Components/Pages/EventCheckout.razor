@@ -1,73 +1,80 @@
-@using FluentValidation
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Common.Constants
-@using Odasoft.XBOL.Models.Constants
+@using FluentValidation;
+@using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
+@using Odasoft.XBOL.Common.Helpers
 
-@implements IDisposable
-@inject CartState CartState
-@inject IAdminClient AdminClient
-@inject NavigationManager Navigation
-@inject IStringLocalizer<Events> Localizer
-@inject ISnackbar Snackbar
-@inject LoadingState LoadingState
-@inject IDialogService DialogService
+@implements IAsyncDisposable;
 
-<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation" ConfirmExternalNavigation="true" />
+@inject CartState _cartState;
+@inject IAdminClient _adminClient;
+@inject NavigationManager _navigation;
+@inject AppLocalizer<Events> L;
+@inject ISnackbar _snackbar;
+@inject LoadingState _loadingState;
+@inject IDialogService _dialogService;
+@inject ClientsService _clientsService;
+@inject CatalogsService _catalogsService;
+
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
 
 <MudForm @ref="_form" Model="_request" @bind-IsValid="_isValid" @bind-IsTouched="_isTouched" Validation="@(orderValidator.ValidateValue)">
     <MudGrid Justify="Justify.SpaceBetween">
         <MudItem xs="12" Class="d-flex justify-space-between">
-            <MudText Typo="Typo.h5">Método de pago</MudText>
-            <MudButton OnClick="Return" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">ASIENTOS</MudButton>
+            <MudText Typo="Typo.h5">@L["PaymentMethod"]</MudText>
+            <MudButton OnClick="ReturnAsync" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
         </MudItem>
 
         <MudItem xs="3">
             <MudGrid>
                 <MudItem xs="6">
-                    <MudSelect Label="Lada*"
+                    <MudSelect Label="@(L["AreaCode"] + "*")"
                                Variant="Variant.Outlined"
                                Margin="Margin.Dense"
-                               @bind-Value="_request.CountryPhoneISO"
-                               For="@(() => _request.CountryPhoneISO)">
+                               @bind-Value="_request.PhoneRegionCodeId"
+                               For="@(() => _request.PhoneRegionCodeId)">
 
-                        @foreach (var item in CountryDialCodes.Map)
+                        @foreach (var regionCode in _phoneRegionCodes)
                         {
-                            <MudSelectItem T="string" Value="item.Value">
-                                @item.Value
+                            <MudSelectItem T="long?" Value="regionCode.Id">
+                                <MudImage Src="@FlagHelper.GetFlagImageUrl(regionCode.RegionCode ?? "")" Height="15" Elevation="1" ObjectFit="ObjectFit.Fill" /> @($"+{regionCode.DialCode}")
                             </MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="6">
-                    <MudTextField Label="Teléfono*"
+                    <MudTextField Label="@(L["Phone"] + "*")"
                                   @bind-Value="_request.PhoneNumber"
                                   For="@(() => _request.PhoneNumber)"
                                   Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
                                   MaxLength="10"
-                                  OnBlur="OnPhoneBlur"
+                                  OnBlur="SearchOnBlurAsync"
                                   InputType="InputType.Telephone" />
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField Label="Correo electrónico*"
+                    <MudTextField Label="@(L["Email"] + "*")"
                                   Variant="Variant.Outlined"
                                   @bind-Value="_request.Email"
                                   For="@(() => _request.Email)"
                                   Margin="Margin.Dense"
-                                  Immediate="true" />
+                                  Immediate="true"
+                                  OnBlur="SearchOnBlurAsync"
+                                  InputType="InputType.Email" />
                 </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_request.FullName"
                                   For="@(() => _request.FullName)"
-                                  Label="Nombre del comprador" Variant="Variant.Outlined"
+                                  Label="@(L["BuyerFullName"] + "*")"
+                                  Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
                                   Immediate="true" />
                 </MudItem>
                 <MudItem xs="6">
                     <MudTextField @bind-Value="_request.City"
                                   For="@(() => _request.City)"
-                                  Label="Ciudad"
+                                  Label="@L["City"]"
                                   Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
                                   Immediate="true" />
@@ -75,7 +82,7 @@
                 <MudItem xs="6">
                     <MudTextField @bind-Value="_request.Neighborhood"
                                   For="@(() => _request.Neighborhood)"
-                                  Label="Colonia"
+                                  Label="@L["Neighborhood"]"
                                   Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
                                   Immediate="true" />
@@ -83,7 +90,7 @@
                 <MudItem xs="12">
                     <MudSelect @bind-Value="_request.Gender"
                                For="@(() => _request.Gender)"
-                               Label="Género"
+                               Label="@L["Gender"]"
                                Variant="Variant.Outlined"
                                Margin="Margin.Dense"
                                Placeholder="Sin especificar"
@@ -112,11 +119,10 @@
         <MudItem xs="4">
             <MudGrid>
                 <MudItem xs="12" class="d-flex gap-4 align-center">
-                    @*                     <MudTextField @bind-Value="_request.PaymentInfoForm.CardAmount" For="@(() => _request.PaymentInfoForm.CardAmount)" Label="Tarjeta" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" Format="N2" /> *@
                     <MudNumericField @bind-Value="_request.CardAmount"
                                      For="@(() => _request.CardAmount)"
                                      Format="N2"
-                                     Label="Tarjeta"
+                                     Label="@L["Card"]"
                                      Variant="Variant.Outlined"
                                      Adornment="Adornment.Start"
                                      AdornmentIcon="@Icons.Material.Filled.AttachMoney"
@@ -124,24 +130,68 @@
                                      Placeholder="0.00"
                                      HideSpinButtons="true"
                                      Disabled="IsFreeTicket"
-                                     Immediate />
-                    <MudButton Variant="Variant.Outlined" @onclick="SetAllCard" Disabled="IsFreeTicket">TODO</MudButton>
+                                     Immediate="false" />
+                    <MudButton Variant="Variant.Outlined" @onclick="SetAllCardAsync" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudTextField @bind-Value="_request.CashAmount" For="@(() => _request.CashAmount)" Label="Efectivo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" Format="N2" Disabled="IsFreeTicket" />
-                    <MudButton Variant="Variant.Outlined" @onclick="SetAllCash" Disabled="IsFreeTicket">TODO</MudButton>
+                    <MudNumericField @bind-Value="_request.CashAmount"
+                                     For="@(() => _request.CashAmount)"
+                                     Format="N2"
+                                     Label="@L["Cash"]"
+                                     Variant="Variant.Outlined"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     Margin="Margin.Dense"
+                                     Placeholder="0.00"
+                                     HideSpinButtons="true"
+                                     Disabled="IsFreeTicket"
+                                     Immediate="false" />
+                    <MudButton Variant="Variant.Outlined" @onclick="SetAllCashAsync" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudTextField @bind-Value="_request.DolarAmount" For="@(() => _request.DolarAmount)" Label="Dólares" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" Format="N2" Disabled="IsFreeTicket" />
+                    <MudNumericField @bind-Value="_request.DolarAmount"
+                                     For="@(() => _request.DolarAmount)"
+                                     Format="N2"
+                                     Label="@L["Dollars"]"
+                                     Variant="Variant.Outlined"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     Margin="Margin.Dense"
+                                     Placeholder="0.00"
+                                     HideSpinButtons="true"
+                                     Disabled="IsFreeTicket"
+                                     Immediate="false" />
                     <MudButton Variant="Variant.Outlined" @onclick="SetAllDolar" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudTextField @bind-Value="_request.CreditAmount" For="@(() => _request.CreditAmount)" Label="Crédito" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" Format="N2" Disabled="IsFreeTicket" />
-                    <MudButton Variant="Variant.Outlined" @onclick="SetAllCredit" Disabled="IsFreeTicket">TODO</MudButton>
+                    <MudNumericField @bind-Value="_request.CreditAmount"
+                                     For="@(() => _request.CreditAmount)"
+                                     Format="N2"
+                                     Label="@L["Credit"]"
+                                     Variant="Variant.Outlined"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     Margin="Margin.Dense"
+                                     Placeholder="0.00"
+                                     HideSpinButtons="true"
+                                     Disabled="IsFreeTicket"
+                                     Immediate="false" />
+                    <MudButton Variant="Variant.Outlined" @onclick="SetAllCreditAsync" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudTextField @bind-Value="_request.OtherAmount" For="@(() => _request.OtherAmount)" Label="Otro (Cheque, SPEI)" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" Margin="Margin.Dense" Placeholder="0.00" Format="N2" Disabled="IsFreeTicket" />
-                    <MudButton Variant="Variant.Outlined" @onclick="SetAllOther" Disabled="IsFreeTicket">TODO</MudButton>
+                    <MudNumericField @bind-Value="_request.OtherAmount"
+                                     For="@(() => _request.OtherAmount)"
+                                     Format="N2"
+                                     Label="@L["OtherPaymentMethod"]"
+                                     Variant="Variant.Outlined"
+                                     Adornment="Adornment.Start"
+                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                     Margin="Margin.Dense"
+                                     Placeholder="0.00"
+                                     HideSpinButtons="true"
+                                     Disabled="IsFreeTicket"
+                                     Immediate="false" />
+                    <MudButton Variant="Variant.Outlined" @onclick="SetAllOtherAsync" Disabled="IsFreeTicket">TODO</MudButton>
                 </MudItem>
                 <MudItem xs="12">
                     <div class="order-summary">
@@ -163,7 +213,7 @@
                                 <MudRadio Value="@("Impreso")" Color="Color.Primary" UncheckedColor="Color.Secondary">
                                     <MudStack Row AlignItems="AlignItems.Center">
                                         <MudIcon Icon="@Icons.Material.Filled.Print" Title="Favorite" />
-                                        <MudText Typo="Typo.body1">Boleto impreso</MudText>
+                                        <MudText Typo="Typo.body1">@L["PrintTicket"]</MudText>
                                     </MudStack>
                                 </MudRadio>
                             </MudItem>
@@ -171,7 +221,7 @@
                                 <MudRadio Value="@("Digital")" Color="Color.Primary" UncheckedColor="Color.Secondary">
                                     <MudStack Row AlignItems="AlignItems.Center">
                                         <MudIcon Icon="@Icons.Material.Filled.Send" Title="Favorite" />
-                                        <MudText Typo="Typo.body1">Boleto digital</MudText>
+                                        <MudText Typo="Typo.body1">@L["DigitalTicket"]</MudText>
                                     </MudStack>
                                 </MudRadio>
                             </MudItem>
@@ -180,7 +230,7 @@
                 </MudItem>
                 <MudItem xs="12" Class="d-flex justify-end">
                     <MudSwitch @bind-Value="_request.AcceptTermsAndConditions" For="@(() => _request.AcceptTermsAndConditions)" UncheckedColor="Color.Secondary" Color="Color.Primary">
-                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Acepto términos y condiciones</MudText>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">@L["AcceptTermsAndConditions"]</MudText>
                     </MudSwitch>
                 </MudItem>
                 <MudItem xs="12" Class="d-flex justify-end">
@@ -189,7 +239,7 @@
                                StartIcon="@Icons.Material.Outlined.Save"
                                Color="Color.Tertiary"
                                Disabled="@SubmitDisabled"
-                               @onclick="Submit">@(_isSubmitting ? "Procesando..." : "PAGAR")</MudButton>
+                               @onclick="SubmitAsync">@(_isSubmitting? L["Processing"] + "..." : L["Pay"])</MudButton>
                 </MudItem>
             </MudGrid>
         </MudItem>
@@ -210,7 +260,7 @@
     private bool _isValid = false;
     private bool _isTouched = false;
     private bool _isSubmitting = false;
-    private bool _succesfulPurchase = false;
+    private bool _successfulPurchase = false;
 
     private string? _ticketType = "Boleto";
 
@@ -224,10 +274,12 @@
         {
             _ticketType = value;
             _request.TicketType = value;
+
             if (value == "Cortesía")
             {
-                ClearAmounts();
+                ClearAmountsAsync();
             }
+
             StateHasChanged();
         }
     }
@@ -237,13 +289,13 @@
     private BookingFormFluentValidator orderValidator = new();
 
     private bool SubmitDisabled =>
-        CartState.IsHoldCallsInProgress
-        || CartState.SelectedSeats.Count == 0
+        _cartState.IsHoldCallsInProgress
+        || _cartState.SelectedSeats.Count == 0
         || !_request.AcceptTermsAndConditions
         || !_isValid
         || !_isTouched
         || _isSubmitting
-        || (TicketType != "Cortesía" && PendingPay > 0);
+        || (TicketType != "Cortesía" && PendingPay != 0);
 
     private decimal TotalPay =>
         (_request.CardAmount ?? 0) +
@@ -252,38 +304,75 @@
         (_request.CreditAmount ?? 0) +
         (_request.OtherAmount ?? 0);
 
-    private decimal PendingPay => IsFreeTicket ? CartState.TotalPrice : CartState.TotalPrice - TotalPay;
+    private decimal PendingPay => IsFreeTicket ? _cartState.TotalPrice : _cartState.TotalPrice - TotalPay;
     private string FormattedPendingPay => Math.Abs(PendingPay).ToString(FormatConstants.CURRENCY);
     private Color PendingPayColor => IsFreeTicket ? Color.Secondary : PendingPay > 0 ? Color.Error : PendingPay < 0 ? Color.Tertiary : Color.Secondary;
     private bool IsFreeTicket => TicketType == "Cortesía";
+    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
     protected override async Task OnInitializedAsync()
     {
-        CartState.OnChange += StateHasChanged;
+        _cartState.OnChange += StateHasChanged;
+
         try
         {
-            var holdToken = await AdminClient.HoldSeatsAsync(new HoldSeatsRequest
+            _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+
+            // TODO: Move this to a proper service
+            var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
             {
-                EventId = CartState.CurrentEventId.Value,
-                Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList()
+                EventId = _cartState.CurrentEventId.Value,
+                Seats = _cartState.SelectedSeats.Select(x => x.SeatId).ToList(),
+                SaleType = SaleType.Event
             });
-            CartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
+
+            _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
         }
         catch (Exception ex)
         {
-            Snackbar.Add("No se pueden reservar los asientos", MudBlazor.Severity.Error);
-            await Return();
+            _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
+            await ReturnAsync();
         }
     }
 
-    private async Task OnPhoneBlur(FocusEventArgs args)
+    private async Task SearchOnBlurAsync(FocusEventArgs args)
     {
-        // TODO: Validar que el cliente no tenga una compra previa para mostrar su información y validar renovación en caso de ser temporada
+        if (string.IsNullOrWhiteSpace(_request.PhoneNumber) && string.IsNullOrWhiteSpace(_request.Email))
+        {
+            return;
+        }
+
+        try
+        {
+            ClientContactResponse? client = await _clientsService.SearchClientAsync(_request.PhoneRegionCodeId, _request.PhoneNumber ?? "", _request.Email ?? "");
+
+            if (client is not null)
+            {
+                _request.FullName = $"{client.Name} {client.LastName}";
+                _request.PhoneRegionCodeId = client.PhoneRegionCodeId;
+                _request.PhoneNumber = client.PhoneNumber;
+                _request.Email = client.Email;
+                _request.ClientId = client.Id;
+            }
+        }
+        catch (ApiException ex)
+        {
+            // If the client is not found, we don't want to show an error, we just want to clear the form
+            if (ex.StatusCode != StatusCodes.Status404NotFound)
+            {
+                Console.WriteLine($"Unexpected error searching for client: {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unexpected error searching for client: {ex.Message}");
+        }
+
     }
 
-    private async Task Return()
+    private async Task ReturnAsync()
     {
-        bool exit = await ConfirmExit();
+        bool exit = await ConfirmExitAsync();
 
         if (exit)
         {
@@ -291,58 +380,55 @@
         }
     }
 
-    private async Task<bool> ConfirmExit()
+    private async Task<bool> ConfirmExitAsync()
     {
-        var options = new DialogOptions { CloseButton = true, NoHeader = true };
-        var parameters = new DialogParameters<ConfirmDialog>();
 
-        parameters.Add(dialog => dialog.Message, "Los cambios no guardados se perderan. ¿Desea continuar?");
+        var result = await _dialogService.ShowMessageBoxAsync(
+                L["UnsavedChangesTitle"],
+                L["UnsavedChangesMessage"],
+                yesText: L["UnsavedChangesConfirm"],
+                cancelText: L["UnsavedChangesCancel"]);
 
-        var dialog = await DialogService.ShowAsync<ConfirmDialog>("", parameters, options);
-        var result = await dialog.Result;
-
-        if (result is not null && !result.Canceled)
+        if (result is true)
         {
-            await ReleaseToken();
+            await ReleaseTokenAsync();
         }
 
-        return result is not null && !result.Canceled;
+        return result is true;
     }
 
-    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    private async Task OnBeforeInternalNavigationAsync(LocationChangingContext context)
     {
-        if (_succesfulPurchase)
+        if (_successfulPurchase)
         {
             return;
         }
 
-        var exit = await ConfirmExit();
+        var exit = await ConfirmExitAsync();
 
         if (!exit)
         {
             context.PreventNavigation();
         }
-
-        // TODO: Figure out how to release token and seats if user closes the page (tab, browser)
     }
 
-    private async Task ReleaseToken()
+    private async Task ReleaseTokenAsync()
     {
         // TODO: make sure token is released in seats.io before leaving this method
         try
         {
-            var token = await AdminClient.ReleaseHoldSeatsAsync(CartState.HoldToken);
+            var token = await _adminClient.ReleaseHoldSeatsAsync(_cartState.HoldToken);
         }
         catch (Exception)
         {
         }
         finally
         {
-            CartState.ClearToken();
+            _cartState.ClearTokenAsync();
         }
     }
 
-    private async void ClearAmounts()
+    private async void ClearAmountsAsync()
     {
         _request.CardAmount = null;
         _request.CashAmount = null;
@@ -351,36 +437,36 @@
         _request.OtherAmount = null;
     }
 
-    private async void SetAllCash()
+    private async void SetAllCashAsync()
     {
-        ClearAmounts();
-        _request.CashAmount = CartState.TotalPrice;
+        ClearAmountsAsync();
+        _request.CashAmount = _cartState.TotalPrice;
     }
-    private async void SetAllCard()
+    private async void SetAllCardAsync()
     {
-        ClearAmounts();
-        _request.CardAmount = CartState.TotalPrice;
+        ClearAmountsAsync();
+        _request.CardAmount = _cartState.TotalPrice;
     }
     private async void SetAllDolar()
     {
         // TODO: Do currency conversions
-        ClearAmounts();
-        _request.DolarAmount = CartState.TotalPrice;
+        ClearAmountsAsync();
+        _request.DolarAmount = _cartState.TotalPrice;
     }
 
-    private async void SetAllCredit()
+    private async void SetAllCreditAsync()
     {
-        ClearAmounts();
-        _request.CreditAmount = CartState.TotalPrice;
+        ClearAmountsAsync();
+        _request.CreditAmount = _cartState.TotalPrice;
     }
 
-    private async void SetAllOther()
+    private async void SetAllOtherAsync()
     {
-        ClearAmounts();
-        _request.OtherAmount = CartState.TotalPrice;
+        ClearAmountsAsync();
+        _request.OtherAmount = _cartState.TotalPrice;
     }
 
-    private async Task Submit()
+    private async Task SubmitAsync()
     {
         if (_isSubmitting)
             return;
@@ -393,48 +479,59 @@
         }
 
         _isSubmitting = true;
-        LoadingState.Show();
+        _loadingState.Show();
 
-        var request = new BookingRequest
+        var request = new EventBookingRequest
         {
-            Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList(),
-            HoldToken = CartState.HoldToken,
-            EventId = EventKey
+            Seats = _cartState.SelectedSeats.ToDictionary(x => x.SeatId, x => x.Price),
+            HoldToken = _cartState.HoldToken ?? "",
+            EventKey = EventKey,
+            ClientContact = new ClientInfoRequest
+            {
+                Id = _request.ClientId,
+                PhoneRegionCodeId = _request.PhoneRegionCodeId,
+                PhoneNumber = _request.PhoneNumber,
+                Email = _request.Email,
+                FullName = _request.FullName
+            }
         };
 
         try
         {
-            var result = await AdminClient.BookSeatsAsync(request);
+            // TODO: Move to a proper service
+            var result = await _adminClient.BookEventSeatsAsync(request);
 
-            Snackbar.Add(Localizer["Seats_PaymentSuccess"], configure: c =>
+            _snackbar.Add(L["Seats_PaymentSuccess"], configure: c =>
             {
                 c.SnackbarVariant = Variant.Text;
                 c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
                 c.IconColor = Color.Success;
             });
 
-            _succesfulPurchase = true;
-            CartState.ClearCart();
-            CartState.ClearToken();
+            _successfulPurchase = true;
+            _cartState.ClearCart();
+            _cartState.ClearTokenAsync();
 
-            Navigation.NavigateTo("/events");
+            _navigation.NavigateTo("/events");
         }
         catch (Exception ex)
         {
-            Snackbar.Add(Localizer["Seats_PaymentError"], MudBlazor.Severity.Error);
-            await ReleaseToken();
+            _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
+
+            await ReleaseTokenAsync();
             await OnReturn.InvokeAsync();
         }
         finally
         {
             _isSubmitting = false;
-            LoadingState.Hide();
+            _loadingState.Hide();
         }
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        CartState.OnChange -= StateHasChanged;
+        _cartState.OnChange -= StateHasChanged;
+        await ReleaseTokenAsync();
     }
 
     public class BookingForm()
@@ -442,9 +539,8 @@
         public string? TicketType { get; set; } = "Boleto";
         public string? DeliveryType { get; set; } = "Impreso";
         public bool AcceptTermsAndConditions { get; set; } = false;
-        // public EventClientForm ClientContact { get; set; } = new();
-        // public PaymentInfoRequest PaymentInfoForm { get; set; } = new();
-        public string? CountryPhoneISO { get; set; }
+        public long? ClientId { get; set; }
+        public long? PhoneRegionCodeId { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Email { get; set; }
         public string? FullName { get; set; }
@@ -482,11 +578,13 @@
     {
         public BookingFormFluentValidator()
         {
-            RuleFor(x => x.CountryPhoneISO)
-                .NotEmpty().WithMessage("El codigo de país es requerido.");
+            RuleFor(x => x.PhoneRegionCodeId)
+                .NotNull().WithMessage("El codigo de país es requerido.");
+
             RuleFor(x => x.PhoneNumber)
                 .NotEmpty().WithMessage("El número de teléfono es requerido.")
                 .Matches(@"^\d{10}$").WithMessage("El número de teléfono debe tener 10 dígitos.");
+
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("El correo electrónico es requerido.")
                 .EmailAddress().WithMessage("El correo electrónico no es válido.");
@@ -497,17 +595,22 @@
 
             RuleFor(x => x.CardAmount)
                 .GreaterThanOrEqualTo(0).WithMessage("El monto de tarjeta no puede ser negativo.");
+
             RuleFor(x => x.CashAmount)
                 .GreaterThanOrEqualTo(0).WithMessage("El monto de efectivo no puede ser negativo.");
+
             RuleFor(x => x.DolarAmount)
                 .GreaterThanOrEqualTo(0).WithMessage("El monto en dólares no puede ser negativo.");
+
             RuleFor(x => x.CreditAmount)
                 .GreaterThanOrEqualTo(0).WithMessage("El monto de crédito no puede ser negativo.");
+
             RuleFor(x => x.OtherAmount)
                 .GreaterThanOrEqualTo(0).WithMessage("El monto de otros métodos no puede ser negativo.");
 
             RuleFor(x => x.DeliveryType)
                 .NotEmpty().WithMessage("Elige método de entrega");
+
             RuleFor(x => x.AcceptTermsAndConditions)
                 .Equal(true).WithMessage("Debes aceptar los términos y condiciones.");
         }
@@ -515,8 +618,12 @@
         public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
         {
             var result = await ValidateAsync(ValidationContext<BookingForm>.CreateWithOptions((BookingForm)model, x => x.IncludeProperties(propertyName)));
+
             if (result.IsValid)
+            {
                 return Array.Empty<string>();
+            }
+
             return result.Errors.Select(e => e.ErrorMessage);
         };
     }

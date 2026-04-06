@@ -5,6 +5,7 @@
 @using Microsoft.Extensions.Options
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared
 @using Odasoft.XBOL.Business
+@using Microsoft.AspNetCore.WebUtilities
 
 @implements IDisposable
 @inject CartState CartState
@@ -12,7 +13,7 @@
 @inject IAdminClient AdminClient
 @inject NavigationManager Navigation
 @inject IOptions<SeatsIo> SeatsOptions
-@inject IStringLocalizer<Events> Localizer
+@inject AppLocalizer<Events> L
 
 <PageTitle>@_eventName</PageTitle>
 
@@ -20,34 +21,34 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToEvents())"
-                        Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+                        Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">@L["GoBack"]</MudButton>
         </LeftContent>
     </PageActionBar>
 </SectionContent>
 
-<LoadingContainer 
-    IsLoading="_loading" 
+<LoadingContainer
+    IsLoading="_loading"
     HasError="_error"
-    ErrorMessage="Error al cargar el evento"
+    ErrorMessage="@L["ErrorLoadingEvent"]"
     OnRetry="LoadEventData">
     <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
-    <MudPaper Class="pa-6" Elevation="3">   
+    <MudPaper Class="pa-6" Elevation="3">
             @if (_currentStep == 1)
             {
                 <MudGrid Justify="Justify.SpaceBetween">
                     <MudItem xs="12" Class="d-flex justify-space-between">
-                        <MudText Typo="Typo.h5">Asientos</MudText>
+                        <MudText Typo="Typo.h5">@L["Seats"]</MudText>
                         <MudButton Variant="Variant.Filled"
                                     DropShadow="false"
                                     EndIcon="@Icons.Material.Filled.NavigateNext"
                                     Color="Color.Primary"
                                     Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
                                     @onclick="NextStep">
-                                @(_holdProcessing? Localizer["Seats_HoldProcessing"] : "MÉTODO DE PAGO")
+                            @(_holdProcessing? L["Seats_HoldProcessing"] : L["PaymentMethod"])
                         </MudButton>
                     </MudItem>
                     <MudItem xs="7">
-                        <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@_eventKey" EventId="Id" Prices="_eventInfo?.Prices" SelectedSeats="@CartState.SelectedSeatsKeys" />
+                        <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@_eventKey" EventId="Id" Prices="_eventInfo?.Prices" SelectedSeats="@GetInitialSelectedSeats()" />
                     </MudItem>
                     <MudItem xs="4" Class="mt-8">
                         <OrderSummary Chart="_seatingChart" />
@@ -75,11 +76,14 @@
     private bool _error = false;
 
     private int _currentStep = 1;
+    private List<string> _preselectedSeats = [];
 
     private EventInfoDTO? _eventInfo;
+    private EventScheduleDTO _eventScheduleInfo;
 
     protected override async Task OnInitializedAsync()
     {
+        _preselectedSeats = ParseSeatsFromQuery();
         CartState.OnChange += StateHasChanged;
         CartState.ClearCart();
         await LoadEventData();
@@ -94,22 +98,24 @@
         try
         {
             _eventInfo = await AdminClient.GetEventByIdAsync(Id);
+            _eventScheduleInfo = _eventInfo.Schedules.First();
             _eventName = _eventInfo.Name ?? string.Empty;
-            _eventKey = _eventInfo.ExternalEventKey ?? string.Empty;
+            _eventKey = _eventScheduleInfo.ExternalEventKey ?? string.Empty;
             _secretKey = SeatsOptions.Value.SecretKey;
 
             _banner = new()
             {
                Title = _eventInfo.Name,
                Subtitle = _eventInfo.Subtitle,
-               StartDateTime = _eventInfo.ScheduledStartDate?.UtcDateTime,
-               EndDateTime = _eventInfo.ScheduledEndDate?.UtcDateTime,
+               StartDateTime = _eventScheduleInfo.StartDateTime.UtcDateTime,
+               EndDateTime = _eventScheduleInfo.EndDateTime?.UtcDateTime,
                ImageUrl = _eventInfo.BannerImageUrl,
                Venue = _eventInfo.VenueName,
+               ExternalKey = _eventScheduleInfo.ExternalEventKey,
             };
 
             CartState.SetEvent(Id);
-            CartState.ClearToken();
+            CartState.ClearTokenAsync();
         }
         catch (Exception ex)
         {
@@ -138,6 +144,22 @@
             _currentStep--;
         }
     }
+
+    private List<string> ParseSeatsFromQuery()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var queryDict = QueryHelpers.ParseQuery(uri.Query);
+        if (queryDict.TryGetValue("seats", out var seatsValue) && !string.IsNullOrWhiteSpace(seatsValue))
+        {
+            return seatsValue.ToString()
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+        }
+        return [];
+    }
+
+    private List<string> GetInitialSelectedSeats() =>
+        _preselectedSeats.Count > 0 ? _preselectedSeats : CartState.SelectedSeatsKeys;
 
     private void GoToEvents()
     {

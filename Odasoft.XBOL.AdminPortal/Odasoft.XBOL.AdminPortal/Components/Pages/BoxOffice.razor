@@ -1,0 +1,188 @@
+@page "/box-office"
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Business.Services
+@using Odasoft.XBOL.Common.Constants
+
+@inject AppLocalizer<BoxOffice> L
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService;
+@inject IEventService EventService
+@inject OrdersService OrdersService;
+@inject LoadingState LoadingState;
+@inject PersistentDialogState PersistentDialogState;
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudText Typo="Typo.h5" Color="Color.Secondary">@L["PageTitle"]</MudText>
+        </LeftContent>
+        <RightContent>
+            <MudStack Row AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.subtitle1" Color="Color.Tertiary"><b>@L["TrackingInputLabel"]</b></MudText>
+                <MudTextField @bind-Value="Search"
+                              Variant="Variant.Outlined" 
+                              Margin="Margin.Dense" 
+                              Placeholder="@L["TrackingInputPlaceholder"]"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Style="min-width: 370px;"
+                              OnAdornmentClick="@SearchOrder"
+                              OnKeyDown="HandleKeyDown"
+                              Immediate>
+                </MudTextField>
+            </MudStack>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+<LoadingContainer IsLoading="@_isLoading"
+                  HasError="@_error"
+                  ErrorMessage="@_errorMessage">
+    <MudGrid Spacing="4">
+        @if (Events.Any())
+        {
+            @foreach (var eventItem in Events)
+            {
+
+                <MudItem xs="12" md="6" lg="3">
+                    <EventCard Event="eventItem" OnClick="@(() => GoToSeats(eventItem))"></EventCard>                    
+                </MudItem>
+            }
+        }
+        else
+        {
+            // TODO: Add UI for no events currently on sale
+            <MudItem xs="12">
+                <MudText>@L["NoEventsFound"]</MudText>
+            </MudItem>
+        }
+        @if (TotalPages > 1)
+        {
+            <MudItem xs="12" Class="d-flex justify-center mt-4">
+                <MudPagination Color="Color.Primary" Count="TotalPages" @bind-Selected="@_page" />
+            </MudItem>
+        }
+    </MudGrid>
+</LoadingContainer>
+@code {
+    private string Search { get; set; } = string.Empty;
+    private bool _isLoading = false;
+    private bool _error = false;
+    private string _errorMessage = string.Empty;
+    private int _page = QueryParamsConstants.DEFAULT_PAGE;
+    private int _pageSize = QueryParamsConstants.DEFAULT_PAGE_SIZE;
+    private int _totalItems = 0;
+
+    private int TotalPages => (int)Math.Ceiling((double)_totalItems / _pageSize);
+
+    private IEnumerable<EventViewModel> Events { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var result = await EventService.GetEventsOnSaleAsync(
+            page: _page - 1,
+            pageSize: _pageSize,
+            sortColumn: null,
+            sortDescending: true,
+            search: null,
+            filters: null);
+
+            Events = result.Items;
+            _totalItems = result.TotalItems;
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
+            _error = true;
+            _errorMessage = L["ErrorLoadingEvents"];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+
+        ShowOrderConfirmation();
+    }
+
+    private async Task ShowOrderConfirmation()
+    {
+        if (PersistentDialogState.BookingResult is not null)
+        {
+            var parameters = new DialogParameters<SuccesfulOrderDialog> { { x => x.Booking, PersistentDialogState.BookingResult } };
+            DialogOptions options = new() { CloseButton = true, Position = DialogPosition.TopRight };
+            var dialog = await DialogService.ShowAsync<SuccesfulOrderDialog>(string.Empty, parameters, options);
+            var dialogResult = await dialog.Result;
+
+            PersistentDialogState.ClearBookingResult();
+        }
+    }
+
+    private Task ShowOrderDetail(string reference)
+    {
+        var parameters = new DialogParameters<OrderDetailDialog> { { x => x.OrderReference, reference } };
+        DialogOptions options = new() { CloseButton = true };
+        return DialogService.ShowAsync<OrderDetailDialog>(string.Empty, parameters, options);
+    }
+
+    private async Task GoToSeats(EventViewModel e)
+    {
+        if (e.IsSeason == true)
+        {
+            Navigation.NavigateTo($"/box-office/seasons/{e.Id}/seats");
+        }
+        else
+        {
+            Navigation.NavigateTo($"/box-office/{e.Id}/seats");
+        }
+    }
+
+    private async Task SearchOrder()
+    {
+        if (string.IsNullOrWhiteSpace(Search))
+        {
+            return;
+        }
+
+        LoadingState.Show();
+        try
+        {
+            var canRenew = await OrdersService.CanOrderBeRenewedAsync(Search);
+
+            if(canRenew.CanRenew == true)
+            {
+                Navigation.NavigateTo($"/box-office/seasons/renovate/{canRenew.NewSeasonId}/{canRenew.Reference}");
+            }
+            else if(!string.IsNullOrWhiteSpace(canRenew.Reference))
+            {
+                await ShowOrderDetail(canRenew.Reference);
+            }
+            else
+            {
+                Snackbar.Add(L["OrderNotFound", Search], Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {            
+            Console.WriteLine($"Error searching for order: {ex.Message}");
+            Snackbar.Add(L["OrderNotFound", Search], Severity.Warning);
+        }
+        finally
+        {
+            LoadingState.Hide();
+        }
+    }
+
+    private async void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchOrder();
+        }
+    }
+}

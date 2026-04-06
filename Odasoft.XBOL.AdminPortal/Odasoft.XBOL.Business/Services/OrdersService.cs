@@ -11,9 +11,9 @@ namespace Odasoft.XBOL.Business.Services
             _adminClient = adminClient;
         }
 
-        public async Task<OrderResultPagedResponse> GetOrdersAsync(OrdersFilterParameters parameters)
+        public async Task<OrderResultPagedResponse> GetCreditOrdersAsync(OrdersFilterParameters parameters)
         {
-            var response = await _adminClient.GetOrdersAsync(
+            var response = await _adminClient.GetCreditOrdersAsync(
                 parameters.ClientId,
                 parameters.Events,
                 parameters.StartDate,
@@ -25,6 +25,16 @@ namespace Odasoft.XBOL.Business.Services
                 parameters.PageSize);
 
             return response;
+        }
+
+        public async Task<OrderRenewalInfoResponse> FindOrder(string orderReference)
+        {
+            return await _adminClient.GetOrderRenawalInfoByReferenceAsync(orderReference);
+        }
+
+        public async Task<CanRenewOrderResponse> CanOrderBeRenewedAsync(string orderReference)
+        {
+            return await _adminClient.CanOrderBeRenewedAsync(orderReference);
         }
     }
 }

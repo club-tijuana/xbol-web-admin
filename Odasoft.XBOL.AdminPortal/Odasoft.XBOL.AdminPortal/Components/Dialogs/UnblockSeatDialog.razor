@@ -1,0 +1,76 @@
+@using Odasoft.XBOL.AdminPortal.Resources
+@using Odasoft.XBOL.Business
+@inject IAdminClient AdminClient
+@inject ISnackbar Snackbar
+@inject AppLocalizer<UnblockSeatDialog> L
+
+<BaseDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5">@L["Unblock"].Value</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Error">*</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RequiredFieldsNote"]</MudText>
+    </TitleContent>
+    <ChildContent>
+        <SeatActionForm @ref="_seatActionForm" FormContext="_formContext"
+                        @bind-Reason="_reason" ShowColorPicker="false"
+                        ReasonLabel="@L["ReasonLabel"].Value"
+                        ReasonPlaceholder="@L["UnblockReasonPlaceholder"].Value" />
+    </ChildContent>
+    <Actions>
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.LockOpen"
+                   Disabled="_formContext.IsSaving" OnClick="SubmitAsync" Class="text-uppercase">@L["Unblock"]</MudButton>
+    </Actions>
+</BaseDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public List<string> SeatKeys { get; set; } = [];
+    [Parameter] public string ExternalKey { get; set; } = string.Empty;
+
+    private SeatActionForm _seatActionForm = default!;
+    private FormContext _formContext = default!;
+    private string? _reason;
+
+    protected override void OnInitialized()
+    {
+        _formContext = new FormContext(StateHasChanged);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) _formContext.SetForm(_seatActionForm.InnerForm);
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (!await _formContext.ValidateAsync()) return;
+
+        _formContext.SetSaving(true);
+        try
+        {
+            var request = new UnblockSeatsRequest
+            {
+                SeatKeys = SeatKeys,
+                Reason = _reason!,
+            };
+            await AdminClient.UnblockSeatsAsync(ExternalKey, request);
+            Snackbar.Add(L["SeatsUnblocked"].Value, Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _formContext.HandleApiException(ex);
+            Snackbar.Add(ex.Result.Title ?? L["ErrorUnblockingSeats"].Value, Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["ErrorUnblockingSeats"].Value, Severity.Error);
+        }
+        finally
+        {
+            _formContext.SetSaving(false);
+        }
+    }
+}

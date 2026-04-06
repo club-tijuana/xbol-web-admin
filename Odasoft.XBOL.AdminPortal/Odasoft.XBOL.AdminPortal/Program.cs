@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.Extensions.Options;
 using MudBlazor.Services;
-using MudBlazor.Translations;
 using Odasoft.XBOL.AdminPortal.Components;
 using Odasoft.XBOL.AdminPortal.Configs;
+using Odasoft.XBOL.AdminPortal.Resources;
 using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.AdminPortal.States;
@@ -61,7 +61,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 var mexicoCulture = new CultureInfo("es-MX");
 CultureInfo.DefaultThreadCurrentCulture = mexicoCulture;
 CultureInfo.DefaultThreadCurrentUICulture = mexicoCulture;
-builder.Services.AddMudTranslations();
 builder.Services.AddAuthorization();
 builder.Services.AddAuthorizationCore();
 
@@ -73,13 +72,17 @@ builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 builder.Services.AddScoped<AuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEventService, ApiEventService>();
-builder.Services.AddScoped<GeneralService>();
 builder.Services.AddScoped<ISeasonPassService, SeasonPassService>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
 builder.Services.AddScoped<ClientsService>();
+builder.Services.AddScoped<EventScheduleService>();
 
 builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<LoadingState>();
+builder.Services.AddScoped<PersistentDialogState>();
+
+builder.Services.AddTransient(typeof(AppLocalizer<>));
+builder.Services.AddLocalizationInterceptor<CustomLocalizationInterceptor>();
 
 builder.Services.AddHttpClient<IAdminClient, AdminClient>(
     (provider, client) =>
