@@ -9,7 +9,7 @@
         <MudText Typo="Typo.caption" Color="Color.Error">*Campos obligatorios</MudText>
     </TitleContent>
     <DialogContent>
-        @if (OrderAction == OrderAction.CancelOrder
+        @if (OrderAction == OrderAction.CancelWithRefund
             || OrderAction == OrderAction.CancelWithoutRefund
             || OrderAction == OrderAction.ReissueTickets
             || OrderAction == OrderAction.CancelTickets)
@@ -38,7 +38,7 @@
     </DialogContent>
     <DialogActions>
         <MudStack AlignItems="AlignItems.Center">
-            @if (OrderAction == OrderAction.CancelOrder
+            @if (OrderAction == OrderAction.CancelWithRefund
                 || OrderAction == OrderAction.CancelWithoutRefund)
             {
                 <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete" OnClick="Submit">CANCELAR ORDEN</MudButton>
@@ -78,7 +78,7 @@
 
     private void Submit()
     {
-        if (OrderAction == OrderAction.CancelOrder
+        if (OrderAction == OrderAction.CancelWithRefund
             || OrderAction == OrderAction.CancelWithoutRefund
             || OrderAction == OrderAction.ReissueTickets
             || OrderAction == OrderAction.CancelTickets)
