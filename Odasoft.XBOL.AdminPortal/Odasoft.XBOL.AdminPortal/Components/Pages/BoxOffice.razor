@@ -12,6 +12,7 @@
 @inject OrdersService OrdersService;
 @inject LoadingState LoadingState;
 @inject PersistentDialogState PersistentDialogState;
+@inject ILogger<BoxOffice> Logger;
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -96,8 +97,9 @@
             Events = result.Items;
             _totalItems = result.TotalItems;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load events on sale");
             Snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
             _error = true;
             _errorMessage = L["ErrorLoadingEvents"];

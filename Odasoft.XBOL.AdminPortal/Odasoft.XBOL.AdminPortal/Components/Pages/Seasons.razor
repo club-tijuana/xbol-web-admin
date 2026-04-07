@@ -8,6 +8,7 @@
 @inject ISeasonService SeasonService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject ILogger<Seasons> Logger
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
@@ -140,8 +141,9 @@
 
             _seasons = result.Items?.ToList() ?? [];
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load seasons");
             Snackbar.Add(L["ErrorLoadingSeasons"], Severity.Error);
             _seasons = [];
         }

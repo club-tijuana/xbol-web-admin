@@ -13,6 +13,7 @@
 @inject AppLocalizer<Events> L
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject ILogger<SeatAvailability> Logger
 
 <PageTitle>@L["Availability"] - @_eventName</PageTitle>
 
@@ -242,8 +243,9 @@
         {
             Snackbar.Add(ex.Result.Title ?? L["ErrorUnblockingSeats"].Value, Severity.Error);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to unblock seats for event {EventId}", Id);
             Snackbar.Add(L["ErrorUnblockingSeats"].Value, Severity.Error);
         }
         finally

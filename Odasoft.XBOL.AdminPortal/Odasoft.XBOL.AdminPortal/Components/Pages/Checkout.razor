@@ -16,6 +16,7 @@
 @inject IDialogService _dialogService;
 @inject ClientsService _clientsService;
 @inject CatalogsService _catalogsService;
+@inject ILogger<Checkout> Logger;
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
 
@@ -416,8 +417,9 @@
         {
             await _adminClient.ExpireHoldTokenByKeyAsync(_cartState.HoldToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to expire hold token {HoldToken}", _cartState.HoldToken);
         }
         finally
         {

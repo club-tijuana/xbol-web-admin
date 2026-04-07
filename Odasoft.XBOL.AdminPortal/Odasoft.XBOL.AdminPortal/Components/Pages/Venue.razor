@@ -14,6 +14,7 @@
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
 @inject VenuesService _venueService;
+@inject ILogger<Venue> Logger;
 
 <PageTitle>@_pageTitle</PageTitle>
 
@@ -292,9 +293,9 @@
             }
 
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Console.WriteLine("An error occurred while trying to load the venue page.");
+            Logger.LogError(ex, "Failed to load venue {VenueId}", venueId);
             _snackbar.Add("Ocurrio un error al tratar de cargar la pagina, redireccionando a la vista de recintos pirncipal.", Severity.Error);
             _navigationManager.NavigateTo(SitePages.VENUES);
         }

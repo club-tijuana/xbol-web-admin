@@ -24,6 +24,7 @@
 @inject NavigationManager _navigationManager;
 @inject ClientsService _clientService;
 @inject CatalogsService _catalogsService;
+@inject ILogger<SeasonPassCheckout> Logger;
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
@@ -368,8 +369,9 @@
 
             _navigationManager.NavigateTo("/xolopass");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to process season pass checkout");
             _snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
         }
         finally

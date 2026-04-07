@@ -8,6 +8,7 @@
 @inject CatalogsService CatalogsService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject ILogger<SuitesUpdate> Logger
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -73,8 +74,9 @@
             _name = suite.Name;
             _seats = suite.Capacity;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load suite {SuiteId}", Id);
             _loadingFailed = true;
             Snackbar.Add(L["LoadError"], Severity.Error);
             Navigation.NavigateTo(SitePages.SUITES_SETTINGS);

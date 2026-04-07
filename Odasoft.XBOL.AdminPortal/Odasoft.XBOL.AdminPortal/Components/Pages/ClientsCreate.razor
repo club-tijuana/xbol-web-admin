@@ -16,6 +16,7 @@
 @inject AppLocalizer<ClientsCreate> L;
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
+@inject ILogger<ClientsCreate> Logger;
 
 <PageTitle>Nueva Empresa</PageTitle>
 
@@ -435,8 +436,9 @@
             _snackbar.Add(L["CreateSuccess", L["Client"]], Severity.Success);
             _navigationManager.NavigateTo(SitePages.CLIENTS_LIST);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to create client");
             _snackbar.Add(L["CreateError", L["Client"]], Severity.Error);
     }
         finally
