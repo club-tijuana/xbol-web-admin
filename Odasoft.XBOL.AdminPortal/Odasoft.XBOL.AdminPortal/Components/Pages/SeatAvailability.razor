@@ -237,7 +237,7 @@
             });
 
             var seatsParam = Uri.EscapeDataString(string.Join(",", seatKeys));
-            Navigation.NavigateTo($"/events/{Id}/seats?seats={seatsParam}");
+            Navigation.NavigateTo($"/events/{Id}/key/{ExternalKey}/booking?seats={seatsParam}");
         }
         catch (ApiException<ProblemDetails> ex)
         {

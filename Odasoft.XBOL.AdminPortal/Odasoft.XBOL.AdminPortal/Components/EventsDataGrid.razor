@@ -149,7 +149,7 @@
                             <MudTooltip Text="@L["ActionBoletos"]" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium"
                                                Disabled="@(context.Item.ExternalEventKey is null)"
-                                               OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/seats"))" />
+                                               OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/key/{context.Item.ExternalEventKey}/booking"))" />
                             </MudTooltip>
                             <MudTooltip Text="Disponibilidad" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.Map" Size="Size.Medium"

@@ -108,21 +108,6 @@
         {
             _isLoading = false;
         }
-
-        ShowOrderConfirmation();
-    }
-
-    private async Task ShowOrderConfirmation()
-    {
-        if (PersistentDialogState.BookingResult is not null)
-        {
-            var parameters = new DialogParameters<SuccesfulOrderDialog> { { x => x.Booking, PersistentDialogState.BookingResult } };
-            DialogOptions options = new() { CloseButton = true, Position = DialogPosition.TopRight };
-            var dialog = await DialogService.ShowAsync<SuccesfulOrderDialog>(string.Empty, parameters, options);
-            var dialogResult = await dialog.Result;
-
-            PersistentDialogState.ClearBookingResult();
-        }
     }
 
     private Task ShowOrderDetail(string reference)

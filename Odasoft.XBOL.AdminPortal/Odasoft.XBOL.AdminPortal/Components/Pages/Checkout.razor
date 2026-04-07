@@ -1,9 +1,13 @@
+@page "/events/{Id:long}/key/{ExternalKey}/booking/{HoldToken}/checkout"
+@page "/xolopass/{Id:long}/key/{ExternalKey}/booking/{HoldToken}/checkout"
 @using FluentValidation;
 @using Odasoft.XBOL.AdminPortal.States;
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
 @using Odasoft.XBOL.Common.Helpers
+@using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
 
 @implements IAsyncDisposable;
 
@@ -17,14 +21,25 @@
 @inject ClientsService _clientsService;
 @inject CatalogsService _catalogsService;
 @inject ILogger<Checkout> Logger;
+@inject PersistentDialogState _persistentDialogState;
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
 
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="ReturnAsync"
+                        Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">@L["GoBack"]</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<ImageHeroBanner Banner="_banner" />
+<MudPaper Class="pa-6" Elevation="3">
 <MudForm @ref="_form" Model="_request" @bind-IsValid="_isValid" @bind-IsTouched="_isTouched" Validation="@(orderValidator.ValidateValue)">
     <MudGrid Justify="Justify.SpaceBetween">
-        <MudItem xs="12" Class="d-flex justify-space-between">
+        <MudItem xs="12">
             <MudText Typo="Typo.h5">@L["PaymentMethod"]</MudText>
-            <MudButton OnClick="ReturnAsync" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
         </MudItem>
 
         <MudItem xs="3">
@@ -246,17 +261,22 @@
         </MudItem>
     </MudGrid>
 </MudForm>
+</MudPaper>
 
 @code {
-    [EditorRequired]
+    [Parameter]
+    public long Id { get; set; }
+
     [Parameter]
     public string ExternalKey { get; set; } = default!;
 
     [Parameter]
-    public EventCallback OnReturn { get; set; }
+    public string HoldToken { get; set; } = default!;
 
-    [Parameter]
-    public string SuccessUrl { get; set; } = "/events";
+    private string _bookingUrl = default!;
+    private string _successUrl = "/events";
+    private ItemType _itemType = ItemType.Ticket;
+    private ImageHeroBannerViewModel _banner = new();
 
     MudForm _form;
 
@@ -315,23 +335,44 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var isXolopass = _navigation.Uri.Contains("/xolopass/");
+        var basePath = isXolopass ? "xolopass" : "events";
+        _bookingUrl = $"/{basePath}/{Id}/key/{ExternalKey}/booking";
+        _successUrl = isXolopass ? "/xolopass" : "/events";
+
+        if (_cartState.SelectedSeats.Count == 0)
+        {
+            _navigation.NavigateTo(_bookingUrl);
+            return;
+        }
+
         _cartState.OnChange += StateHasChanged;
 
         try
         {
-            _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+            var phoneTask = _catalogsService.GetPhoneRegionCodesAsync();
+            var detailTask = _adminClient.GetSeatManagementDetailAsync(ExternalKey);
+            await Task.WhenAll(phoneTask, detailTask);
 
-            var holdToken = await _adminClient.HoldSeatsByKeyAsync(ExternalKey, new HoldSeatsBody
+            _phoneRegionCodes = await phoneTask;
+            var detail = await detailTask;
+            _itemType = detail.Type == BookableUnitType.Season ? ItemType.SeasonPass : ItemType.Ticket;
+
+            _banner = new()
             {
-                Seats = _cartState.SelectedSeats.Select(x => x.SeatId).ToList()
-            });
-
-            _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
+                Title = detail.Name,
+                Subtitle = detail.Subtitle,
+                StartDateTime = detail.StartDate.UtcDateTime,
+                EndDateTime = detail.EndDate?.UtcDateTime,
+                ImageUrl = detail.BannerImageUrl,
+                Venue = detail.VenueName,
+                ExternalKey = ExternalKey,
+            };
         }
         catch (Exception ex)
         {
             _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
-            await ReturnAsync();
+            _navigation.NavigateTo(_bookingUrl);
         }
     }
 
@@ -375,7 +416,7 @@
 
         if (exit)
         {
-            await OnReturn.InvokeAsync();
+            _navigation.NavigateTo(_bookingUrl);
         }
     }
 
@@ -484,7 +525,7 @@
         {
             Seats = _cartState.SelectedSeats.ToDictionary(x => x.SeatId, x => x.Price),
             HoldToken = _cartState.HoldToken ?? "",
-            TicketType = ItemType.Ticket,
+            TicketType = _itemType,
             ClientContact = new ClientInfoRequest
             {
                 Id = _request.ClientId,
@@ -508,25 +549,20 @@
         {
             var result = await _adminClient.BookSeatsByKeyAsync(ExternalKey, request);
 
-            _snackbar.Add(L["Seats_PaymentSuccess"], configure: c =>
-            {
-                c.SnackbarVariant = Variant.Text;
-                c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
-                c.IconColor = Color.Success;
-            });
+            _persistentDialogState.SetBookingResult(result);
 
             _successfulPurchase = true;
             _cartState.ClearCart();
             _cartState.ClearTokenAsync();
 
-            _navigation.NavigateTo(SuccessUrl);
+            _navigation.NavigateTo(_successUrl);
         }
         catch (Exception ex)
         {
             _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 
             await ExpireHoldTokenAsync();
-            await OnReturn.InvokeAsync();
+            _navigation.NavigateTo(_bookingUrl);
         }
         finally
         {
@@ -575,6 +611,9 @@
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("El correo electrónico es requerido.")
                 .EmailAddress().WithMessage("El correo electrónico no es válido.");
+
+            RuleFor(x => x.FullName)
+                .NotEmpty().WithMessage("El nombre completo es requerido.");
 
             RuleFor(x => x.TicketType)
                 .NotEmpty()
