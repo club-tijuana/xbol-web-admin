@@ -47,10 +47,11 @@
                 <MudItem>
                     <MudTooltip Text="@L["Tickets"]" Placement="Placement.Top">
                         <MudIconButton
-                            Icon="@Icons.Material.Outlined.ShoppingCart" 
+                            Icon="@Icons.Material.Outlined.ShoppingCart"
                             Size="Size.Small"
                             Color="Color.Secondary"
-                            OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/seats"))" />
+                            Disabled="@(Event.ExternalEventKey is null)"
+                            OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/key/{Event.ExternalEventKey}/booking"))" />
                     </MudTooltip>
                 </MudItem>
                 <MudItem>

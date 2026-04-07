@@ -35,32 +35,25 @@
     OnRetry="LoadData">
     <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
     <MudPaper Class="pa-6" Elevation="3">
-            @if (_currentStep == 1)
-            {
-                <MudGrid Justify="Justify.SpaceBetween">
-                    <MudItem xs="12" Class="d-flex justify-space-between">
-                        <MudText Typo="Typo.h5">@L["Seats"]</MudText>
-                        <MudButton Variant="Variant.Filled"
-                                    DropShadow="false"
-                                    EndIcon="@Icons.Material.Filled.NavigateNext"
-                                    Color="Color.Primary"
-                                    Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
-                                    @onclick="NextStep">
-                            @(_holdProcessing? L["Seats_HoldProcessing"] : L["PaymentMethod"])
-                        </MudButton>
-                    </MudItem>
-                    <MudItem xs="7">
-                        <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@ExternalKey" EventId="Id" Prices="_detail?.Prices" SelectedSeats="@GetInitialSelectedSeats()" />
-                    </MudItem>
-                    <MudItem xs="4" Class="mt-8">
-                        <OrderSummary Chart="_seatingChart" />
-                    </MudItem>
-                </MudGrid>
-            }
-            else
-            {
-                <Checkout OnReturn="PreviousStep" ExternalKey="@ExternalKey" SuccessUrl="@_successUrl"></Checkout>
-            }
+        <MudGrid Justify="Justify.SpaceBetween">
+            <MudItem xs="12" Class="d-flex justify-space-between">
+                <MudText Typo="Typo.h5">@L["Seats"]</MudText>
+                <MudButton Variant="Variant.Filled"
+                            DropShadow="false"
+                            EndIcon="@Icons.Material.Filled.NavigateNext"
+                            Color="Color.Primary"
+                            Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
+                            @onclick="GoToCheckout">
+                    @(_holdProcessing? L["Seats_HoldProcessing"] : L["PaymentMethod"])
+                </MudButton>
+            </MudItem>
+            <MudItem xs="7">
+                <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@ExternalKey" EventId="Id" Prices="_detail?.Prices" SelectedSeats="@GetInitialSelectedSeats()" />
+            </MudItem>
+            <MudItem xs="4" Class="mt-8">
+                <OrderSummary Chart="_seatingChart" />
+            </MudItem>
+        </MudGrid>
     </MudPaper>
 </LoadingContainer>
 
@@ -79,15 +72,11 @@
     private bool _holdProcessing => CartState.IsHoldCallsInProgress;
     private bool _error = false;
 
-    private int _currentStep = 1;
-
     private SeatManagementDetailDTO? _detail;
-    private string _successUrl = "/events";
     private List<string> _preselectedSeats = [];
 
     protected override async Task OnInitializedAsync()
     {
-        _successUrl = Navigation.Uri.Contains("/xolopass/") ? "/xolopass" : "/events";
         _preselectedSeats = ParseSeatsFromQuery();
         CartState.OnChange += StateHasChanged;
         CartState.ClearCart();
@@ -131,19 +120,23 @@
         }
     }
 
-    private void NextStep()
+    private async Task GoToCheckout()
     {
-        if(_currentStep < 2)
+        try
         {
-            _currentStep++;
-        }
-    }
+            var holdToken = await AdminClient.HoldSeatsByKeyAsync(ExternalKey, new HoldSeatsBody
+            {
+                Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList()
+            });
 
-    private void PreviousStep()
-    {
-        if(_currentStep > 1)
+            CartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
+
+            var basePath = Navigation.Uri.Contains("/xolopass/") ? "xolopass" : "events";
+            Navigation.NavigateTo($"/{basePath}/{Id}/key/{ExternalKey}/booking/{holdToken.Token}/checkout");
+        }
+        catch (Exception ex)
         {
-            _currentStep--;
+            Snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
         }
     }
 
