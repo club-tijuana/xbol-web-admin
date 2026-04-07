@@ -9,6 +9,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject ILogger<EventsCreate> Logger
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -514,8 +515,9 @@
             _datesAndSalePoliciesFormContext.HandleApiException(ex);
             Snackbar.Add(ex.Result.Title ?? L["ErrorCreatingEvent"], Severity.Error);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to create event");
             Snackbar.Add(L["ErrorCreatingEvent"], Severity.Error);
         }
         finally

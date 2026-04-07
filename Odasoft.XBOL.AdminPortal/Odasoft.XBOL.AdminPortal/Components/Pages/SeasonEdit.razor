@@ -5,6 +5,7 @@
 @inject ISeasonService SeasonService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject ILogger<SeasonEdit> Logger
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -121,8 +122,9 @@
             _preSaleDate = DateTimeHelpers.ToNullableDateTime(season.PreSaleDate);
             _offSaleDate = DateTimeHelpers.ToNullableDateTime(season.OffSaleDate);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load season {SeasonId}", Id);
             _loadingFailed = true;
             Snackbar.Add(L["LoadError"], Severity.Error);
             Navigation.NavigateTo("/seasons");

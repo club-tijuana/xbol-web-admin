@@ -1,6 +1,7 @@
 @namespace Odasoft.XBOL.AdminPortal.Components.Shared
 @using Odasoft.XBOL.Business
 @inject IAdminClient AdminClient
+@inject ILogger<EventAvailability> Logger
 
 <MudStack Spacing="0" Class="@Class">
     <div class="d-flex align-center">
@@ -70,9 +71,9 @@
                 _total = dict.Values.Sum(v => v.Count ?? 0);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Keep the initial values from the API as fallback
+            Logger.LogError(ex, "Failed to fetch availability for event {ExternalKey}", ExternalKey);
         }
         finally
         {

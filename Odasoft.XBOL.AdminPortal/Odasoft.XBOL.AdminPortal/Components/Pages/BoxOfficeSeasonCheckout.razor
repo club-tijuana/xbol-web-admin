@@ -21,6 +21,7 @@
 @inject ClientsService _clientsService
 @inject CatalogsService _catalogsService
 @inject OrdersService OrdersService;
+@inject ILogger<BoxOfficeSeasonCheckout> Logger;
 
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
@@ -405,8 +406,9 @@
         {
             var token = await _adminClient.ReleaseHoldSeatsAsync(_cartState.HoldToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to release hold seats {HoldToken}", _cartState.HoldToken);
         }
         finally
         {

@@ -3,6 +3,7 @@
 @inject IAdminClient AdminClient
 @inject ISnackbar Snackbar
 @inject AppLocalizer<UnblockSeatDialog> L
+@inject ILogger<UnblockSeatDialog> Logger
 
 <BaseDialog>
     <TitleContent>
@@ -64,8 +65,9 @@
             _formContext.HandleApiException(ex);
             Snackbar.Add(ex.Result.Title ?? L["ErrorUnblockingSeats"].Value, Severity.Error);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to unblock seats");
             Snackbar.Add(L["ErrorUnblockingSeats"].Value, Severity.Error);
         }
         finally

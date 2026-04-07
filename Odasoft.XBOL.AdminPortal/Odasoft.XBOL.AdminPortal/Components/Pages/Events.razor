@@ -19,6 +19,7 @@
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
 @inject LoadingState _loadingState;
+@inject ILogger<Events> Logger;
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -357,8 +358,9 @@ else if(_selectedTab == TabPast)
             _availableCategories = (await _eventService.GetCategoriesAsync())
                 .Where(c => c.IsActive == true).ToList();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load event filters");
             _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
         }
     }
@@ -419,8 +421,9 @@ else if(_selectedTab == TabPast)
         {
             return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load events");
             _snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
             return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
