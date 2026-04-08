@@ -12,6 +12,7 @@ using Odasoft.XBOL.AdminPortal.States;
 using Odasoft.XBOL.Business;
 using Odasoft.XBOL.Business.Extensions;
 using Odasoft.XBOL.Business.Services;
+using Radzen;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +33,8 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = MudBlazor.Variant.Text;
     config.SnackbarConfiguration.MaxDisplayedSnackbars = 5;
 });
+
+builder.Services.AddRadzenComponents();
 
 builder.Services.AddHealthChecks();
 

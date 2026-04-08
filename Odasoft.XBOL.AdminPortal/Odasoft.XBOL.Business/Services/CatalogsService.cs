@@ -1,3 +1,5 @@
+using Odasoft.XBOL.Models.DTO;
+
 namespace Odasoft.XBOL.Business.Services
 {
     public class CatalogsService
@@ -50,6 +52,20 @@ namespace Odasoft.XBOL.Business.Services
         {
             var regionCodes = await _adminClient.GetPhoneRegionCodesAsync();
             return regionCodes.OrderBy(x => x.RegionCode).ToList();
+        }
+
+        public async Task<List<Amenity>> GetAmenitiesAsync()
+        {
+            var amenities = await _adminClient.GetAmenitiesCatalogAsync();
+            return amenities
+                    .Select(x => new Amenity
+                    {
+                        IconIdentifier = x.IconIdentifier,
+                        Id = x.Id,
+                        Name = x.Name
+                    })
+                    .OrderBy(x => x.Name)
+                    .ToList();
         }
     }
 }

@@ -1,3 +1,5 @@
+using Odasoft.XBOL.Models.DTO;
+
 namespace Odasoft.XBOL.Business.Services
 {
     public class VenuesService
@@ -74,6 +76,24 @@ namespace Odasoft.XBOL.Business.Services
         public async Task UpdateVenueStatusAsync(long venueId, VenueStatus status)
         {
             await _adminClient.UpdateVenueStatusAsync(venueId, status);
+        }
+
+        public async Task<List<Amenity>> GetAmenitiesByVenueAsync(long venueId)
+        {
+            ICollection<AmenityResponse> venueAmenities = await _adminClient.GetAmenitiesByVenueAsync(venueId);
+
+            return venueAmenities
+                    .Select(x => new Amenity
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        IconIdentifier = x.IconIdentifier
+                    }).ToList();
+        }
+
+        public async Task SaveVenueAmenities(long venueId, List<long> amenityIds)
+        {
+            await _adminClient.SaveVenueAmenitiesAsync(venueId, amenityIds);
         }
     }
 }

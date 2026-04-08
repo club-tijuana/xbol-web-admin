@@ -6439,7 +6439,7 @@
         "tags": [
           "Suites"
         ],
-        "summary": "Retrieves a list of all available test suites.",
+        "summary": "Retrieves a list of all available suites.",
         "operationId": "GetSuitesAsync",
         "parameters": [
           {
@@ -7085,6 +7085,206 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/venue-amenities/{venueId}/amenities": {
+      "get": {
+        "tags": [
+          "VenueAmenities"
+        ],
+        "operationId": "GetAmenitiesByVenueAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "VenueAmenities"
+        ],
+        "operationId": "SaveVenueAmenitiesAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/amenities-catalog": {
+      "get": {
+        "tags": [
+          "VenueAmenities"
+        ],
+        "operationId": "GetAmenitiesCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
                 }
               }
             }
@@ -8361,7 +8561,7 @@
         "tags": [
           "Venues"
         ],
-        "summary": "Updaes the venue status.",
+        "summary": "Updates the venue status.",
         "operationId": "UpdateVenueStatusAsync",
         "parameters": [
           {
@@ -8425,6 +8625,27 @@
           "None"
         ],
         "type": "string"
+      },
+      "AmenityResponse": {
+        "required": [
+          "iconIdentifier",
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "iconIdentifier": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       },
       "AvailabilityReasonSummaryResult": {
         "type": "object",
@@ -12273,6 +12494,12 @@
           },
           "contactPhoneNumber": {
             "type": "string"
+          },
+          "policies": {
+            "type": "string"
+          },
+          "additionalComments": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -12340,6 +12567,12 @@
             "type": "string"
           },
           "contactPhoneNumber": {
+            "type": "string"
+          },
+          "policies": {
+            "type": "string"
+          },
+          "additionalComments": {
             "type": "string"
           },
           "category": {
@@ -12540,6 +12773,9 @@
     },
     {
       "name": "Tests"
+    },
+    {
+      "name": "VenueAmenities"
     },
     {
       "name": "VenueImages"
