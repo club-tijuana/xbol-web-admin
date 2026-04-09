@@ -1,7 +1,62 @@
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Models.DTO;
+@using Radzen.Blazor;
+
+@inject VenuesService _venueService;
+
 <MudCard Class="pa-6 bg-white" Elevation="3">
-    <MudText Typo="Typo.h6" Color="Color.Secondary">Hola desde Políticas y Amenidades</MudText>
+    <MudGrid Class="mud-width-full">
+
+        <MudItem xs="12">
+            <MudText Typo="Typo.subtitle1" Class="mb-3 fw-bold">Amenidades y seguridad</MudText>
+
+            <MudChipSet T="Amenity" ReadOnly="true">
+                @foreach (var amenity in _amenities)
+                {
+                    <MudChip Value="@amenity"
+                             Variant="Variant.Text"
+                             Color="MudBlazor.Color.Dark"
+                             CheckedIcon="@string.Empty">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@IconHelper.GetIconFromIdentifier(amenity.IconIdentifier)" Size="@MudBlazor.Size.Small" Class="mr-2" />
+                            <MudText Typo="Typo.body2" Color="@MudBlazor.Color.Dark">@amenity.Name</MudText>
+                        </div>
+                    </MudChip>
+                }
+            </MudChipSet>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Políticas del recinto</MudText>
+            <MudPaper Outlined="true" Class="pa-4" Style="min-height: 300px; width: 100%;">
+                @((MarkupString)_policies)
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Comentarios adicionales</MudText>
+            <MudPaper Outlined="true" Class="pa-4" Style="min-height: 300px; width: 100%">
+                @((MarkupString)_additionalComments)
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </MudCard>
 
 @code {
     [Parameter] public long VenueId { get; set; }
+
+    private List<Amenity> _amenities = [];
+    private string _policies { get; set; } = "";
+    private string _additionalComments { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var venue = await _venueService.GetVenueByIdAsync(VenueId);
+
+        _policies = venue.Policies ?? "";
+        _additionalComments = venue.AdditionalComments ?? "";
+
+        var venueAmenities = await _venueService.GetAmenitiesByVenueAsync(VenueId);
+        _amenities = venueAmenities.OrderBy(a => a.Name).ToList();
+    }
 }

@@ -78,3 +78,23 @@ export function changeConfig(chart, config) {
 export function focusFilteredCategories(chart) {
   chart?.zoomToFilteredCategories();
 }
+
+/**
+ * Renders a read-only chart for a specific venue map.
+ * @param {string} containerId - The ID of the HTML element to render into.
+ * @param {string} workspaceKey - Your seats.io public workspace key.
+ * @param {string} chartKey - The key of the map/chart to load.
+ * @returns {Promise<SeatsioChart>} The rendered chart instance.
+ */
+export async function renderVenueMapAsync(containerId, workspaceKey, chartKey) {
+  await ensureSeatsioLoaded();
+
+  const chart = new seatsio.SeatingChart({
+    divId: containerId,
+    workspaceKey: workspaceKey,
+    chartKey: chartKey,
+    mode: 'read-only' // Evita que los asientos sean seleccionables/comprables
+  }).render();
+
+  return chart;
+}
