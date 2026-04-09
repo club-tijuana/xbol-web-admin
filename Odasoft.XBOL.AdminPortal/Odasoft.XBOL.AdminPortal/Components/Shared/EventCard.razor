@@ -1,16 +1,16 @@
 @inject AppLocalizer<EventCard> L
 @inject NavigationManager _navigationManager;
 
-<MudCard Elevation="3" Style="cursor: pointer;" @onclick="@HandleOnClick">
+<MudCard Elevation="3" Style="cursor: pointer;" >
     @if (string.IsNullOrEmpty(Event.PosterImageUrl))
     {
-        <ImagePlaceholder Height="@(ThumbnailHeight + "px")" />
+        <ImagePlaceholder Height="@(ThumbnailHeight + "px")" OnClick="HandleOnClick" />
     }
     else
     {
-        <MudCardMedia Image="@(Event.PosterImageUrl)" Height="@ThumbnailHeight" />
+        <MudCardMedia Image="@(Event.PosterImageUrl)" Height="@ThumbnailHeight" @onclick="@HandleOnClick" />
     }
-    <MudCardContent Class="py-2 px-3">
+    <MudCardContent Class="py-2 px-3" @onclick="@HandleOnClick">
         <MudGrid>
             <MudItem xs="6">
                 <MudStack>
@@ -40,7 +40,6 @@
                         <MudIconButton Icon="@Icons.Material.Outlined.Edit"
                                        Size="Size.Small"
                                        Color="Color.Secondary"
-                                       Disabled
                                        OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/edit"))" />
                     </MudTooltip>
                 </MudItem>

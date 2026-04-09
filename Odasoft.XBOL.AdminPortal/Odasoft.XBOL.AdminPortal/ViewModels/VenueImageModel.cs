@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Odasoft.XBOL.AdminPortal.ViewModels
 {
-    public class VenueImageModel
+    public class ImageModel
     {
         public long? Id { get; set; }
         public string Name { get; set; } = "";

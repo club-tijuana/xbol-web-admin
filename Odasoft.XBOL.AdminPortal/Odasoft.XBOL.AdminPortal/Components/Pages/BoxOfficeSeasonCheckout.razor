@@ -111,9 +111,14 @@
                                Margin="Margin.Dense"
                                Placeholder="Sin especificar"
                                Immediate="true"
-                               ShrinkLabel>
-                        <MudSelectItem Value="@("Femenino")">Femenino</MudSelectItem>
-                        <MudSelectItem Value="@("Masculino")">Masculino</MudSelectItem>
+                               ShrinkLabel
+                               Clearable>
+                        @foreach (var gender in genders)
+                        {
+                            <MudSelectItem T="ClientGender?" Value="@gender">
+                                <MudText Typo="Typo.body2">@L[gender.ToString()]</MudText>
+                            </MudSelectItem>
+                        }
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12">
@@ -273,6 +278,8 @@
     private bool _isSubmitting = false;
     private bool _successfulPurchase = false;
 
+    private List<ClientGender> genders = Enum.GetValues<ClientGender>().ToList();
+
     private BookingForm _request = new();
     private BookingFormFluentValidator orderValidator = new();
 
@@ -303,6 +310,10 @@
                 _request.PhoneNumber = OrderInfo.PhoneNumber;
                 _request.Email = OrderInfo.Email;
                 _request.ClientId = OrderInfo.ClientId;
+                _request.City = OrderInfo.City;
+                _request.Neighborhood = OrderInfo.Neighbourhood;
+                _request.Gender = (ClientGender?)OrderInfo.Gender;
+                _request.Birthday = DateTimeHelpers.ToNullableDateTime(OrderInfo.Dob);
             }
 
             // TODO: Move this to a proper service
@@ -340,6 +351,10 @@
                 _request.PhoneNumber = client.PhoneNumber;
                 _request.Email = client.Email;
                 _request.ClientId = client.Id;
+                _request.City = client.City;
+                _request.Neighborhood = client.Neighbourhood;
+                _request.Gender = (ClientGender?)client.Gender;
+                _request.Birthday = DateTimeHelpers.ToNullableDateTime(client.Dob);
             }
         }
         catch (ApiException ex)
@@ -491,7 +506,11 @@
                 PhoneRegionCodeId = _request.PhoneRegionCodeId,
                 PhoneNumber = _request.PhoneNumber,
                 Email = _request.Email,
-                FullName = _request.FullName
+                FullName = _request.FullName,
+                City = _request.City,
+                Neighborhood = _request.Neighborhood,
+                Gender = _request.Gender,
+                Birthday = DateTimeHelpers.ToDateTimeOffset(_request.Birthday)
             },
             TicketType = ItemType.SeasonPass,
             RefereceOrderId = OrderInfo?.OrderId
@@ -543,7 +562,7 @@
         public string? FullName { get; set; }
         public string? City { get; set; }
         public string? Neighborhood { get; set; }
-        public string? Gender { get; set; }
+        public ClientGender? Gender { get; set; }
         public DateTime? Birthday { get; set; }
         public decimal? CardAmount { get; set; }
         public decimal? CashAmount { get; set; }

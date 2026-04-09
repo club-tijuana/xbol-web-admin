@@ -1,0 +1,176 @@
+@page "/events/{EventId:long}"
+@page "/events/{EventId:long}/{Tab}"
+
+@using Odasoft.XBOL.AdminPortal.Components.Pages.EventDetails
+@using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.AdminPortal.Extensions
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Business.Services
+@using Odasoft.XBOL.Common.Constants
+
+@inject AppLocalizer<EventDetail> L
+@inject IEventService _eventService
+@inject NavigationManager _navigationManager
+@inject IDialogService _dialogService
+@inject ISnackbar _snackbar
+
+<PageTitle>@(_event?.Name ?? "")</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="@(() => _navigationManager.NavigateTo("/events"))" Color="Color.Secondary"
+                       Variant="Variant.Outlined" Class="text-uppercase">
+                @L["GoBack"]
+            </MudButton>
+        </LeftContent>
+        <RightContent>
+            <MudStack Row>
+                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled"
+                           Class="text-uppercase" OnClick="DeleteEventAsync">
+                    @L["Delete"]
+                </MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.Edit" Href="@($"/events/{EventId}/edit")"
+                           Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">
+                    @L["Edit"]
+                </MudButton>
+            </MudStack>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<LoadingContainer IsLoading="_loading" HasError="_error" ErrorMessage="@L["ErrorLoading"]" OnRetry="LoadEventAsync">
+
+    @if (_event is not null)
+    {
+        <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
+
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+@*             <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
+                            Class="border-secondary-lighten" Color="Color.Secondary">
+                <MudToggleItem Value="@TabMaps" Text="@L["TabMaps"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabMaps ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@TabSuites" Text="@L["TabSuites"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabSuites ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@TabPolicies" Text="@L["TabPolicies"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabPolicies ? "bg-secondary-darken" : "")}")" />
+            </MudToggleGroup> *@
+            <MudStack Row Spacing="2">
+                <MudButton StartIcon="@Icons.Material.Filled.Map" Variant="Variant.Filled" Class="text-uppercase"
+                           Color="Color.Dark" Disabled="true">
+                    @L["NewMap"]
+                </MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.MeetingRoom" Variant="Variant.Filled" Class="text-uppercase"
+                           Color="Color.Error" Disabled="true">
+                    @L["NewSuite"]
+                </MudButton>
+            </MudStack>
+        </MudStack>
+
+        @if (_selectedTab == TabSales)
+        {
+            <EventScheduleSales EventScheduleId="EventId" />
+        }
+        else if (_selectedTab == TabSuitesSales)
+        {
+            <EventScheduleSuitesSales EventScheduleId="EventId" />
+        }
+        else if (_selectedTab == TabPolicies)
+        {
+            <ScheduleAndPolicies EventScheduleId="EventId" />
+        }
+    }
+
+</LoadingContainer>
+
+@code {
+    [Parameter] public long EventId { get; set; }
+    [Parameter] public string? Tab { get; set; }
+
+    private const string TabSales = "sales";
+    private const string TabSuitesSales = "suitesSales";
+    private const string TabPolicies = "policies";
+
+    private string _selectedTab = TabSales;
+    private bool _loading = true;
+    private bool _error;
+    private EventInfoDTO? _event;
+    private EventScheduleDTO? _eventSchedule;
+    private ImageHeroBannerViewModel _banner = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEventAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _selectedTab = Tab?.ToLowerInvariant() switch
+        {
+            TabSuitesSales => TabSuitesSales,
+            TabPolicies => TabPolicies,
+            _ => TabSales
+        };
+    }
+
+    private void OnTabChanged(string tab)
+    {
+        _selectedTab = tab;
+        _navigationManager.NavigateTo($"/events/{EventId}/{tab}", replace: true);
+    }
+
+    private async Task LoadEventAsync()
+    {
+        _loading = true;
+        _error = false;
+
+        try
+        {
+            _event = await _eventService.GetEventByIdAsync(EventId);
+            _eventSchedule = _event?.Schedules?.First();
+            _banner = new()
+            {
+                Title = _event.Name,
+                Subtitle = _event.Subtitle,
+                StartDateTime = _eventSchedule?.StartDateTime.UtcDateTime,
+                EndDateTime = _eventSchedule?.EndDateTime?.UtcDateTime,
+                ImageUrl = _event.BannerImageUrl,
+                Venue = _event.VenueName,
+                ExternalKey = _eventSchedule?.ExternalEventKey,
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading event '{EventId}': {ex.Message}");
+            _error = true;
+            _snackbar.Add(L["ErrorLoading"], Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task DeleteEventAsync()
+    {
+        var confirmed = await _dialogService.ShowConfirmDeleteAsync(
+        L["DeleteDialogTitle", _event?.Name ?? ""],
+        L["DeleteDialogMessage"]);
+
+        if (!confirmed) return;
+
+        try
+        {
+            await _eventService.DeleteEventAsync(EventId);
+            _snackbar.Add(L["DeleteSuccess"], Severity.Success);
+            _navigationManager.NavigateTo("/events");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting event: {ex.Message}");
+            _snackbar.Add(L["DeleteError"], Severity.Error);
+        }
+    }
+}

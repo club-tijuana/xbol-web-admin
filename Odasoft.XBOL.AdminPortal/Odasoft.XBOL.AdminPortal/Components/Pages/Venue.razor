@@ -371,9 +371,9 @@
     private IReadOnlyCollection<Amenity> _selectedAmenities = [];
 
     private MudFileUpload<IBrowserFile> _facadeImageUpload = null!;
-    private VenueImageModel? _facadeImage;
+    private ImageModel? _facadeImage;
     private MudFileUpload<IReadOnlyList<IBrowserFile>> _galleryUpload = null!;
-    private Dictionary<string, VenueImageModel> _galleryImages = [];
+    private Dictionary<string, ImageModel> _galleryImages = [];
 
     private const string DefaultDragClass = "relative d-flex flex-column p-r gap-2 rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
     private string _dragClass = DefaultDragClass;
@@ -464,7 +464,7 @@
 
             if (facade != null && facade.Id.HasValue)
             {
-                _facadeImage = new VenueImageModel
+                _facadeImage = new ImageModel
                 {
                     Id = facade.Id,
                     Name = facade.Title
@@ -481,7 +481,7 @@
                     continue;
                 }
 
-                _galleryImages.Add(image.Title, new VenueImageModel
+                _galleryImages.Add(image.Title, new ImageModel
                 {
                     Id = image.Id,
                     Name = image.Title
@@ -505,7 +505,7 @@
 
         if (_facadeImage == null)
         {
-            _facadeImage = new VenueImageModel
+            _facadeImage = new ImageModel
             {
                 Name = file.Name,
                 TempFile = file
@@ -579,7 +579,7 @@
             }
             else
             {
-                _galleryImages.Add(file.Name, new VenueImageModel
+                _galleryImages.Add(file.Name, new ImageModel
                 {
                     Name = file.Name,
                     TempFile = file
@@ -595,7 +595,7 @@
 
     private async Task RemoveGalleryImageAsync(string fileName)
     {
-        VenueImageModel? file = _galleryImages.GetValueOrDefault(fileName);
+        ImageModel? file = _galleryImages.GetValueOrDefault(fileName);
 
         try
         {
@@ -616,7 +616,7 @@
 
     private async Task CleanGalleryImagesAsync()
     {
-        foreach (VenueImageModel galleryImage in _galleryImages.Values)
+        foreach (ImageModel galleryImage in _galleryImages.Values)
         {
             if (galleryImage.Id.HasValue)
             {
@@ -748,7 +748,7 @@
     {
         try
         {
-            foreach (VenueImageModel image in _galleryImages.Values)
+            foreach (ImageModel image in _galleryImages.Values)
             {
                 if (image.Id.HasValue && image.TempFile != null)
                 {

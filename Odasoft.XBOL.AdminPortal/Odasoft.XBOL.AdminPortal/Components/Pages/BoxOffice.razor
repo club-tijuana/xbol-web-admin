@@ -55,9 +55,8 @@
         }
         else
         {
-            // TODO: Add UI for no events currently on sale
             <MudItem xs="12">
-                <MudText>@L["NoEventsFound"]</MudText>
+                <MudAlert Severity="Severity.Info">@L["NoEventsFound"]</MudAlert>
             </MudItem>
         }
         @if (TotalPages > 1)

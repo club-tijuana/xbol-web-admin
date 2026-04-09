@@ -52,6 +52,8 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         };
     }
 
+    public async Task<EventInfoDTO> GetEventByIdAsync(long id) => await adminClient.GetEventByIdAsync(id);
+
     public async Task<GridData<EventViewModel>> GetEventsOnSaleAsync(
         int page,
         int pageSize,
@@ -109,4 +111,24 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         => categories is { Count: > 0 }
             ? string.Join(", ", categories.Select(c => c.DisplayName))
             : "";
+
+    public async Task<long> UploadEventImageAsync(long eventId, ImageType imageType, int order, FileParameter imageFile)
+    {
+        return await adminClient.UploadEventImageAsync(eventId, imageType, order, imageFile);
+    }
+
+    public async Task DeleteEventImageAsync(long eventImageId)
+    {
+        await adminClient.DeleteEventImageByIdAsync(eventImageId);
+    }
+
+    public async Task UpdateEventImageAsync(long eventImageId, ImageType imageType, int order, FileParameter file)
+    {
+        await adminClient.UpdateEventImageByIdAsync(eventImageId, imageType, order, file);
+    }
+
+    public async Task<ICollection<EventImageResponse>> GetEventImageByTypeAsync(long eventId, ImageType imageType)
+    {
+        return await adminClient.GetEventImagesByImageTypeAsync(eventId, imageType);
+    }
 }

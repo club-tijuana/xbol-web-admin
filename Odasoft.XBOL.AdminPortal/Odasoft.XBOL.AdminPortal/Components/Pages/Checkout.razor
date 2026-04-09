@@ -112,8 +112,12 @@
                                Placeholder="Sin especificar"
                                Immediate="true"
                                ShrinkLabel>
-                        <MudSelectItem Value="@("Femenino")">Femenino</MudSelectItem>
-                        <MudSelectItem Value="@("Masculino")">Masculino</MudSelectItem>
+                        @foreach (var gender in genders)
+                        {
+                            <MudSelectItem T="ClientGender?" Value="@gender">
+                                <MudText Typo="Typo.body2">@L[gender.ToString()]</MudText>
+                            </MudSelectItem>
+                        }
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12">
@@ -307,6 +311,8 @@
         }
     }
 
+    private List<ClientGender> genders = Enum.GetValues<ClientGender>().ToList();
+
     private BookingForm _request = new();
 
     private BookingFormFluentValidator orderValidator = new();
@@ -394,6 +400,9 @@
                 _request.PhoneNumber = client.PhoneNumber;
                 _request.Email = client.Email;
                 _request.ClientId = client.Id;
+                _request.City = client.City;
+                _request.Neighborhood = client.Neighbourhood;
+                _request.Gender = (ClientGender?)client.Gender;
             }
         }
         catch (ApiException ex)
@@ -589,7 +598,7 @@
         public string? FullName { get; set; }
         public string? City { get; set; }
         public string? Neighborhood { get; set; }
-        public string? Gender { get; set; }
+        public ClientGender? Gender { get; set; }
         public decimal? CardAmount { get; set; }
         public decimal? CashAmount { get; set; }
         public decimal? DolarAmount { get; set; }
