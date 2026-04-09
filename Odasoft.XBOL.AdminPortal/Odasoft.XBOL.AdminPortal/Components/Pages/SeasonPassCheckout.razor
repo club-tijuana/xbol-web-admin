@@ -4,7 +4,6 @@
 
 @using Microsoft.Extensions.Options;
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
-@using Odasoft.XBOL.AdminPortal.Configs;
 @using Odasoft.XBOL.AdminPortal.Services.Contracts;
 @using Odasoft.XBOL.AdminPortal.States;
 @using Odasoft.XBOL.AdminPortal.ViewModels.Order;
@@ -15,7 +14,7 @@
 @using Odasoft.XBOL.Common.Helpers
 
 @inject AppLocalizer<SeasonPassCheckout> L
-@inject IOptions<SeatsIo> _seatsOptions;
+@inject IOptions<SeatsIoOptions> _seatsOptions;
 @inject ISeasonService _seasonService;
 @inject ISeasonPassService _seasonPassService;
 @inject CartState _cartState;
