@@ -1,15 +1,15 @@
 using Microsoft.Extensions.Options;
-using Odasoft.XBOL.AdminPortal.Configs;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
+using Odasoft.XBOL.Common.Options;
 
 namespace Odasoft.XBOL.AdminPortal.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly Authentication _authenticationConfig;
+        private readonly AuthenticationOptions _authenticationConfig;
         private readonly AuthStateProvider _authStateProvider;
 
-        public AuthService(IOptions<Authentication> authenticationConfig, AuthStateProvider authStateProvider)
+        public AuthService(IOptions<AuthenticationOptions> authenticationConfig, AuthStateProvider authStateProvider)
         {
             _authenticationConfig = authenticationConfig.Value;
             _authStateProvider = authStateProvider;

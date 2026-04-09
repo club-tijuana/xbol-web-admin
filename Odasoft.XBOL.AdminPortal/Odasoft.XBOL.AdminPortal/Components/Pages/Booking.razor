@@ -1,7 +1,6 @@
 @page "/events/{Id:long}/key/{ExternalKey}/booking"
 @page "/xolopass/{Id:long}/key/{ExternalKey}/booking"
 @using Odasoft.XBOL.AdminPortal.Components.Shared
-@using Odasoft.XBOL.AdminPortal.Configs
 @using Microsoft.Extensions.Options
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared
 @using Odasoft.XBOL.Business
@@ -13,7 +12,7 @@
 @inject ISnackbar Snackbar
 @inject IAdminClient AdminClient
 @inject NavigationManager Navigation
-@inject IOptions<SeatsIo> SeatsOptions
+@inject IOptions<SeatsIoOptions> SeatsOptions
 @inject IJSRuntime JS
 @inject AppLocalizer<Events> L
 

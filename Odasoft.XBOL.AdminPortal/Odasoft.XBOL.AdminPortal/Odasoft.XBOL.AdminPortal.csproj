@@ -19,6 +19,11 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <MudAllowedAttributePattern>LowerCase</MudAllowedAttributePattern>
     </PropertyGroup>
+    <Target Name="GenerateAppSettingsSchema" AfterTargets="Build"
+            Condition="'$(Configuration)' == 'Debug'">
+        <Exec Command="dotnet run --project &quot;$(MSBuildProjectFullPath)&quot; --no-build -- --generate-schema"
+              WorkingDirectory="$(MSBuildProjectDirectory)" />
+    </Target>
     <ItemGroup>
         <PackageReference Include="Bogus" Version="35.6.5" />
         <PackageReference Include="FluentValidation" Version="12.1.1" />
