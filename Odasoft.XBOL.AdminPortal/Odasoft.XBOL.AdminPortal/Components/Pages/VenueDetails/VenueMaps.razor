@@ -1,7 +1,31 @@
-<MudCard Class="pa-6 bg-white" Elevation="3">
-    <MudText Typo="Typo.h6" Color="Color.Secondary">Hola desde Mapas</MudText>
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services
+
+@inject VenuesService _venuesService;
+
+<MudCard Class="bg-white" Elevation="3" Style="height:650px;">
+    <MudGrid Class="mud-width-full">
+        <MudItem xs="12">
+            <MudTabs Rounded="true" ApplyEffectsToContainer="true" TabPanelsClass="pa-6">
+                @foreach (var map in _venueMaps)
+                {
+                    <MudTabPanel PanelClass="d-flex justify-center" Text="@map.Name">
+                        <MudImage  ObjectFit="ObjectFit.Contain"
+                                  Src="@map.ThumbnailUrl" />
+                    </MudTabPanel>
+                }
+            </MudTabs>
+        </MudItem>
+    </MudGrid>
 </MudCard>
 
 @code {
     [Parameter] public long VenueId { get; set; }
+
+    private ICollection<VenueMapResponse> _venueMaps = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _venueMaps = await _venuesService.GetVenueMapsByVenueAsync(VenueId);
+    }
 }

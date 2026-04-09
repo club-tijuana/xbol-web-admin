@@ -2,6 +2,7 @@ using Odasoft.XBOL.Models.DTO;
 
 namespace Odasoft.XBOL.Business.Services
 {
+    // TODO: Separate venue's map and amenities logic in separate services.
     public class VenuesService
     {
         private IAdminClient _adminClient;
@@ -94,6 +95,21 @@ namespace Odasoft.XBOL.Business.Services
         public async Task SaveVenueAmenities(long venueId, List<long> amenityIds)
         {
             await _adminClient.SaveVenueAmenitiesAsync(venueId, amenityIds);
+        }
+
+        public async Task<ICollection<VenueMapResponse>> GetVenueMapsByVenueAsync(long venueId)
+        {
+            return await _adminClient.GetVenueMapsByVenueAsync(venueId);
+        }
+
+        public async Task<Chart> GetMapChart(string mapKey)
+        {
+            return await _adminClient.GetVenueMapChartByKeyAsync(mapKey);
+        }
+
+        public async Task SaveVenueMap(VenueMapRequest request)
+        {
+            await _adminClient.CreateVenueMapAsync(request);
         }
     }
 }

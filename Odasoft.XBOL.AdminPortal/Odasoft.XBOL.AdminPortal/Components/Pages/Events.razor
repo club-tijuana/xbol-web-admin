@@ -298,7 +298,7 @@ else if(_selectedTab == TabPast)
 
     private EventFilterParameters _filters = EventFilterParameters.Empty;
 
-    private List<ListItem> _venues = [];
+    private List<VenueResponse> _venues = [];
     private IReadOnlyCollection<string> _selectedVenues = [];
 
     private List<EventCategoryResult> _availableCategories = [];
@@ -374,7 +374,7 @@ else if(_selectedTab == TabPast)
             {
                 await _dataGrid.ReloadServerData();
             }
-        } 
+        }
         else
         {
             await UpdateUpcomingItems();

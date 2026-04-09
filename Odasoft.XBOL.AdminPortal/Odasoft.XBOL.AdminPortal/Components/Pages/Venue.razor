@@ -147,10 +147,6 @@
                             </MudChipSet>
                         </MudItem>
 
-                        <MudItem xs="12">
-                            <MudDivider Class="my-4" />
-                        </MudItem>
-
                         <MudItem xs="12" lg="6">
                             <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Políticas del recinto</MudText>
                             <MudPaper Outlined="true" Class="pa-0">
@@ -461,8 +457,7 @@
             _request.AdditionalComments = venue.AdditionalComments ?? "";
 
             _amenities = await _catalogsService.GetAmenitiesAsync();
-            ICollection<Amenity> venueAmenities = await _venueService.GetAmenitiesByVenueAsync(venueId.Value);
-            _selectedAmenities = venueAmenities.ToList();
+            _selectedAmenities = await _venueService.GetAmenitiesByVenueAsync(venueId.Value);
 
             ICollection<VenueImageResponse> facadeImages = await _venueService.GetVenueImageByTypeAsync(venueId.Value, ImageType.Facade);
             var facade = facadeImages.FirstOrDefault();
