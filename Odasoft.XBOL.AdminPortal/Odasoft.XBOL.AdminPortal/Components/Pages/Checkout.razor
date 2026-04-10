@@ -278,7 +278,7 @@
     public string HoldToken { get; set; } = default!;
 
     private string _bookingUrl = default!;
-    private string _successUrl = "/events";
+    private string _successUrl = "./events";
     private ItemType _itemType = ItemType.Ticket;
     private ImageHeroBannerViewModel _banner = new();
 
@@ -343,8 +343,8 @@
     {
         var isXolopass = _navigation.Uri.Contains("/xolopass/");
         var basePath = isXolopass ? "xolopass" : "events";
-        _bookingUrl = $"/{basePath}/{Id}/key/{ExternalKey}/booking";
-        _successUrl = isXolopass ? "/xolopass" : "/events";
+        _bookingUrl = $"./{basePath}/{Id}/key/{ExternalKey}/booking";
+        _successUrl = isXolopass ? "./xolopass" : "./events";
 
         if (_cartState.SelectedSeats.Count == 0)
         {

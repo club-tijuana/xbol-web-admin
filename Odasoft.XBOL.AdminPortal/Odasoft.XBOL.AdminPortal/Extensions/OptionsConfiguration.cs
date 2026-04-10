@@ -20,6 +20,23 @@ public static class OptionsConfiguration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<HostingOptions>()
+            .BindConfiguration("Hosting")
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.PostConfigure<HostingOptions>(o =>
+        {
+            if (string.IsNullOrWhiteSpace(o.PathBase))
+            {
+                o.PathBase = null;
+                return;
+            }
+
+            var trimmed = o.PathBase.Trim().TrimEnd('/');
+            o.PathBase = string.IsNullOrEmpty(trimmed) ? null : trimmed;
+        });
+
         return services;
     }
 }

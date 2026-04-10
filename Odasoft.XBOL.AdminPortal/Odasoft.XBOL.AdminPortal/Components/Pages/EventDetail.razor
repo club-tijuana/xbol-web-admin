@@ -21,7 +21,7 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack"
-                       OnClick="@(() => _navigationManager.NavigateTo("/events"))" Color="Color.Secondary"
+                       OnClick="@(() => _navigationManager.NavigateTo("./events"))" Color="Color.Secondary"
                        Variant="Variant.Outlined" Class="text-uppercase">
                 @L["GoBack"]
             </MudButton>
@@ -32,7 +32,7 @@
                            Class="text-uppercase" OnClick="DeleteEventAsync">
                     @L["Delete"]
                 </MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.Edit" Href="@($"/events/{EventId}/edit")"
+                <MudButton StartIcon="@Icons.Material.Filled.Edit" Href="@($"./events/{EventId}/edit")"
                            Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">
                     @L["Edit"]
                 </MudButton>
@@ -118,7 +118,7 @@
     private void OnTabChanged(string tab)
     {
         _selectedTab = tab;
-        _navigationManager.NavigateTo($"/events/{EventId}/{tab}", replace: true);
+        _navigationManager.NavigateTo($"./events/{EventId}/{tab}", replace: true);
     }
 
     private async Task LoadEventAsync()
@@ -165,7 +165,7 @@
         {
             await _eventService.DeleteEventAsync(EventId);
             _snackbar.Add(L["DeleteSuccess"], Severity.Success);
-            _navigationManager.NavigateTo("/events");
+            _navigationManager.NavigateTo("./events");
         }
         catch (Exception ex)
         {

@@ -84,5 +84,8 @@ public static class AppSettingsSchemaGenerator
 
         [Description("Seats.io integration settings")]
         public SeatsIoOptions? SeatsIo { get; set; }
+
+        [Description("Hosting / reverse proxy settings")]
+        public HostingOptions? Hosting { get; set; }
     }
 }

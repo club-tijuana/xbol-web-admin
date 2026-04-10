@@ -26,7 +26,7 @@
 }
 
 <AdminForm @ref="_adminForm" Title="@L["PageTitle"]" OnSubmit="SaveAsync"
-           BackUrl="@($"/seasons/{Id}/events")" ErrorMessage="@L["UpdateError"]">
+           BackUrl="@($"./seasons/{Id}/events")" ErrorMessage="@L["UpdateError"]">
     @* Row 1: Code, Name, StartDate, EndDate *@
     <MudItem xs="12" lg="2">
         <AdminTextField @bind-Value="_code" Label="@L["Code"].Value"
@@ -127,7 +127,7 @@
             Logger.LogError(ex, "Failed to load season {SeasonId}", Id);
             _loadingFailed = true;
             Snackbar.Add(L["LoadError"], Severity.Error);
-            Navigation.NavigateTo("/seasons");
+            Navigation.NavigateTo("./seasons");
         }
     }
 
@@ -151,6 +151,6 @@
 
         await SeasonService.UpdateSeasonAsync(Id, request);
         Snackbar.Add(L["UpdateSuccess"], Severity.Success);
-        Navigation.NavigateTo($"/seasons/{Id}/events");
+        Navigation.NavigateTo($"./seasons/{Id}/events");
     }
 }
