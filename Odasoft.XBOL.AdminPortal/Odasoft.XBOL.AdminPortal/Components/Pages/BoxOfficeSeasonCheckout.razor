@@ -22,7 +22,6 @@
 @inject OrdersService OrdersService;
 @inject ILogger<BoxOfficeSeasonCheckout> Logger;
 
-
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
 
 <MudForm @ref="_form" Model="_request" Validation="@(orderValidator.ValidateValue)">
@@ -131,7 +130,6 @@
                                    Clearable />
                 </MudItem>
             </MudGrid>
-        
         </MudItem>
         <MudItem xs="4">
             <MudStack>
@@ -303,7 +301,7 @@
             _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
 
             if (IsRenewal && OrderInfo is not null)
-            {   
+            {
                 _request.FullName = OrderInfo.ClientName;
                 _request.PhoneRegionCodeId = OrderInfo.PhoneRegionCodeId;
                 _request.PhoneNumber = OrderInfo.PhoneNumber;
@@ -512,7 +510,7 @@
                 Birthday = DateTimeHelpers.ToDateTimeOffset(_request.Birthday)
             },
             TicketType = ItemType.SeasonPass,
-            RefereceOrderId = OrderInfo?.OrderId
+            ReferenceOrderId = OrderInfo?.OrderId
         };
 
         try
@@ -541,7 +539,6 @@
             _loadingState.Hide();
         }
     }
-
 
     public async ValueTask DisposeAsync()
     {

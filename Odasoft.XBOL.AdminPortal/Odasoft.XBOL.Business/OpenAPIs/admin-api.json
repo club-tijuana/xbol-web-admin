@@ -12132,7 +12132,7 @@
             "type": "string",
             "nullable": true
           },
-          "refereceOrderId": {
+          "referenceOrderId": {
             "type": "integer",
             "format": "int64",
             "nullable": true
