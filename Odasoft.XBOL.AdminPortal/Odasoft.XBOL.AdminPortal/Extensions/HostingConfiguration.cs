@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;
 using Odasoft.XBOL.Common.Options;
 using System.Net;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
-using AspNetForwardedHeadersOptions = Microsoft.AspNetCore.Builder.ForwardedHeadersOptions;
 using AppForwardedHeadersOptions = Odasoft.XBOL.Common.Options.ForwardedHeadersOptions;
+using AspNetForwardedHeadersOptions = Microsoft.AspNetCore.Builder.ForwardedHeadersOptions;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace Odasoft.XBOL.AdminPortal.Extensions;
 

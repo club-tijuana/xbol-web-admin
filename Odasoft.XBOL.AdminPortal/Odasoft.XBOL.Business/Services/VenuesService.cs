@@ -96,20 +96,5 @@ namespace Odasoft.XBOL.Business.Services
         {
             await _adminClient.SaveVenueAmenitiesAsync(venueId, amenityIds);
         }
-
-        public async Task<ICollection<VenueMapResponse>> GetVenueMapsByVenueAsync(long venueId)
-        {
-            return await _adminClient.GetVenueMapsByVenueAsync(venueId);
-        }
-
-        public async Task<Chart> GetMapChart(string mapKey)
-        {
-            return await _adminClient.GetVenueMapChartByKeyAsync(mapKey);
-        }
-
-        public async Task SaveVenueMap(VenueMapRequest request)
-        {
-            await _adminClient.CreateVenueMapAsync(request);
-        }
     }
 }
