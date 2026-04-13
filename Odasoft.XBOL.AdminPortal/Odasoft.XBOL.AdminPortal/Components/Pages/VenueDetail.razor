@@ -27,7 +27,7 @@
             </MudButton>
         </LeftContent>
         <RightContent>
-            <MudButton StartIcon="@Icons.Material.Filled.Edit" Href="@($"/venues/{VenueId}/update")"
+            <MudButton StartIcon="@Icons.Material.Filled.Edit" Href="@($"./venues/{VenueId}/update")"
                        Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">
                 @L["Edit"]
             </MudButton>
@@ -128,7 +128,7 @@
     private void OnTabChanged(string tab)
     {
         _selectedTab = tab;
-        _navigationManager.NavigateTo($"/venues/{VenueId}/{tab}", replace: true);
+        _navigationManager.NavigateTo($"./venues/{VenueId}/{tab}", replace: true);
     }
 
     private async Task LoadVenueAsync()

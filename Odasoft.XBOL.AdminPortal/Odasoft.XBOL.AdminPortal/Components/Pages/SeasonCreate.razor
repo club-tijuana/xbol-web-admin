@@ -20,7 +20,7 @@
 </SectionContent>
 
 <AdminForm @ref="_adminForm" Title="@L["PageTitle"]" OnSubmit="SaveAsync"
-           BackUrl="/seasons" ErrorMessage="@L["CreateError"]">
+           BackUrl="./seasons" ErrorMessage="@L["CreateError"]">
     @* Row 1: Code, Name, StartDate, EndDate *@
     <MudItem xs="12" lg="2">
         <AdminTextField @bind-Value="_code" Label="@L["Code"].Value"
@@ -114,6 +114,6 @@
 
         await SeasonService.CreateSeasonAsync(request);
         Snackbar.Add(L["CreateSuccess"], Severity.Success);
-        Navigation.NavigateTo("/seasons");
+        Navigation.NavigateTo("./seasons");
     }
 }

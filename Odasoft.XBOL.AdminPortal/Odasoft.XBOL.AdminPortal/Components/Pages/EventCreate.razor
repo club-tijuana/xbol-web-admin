@@ -670,7 +670,7 @@
             if (result is not true) return;
         }
 
-        Navigation.NavigateTo("/events");
+        Navigation.NavigateTo("./events");
     }
 
     private async Task OnKeyDownAsync(KeyboardEventArgs e)
@@ -744,7 +744,7 @@
             await SaveGalleryImagesAsync(eventId.Value);
 
             Snackbar.Add(L["CreateSuccess", L["Event"]], Severity.Success);
-            Navigation.NavigateTo("/events");
+            Navigation.NavigateTo("./events");
         }
         catch (ApiException<ProblemDetails> ex)
         {

@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Options;
 using Odasoft.XBOL.AdminPortal.Components;
 using Odasoft.XBOL.AdminPortal.Extensions;
 using Odasoft.XBOL.AdminPortal.Schema;
 using Odasoft.XBOL.Business.Extensions;
+using Odasoft.XBOL.Common.Options;
 
 if (args.Contains("--generate-schema"))
 {
@@ -15,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Infrastructure
 builder.Services.ConfigureOptions(builder.Configuration);
+builder.Services.ConfigureHosting(builder.Configuration);
 
 // Blazor framework
 builder.Services.ConfigureBlazor();
@@ -35,6 +38,16 @@ builder.Services.ConfigureHttpClients();
 
 var app = builder.Build();
 
+// Forwarded headers must run before any middleware that inspects Scheme/Host/RemoteIp.
+// Options are populated from Hosting:ForwardedHeaders above.
+var hostingOptions = app.Services.GetRequiredService<IOptions<HostingOptions>>().Value;
+if (hostingOptions.ForwardedHeaders?.Enabled == true)
+{
+    app.UseForwardedHeaders();
+}
+
+app.UseConfiguredPathBase();
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -42,6 +55,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+
+app.UseHsts();
 
 // Only use HTTPS redirection when running directly (Visual Studio, dotnet run)
 // Containers handle TLS at load balancer/reverse proxy level
@@ -52,15 +67,16 @@ if (!app.Environment.IsProduction()
 }
 
 app.UseRequestLocalization();
-app.UseHsts();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 // Map health check endpoint for container health monitoring
 app.MapHealthChecks("/healthz", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

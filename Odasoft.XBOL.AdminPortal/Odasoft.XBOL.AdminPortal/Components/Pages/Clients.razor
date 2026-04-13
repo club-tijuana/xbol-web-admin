@@ -332,7 +332,7 @@
 
     private void RowClicked(DataGridRowClickEventArgs<EnterpriseViewModel> args)
     {
-        _navigationManager.NavigateTo($"/clients/{args.Item.Id}/credit");
+        _navigationManager.NavigateTo($"./clients/{args.Item.Id}/credit");
     }
 
     private async Task ClearFilters()
@@ -351,7 +351,7 @@
 
     private void UpdateClient(long clientId)
     {
-        _navigationManager.NavigateTo($"/clients/{clientId}/edit");
+        _navigationManager.NavigateTo($"./clients/{clientId}/edit");
     }
 
     private async Task DeleteClient(long clientId)

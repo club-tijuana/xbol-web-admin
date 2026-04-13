@@ -131,7 +131,7 @@
             CartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
 
             var basePath = Navigation.Uri.Contains("/xolopass/") ? "xolopass" : "events";
-            Navigation.NavigateTo($"/{basePath}/{Id}/key/{ExternalKey}/booking/{holdToken.Token}/checkout");
+            Navigation.NavigateTo($"./{basePath}/{Id}/key/{ExternalKey}/booking/{holdToken.Token}/checkout");
         }
         catch (Exception ex)
         {

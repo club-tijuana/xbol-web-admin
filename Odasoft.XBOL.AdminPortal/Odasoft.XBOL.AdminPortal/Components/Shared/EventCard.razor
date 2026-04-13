@@ -40,7 +40,7 @@
                         <MudIconButton Icon="@Icons.Material.Outlined.Edit"
                                        Size="Size.Small"
                                        Color="Color.Secondary"
-                                       OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/edit"))" />
+                                       OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/edit"))" />
                     </MudTooltip>
                 </MudItem>
                 <MudItem>
@@ -50,7 +50,7 @@
                             Size="Size.Small"
                             Color="Color.Secondary"
                             Disabled="@(Event.ExternalEventKey is null)"
-                            OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/key/{Event.ExternalEventKey}/booking"))" />
+                            OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/key/{Event.ExternalEventKey}/booking"))" />
                     </MudTooltip>
                 </MudItem>
                 <MudItem>
@@ -59,7 +59,7 @@
                                        Size="Size.Small"
                                        Color="Color.Secondary"
                                        Disabled
-                                       OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/suites"))" />
+                                       OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/suites"))" />
                     </MudTooltip>
                 </MudItem>
                 <MudItem>
@@ -68,7 +68,7 @@
                             Icon="@Icons.Material.Outlined.Map"
                             Size="Size.Small"
                             Color="Color.Secondary"
-                            OnClick="@(() => _navigationManager.NavigateTo($"/events/{Event.Id}/key/{Event.ExternalEventKey}/availability"))" />
+                            OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/key/{Event.ExternalEventKey}/availability"))" />
                     </MudTooltip>
                 </MudItem>
             </MudGrid>
