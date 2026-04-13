@@ -33,7 +33,7 @@
     <MudCardContent Class="pa-0">
         <MudDataGrid T="VenueResponse" @ref="_dataGrid" ServerData="ServerReloadAsync" Loading="_loading" Filterable="false"
                      FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0"
-                     RowClick="@(args => _navigationManager.NavigateTo($"/venues/{args.Item.Id}"))"
+                     RowClick="@(args => _navigationManager.NavigateTo($"./venues/{args.Item.Id}"))"
                      RowClass="cursor-pointer">
             <ToolBarContent>
                 <MudGrid Class="align-center">
@@ -133,7 +133,7 @@
                         <MudStack Row>
                             <MudTooltip Text="@_localizer["Edit"]" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Medium"
-                                               OnClick="@(() => _navigationManager.NavigateTo($"/venues/{context.Item.Id}/update"))" />
+                                               OnClick="@(() => _navigationManager.NavigateTo($"./venues/{context.Item.Id}/update"))" />
                             </MudTooltip>
 
                             @if (context.Item.Status == VenueStatus.Active)

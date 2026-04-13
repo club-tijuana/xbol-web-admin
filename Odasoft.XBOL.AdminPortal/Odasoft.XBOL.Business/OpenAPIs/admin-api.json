@@ -324,14 +324,13 @@
         "deprecated": true
       }
     },
-    "/api/categories/names": {
+    "/api/categories": {
       "get": {
         "tags": [
           "Categories"
         ],
-        "summary": "Retrieves a collection of category names.",
-        "description": "Use this method to obtain a list of category names for display in user interfaces or\r\n            for reporting purposes. The returned collection does not include additional category details beyond the\r\n            name.",
-        "operationId": "GetCategoriesNamesAsync",
+        "summary": "Retrieves the list of active event categories.",
+        "operationId": "GetCategoriesAsync",
         "responses": {
           "200": {
             "description": "OK",
@@ -340,7 +339,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/EventCategoryResult"
                   }
                 }
               },
@@ -348,7 +347,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/EventCategoryResult"
                   }
                 }
               },
@@ -356,7 +355,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/EventCategoryResult"
                   }
                 }
               }
@@ -1807,6 +1806,357 @@
         }
       }
     },
+    "/api/event-images/{eventId}": {
+      "get": {
+        "tags": [
+          "EventImage"
+        ],
+        "summary": "Retrieves a list of the event's images.",
+        "operationId": "GetEventImagesAsync",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "description": "The unique Id of the event.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventImageResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventImageResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventImageResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "EventImage"
+        ],
+        "summary": "Creates a new event image with the specified info in each request.",
+        "operationId": "UploadEventImageAsync",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "description": "The unique Id of the Event.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "imageType": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ImageType"
+                      }
+                    ],
+                    "description": "The type of the image."
+                  },
+                  "order": {
+                    "type": "integer",
+                    "description": "Order of the image when display.",
+                    "format": "int32"
+                  },
+                  "imageFile": {
+                    "type": "string",
+                    "description": "Image content.",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "imageType": {
+                  "style": "form"
+                },
+                "order": {
+                  "style": "form"
+                },
+                "imageFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/event-images/{eventId}/image-type/{imageType}": {
+      "get": {
+        "tags": [
+          "EventImage"
+        ],
+        "summary": "Retrieves a list of the event`s images filtered by image type.",
+        "operationId": "GetEventImagesByImageTypeAsync",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "description": "The unique Id of the event.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "imageType",
+            "in": "path",
+            "description": "The ImageType of the images wanted.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ImageType"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventImageResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventImageResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventImageResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/event-images/{eventImageId}": {
+      "put": {
+        "tags": [
+          "EventImage"
+        ],
+        "summary": "Updates an exisiting event image with the specified details.",
+        "operationId": "UpdateEventImageByIdAsync",
+        "parameters": [
+          {
+            "name": "eventImageId",
+            "in": "path",
+            "description": "The unique Id of the Event.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "imageType": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ImageType"
+                      }
+                    ],
+                    "description": "The type of the image."
+                  },
+                  "order": {
+                    "type": "integer",
+                    "description": "Order of the image when display.",
+                    "format": "int32"
+                  },
+                  "imageFile": {
+                    "type": "string",
+                    "description": "Image content.",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "imageType": {
+                  "style": "form"
+                },
+                "order": {
+                  "style": "form"
+                },
+                "imageFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "EventImage"
+        ],
+        "summary": "Deletes and existing event image with the specified Id.",
+        "operationId": "DeleteEventImageByIdAsync",
+        "parameters": [
+          {
+            "name": "eventImageId",
+            "in": "path",
+            "description": "The unique Event Image Id.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/events": {
       "get": {
         "tags": [
@@ -1860,7 +2210,7 @@
           {
             "name": "sortBy",
             "in": "query",
-            "description": "The property name by which to sort the events. Valid options include 'date', 'name', and others supported by\r\n            the API. If null or empty, a default sort order is applied.",
+            "description": "The property name by which to sort the events. Valid options: 'name', 'category', 'venue', 'createdat'.\r\n            Defaults to schedule start date if null or unrecognized.",
             "schema": {
               "type": "string"
             }
@@ -2054,115 +2404,6 @@
             }
           }
         }
-      },
-      "put": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "Updates the details of an existing event identified by its unique identifier.",
-        "description": "The method validates the input model state before attempting to update the event. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
-        "operationId": "UpdateEventAsync",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The unique identifier of the event to update. Must be a positive long value.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "An object containing the updated event details. This parameter is required and cannot be null.",
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/UpdateEventRequest"
-                  }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/UpdateEventRequest"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/UpdateEventRequest"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/UpdateEventRequest"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
       }
     },
     "/api/events/on-sale": {
@@ -2176,7 +2417,7 @@
           {
             "name": "venues",
             "in": "query",
-            "description": "A comma-separated list of venue identifiers used to filter events by their associated venues. If null or\r\n             empty, events from all venues are included.",
+            "description": "A comma-separated list of venue identifiers used to filter events by their associated venues. If null or\r\n            empty, events from all venues are included.",
             "schema": {
               "type": "string"
             }
@@ -2184,7 +2425,7 @@
           {
             "name": "categories",
             "in": "query",
-            "description": "A comma-separated list of category identifiers used to filter events by their associated categories. If null\r\n             or empty, events from all categories are included.",
+            "description": "A comma-separated list of category identifiers used to filter events by their associated categories. If null\r\n            or empty, events from all categories are included.",
             "schema": {
               "type": "string"
             }
@@ -2192,7 +2433,7 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "The start date and time for filtering events. Only events occurring on or after this date are included. If\r\n             null, no lower date bound is applied.",
+            "description": "The start date and time for filtering events. Only events occurring on or after this date are included. If\r\n            null, no lower date bound is applied.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -2201,7 +2442,7 @@
           {
             "name": "endDate",
             "in": "query",
-            "description": "The end date and time for filtering events. Only events occurring on or before this date are included. If\r\n             null, no upper date bound is applied.",
+            "description": "The end date and time for filtering events. Only events occurring on or before this date are included. If\r\n            null, no upper date bound is applied.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -2210,7 +2451,7 @@
           {
             "name": "search",
             "in": "query",
-            "description": "A search term used to filter events by their title or description. If null or empty, no search filtering is\r\n             applied.",
+            "description": "A search term used to filter events by their title or description. If null or empty, no search filtering is\r\n            applied.",
             "schema": {
               "type": "string"
             }
@@ -2218,7 +2459,7 @@
           {
             "name": "sortBy",
             "in": "query",
-            "description": "The property name by which to sort the events. Valid options include 'date', 'name', and others supported by\r\n             the API. If null or empty, a default sort order is applied.",
+            "description": "The property name by which to sort the events. Valid options: 'name', 'category', 'venue'.\r\n            Defaults to schedule start date if null or unrecognized.",
             "schema": {
               "type": "string"
             }
@@ -2226,7 +2467,7 @@
           {
             "name": "descending",
             "in": "query",
-            "description": "Indicates whether the sorting should be in descending order. If true, results are sorted in descending\r\n             order; otherwise, ascending order is used. If null, the default sort direction is applied.",
+            "description": "Indicates whether the sorting should be in descending order. If true, results are sorted in descending\r\n            order; otherwise, ascending order is used. If null, the default sort direction is applied.",
             "schema": {
               "type": "boolean"
             }
@@ -2234,7 +2475,7 @@
           {
             "name": "page",
             "in": "query",
-            "description": "The page number of results to retrieve. Must be a positive integer if specified. If null, the first page is\r\n             returned.",
+            "description": "The page number of results to retrieve. Must be a positive integer if specified. If null, the first page is\r\n            returned.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -2243,7 +2484,7 @@
           {
             "name": "pageSize",
             "in": "query",
-            "description": "The number of events to include per page. Must be a positive integer if specified. If null, a default page\r\n             size is used.",
+            "description": "The number of events to include per page. Must be a positive integer if specified. If null, a default page\r\n            size is used.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -2379,6 +2620,115 @@
       }
     },
     "/api/events/{id}": {
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Updates the details of an existing event identified by its unique identifier.",
+        "description": "The method validates the input model state before attempting to update the event. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
+        "operationId": "UpdateEventAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The unique identifier of the event to update. Must be a positive long value.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "An object containing the updated event details. This parameter is required and cannot be null.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateEventRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateEventRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateEventRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateEventRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
       "delete": {
         "tags": [
           "Events"
@@ -6440,7 +6790,7 @@
         "tags": [
           "Suites"
         ],
-        "summary": "Retrieves a list of all available test suites.",
+        "summary": "Retrieves a list of all available suites.",
         "operationId": "GetSuitesAsync",
         "parameters": [
           {
@@ -7093,6 +7443,206 @@
         }
       }
     },
+    "/api/venue-amenities/{venueId}/amenities": {
+      "get": {
+        "tags": [
+          "VenueAmenities"
+        ],
+        "operationId": "GetAmenitiesByVenueAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "VenueAmenities"
+        ],
+        "operationId": "SaveVenueAmenitiesAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/amenities-catalog": {
+      "get": {
+        "tags": [
+          "VenueAmenities"
+        ],
+        "operationId": "GetAmenitiesCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AmenityResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/venue-images/{venueId}": {
       "get": {
         "tags": [
@@ -7450,7 +8000,6 @@
           "VenueMaps"
         ],
         "summary": "Retrieves a collection of venue maps.",
-        "description": "This method calls the underlying venue map service to obtain the data. Ensure that\r\n            the service is properly configured to return the expected results. The response is returned with an HTTP 200\r\n            status code on success.",
         "operationId": "GetVenueMapsAsync",
         "responses": {
           "200": {
@@ -7488,41 +8037,45 @@
         "tags": [
           "VenueMaps"
         ],
-        "summary": "Creates a new Venue Map or Maps using the specified request data.",
+        "summary": "Creates a new Venue Map using the specified request data.",
         "operationId": "CreateVenueMapAsync",
         "requestBody": {
-          "description": "The list of details of the Venue Map or Maps to create.",
+          "description": "The details of the Venue Map to create.",
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/VenueMapRequest"
-                }
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueMapRequest"
+                  }
+                ]
               }
             },
             "application/json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/VenueMapRequest"
-                }
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueMapRequest"
+                  }
+                ]
               }
             },
             "text/json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/VenueMapRequest"
-                }
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueMapRequest"
+                  }
+                ]
               }
             },
             "application/*+json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/VenueMapRequest"
-                }
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VenueMapRequest"
+                  }
+                ]
               }
             }
           }
@@ -7574,6 +8127,58 @@
         }
       }
     },
+    "/venue/{venueId}": {
+      "get": {
+        "tags": [
+          "VenueMaps"
+        ],
+        "summary": "Retrieves a collection of venue maps from the venue provided.",
+        "operationId": "GetVenueMapsByVenueAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "description": "Unique venue identifier.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueMapResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueMapResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueMapResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/venue-maps/{venueMapId}": {
       "get": {
         "tags": [
@@ -7581,7 +8186,7 @@
         ],
         "summary": "Retrieves the venue map details for the specified identifier.",
         "description": "This method performs an asynchronous lookup for the venue map. If no venue map is\r\n            found for the given identifier, the response will be 404 Not Found.",
-        "operationId": "GetVenueMapsByIdAsync",
+        "operationId": "GetVenueMapsById",
         "parameters": [
           {
             "name": "venueMapId",
@@ -7795,7 +8400,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ListItem"
+                    "$ref": "#/components/schemas/VenueMapResponse"
                   }
                 }
               },
@@ -7803,7 +8408,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ListItem"
+                    "$ref": "#/components/schemas/VenueMapResponse"
                   }
                 }
               },
@@ -7811,7 +8416,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ListItem"
+                    "$ref": "#/components/schemas/VenueMapResponse"
                   }
                 }
               }
@@ -7825,11 +8430,13 @@
         "tags": [
           "VenueMaps"
         ],
+        "summary": "Retrieves venue map chart data using the unique chart key provided.",
         "operationId": "GetVenueMapChartByKeyAsync",
         "parameters": [
           {
             "name": "chartKey",
             "in": "path",
+            "description": "The unique chart key",
             "required": true,
             "schema": {
               "type": "string"
@@ -7842,17 +8449,57 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/Chart"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/Chart"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/Chart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chart"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chart"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chart"
                 }
               }
             }
@@ -8292,7 +8939,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ListItem"
+                    "$ref": "#/components/schemas/VenueResponse"
                   }
                 }
               },
@@ -8300,7 +8947,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ListItem"
+                    "$ref": "#/components/schemas/VenueResponse"
                   }
                 }
               },
@@ -8308,7 +8955,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ListItem"
+                    "$ref": "#/components/schemas/VenueResponse"
                   }
                 }
               }
@@ -8362,7 +9009,7 @@
         "tags": [
           "Venues"
         ],
-        "summary": "Updaes the venue status.",
+        "summary": "Updates the venue status.",
         "operationId": "UpdateVenueStatusAsync",
         "parameters": [
           {
@@ -8426,6 +9073,27 @@
           "None"
         ],
         "type": "string"
+      },
+      "AmenityResponse": {
+        "required": [
+          "iconIdentifier",
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "iconIdentifier": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       },
       "AvailabilityReasonSummaryResult": {
         "type": "object",
@@ -8664,6 +9332,145 @@
         },
         "additionalProperties": false
       },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
+          "accessible": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Channel": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
+          "index": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "objects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Chart": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "archived": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "publishedVersionThumbnailUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "draftVersionThumbnailUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            },
+            "nullable": true
+          },
+          "validation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChartValidationResult"
+              }
+            ],
+            "nullable": true
+          },
+          "venueType": {
+            "type": "string",
+            "nullable": true
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Zone"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChartValidationResult": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ClientContactRequest": {
         "type": "object",
         "properties": {
@@ -8687,6 +9494,27 @@
           },
           "lastName": {
             "type": "string"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighbourhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "gender": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ],
+            "nullable": true
+          },
+          "dob": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -8714,6 +9542,27 @@
           },
           "lastName": {
             "type": "string"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighbourhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "gender": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ],
+            "nullable": true
+          },
+          "dob": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -8957,6 +9806,13 @@
         },
         "additionalProperties": false
       },
+      "ClientGender": {
+        "enum": [
+          "Female",
+          "Male"
+        ],
+        "type": "string"
+      },
       "ClientInfoRequest": {
         "type": "object",
         "properties": {
@@ -8988,6 +9844,27 @@
           },
           "lastName": {
             "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "gender": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientGender"
+              }
+            ],
+            "nullable": true
+          },
+          "birthday": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -9256,13 +10133,28 @@
             "type": "string",
             "nullable": true
           },
-          "category": {
+          "ageRestriction": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/EventCategory"
+                "$ref": "#/components/schemas/AgeRestriction"
               }
             ],
             "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
           }
         },
         "additionalProperties": false
@@ -9313,6 +10205,9 @@
               }
             ],
             "nullable": true
+          },
+          "externalEventKey": {
+            "type": "string"
           },
           "securityPolicies": {
             "type": "string",
@@ -9695,6 +10590,134 @@
         },
         "additionalProperties": false
       },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "chartKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "tableBookingConfig": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TableBookingConfig"
+              }
+            ],
+            "nullable": true
+          },
+          "supportsBestAvailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "forSaleConfig": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ForSaleConfig"
+              }
+            ],
+            "nullable": true
+          },
+          "createdOn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            },
+            "nullable": true
+          },
+          "objectCategories": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "nullable": true
+          },
+          "partialSeasonKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            },
+            "nullable": true
+          },
+          "isSeason": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isTopLevelSeason": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isPartialSeason": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isEventInSeason": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "topLevelSeasonKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "isInThePast": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "partialSeasonKeysForEvent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "forSalePropagated": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "EventBookingRequest": {
         "required": [
           "clientContact",
@@ -9752,13 +10775,47 @@
         },
         "additionalProperties": false
       },
-      "EventCategory": {
-        "enum": [
-          "Sports",
-          "Concert",
-          "Theater"
-        ],
-        "type": "string"
+      "EventCategoryResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventImageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "imageBase64": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       },
       "EventInfoDTO": {
         "type": "object",
@@ -9771,13 +10828,31 @@
             "type": "string"
           },
           "subtitle": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "longDescription": {
+            "type": "string",
+            "nullable": true
           },
           "bannerImageUrl": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
-          "category": {
-            "type": "string"
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventCategoryResult"
+            }
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           },
           "venueMapId": {
             "type": "integer",
@@ -9785,7 +10860,31 @@
             "nullable": true
           },
           "venueName": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
+          },
+          "ageRestriction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgeRestriction"
+              }
+            ],
+            "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventStatus"
+              }
+            ]
           },
           "prices": {
             "type": "array",
@@ -9823,9 +10922,11 @@
           "name": {
             "type": "string"
           },
-          "category": {
-            "type": "string",
-            "nullable": true
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventCategoryResult"
+            }
           },
           "venueMapId": {
             "type": "integer",
@@ -9914,13 +11015,11 @@
             "type": "string",
             "nullable": true
           },
-          "category": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/EventCategory"
-              }
-            ],
-            "nullable": true
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventCategoryResult"
+            }
           },
           "status": {
             "allOf": [
@@ -9955,6 +11054,30 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "preSaleStartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "preSaleEndDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gateOpenDate": {
+            "type": "string",
+            "format": "date-time"
           },
           "externalEventKey": {
             "type": "string"
@@ -9994,6 +11117,38 @@
           "Cancelled"
         ],
         "type": "string"
+      },
+      "ForSaleConfig": {
+        "type": "object",
+        "properties": {
+          "forSale": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "objects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "areaPlaces": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "Gender": {
         "enum": [
@@ -10074,7 +11229,9 @@
           "Gallery",
           "Logo",
           "GeneralView",
-          "Facade"
+          "Facade",
+          "VerticalPoster",
+          "HorizontalPoster"
         ],
         "type": "string"
       },
@@ -10311,7 +11468,7 @@
         "enum": [
           "OrderCreated",
           "OrderRenewed",
-          "CancelOrder",
+          "CancelWithRefund",
           "CancelWithoutRefund",
           "ResendReceipt",
           "UpdateOrderHolder",
@@ -10368,6 +11525,7 @@
           "actionName",
           "comments",
           "createdAt",
+          "createdBy",
           "orderId",
           "seats"
         ],
@@ -10396,6 +11554,9 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -10718,7 +11879,12 @@
             "type": "string"
           },
           "gender": {
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ],
+            "nullable": true
           },
           "dob": {
             "type": "string",
@@ -10966,7 +12132,7 @@
             "type": "string",
             "nullable": true
           },
-          "refereceOrderId": {
+          "referenceOrderId": {
             "type": "integer",
             "format": "int64",
             "nullable": true
@@ -11665,6 +12831,24 @@
         ],
         "type": "string"
       },
+      "TableBookingConfig": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "nullable": true
+          },
+          "tables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "TicketTypePriceDTO": {
         "type": "object",
         "properties": {
@@ -11873,13 +13057,28 @@
             "type": "string",
             "nullable": true
           },
-          "category": {
+          "ageRestriction": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/EventCategory"
+                "$ref": "#/components/schemas/AgeRestriction"
               }
             ],
             "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
           },
           "status": {
             "allOf": [
@@ -11941,6 +13140,9 @@
               }
             ],
             "nullable": true
+          },
+          "externalEventKey": {
+            "type": "string"
           },
           "securityPolicies": {
             "type": "string",
@@ -12136,6 +13338,9 @@
           "capacity": {
             "type": "integer",
             "format": "int32"
+          },
+          "thumbnailUrl": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -12166,6 +13371,10 @@
           "capacity": {
             "type": "integer",
             "format": "int32"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -12255,6 +13464,12 @@
           },
           "contactPhoneNumber": {
             "type": "string"
+          },
+          "policies": {
+            "type": "string"
+          },
+          "additionalComments": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -12324,6 +13539,12 @@
           "contactPhoneNumber": {
             "type": "string"
           },
+          "policies": {
+            "type": "string"
+          },
+          "additionalComments": {
+            "type": "string"
+          },
           "category": {
             "allOf": [
               {
@@ -12377,6 +13598,20 @@
           "Inactive"
         ],
         "type": "string"
+      },
+      "Zone": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "ZonePriceDTO": {
         "type": "object",
@@ -12467,6 +13702,9 @@
       "name": "CreditTransactions"
     },
     {
+      "name": "EventImage"
+    },
+    {
       "name": "Events"
     },
     {
@@ -12522,6 +13760,9 @@
     },
     {
       "name": "Tests"
+    },
+    {
+      "name": "VenueAmenities"
     },
     {
       "name": "VenueImages"

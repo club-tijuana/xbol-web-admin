@@ -17,4 +17,7 @@ public static class DateTimeHelpers
 
     public static DateTime? ToNullableDateTime(DateTimeOffset? dto) =>
         dto.HasValue && dto.Value != default ? dto.Value.DateTime : null;
+
+    public static TimeSpan? ToNullableTimeSpan(DateTimeOffset? dto) =>
+        dto.HasValue && dto.Value != default ? dto.Value.TimeOfDay : null;
 }

@@ -28,8 +28,13 @@ public interface IEventService
         EventFilterParameters? filters = null
     );
 
-    Task<List<string>> GetCategoriesAsync();
+    Task<List<EventCategoryResult>> GetCategoriesAsync();
     Task<EventResult> CreateEventAsync(CreateEventRequest request);
     Task UpdateEventAsync(long id, UpdateEventRequest request);
     Task DeleteEventAsync(long id);
+    Task<EventInfoDTO> GetEventByIdAsync(long id);
+    Task<long> UploadEventImageAsync(long eventId, ImageType imageType, int order, FileParameter imageFile);
+    Task DeleteEventImageAsync(long eventImageId);
+    Task UpdateEventImageAsync(long eventImageId, ImageType imageType, int order, FileParameter file);
+    Task<ICollection<EventImageResponse>> GetEventImageByTypeAsync(long eventId, ImageType imageType);
 }

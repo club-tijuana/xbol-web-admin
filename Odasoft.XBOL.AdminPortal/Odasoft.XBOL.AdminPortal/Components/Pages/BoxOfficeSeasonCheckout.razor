@@ -1,6 +1,5 @@
 @using FluentValidation
 @using Microsoft.Extensions.Options
-@using Odasoft.XBOL.AdminPortal.Configs
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
@@ -14,14 +13,14 @@
 @inject ISnackbar _snackbar
 @inject IAdminClient _adminClient
 @inject NavigationManager _navigation
-@inject IOptions<SeatsIo> SeatsOptions
+@inject IOptions<SeatsIoOptions> SeatsOptions
 @inject AppLocalizer<Events> L
 @inject LoadingState _loadingState;
 @inject IDialogService _dialogService
 @inject ClientsService _clientsService
 @inject CatalogsService _catalogsService
 @inject OrdersService OrdersService;
-
+@inject ILogger<BoxOfficeSeasonCheckout> Logger;
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
 
@@ -110,9 +109,14 @@
                                Margin="Margin.Dense"
                                Placeholder="Sin especificar"
                                Immediate="true"
-                               ShrinkLabel>
-                        <MudSelectItem Value="@("Femenino")">Femenino</MudSelectItem>
-                        <MudSelectItem Value="@("Masculino")">Masculino</MudSelectItem>
+                               ShrinkLabel
+                               Clearable>
+                        @foreach (var gender in genders)
+                        {
+                            <MudSelectItem T="ClientGender?" Value="@gender">
+                                <MudText Typo="Typo.body2">@L[gender.ToString()]</MudText>
+                            </MudSelectItem>
+                        }
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12">
@@ -126,7 +130,6 @@
                                    Clearable />
                 </MudItem>
             </MudGrid>
-        
         </MudItem>
         <MudItem xs="4">
             <MudStack>
@@ -272,6 +275,8 @@
     private bool _isSubmitting = false;
     private bool _successfulPurchase = false;
 
+    private List<ClientGender> genders = Enum.GetValues<ClientGender>().ToList();
+
     private BookingForm _request = new();
     private BookingFormFluentValidator orderValidator = new();
 
@@ -296,12 +301,16 @@
             _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
 
             if (IsRenewal && OrderInfo is not null)
-            {   
+            {
                 _request.FullName = OrderInfo.ClientName;
                 _request.PhoneRegionCodeId = OrderInfo.PhoneRegionCodeId;
                 _request.PhoneNumber = OrderInfo.PhoneNumber;
                 _request.Email = OrderInfo.Email;
                 _request.ClientId = OrderInfo.ClientId;
+                _request.City = OrderInfo.City;
+                _request.Neighborhood = OrderInfo.Neighbourhood;
+                _request.Gender = (ClientGender?)OrderInfo.Gender;
+                _request.Birthday = DateTimeHelpers.ToNullableDateTime(OrderInfo.Dob);
             }
 
             // TODO: Move this to a proper service
@@ -339,6 +348,10 @@
                 _request.PhoneNumber = client.PhoneNumber;
                 _request.Email = client.Email;
                 _request.ClientId = client.Id;
+                _request.City = client.City;
+                _request.Neighborhood = client.Neighbourhood;
+                _request.Gender = (ClientGender?)client.Gender;
+                _request.Birthday = DateTimeHelpers.ToNullableDateTime(client.Dob);
             }
         }
         catch (ApiException ex)
@@ -405,8 +418,9 @@
         {
             var token = await _adminClient.ReleaseHoldSeatsAsync(_cartState.HoldToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to release hold seats {HoldToken}", _cartState.HoldToken);
         }
         finally
         {
@@ -489,10 +503,14 @@
                 PhoneRegionCodeId = _request.PhoneRegionCodeId,
                 PhoneNumber = _request.PhoneNumber,
                 Email = _request.Email,
-                FullName = _request.FullName
+                FullName = _request.FullName,
+                City = _request.City,
+                Neighborhood = _request.Neighborhood,
+                Gender = _request.Gender,
+                Birthday = DateTimeHelpers.ToDateTimeOffset(_request.Birthday)
             },
             TicketType = ItemType.SeasonPass,
-            RefereceOrderId = OrderInfo?.OrderId
+            ReferenceOrderId = OrderInfo?.OrderId
         };
 
         try
@@ -506,7 +524,7 @@
             _cartState.ClearCart();
             _cartState.ClearTokenAsync();
 
-            _navigation.NavigateTo("/box-office");
+            _navigation.NavigateTo("./box-office");
         }
         catch (Exception ex)
         {
@@ -521,7 +539,6 @@
             _loadingState.Hide();
         }
     }
-
 
     public async ValueTask DisposeAsync()
     {
@@ -541,7 +558,7 @@
         public string? FullName { get; set; }
         public string? City { get; set; }
         public string? Neighborhood { get; set; }
-        public string? Gender { get; set; }
+        public ClientGender? Gender { get; set; }
         public DateTime? Birthday { get; set; }
         public decimal? CardAmount { get; set; }
         public decimal? CashAmount { get; set; }

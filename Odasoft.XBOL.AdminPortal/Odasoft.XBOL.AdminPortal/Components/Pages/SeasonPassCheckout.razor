@@ -4,7 +4,6 @@
 
 @using Microsoft.Extensions.Options;
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
-@using Odasoft.XBOL.AdminPortal.Configs;
 @using Odasoft.XBOL.AdminPortal.Services.Contracts;
 @using Odasoft.XBOL.AdminPortal.States;
 @using Odasoft.XBOL.AdminPortal.ViewModels.Order;
@@ -15,7 +14,7 @@
 @using Odasoft.XBOL.Common.Helpers
 
 @inject AppLocalizer<SeasonPassCheckout> L
-@inject IOptions<SeatsIo> _seatsOptions;
+@inject IOptions<SeatsIoOptions> _seatsOptions;
 @inject ISeasonService _seasonService;
 @inject ISeasonPassService _seasonPassService;
 @inject CartState _cartState;
@@ -24,6 +23,7 @@
 @inject NavigationManager _navigationManager;
 @inject ClientsService _clientService;
 @inject CatalogsService _catalogsService;
+@inject ILogger<SeasonPassCheckout> Logger;
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
@@ -212,12 +212,12 @@
                 if (result.AlreadyRenewed is true)
                 {
                     _snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
-                    _navigationManager.NavigateTo("/xolopass");
+                    _navigationManager.NavigateTo("./xolopass");
                 }
                 if (result.CanRenovate is false)
                 {
                     _snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
-                    _navigationManager.NavigateTo("/xolopass");
+                    _navigationManager.NavigateTo("./xolopass");
                 }
             }
 
@@ -243,7 +243,7 @@
 
     private void GoToSeasonpassList()
     {
-        _navigationManager.NavigateTo("/xolopass");
+        _navigationManager.NavigateTo("./xolopass");
     }
 
     private async Task LoadSeasonData()
@@ -283,7 +283,7 @@
                     if (_clientSeasonEvent.SeasonId is null)
                     {
                         _snackbar.Add("Datos de temporada no válidos. Se requiere el ID de temporada.", Severity.Error);
-                        _navigationManager.NavigateTo("/xolopass");
+                        _navigationManager.NavigateTo("./xolopass");
                     }
                     else
                     {
@@ -299,13 +299,13 @@
                         if (_clientSeasonEvent.AlreadyRenewed is true)
                         {
                             _snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
-                            _navigationManager.NavigateTo("/xolopass");
+                            _navigationManager.NavigateTo("./xolopass");
                         }
 
                         if (_clientSeasonEvent.CanRenovate is false)
                         {
                             _snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
-                            _navigationManager.NavigateTo("/xolopass");
+                            _navigationManager.NavigateTo("./xolopass");
                         }
                     }
                 }
@@ -366,10 +366,11 @@
                 c.IconColor = Color.Success;
             });
 
-            _navigationManager.NavigateTo("/xolopass");
+            _navigationManager.NavigateTo("./xolopass");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to process season pass checkout");
             _snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
         }
         finally

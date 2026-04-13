@@ -4,6 +4,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject ILogger<AdminForm> Logger
 
 <MudCard Elevation="3">
     <MudCardContent>
@@ -89,8 +90,9 @@
             _formContext.HandleApiException(ex);
             Snackbar.Add(ex.Result.Title ?? ErrorMessage, Severity.Error);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to submit form");
             Snackbar.Add(ErrorMessage, Severity.Error);
         }
         finally

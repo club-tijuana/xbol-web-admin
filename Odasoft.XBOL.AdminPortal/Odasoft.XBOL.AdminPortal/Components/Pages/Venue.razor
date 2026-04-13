@@ -5,7 +5,9 @@
 @using Odasoft.XBOL.Business.ModelValidators;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Models.DTO
 @using Odasoft.XBOL.Models.ViewModels;
+@using Radzen.Blazor
 @using SixLabors.ImageSharp;
 
 @inject ISnackbar _snackbar;
@@ -14,6 +16,7 @@
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
 @inject VenuesService _venueService;
+@inject ILogger<Venue> Logger;
 
 <PageTitle>@_pageTitle</PageTitle>
 
@@ -111,6 +114,119 @@
                     </MudForm>
                 </MudStep>
                 <MudStep Title="Políticas y amenidades">
+
+                    <MudGrid Class="mud-width-full">
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle1" Class="mb-3 fw-bold">Amenidades y seguridad</MudText>
+
+                            <MudChipSet T="Amenity" SelectionMode="SelectionMode.MultiSelection" @bind-SelectedValues="_selectedAmenities">
+                                @foreach (var amenity in _amenities)
+                                {
+                                    // Evaluamos si el chip actual está seleccionado para personalizar la UI
+                                    bool isSelected = _selectedAmenities != null && _selectedAmenities.Any(a => a.Id == amenity.Id);
+
+                                    <MudChip Value="@amenity"
+                                             Variant="Variant.Text"
+                                             Color="MudBlazor.Color.Dark"
+                                             CheckedIcon="@string.Empty">
+                                        <div class="d-flex align-center">
+                                            @if (isSelected)
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Check" Size="@MudBlazor.Size.Small" Class="mr-2" />
+                                                <MudText Typo="Typo.body2" Style="color: white">@amenity.Name</MudText>
+                                            }
+                                            else
+                                            {
+                                                <MudIcon Icon="@IconHelper.GetIconFromIdentifier(amenity.IconIdentifier)" Size="@MudBlazor.Size.Small" Class="mr-2" />
+                                                <MudText Typo="Typo.body2" Color="@MudBlazor.Color.Dark">@amenity.Name</MudText>
+                                            }
+                                        </div>
+                                    </MudChip>
+                                }
+                            </MudChipSet>
+                        </MudItem>
+
+                        <MudItem xs="12" lg="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Políticas del recinto</MudText>
+                            <MudPaper Outlined="true" Class="pa-0">
+                                <RadzenHtmlEditor @bind-Value="_request.Policies" Style="min-height: 300px; width: 100%;">
+                                    <RadzenHtmlEditorUndo Title="Deshacer" />
+                                    <RadzenHtmlEditorRedo Title="Rehacer" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorBold Title="Negrita" />
+                                    <RadzenHtmlEditorItalic Title="Cursiva" />
+                                    <RadzenHtmlEditorUnderline Title="Subrayado" />
+                                    <RadzenHtmlEditorStrikeThrough Title="Tachado" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorAlignLeft Title="Alinear a la izquierda" />
+                                    <RadzenHtmlEditorAlignCenter Title="Centrar" />
+                                    <RadzenHtmlEditorAlignRight Title="Alinear a la derecha" />
+                                    <RadzenHtmlEditorJustify Title="Justificar" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorUnorderedList Title="Lista de viñetas" />
+                                    <RadzenHtmlEditorOrderedList Title="Lista numerada" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorColor Title="Color del texto" />
+                                    <RadzenHtmlEditorBackground Title="Color de fondo" />
+                                    <RadzenHtmlEditorRemoveFormat Title="Quitar formato" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorSubscript Title="Subíndice" />
+                                    <RadzenHtmlEditorSuperscript Title="Superíndice" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorLink Title="Insertar enlace" />
+                                    <RadzenHtmlEditorUnlink Title="Quitar enlace" />
+                                    <RadzenHtmlEditorImage Title="Insertar imagen" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorFontName Title="Fuente" Placeholder="Fuente" />
+                                    <RadzenHtmlEditorFontSize Title="Tamaño" Placeholder="Tamaño" />
+                                    <RadzenHtmlEditorFormatBlock Title="Formato" Placeholder="Párrafo" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorSource Title="Ver código HTML" />
+                                </RadzenHtmlEditor>
+                            </MudPaper>
+                        </MudItem>
+
+                        <MudItem xs="12" lg="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Comentarios adicionales</MudText>
+                            <MudPaper Outlined="true" Class="pa-0">
+                                <RadzenHtmlEditor @bind-Value="_request.AdditionalComments" Style="min-height: 300px; width: 100%;">
+                                    <RadzenHtmlEditorUndo Title="Deshacer" />
+                                    <RadzenHtmlEditorRedo Title="Rehacer" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorBold Title="Negrita" />
+                                    <RadzenHtmlEditorItalic Title="Cursiva" />
+                                    <RadzenHtmlEditorUnderline Title="Subrayado" />
+                                    <RadzenHtmlEditorStrikeThrough Title="Tachado" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorAlignLeft Title="Alinear a la izquierda" />
+                                    <RadzenHtmlEditorAlignCenter Title="Centrar" />
+                                    <RadzenHtmlEditorAlignRight Title="Alinear a la derecha" />
+                                    <RadzenHtmlEditorJustify Title="Justificar" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorUnorderedList Title="Lista de viñetas" />
+                                    <RadzenHtmlEditorOrderedList Title="Lista numerada" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorColor Title="Color del texto" />
+                                    <RadzenHtmlEditorBackground Title="Color de fondo" />
+                                    <RadzenHtmlEditorRemoveFormat Title="Quitar formato" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorSubscript Title="Subíndice" />
+                                    <RadzenHtmlEditorSuperscript Title="Superíndice" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorLink Title="Insertar enlace" />
+                                    <RadzenHtmlEditorUnlink Title="Quitar enlace" />
+                                    <RadzenHtmlEditorImage Title="Insertar imagen" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorFontName Title="Fuente" Placeholder="Fuente" />
+                                    <RadzenHtmlEditorFontSize Title="Tamaño" Placeholder="Tamaño" />
+                                    <RadzenHtmlEditorFormatBlock Title="Formato" Placeholder="Párrafo" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorSource Title="Ver código HTML" />
+                                </RadzenHtmlEditor>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
                 </MudStep>
                 <MudStep Title="Galería de imágenes">
                     <MudGrid Class="mud-width-full">
@@ -219,7 +335,7 @@
                     <MudButton OnClick="SaveAllAsync"
                                Variant="Variant.Filled"
                                StartIcon="@Icons.Material.Filled.Save"
-                               Color="MudBlazor.Color.Success">
+                               Color="MudBlazor.Color.Tertiary">
                         GUARDAR
                     </MudButton>
                 }
@@ -251,10 +367,13 @@
     private List<VenueCategory> _venueCategories = Enum.GetValues<VenueCategory>().ToList();
     private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
+    private List<Amenity> _amenities = [];
+    private IReadOnlyCollection<Amenity> _selectedAmenities = [];
+
     private MudFileUpload<IBrowserFile> _facadeImageUpload = null!;
-    private VenueImageModel? _facadeImage;
+    private ImageModel? _facadeImage;
     private MudFileUpload<IReadOnlyList<IBrowserFile>> _galleryUpload = null!;
-    private Dictionary<string, VenueImageModel> _galleryImages = [];
+    private Dictionary<string, ImageModel> _galleryImages = [];
 
     private const string DefaultDragClass = "relative d-flex flex-column p-r gap-2 rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
     private string _dragClass = DefaultDragClass;
@@ -292,9 +411,9 @@
             }
 
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Console.WriteLine("An error occurred while trying to load the venue page.");
+            Logger.LogError(ex, "Failed to load venue {VenueId}", venueId);
             _snackbar.Add("Ocurrio un error al tratar de cargar la pagina, redireccionando a la vista de recintos pirncipal.", Severity.Error);
             _navigationManager.NavigateTo(SitePages.VENUES);
         }
@@ -334,13 +453,18 @@
             _request.State = venue.State ?? "";
             _request.StreetAddress = venue.StreetAddress ?? "";
             _request.ZipCode = venue.ZipCode ?? "";
+            _request.Policies = venue.Policies ?? "";
+            _request.AdditionalComments = venue.AdditionalComments ?? "";
+
+            _amenities = await _catalogsService.GetAmenitiesAsync();
+            _selectedAmenities = await _venueService.GetAmenitiesByVenueAsync(venueId.Value);
 
             ICollection<VenueImageResponse> facadeImages = await _venueService.GetVenueImageByTypeAsync(venueId.Value, ImageType.Facade);
             var facade = facadeImages.FirstOrDefault();
 
             if (facade != null && facade.Id.HasValue)
             {
-                _facadeImage = new VenueImageModel
+                _facadeImage = new ImageModel
                 {
                     Id = facade.Id,
                     Name = facade.Title
@@ -357,7 +481,7 @@
                     continue;
                 }
 
-                _galleryImages.Add(image.Title, new VenueImageModel
+                _galleryImages.Add(image.Title, new ImageModel
                 {
                     Id = image.Id,
                     Name = image.Title
@@ -381,7 +505,7 @@
 
         if (_facadeImage == null)
         {
-            _facadeImage = new VenueImageModel
+            _facadeImage = new ImageModel
             {
                 Name = file.Name,
                 TempFile = file
@@ -455,7 +579,7 @@
             }
             else
             {
-                _galleryImages.Add(file.Name, new VenueImageModel
+                _galleryImages.Add(file.Name, new ImageModel
                 {
                     Name = file.Name,
                     TempFile = file
@@ -471,7 +595,7 @@
 
     private async Task RemoveGalleryImageAsync(string fileName)
     {
-        VenueImageModel? file = _galleryImages.GetValueOrDefault(fileName);
+        ImageModel? file = _galleryImages.GetValueOrDefault(fileName);
 
         try
         {
@@ -492,7 +616,7 @@
 
     private async Task CleanGalleryImagesAsync()
     {
-        foreach (VenueImageModel galleryImage in _galleryImages.Values)
+        foreach (ImageModel galleryImage in _galleryImages.Values)
         {
             if (galleryImage.Id.HasValue)
             {
@@ -539,6 +663,7 @@
         try
         {
             await SaveVenueAsync();
+            await SaveAmenitiesAsync();
             await SaveFacadeImageAsync();
             await SaveGalleryImagesAsync();
 
@@ -598,12 +723,32 @@
             }
         }
     }
+    private async Task SaveAmenitiesAsync()
+    {
+        try
+        {
+            List<long> amenityIds = _selectedAmenities
+                                    .Select(a => a.Id)
+                                    .Distinct()
+                                    .ToList();
+
+            await _venueService.SaveVenueAmenities(venueId.Value, amenityIds);
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode != StatusCodes.Status201Created
+                && apiEx.StatusCode != StatusCodes.Status204NoContent)
+            {
+                throw;
+            }
+        }
+    }
 
     private async Task SaveGalleryImagesAsync()
     {
         try
         {
-            foreach (VenueImageModel image in _galleryImages.Values)
+            foreach (ImageModel image in _galleryImages.Values)
             {
                 if (image.Id.HasValue && image.TempFile != null)
                 {

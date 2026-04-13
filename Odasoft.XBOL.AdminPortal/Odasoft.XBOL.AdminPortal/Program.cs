@@ -1,111 +1,52 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.Extensions.Options;
-using MudBlazor.Services;
 using Odasoft.XBOL.AdminPortal.Components;
-using Odasoft.XBOL.AdminPortal.Configs;
-using Odasoft.XBOL.AdminPortal.Resources;
-using Odasoft.XBOL.AdminPortal.Services;
-using Odasoft.XBOL.AdminPortal.Services.Contracts;
-using Odasoft.XBOL.AdminPortal.States;
-using Odasoft.XBOL.Business;
+using Odasoft.XBOL.AdminPortal.Extensions;
+using Odasoft.XBOL.AdminPortal.Schema;
 using Odasoft.XBOL.Business.Extensions;
-using Odasoft.XBOL.Business.Services;
-using System.Globalization;
+using Odasoft.XBOL.Common.Options;
+
+if (args.Contains("--generate-schema"))
+{
+    var outputPath = Path.GetFullPath(
+        Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "appsettings.schema.json"));
+    AppSettingsSchemaGenerator.GenerateAndWrite(outputPath);
+    return;
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region AppSettings
+// Infrastructure
+builder.Services.ConfigureOptions(builder.Configuration);
+builder.Services.ConfigureHosting(builder.Configuration);
 
-Authentication authenticationConfig = builder.Configuration.GetSection("Authentication").Get<Authentication>()!;
-
-#endregion AppSettings
-
-// Add services to the container.
-builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddMudServices(config =>
-{
-    config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.TopCenter;
-    config.SnackbarConfiguration.SnackbarVariant = MudBlazor.Variant.Text;
-    config.SnackbarConfiguration.MaxDisplayedSnackbars = 5;
-});
-
+// Blazor framework
+builder.Services.ConfigureBlazor();
 builder.Services.AddHealthChecks();
 
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+// Security
+builder.Services.ConfigureAuthentication();
 
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-    string[] supportedCultures = ["es-MX"];
-    options.SetDefaultCulture("es-MX");
-    options.AddSupportedCultures(supportedCultures);
-    options.AddSupportedUICultures(supportedCultures);
-});
+// Localization
+builder.Services.ConfigureLocalization();
 
-builder.Services.Configure<CircuitOptions>(options =>
-{
-    options.DetailedErrors = true;
-});
-
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-.AddCookie(options =>
-{
-    options.LoginPath = "/login";
-    options.LogoutPath = "/logout";
-    options.AccessDeniedPath = "/login";
-});
-
-var mexicoCulture = new CultureInfo("es-MX");
-CultureInfo.DefaultThreadCurrentCulture = mexicoCulture;
-CultureInfo.DefaultThreadCurrentUICulture = mexicoCulture;
-builder.Services.AddAuthorization();
-builder.Services.AddAuthorizationCore();
-
-// Services
+// Application
 builder.Services.ConfigureServices();
+builder.Services.ConfigureApplicationServices();
 
-// TODO: Move the business services to the business layer
-builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
-builder.Services.AddScoped<AuthStateProvider>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IEventService, ApiEventService>();
-builder.Services.AddScoped<ISeasonPassService, SeasonPassService>();
-builder.Services.AddScoped<ISeasonService, SeasonService>();
-builder.Services.AddScoped<ClientsService>();
-builder.Services.AddScoped<EventScheduleService>();
-
-builder.Services.AddScoped<CartState>();
-builder.Services.AddScoped<LoadingState>();
-builder.Services.AddScoped<PersistentDialogState>();
-
-builder.Services.AddTransient(typeof(AppLocalizer<>));
-builder.Services.AddLocalizationInterceptor<CustomLocalizationInterceptor>();
-
-builder.Services.AddHttpClient<IAdminClient, AdminClient>(
-    (provider, client) =>
-    {
-        var config = provider.GetRequiredService<IOptions<AdminApiClientConfig>>().Value;
-        client.BaseAddress = new Uri(config.BaseAddress);
-        client.DefaultRequestHeaders.Add("Accept-Language", "es");
-    });
-
-builder.Services.AddOptions<Authentication>()
-    .BindConfiguration("Authentication");
-
-builder.Services.AddOptions<AdminApiClientConfig>()
-    .BindConfiguration("AdminApiClient")
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
-
-builder.Services.AddOptions<SeatsIo>()
-    .BindConfiguration("SeatsIo")
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
+// External clients
+builder.Services.ConfigureHttpClients();
 
 var app = builder.Build();
+
+// Forwarded headers must run before any middleware that inspects Scheme/Host/RemoteIp.
+// Options are populated from Hosting:ForwardedHeaders above.
+var hostingOptions = app.Services.GetRequiredService<IOptions<HostingOptions>>().Value;
+if (hostingOptions.ForwardedHeaders?.Enabled == true)
+{
+    app.UseForwardedHeaders();
+}
+
+app.UseConfiguredPathBase();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -114,6 +55,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+
+app.UseHsts();
 
 // Only use HTTPS redirection when running directly (Visual Studio, dotnet run)
 // Containers handle TLS at load balancer/reverse proxy level
@@ -124,18 +67,35 @@ if (!app.Environment.IsProduction()
 }
 
 app.UseRequestLocalization();
-// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-app.UseHsts();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
 // Map health check endpoint for container health monitoring
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/healthz", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var appName = app.Environment.ApplicationName ?? "unknown";
+        var environment = app.Environment.EnvironmentName ?? "unknown";
+        var dockerImageVersion = Environment.GetEnvironmentVariable("DOCKER_IMAGE_VERSION") ?? "unknown";
+        var response = new
+        {
+            appName,
+            environment,
+            status = report.Status.ToString(),
+            dockerImageVersion
+        };
+        await context.Response.WriteAsJsonAsync(response);
+    }
+});
 
 app.Run();

@@ -1,4 +1,5 @@
 @using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.Business
 @using Odasoft.XBOL.AdminPortal.Services
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using Odasoft.XBOL.AdminPortal.States
@@ -9,6 +10,7 @@
 @inject NavigationManager Navigation
 @inject AuthStateProvider AuthStateProvider
 @inject AppLocalizer<MainLayout> L
+@inject PersistentDialogState PersistentDialogState
 
 @implements IDisposable
 
@@ -56,12 +58,87 @@
     </MudMainContent>
 </MudLayout>
 
+<!-- Order success notification -->
+<MudDialog @bind-Visible="_showNotification"
+           Options="_notificationOptions">
+    <TitleContent>
+        <MudStack Row AlignItems="AlignItems.Center">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" />
+            <MudText Typo="Typo.body2">@L["SuccessfulPurchase"]</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        @if (_currentBooking is not null)
+        {
+            <MudGrid Spacing="6" Class="px-8 pb-6">
+                <MudItem xs="12">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="text-uppercase">@L["TrackingNumber"]</MudText>
+                        <MudText Typo="Typo.h5">@_currentBooking.Localizer</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="text-uppercase">@L["Phone"]</MudText>
+                        <MudText Typo="Typo.body1">@(_currentBooking.ClientPhone ?? "-")</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="text-uppercase">@L["Email"]</MudText>
+                        <MudText Typo="Typo.body1">@(_currentBooking.ClientEmail ?? "-")</MudText>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+</MudDialog>
+
 @code {
-    private bool _drawerOpen = true; // En desktop inicia abierto
+    private bool _drawerOpen = true;
+    private bool _showNotification;
+    private BookingResult? _currentBooking;
+
+    private readonly DialogOptions _notificationOptions = new()
+    {
+        CloseButton = true,
+        Position = DialogPosition.TopRight,
+        BackdropClick = true
+    };
 
     protected override void OnInitialized()
     {
-        Navigation.LocationChanged += (s, e) => LoadingState.Reset();
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        try
+        {
+            LoadingState.Reset();
+
+            if (PersistentDialogState.BookingResult is null)
+                return;
+
+            _currentBooking = PersistentDialogState.BookingResult;
+            PersistentDialogState.ClearBookingResult();
+
+            await InvokeAsync(async () =>
+            {
+                _showNotification = true;
+                StateHasChanged();
+
+                await Task.Delay(5000);
+
+                _showNotification = false;
+                _currentBooking = null;
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error showing booking notification: {ex.Message}");
+        }
     }
 
     private void ToggleDrawer()
@@ -72,11 +149,11 @@
     private async Task Logout()
     {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo("/login");
+        Navigation.NavigateTo("./login");
     }
 
     public void Dispose()
     {
-        Navigation.LocationChanged -= (s, e) => LoadingState.Reset();
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

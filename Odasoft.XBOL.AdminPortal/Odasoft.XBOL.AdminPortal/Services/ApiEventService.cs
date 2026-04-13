@@ -37,7 +37,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.Id,
             e.ScheduledStartDate.DateTime,
             e.Name ?? "",
-            e.Category ?? "",
+            FormatCategories(e.Categories),
             e.VenueName ?? "",
             e.AvailableSeats,
             e.TotalSeats,
@@ -51,6 +51,8 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             Items = items
         };
     }
+
+    public async Task<EventInfoDTO> GetEventByIdAsync(long id) => await adminClient.GetEventByIdAsync(id);
 
     public async Task<GridData<EventViewModel>> GetEventsOnSaleAsync(
         int page,
@@ -76,7 +78,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.Id,
             e.ScheduledStartDate.DateTime,
             e.Name ?? "",
-            e.Category ?? "",
+            FormatCategories(e.Categories),
             e.VenueName ?? "",
             e.AvailableSeats,
             e.TotalSeats,
@@ -92,9 +94,9 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         };
     }
 
-    public async Task<List<string>> GetCategoriesAsync()
+    public async Task<List<EventCategoryResult>> GetCategoriesAsync()
     {
-        var result = await adminClient.GetCategoriesNamesAsync();
+        var result = await adminClient.GetCategoriesAsync();
         return result.ToList();
     }
 
@@ -104,4 +106,29 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
 
     public async Task DeleteEventAsync(long id)
             => await adminClient.DeleteEventAsync(id);
+
+    private static string FormatCategories(ICollection<EventCategoryResult>? categories)
+        => categories is { Count: > 0 }
+            ? string.Join(", ", categories.Select(c => c.DisplayName))
+            : "";
+
+    public async Task<long> UploadEventImageAsync(long eventId, ImageType imageType, int order, FileParameter imageFile)
+    {
+        return await adminClient.UploadEventImageAsync(eventId, imageType, order, imageFile);
+    }
+
+    public async Task DeleteEventImageAsync(long eventImageId)
+    {
+        await adminClient.DeleteEventImageByIdAsync(eventImageId);
+    }
+
+    public async Task UpdateEventImageAsync(long eventImageId, ImageType imageType, int order, FileParameter file)
+    {
+        await adminClient.UpdateEventImageByIdAsync(eventImageId, imageType, order, file);
+    }
+
+    public async Task<ICollection<EventImageResponse>> GetEventImageByTypeAsync(long eventId, ImageType imageType)
+    {
+        return await adminClient.GetEventImagesByImageTypeAsync(eventId, imageType);
+    }
 }

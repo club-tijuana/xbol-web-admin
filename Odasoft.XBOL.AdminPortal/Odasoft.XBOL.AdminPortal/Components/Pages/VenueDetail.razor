@@ -1,16 +1,19 @@
-@page "/venues/{VenueId:long}"
-@page "/venues/{VenueId:long}/{Tab}"
+@page "/venues/{VenueId:long}";
+@page "/venues/{VenueId:long}/{Tab}";
 
-@using Odasoft.XBOL.AdminPortal.Components.Pages.VenueDetails
-@using Odasoft.XBOL.AdminPortal.Components.Shared
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Business.Services
-@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.AdminPortal.Components.Pages.VenueDetails;
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
 
-@inject AppLocalizer<VenueDetail> L
-@inject VenuesService _venueService
-@inject NavigationManager _navigationManager
-@inject ISnackbar _snackbar
+@inject AppLocalizer<VenueDetail> L;
+@inject VenuesService _venueService;
+@inject NavigationManager _navigationManager;
+@inject VenuesService _venueService;
+
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -24,7 +27,7 @@
             </MudButton>
         </LeftContent>
         <RightContent>
-            <MudButton StartIcon="@Icons.Material.Filled.Edit" Href="@($"/venues/{VenueId}/update")"
+            <MudButton StartIcon="@Icons.Material.Filled.Edit" Href="@($"./venues/{VenueId}/update")"
                        Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">
                 @L["Edit"]
             </MudButton>
@@ -68,7 +71,7 @@
             </MudToggleGroup>
             <MudStack Row Spacing="2">
                 <MudButton StartIcon="@Icons.Material.Filled.Map" Variant="Variant.Filled" Class="text-uppercase"
-                           Color="Color.Dark" Disabled="true">
+                           Color="Color.Dark" OnClick="AddMapDialogAsync">
                     @L["NewMap"]
                 </MudButton>
                 <MudButton StartIcon="@Icons.Material.Filled.MeetingRoom" Variant="Variant.Filled" Class="text-uppercase"
@@ -80,7 +83,7 @@
 
         @if (_selectedTab == TabMaps)
         {
-            <VenueMaps VenueId="VenueId" />
+            <VenueMaps VenueId="VenueId" @key="_updateMapKey" />
         }
         else if (_selectedTab == TabSuites)
         {
@@ -91,7 +94,6 @@
             <VenuePolicies VenueId="VenueId" />
         }
     }
-
 </LoadingContainer>
 
 @code {
@@ -106,6 +108,7 @@
     private bool _loading = true;
     private bool _error;
     private VenueResponse? _venue;
+    private string _updateMapKey = Guid.NewGuid().ToString();
 
     protected override async Task OnInitializedAsync()
     {
@@ -125,7 +128,7 @@
     private void OnTabChanged(string tab)
     {
         _selectedTab = tab;
-        _navigationManager.NavigateTo($"/venues/{VenueId}/{tab}", replace: true);
+        _navigationManager.NavigateTo($"./venues/{VenueId}/{tab}", replace: true);
     }
 
     private async Task LoadVenueAsync()
@@ -146,6 +149,33 @@
         finally
         {
             _loading = false;
+        }
+    }
+
+    private async Task AddMapDialogAsync()
+    {
+        var parameters = new DialogParameters<VenueMapDialog>
+        {
+            { x => x.VenueId, VenueId }
+        };
+
+        var options = new DialogOptions { CloseButton = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = await _dialogService.ShowAsync<VenueMapDialog>("Nuevo mapa", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is VenueMapRequest newMap)
+        {
+            try
+            {
+                await _venueService.SaveVenueMap(newMap);
+                _snackbar.Add("Mapa agregado al recinto satisfactoriamente.", Severity.Success);
+                _updateMapKey = Guid.NewGuid().ToString();
+            }
+            catch (Exception ex)
+            {
+                _snackbar.Add("Ocurrio un error al tratar de salvar el mapa del recinto.", Severity.Error);
+            }
         }
     }
 }

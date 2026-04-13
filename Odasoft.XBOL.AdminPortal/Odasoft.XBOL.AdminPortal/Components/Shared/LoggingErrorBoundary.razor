@@ -1,0 +1,12 @@
+@inherits ErrorBoundary
+@inject ILogger<LoggingErrorBoundary> Logger
+
+@ChildContent
+
+@code {
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        Logger.LogError(exception, "Unhandled exception in component tree");
+        return base.OnErrorAsync(exception);
+    }
+}

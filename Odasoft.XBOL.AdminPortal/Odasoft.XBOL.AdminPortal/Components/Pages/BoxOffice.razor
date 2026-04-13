@@ -12,6 +12,7 @@
 @inject OrdersService OrdersService;
 @inject LoadingState LoadingState;
 @inject PersistentDialogState PersistentDialogState;
+@inject ILogger<BoxOffice> Logger;
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -54,9 +55,8 @@
         }
         else
         {
-            // TODO: Add UI for no events currently on sale
             <MudItem xs="12">
-                <MudText>@L["NoEventsFound"]</MudText>
+                <MudAlert Severity="Severity.Info">@L["NoEventsFound"]</MudAlert>
             </MudItem>
         }
         @if (TotalPages > 1)
@@ -96,8 +96,9 @@
             Events = result.Items;
             _totalItems = result.TotalItems;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load events on sale");
             Snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
             _error = true;
             _errorMessage = L["ErrorLoadingEvents"];
@@ -105,21 +106,6 @@
         finally
         {
             _isLoading = false;
-        }
-
-        ShowOrderConfirmation();
-    }
-
-    private async Task ShowOrderConfirmation()
-    {
-        if (PersistentDialogState.BookingResult is not null)
-        {
-            var parameters = new DialogParameters<SuccesfulOrderDialog> { { x => x.Booking, PersistentDialogState.BookingResult } };
-            DialogOptions options = new() { CloseButton = true, Position = DialogPosition.TopRight };
-            var dialog = await DialogService.ShowAsync<SuccesfulOrderDialog>(string.Empty, parameters, options);
-            var dialogResult = await dialog.Result;
-
-            PersistentDialogState.ClearBookingResult();
         }
     }
 
@@ -134,11 +120,11 @@
     {
         if (e.IsSeason == true)
         {
-            Navigation.NavigateTo($"/box-office/seasons/{e.Id}/seats");
+            Navigation.NavigateTo($"./box-office/seasons/{e.Id}/seats");
         }
         else
         {
-            Navigation.NavigateTo($"/box-office/{e.Id}/seats");
+            Navigation.NavigateTo($"./box-office/{e.Id}/seats");
         }
     }
 
@@ -156,7 +142,7 @@
 
             if(canRenew.CanRenew == true)
             {
-                Navigation.NavigateTo($"/box-office/seasons/renovate/{canRenew.NewSeasonId}/{canRenew.Reference}");
+                Navigation.NavigateTo($"./box-office/seasons/renovate/{canRenew.NewSeasonId}/{canRenew.Reference}");
             }
             else if(!string.IsNullOrWhiteSpace(canRenew.Reference))
             {

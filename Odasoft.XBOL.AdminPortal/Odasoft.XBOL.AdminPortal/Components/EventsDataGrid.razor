@@ -10,6 +10,7 @@
 @inject CatalogsService _catalogsService;
 @inject ISnackbar _snackbar;
 @inject NavigationManager _navigationManager;
+@inject ILogger<EventsDataGrid> Logger;
 
 <MudCard Elevation="0">
     <MudCardHeader>
@@ -64,8 +65,8 @@
                                                Variant="Variant.Outlined" ShrinkLabel>
                                         @foreach (var category in _availableCategories)
                                         {
-                                            <MudSelectItem T="string" Value="@category">
-                                                <MudText Typo="Typo.body2">@category</MudText>
+                                            <MudSelectItem T="string" Value="@category.Name">
+                                                <MudText Typo="Typo.body2">@category.DisplayName</MudText>
                                             </MudSelectItem>
                                         }
                                     </MudSelect>
@@ -126,9 +127,9 @@
 
                 @if (IsVisible(EventColumn.Category))
                 {
-                    <TemplateColumn Title="@L["ColumnCategory"]" Sortable="false" Filterable="false">
+                    <TemplateColumn Title="@L["ColumnCategory"]" SortBy="@(new Func<EventViewModel, object>(x => x.Categories))" Filterable="false">
                         <CellTemplate>
-                            <MudText Typo="Typo.body2">@context.Item.Category</MudText>
+                            <MudText Typo="Typo.body2">@context.Item.Categories</MudText>
                         </CellTemplate>
                     </TemplateColumn>
                 }
@@ -148,12 +149,12 @@
                             <MudTooltip Text="@L["ActionBoletos"]" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium"
                                                Disabled="@(context.Item.ExternalEventKey is null)"
-                                               OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/seats"))" />
+                                               OnClick="@(() => _navigationManager.NavigateTo($"./events/{context.Item.Id}/key/{context.Item.ExternalEventKey}/booking"))" />
                             </MudTooltip>
                             <MudTooltip Text="Disponibilidad" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.Map" Size="Size.Medium"
                                                Disabled="@(context.Item.ExternalEventKey is null)"
-                                               OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/key/{context.Item.ExternalEventKey}/availability"))" />
+                                               OnClick="@(() => _navigationManager.NavigateTo($"./events/{context.Item.Id}/key/{context.Item.ExternalEventKey}/availability"))" />
                             </MudTooltip>
                         </MudStack>
                     </CellTemplate>
@@ -200,9 +201,9 @@
     private string _searchString = "";
     private MudDataGrid<EventViewModel> _dataGrid = default!;
     private EventFilterParameters _filters = EventFilterParameters.Empty;
-    private List<ListItem> _venues = [];
+    private List<VenueResponse> _venues = [];
     private IReadOnlyCollection<string> _selectedVenues = [];
-    private List<string> _availableCategories = [];
+    private List<EventCategoryResult> _availableCategories = [];
     private IReadOnlyCollection<string> _selectedCategories = [];
     private DateRange? _dateRange = null;
 
@@ -217,10 +218,11 @@
             await Task.WhenAll(venueTask, catTask);
 
             _venues = await venueTask;
-            _availableCategories = await catTask;
+            _availableCategories = (await catTask).Where(c => c.IsActive == true).ToList();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load event filters");
             _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
         }
     }
@@ -251,8 +253,9 @@
         {
             return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load events for season {SeasonId}", SeasonId);
             _snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
             return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }

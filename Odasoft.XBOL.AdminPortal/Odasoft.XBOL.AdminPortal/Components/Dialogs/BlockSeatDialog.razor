@@ -5,6 +5,7 @@
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<AdminForm> FormL
 @inject AppLocalizer<BlockSeatDialog> L
+@inject ILogger<BlockSeatDialog> Logger
 
 <BaseDialog>
     <TitleContent>
@@ -69,8 +70,9 @@
             _formContext.HandleApiException(ex);
             Snackbar.Add(ex.Result.Title ?? L["ErrorBlockingSeats"].Value, Severity.Error);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to block seats");
             Snackbar.Add(L["ErrorBlockingSeats"].Value, Severity.Error);
         }
         finally

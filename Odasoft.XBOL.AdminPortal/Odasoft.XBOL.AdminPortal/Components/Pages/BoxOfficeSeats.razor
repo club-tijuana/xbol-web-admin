@@ -1,6 +1,5 @@
 @page "/box-office/{Id:long}/seats"
 @using Microsoft.Extensions.Options
-@using Odasoft.XBOL.AdminPortal.Configs
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.Business
 
@@ -9,7 +8,7 @@
 @inject ISnackbar Snackbar
 @inject IAdminClient AdminClient
 @inject NavigationManager Navigation
-@inject IOptions<SeatsIo> SeatsOptions
+@inject IOptions<SeatsIoOptions> SeatsOptions
 @inject AppLocalizer<BoxOfficeSeats> L
 
 <PageTitle>@_eventName</PageTitle>
@@ -137,7 +136,7 @@
 
     private void GoToEvents()
     {
-        Navigation.NavigateTo("/box-office");
+        Navigation.NavigateTo("./box-office");
     }
 
     public void Dispose()

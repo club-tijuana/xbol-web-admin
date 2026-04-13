@@ -16,6 +16,7 @@
 @inject AppLocalizer<ClientsCreate> L;
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
+@inject ILogger<ClientEdit> Logger;
 
 <PageTitle>Editar Empresa</PageTitle>
 
@@ -390,8 +391,9 @@
             _snackbar.Add(L["UpdateSuccess", L["Client"]], Severity.Success);
             _navigationManager.NavigateTo(SitePages.CLIENTS_LIST);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to update client {ClientId}", Id);
             _snackbar.Add(L["UpdateError", L["Client"]], Severity.Error);
         }
         finally

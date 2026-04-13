@@ -19,6 +19,7 @@
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
 @inject LoadingState _loadingState;
+@inject ILogger<Events> Logger;
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -29,7 +30,7 @@
         <PageActionBar>
             <LeftContent>
                 <!-- TODO: Go back to upcoming/past depending on Season data -->
-                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Href="/seasons" Color="Color.Secondary"
+                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Href="./seasons" Color="Color.Secondary"
                            Variant="Variant.Outlined" DropShadow="false">
                     @L["GoBack"]
                 </MudButton>
@@ -42,7 +43,7 @@
                     </MudButton>
 
                     <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Filled"
-                               Class="text-uppercase" Href="@($"/seasons/{SeasonId}/edit")">
+                               Class="text-uppercase" Href="@($"./seasons/{SeasonId}/edit")">
                         @L["Edit"]
                     </MudButton>
                 </MudStack>
@@ -111,7 +112,7 @@
                            Class="@($"px-4 {(_selectedTab == TabPast ? "bg-secondary-darken" : "")}")" />
         </MudToggleGroup>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                   Href="/events/create">
+                   Href="./events/create">
             @L["NewEvent"]
         </MudButton>
     </MudStack>
@@ -128,15 +129,14 @@
                 <MudItem xs="12" md="6" lg="3">
                     <EventCard Event="eventItem"
                                ShowActions
-                               OnClick="@(() => _navigationManager.NavigateTo($"/events/{eventItem.Id}"))"></EventCard>
+                               OnClick="@(() => _navigationManager.NavigateTo($"./events/{eventItem.Id}"))"></EventCard>
                 </MudItem>
             }
         }
         else
         {
-            // TODO: Add UI for no events currently on sale
             <MudItem xs="12">
-                <MudText>@L["NoEventsFound"]</MudText>
+                <MudAlert Severity="Severity.Info">@L["NoEventsFound"]</MudAlert>
             </MudItem>
         }
     </MudGrid>
@@ -188,8 +188,8 @@ else if(_selectedTab == TabPast)
                                         Variant="Variant.Outlined" ShrinkLabel>
                                             @foreach (var category in _availableCategories)
                                             {
-                                                <MudSelectItem T="string" Value="@category">
-                                                    <MudText Typo="Typo.body2">@category</MudText>
+                                                <MudSelectItem T="string" Value="@category.Name">
+                                                    <MudText Typo="Typo.body2">@category.DisplayName</MudText>
                                                 </MudSelectItem>
                                             }
                                         </MudSelect>
@@ -247,10 +247,10 @@ else if(_selectedTab == TabPast)
                         </CellTemplate>
                     </TemplateColumn>
 
-                    <TemplateColumn Title="@L["ColumnCategory"]" Sortable="false" Filterable="false">
+                    <TemplateColumn Title="@L["ColumnCategory"]" SortBy="@(new Func<EventViewModel, object>(x => x.Categories))" Filterable="false">
                         <CellTemplate>
                             <MudText Typo="Typo.body2">
-                                @context.Item.Category
+                                @context.Item.Categories
                             </MudText>
                         </CellTemplate>
                     </TemplateColumn>
@@ -266,11 +266,12 @@ else if(_selectedTab == TabPast)
                             <MudStack Row Spacing="2">
                                 <MudTooltip Text="@L["ActionBoletos"]" Placement="Placement.Top">
                                     <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium"
-                                    OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/seats"))" />
+                                    Disabled="@(context.Item.ExternalEventKey is null)"
+                                    OnClick="@(() => _navigationManager.NavigateTo($"./events/{context.Item.Id}/key/{context.Item.ExternalEventKey}/booking"))" />
                                 </MudTooltip>
                                 <MudTooltip Text="Disponibilidad" Placement="Placement.Top">
                                     <MudIconButton Icon="@Icons.Material.Outlined.Map" Size="Size.Medium"
-                                    OnClick="@(() => _navigationManager.NavigateTo($"/events/{context.Item.Id}/key/{context.Item.ExternalEventKey}/availability"))" />
+                                    OnClick="@(() => _navigationManager.NavigateTo($"./events/{context.Item.Id}/key/{context.Item.ExternalEventKey}/availability"))" />
                                 </MudTooltip>
                             </MudStack>
                         </CellTemplate>
@@ -296,10 +297,10 @@ else if(_selectedTab == TabPast)
 
     private EventFilterParameters _filters = EventFilterParameters.Empty;
 
-    private List<ListItem> _venues = [];
+    private List<VenueResponse> _venues = [];
     private IReadOnlyCollection<string> _selectedVenues = [];
 
-    private List<string> _availableCategories = [];
+    private List<EventCategoryResult> _availableCategories = [];
     private IReadOnlyCollection<string> _selectedCategories = [];
 
     private DateRange? _dateRange = null;
@@ -338,7 +339,7 @@ else if(_selectedTab == TabPast)
     private void OnTabChanged(string tab)
     {
         _selectedTab = tab;
-        _navigationManager.NavigateTo($"/events/{tab}", replace: true);
+        _navigationManager.NavigateTo($"./events/{tab}", replace: true);
     }
 
     protected override async Task OnInitializedAsync()
@@ -354,10 +355,12 @@ else if(_selectedTab == TabPast)
             }
 
             _venues = await _catalogsService.GetVenuesAsync();
-            _availableCategories = await _eventService.GetCategoriesAsync();
+            _availableCategories = (await _eventService.GetCategoriesAsync())
+                .Where(c => c.IsActive == true).ToList();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load event filters");
             _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
         }
     }
@@ -370,7 +373,7 @@ else if(_selectedTab == TabPast)
             {
                 await _dataGrid.ReloadServerData();
             }
-        } 
+        }
         else
         {
             await UpdateUpcomingItems();
@@ -418,8 +421,9 @@ else if(_selectedTab == TabPast)
         {
             return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load events");
             _snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
             return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
         }
@@ -482,7 +486,7 @@ else if(_selectedTab == TabPast)
         {
             await _seasonService.DeleteSeasonAsync(SeasonId!.Value);
             _snackbar.Add(L["DeleteSuccess"], Severity.Success);
-            _navigationManager.NavigateTo("/seasons");
+            _navigationManager.NavigateTo("./seasons");
         }
         catch (Exception ex)
         {

@@ -13,6 +13,7 @@
 @inject ISnackbar _snackbar;
 @inject NavigationManager _navigationManager;
 @inject IDialogService _dialogService;
+@inject ILogger<SuiteSettings> Logger;
 
 <PageTitle>Palcos - Configuración</PageTitle>
 
@@ -108,7 +109,7 @@
                         <MudStack Row>
                             <MudTooltip Text="Editar" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Medium"
-                                               OnClick="@(() => _navigationManager.NavigateTo($"/suites/{context.Item.Id}/update"))" />
+                                               OnClick="@(() => _navigationManager.NavigateTo($"./suites/{context.Item.Id}/update"))" />
                             </MudTooltip>
 
                             <MudTooltip Text="Borrar" Placement="Placement.Top">
@@ -239,8 +240,9 @@
                 _snackbar.Add("Palco eliminado exitosamente.", Severity.Success);
                 await _dataGrid.ReloadServerData();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError(ex, "Failed to delete suite {SuiteId}", suiteId);
                 _snackbar.Add("Error al eliminar el palco.", Severity.Error);
             }
         }

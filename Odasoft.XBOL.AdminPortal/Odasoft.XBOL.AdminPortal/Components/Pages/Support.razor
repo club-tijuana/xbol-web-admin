@@ -29,7 +29,7 @@
         @* Top Action Buttons *@
         <MudPaper Class="pa-4 mb-4 d-flex justify-end gap-4" Elevation="1">
             <MudMenu Label="CANCELAR" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.ArrowDropDown" Disabled="@(_orderInfoResponse.Status == OrderStatus.Cancelled)">
-                <MudMenuItem Icon="@Icons.Material.Outlined.Delete" IconColor="@Color.Secondary" OnClick="CancelOrderAsync">@_localizer["CancelOrder"]</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Outlined.Delete" IconColor="@Color.Secondary" OnClick="CancelOrderAsync">@_localizer["CancelWithRefund"]</MudMenuItem>
                 <MudMenuItem Icon="@Icons.Material.Outlined.MoneyOff" IconColor="@Color.Secondary" OnClick="CancelOrderWithoutRefundAsync">@_localizer["CancelWithoutRefund"]</MudMenuItem>
             </MudMenu>
             <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Send" Color="Color.Secondary" OnClick="ResendReceiptAsync"
@@ -41,19 +41,19 @@
         @* Order Summary Card *@
         <MudPaper Class="pa-4 mb-4" Elevation="1">
             <MudGrid>
-                <MudItem xs="12" sm="3">
+                <MudItem xs="12" md="6" lg="3">
                     <MudText Typo="Typo.caption" Color="Color.Warning">Orden</MudText>
                     <MudText Typo="Typo.body1">@_orderInfoResponse.Reference</MudText>
                 </MudItem>
-                <MudItem xs="12" sm="3">
+                <MudItem xs="12" md="6" lg="3">
                     <MudText Typo="Typo.caption" Color="Color.Warning">Nombre</MudText>
                     <MudText Typo="Typo.body1">@_orderInfoResponse.ClientName</MudText>
                 </MudItem>
-                <MudItem xs="12" sm="3">
+                <MudItem xs="12" md="6" lg="3">
                     <MudText Typo="Typo.caption" Color="Color.Warning">Teléfono</MudText>
                     <MudText Typo="Typo.body1">@($"+{_orderInfoResponse.DialCode} {_orderInfoResponse.PhoneNumber}")</MudText>
                 </MudItem>
-                <MudItem xs="12" sm="3">
+                <MudItem xs="12" md="6" lg="3">
                     <MudText Typo="Typo.caption" Color="Color.Warning">Correo electrónico</MudText>
                     <MudText Typo="Typo.body1">@_orderInfoResponse.Email</MudText>
                 </MudItem>
@@ -85,7 +85,7 @@
             {
                 <MudText Typo="Typo.h5" Class="mb-4 text-secondary">@_orderInfoResponse.Event</MudText>
 
-                <MudTable Items="@_orderInfo" Elevation="0" Class="mb-4 bg-yellow-light">
+                <MudTable Items="@_orderInfo" Elevation="0">
                     <HeaderContent>
                         <MudTh>Fecha y hora</MudTh>
                         <MudTh>Cantidad</MudTh>
@@ -95,12 +95,12 @@
                         <MudTh>Importe total</MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd>@context.OrderDateTime?.ToString("dd/MM/yyyy hh:mm tt")</MudTd>
-                        <MudTd>@context.ItemQuantity</MudTd>
-                        <MudTd>@(context.Channel.HasValue? _localizer[context.Channel?.ToString()] : "N/A")</MudTd>
-                        <MudTd>@context.Seller</MudTd>
-                        <MudTd>@(context.PaymentMethod.HasValue? _localizer[context.PaymentMethod.ToString()] : "N/A")</MudTd>
-                        <MudTd>@(context.Total?.ToString("C"))</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@context.OrderDateTime?.ToString("dd/MM/yyyy hh:mm tt")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@context.ItemQuantity</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.Channel.HasValue? _localizer[context.Channel?.ToString()] : "N/A")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@context.Seller</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.PaymentMethod.HasValue? _localizer[context.PaymentMethod.ToString()] : "N/A")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.Total?.ToString("C"))</MudTd>
                     </RowTemplate>
                 </MudTable>
 
@@ -130,12 +130,14 @@
                 <MudTable Items="@_orderActions" Elevation="0">
                     <HeaderContent>
                         <MudTh>Fecha y hora</MudTh>
+                        <MudTh>Operador</MudTh>
                         <MudTh>Asiento</MudTh>
                         <MudTh>Estatus</MudTh>
                         <MudTh>Descripción</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd>@context.CreatedAt.ToString("dd/MM/yyyy hh:mm tt")</MudTd>
+                        <MudTd>@context.CreatedBy</MudTd>
                         <MudTd>@context.Seats</MudTd>
                         <MudTd>@context.ActionName</MudTd>
                         <MudTd>@context.Comments</MudTd>
@@ -241,7 +243,7 @@
 
     private async Task CancelOrderAsync()
     {
-        bool? result = await OpenOrderActionDialogAsync(OrderAction.CancelOrder);
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.CancelWithRefund);
 
         if (result.HasValue)
         {
@@ -404,7 +406,7 @@
 
         Dictionary<string, string> seats = [];
 
-        if (action == OrderAction.CancelOrder
+        if (action == OrderAction.CancelWithRefund
             || action == OrderAction.CancelWithoutRefund
             || action == OrderAction.ReissueTickets)
         {
