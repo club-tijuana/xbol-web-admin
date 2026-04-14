@@ -12,6 +12,7 @@ public record EventViewModel(
     int Total,
     string? ExternalEventKey,
     string? PosterImageUrl = null,
+    string? BannerImageUrl = null,
     bool? IsSeason = null
 )
 {

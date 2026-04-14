@@ -2,6 +2,7 @@
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
+@using Radzen.Blazor
 @using SixLabors.ImageSharp
 
 @inject CatalogsService CatalogsService;
@@ -100,11 +101,47 @@
                                                 Lines="@(3)" />
                                         </MudItem>
                                         <MudItem xs="12">
-                                            <AdminTextField
-                                                @bind-Value="_longDescription"
-                                                Label="@L["EventDescription"].Value"
-                                                Field="@_descriptionFormContext.Field("LongDescription")"  
-                                                Lines="@(6)" />
+                                            <MudStack>
+                                                <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                    ;">@L["EventDescription"]</MudText>
+                                                @* TODO: Create and use component *@
+                                                <MudPaper Outlined="true" Class="pa-0">
+                                                    <RadzenHtmlEditor @bind-Value="_longDescription" Style="min-height: 300px; width: 100%;">
+                                                        <RadzenHtmlEditorUndo Title="Deshacer" />
+                                                        <RadzenHtmlEditorRedo Title="Rehacer" />
+                                                        <RadzenHtmlEditorSeparator />
+                                                        <RadzenHtmlEditorBold Title="Negrita" />
+                                                        <RadzenHtmlEditorItalic Title="Cursiva" />
+                                                        <RadzenHtmlEditorUnderline Title="Subrayado" />
+                                                        <RadzenHtmlEditorStrikeThrough Title="Tachado" />
+                                                        <RadzenHtmlEditorSeparator />
+                                                        <RadzenHtmlEditorAlignLeft Title="Alinear a la izquierda" />
+                                                        <RadzenHtmlEditorAlignCenter Title="Centrar" />
+                                                        <RadzenHtmlEditorAlignRight Title="Alinear a la derecha" />
+                                                        <RadzenHtmlEditorJustify Title="Justificar" />
+                                                        <RadzenHtmlEditorSeparator />
+                                                        <RadzenHtmlEditorUnorderedList Title="Lista de viñetas" />
+                                                        <RadzenHtmlEditorOrderedList Title="Lista numerada" />
+                                                        <RadzenHtmlEditorSeparator />
+                                                        <RadzenHtmlEditorColor Title="Color del texto" />
+                                                        <RadzenHtmlEditorBackground Title="Color de fondo" />
+                                                        <RadzenHtmlEditorRemoveFormat Title="Quitar formato" />
+                                                        <RadzenHtmlEditorSeparator />
+                                                        <RadzenHtmlEditorSubscript Title="Subíndice" />
+                                                        <RadzenHtmlEditorSuperscript Title="Superíndice" />
+                                                        <RadzenHtmlEditorSeparator />
+                                                        <RadzenHtmlEditorLink Title="Insertar enlace" />
+                                                        <RadzenHtmlEditorUnlink Title="Quitar enlace" />
+                                                        <RadzenHtmlEditorImage Title="Insertar imagen" />
+                                                        <RadzenHtmlEditorSeparator />
+                                                        <RadzenHtmlEditorFontName Title="Fuente" Placeholder="Fuente" />
+                                                        <RadzenHtmlEditorFontSize Title="Tamaño" Placeholder="Tamaño" />
+                                                        <RadzenHtmlEditorFormatBlock Title="Formato" Placeholder="Párrafo" />
+                                                        <RadzenHtmlEditorSeparator />
+                                                        <RadzenHtmlEditorSource Title="Ver código HTML" />
+                                                    </RadzenHtmlEditor>
+                                                </MudPaper>
+                                            </MudStack>
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
@@ -324,16 +361,88 @@
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <AdminTextField @bind-Value="_securityPolicies"
-                                                    Label="@L["SecurityPolicies"].Value"
-                                                    Field="@_descriptionFormContext.Field("SecurityPolicies")"
-                                                    Lines="@(6)" />
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                    ;">@L["SecurityPolicies"]</MudText>
+                                        <MudPaper Outlined="true" Class="pa-0">
+                                            <RadzenHtmlEditor @bind-Value="_securityPolicies" Style="min-height: 300px; width: 100%;">
+                                                <RadzenHtmlEditorUndo Title="Deshacer" />
+                                                <RadzenHtmlEditorRedo Title="Rehacer" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorBold Title="Negrita" />
+                                                <RadzenHtmlEditorItalic Title="Cursiva" />
+                                                <RadzenHtmlEditorUnderline Title="Subrayado" />
+                                                <RadzenHtmlEditorStrikeThrough Title="Tachado" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorAlignLeft Title="Alinear a la izquierda" />
+                                                <RadzenHtmlEditorAlignCenter Title="Centrar" />
+                                                <RadzenHtmlEditorAlignRight Title="Alinear a la derecha" />
+                                                <RadzenHtmlEditorJustify Title="Justificar" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorUnorderedList Title="Lista de viñetas" />
+                                                <RadzenHtmlEditorOrderedList Title="Lista numerada" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorColor Title="Color del texto" />
+                                                <RadzenHtmlEditorBackground Title="Color de fondo" />
+                                                <RadzenHtmlEditorRemoveFormat Title="Quitar formato" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorSubscript Title="Subíndice" />
+                                                <RadzenHtmlEditorSuperscript Title="Superíndice" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorLink Title="Insertar enlace" />
+                                                <RadzenHtmlEditorUnlink Title="Quitar enlace" />
+                                                <RadzenHtmlEditorImage Title="Insertar imagen" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorFontName Title="Fuente" Placeholder="Fuente" />
+                                                <RadzenHtmlEditorFontSize Title="Tamaño" Placeholder="Tamaño" />
+                                                <RadzenHtmlEditorFormatBlock Title="Formato" Placeholder="Párrafo" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorSource Title="Ver código HTML" />
+                                            </RadzenHtmlEditor>
+                                        </MudPaper>
+                                    </MudStack>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <AdminTextField @bind-Value="_additionalComments"
-                                                    Label="@L["AdditionalComments"].Value"
-                                                    Field="@_descriptionFormContext.Field("AdditionalComments")"
-                                                    Lines="@(6)" />
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                        ;">@L["AdditionalComments"]</MudText>
+                                        <MudPaper Outlined="true" Class="pa-0">
+                                            <RadzenHtmlEditor @bind-Value="_additionalComments" Style="min-height: 300px; width: 100%;">
+                                                <RadzenHtmlEditorUndo Title="Deshacer" />
+                                                <RadzenHtmlEditorRedo Title="Rehacer" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorBold Title="Negrita" />
+                                                <RadzenHtmlEditorItalic Title="Cursiva" />
+                                                <RadzenHtmlEditorUnderline Title="Subrayado" />
+                                                <RadzenHtmlEditorStrikeThrough Title="Tachado" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorAlignLeft Title="Alinear a la izquierda" />
+                                                <RadzenHtmlEditorAlignCenter Title="Centrar" />
+                                                <RadzenHtmlEditorAlignRight Title="Alinear a la derecha" />
+                                                <RadzenHtmlEditorJustify Title="Justificar" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorUnorderedList Title="Lista de viñetas" />
+                                                <RadzenHtmlEditorOrderedList Title="Lista numerada" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorColor Title="Color del texto" />
+                                                <RadzenHtmlEditorBackground Title="Color de fondo" />
+                                                <RadzenHtmlEditorRemoveFormat Title="Quitar formato" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorSubscript Title="Subíndice" />
+                                                <RadzenHtmlEditorSuperscript Title="Superíndice" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorLink Title="Insertar enlace" />
+                                                <RadzenHtmlEditorUnlink Title="Quitar enlace" />
+                                                <RadzenHtmlEditorImage Title="Insertar imagen" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorFontName Title="Fuente" Placeholder="Fuente" />
+                                                <RadzenHtmlEditorFontSize Title="Tamaño" Placeholder="Tamaño" />
+                                                <RadzenHtmlEditorFormatBlock Title="Formato" Placeholder="Párrafo" />
+                                                <RadzenHtmlEditorSeparator />
+                                                <RadzenHtmlEditorSource Title="Ver código HTML" />
+                                            </RadzenHtmlEditor>
+                                        </MudPaper>
+                                    </MudStack>
                                 </MudItem>
                             </MudGrid>
                         </MudForm>
