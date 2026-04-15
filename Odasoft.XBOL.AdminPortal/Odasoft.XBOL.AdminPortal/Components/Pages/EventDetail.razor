@@ -60,13 +60,13 @@
 
         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
             <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
-            Class="border-secondary-lighten" Color="Color.Secondary">
+                            Class="border-secondary-lighten" Color="Color.Secondary">
                 <MudToggleItem Value="@TabSales" Text="@L["TabSales"].Value.ToUpper()"
                 Class="@($"px-4 {(_selectedTab == TabSales ? "bg-secondary-darken" : "")}")" />
                 <MudToggleItem Value="@TabSuitesSales" Text="@L["TabSuitesSales"].Value.ToUpper()"
                 Class="@($"px-4 {(_selectedTab == TabSuitesSales ? "bg-secondary-darken" : "")}")" />
                 <MudToggleItem Value="@TabPolicies" Text="@L["TabPolicies"].Value.ToUpper()"
-                Class="@($"px-4 {(_selectedTab == TabPolicies ? "bg-secondary-darken" : "")}")" />
+                               Class="@($"px-4 {(_selectedTab == TabPolicies ? "bg-secondary-darken" : "")}")" />
             </MudToggleGroup>
             <MudStack Row Spacing="2">
                 <MudButton StartIcon="@Icons.Material.Outlined.LocalActivity"
@@ -86,16 +86,16 @@
 
         @if (ScheduleId is not null)
         {
-            @if (_selectedTab == TabSales)
-            {
+        @if (_selectedTab == TabSales)
+        {
                 <EventScheduleSales EventScheduleId="ScheduleId.Value" />
-            }
-            else if (_selectedTab == TabSuitesSales)
-            {
+        }
+        else if (_selectedTab == TabSuitesSales)
+        {
                 <EventScheduleSuitesSales EventScheduleId="ScheduleId.Value" />
-            }
-            else if (_selectedTab == TabPolicies)
-            {
+        }
+        else if (_selectedTab == TabPolicies)
+        {
                 <ScheduleAndPolicies Event="_event" EventSchedule="_eventSchedule" />
             }
         }
