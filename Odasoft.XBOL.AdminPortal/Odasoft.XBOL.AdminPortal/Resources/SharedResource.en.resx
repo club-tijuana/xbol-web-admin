@@ -633,4 +633,7 @@
   <data name="CancelWithRefund" xml:space="preserve">
     <value>Cancel with refund</value>
   </data>
+  <data name="DeleteItem" xml:space="preserve">
+    <value>Delete {0}</value>
+  </data>
 </root>

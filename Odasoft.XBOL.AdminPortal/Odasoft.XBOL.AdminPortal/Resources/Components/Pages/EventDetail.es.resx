@@ -117,130 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PageTitle" xml:space="preserve">
-    <value>Edit event</value>
-  </data>
-  <data name="GoBack" xml:space="preserve">
-    <value>Go back</value>
-  </data>
-  <data name="RequiredFieldsNote" xml:space="preserve">
-    <value>*Required fields</value>
-  </data>
-  <data name="DescriptionAndVenue" xml:space="preserve">
-    <value>Description and venue</value>
-  </data>
-  <data name="Name" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="Subtitle" xml:space="preserve">
-    <value>Subtitle</value>
-  </data>
-  <data name="EventType" xml:space="preserve">
-    <value>Event type</value>
-  </data>
-  <data name="EventSummary" xml:space="preserve">
-    <value>Event summary</value>
-  </data>
-  <data name="EventDescription" xml:space="preserve">
-    <value>Event description</value>
-  </data>
-  <data name="Venue" xml:space="preserve">
-    <value>Venue</value>
-  </data>
-  <data name="Map" xml:space="preserve">
-    <value>Map</value>
-  </data>
-  <data name="DatesAndSalePolicies" xml:space="preserve">
-    <value>Dates and sales policies</value>
-  </data>
-  <data name="EventSchedule" xml:space="preserve">
-    <value>Event schedule</value>
-  </data>
-  <data name="StartDate" xml:space="preserve">
-    <value>Start date</value>
-  </data>
-  <data name="EndDate" xml:space="preserve">
-    <value>End date</value>
-  </data>
-  <data name="Time" xml:space="preserve">
-    <value>Time</value>
-  </data>
-  <data name="TicketsPreSale" xml:space="preserve">
-    <value>Tickets pre-sale</value>
-  </data>
-  <data name="TicketsSale" xml:space="preserve">
-    <value>Tickets sale</value>
-  </data>
-  <data name="WebSitePublishing" xml:space="preserve">
-    <value>Website publishing</value>
-  </data>
-  <data name="PublishDate" xml:space="preserve">
-    <value>Publish date</value>
-  </data>
-  <data name="VenueAccess" xml:space="preserve">
-    <value>Venue access</value>
-  </data>
-  <data name="AccessDate" xml:space="preserve">
-    <value>Access date</value>
-  </data>
-  <data name="AgeRestrictions" xml:space="preserve">
-    <value>Age Restrictions</value>
-  </data>
-  <data name="SecurityPolicies" xml:space="preserve">
-    <value>Security Policies</value>
+  <data name="AccessDateTime" xml:space="preserve">
+    <value>Fecha y hora de acceso</value>
   </data>
   <data name="AdditionalComments" xml:space="preserve">
-    <value>Additional comments</value>
+    <value>Comentarios adicionales</value>
   </data>
-  <data name="PosterAndGallery" xml:space="preserve">
-    <value>Poster and gallery</value>
+  <data name="AgeRestrictions" xml:space="preserve">
+    <value>Restricciones de edad</value>
   </data>
-  <data name="Address" xml:space="preserve">
-    <value>Address</value>
+  <data name="BuySuites" xml:space="preserve">
+    <value>Comprar en palco</value>
   </data>
-  <data name="Coordinates" xml:space="preserve">
-    <value>Coordinates (Lat/Long)</value>
+  <data name="BuyTickets" xml:space="preserve">
+    <value>Comprar boletos</value>
   </data>
-  <data name="HorizontalPoster" xml:space="preserve">
-    <value>Horizontal poster</value>
+  <data name="EndDateTime" xml:space="preserve">
+    <value>Fecha y hora de término</value>
   </data>
-  <data name="VerticalPoster" xml:space="preserve">
-    <value>Vertical poster</value>
+  <data name="PublishDateTime" xml:space="preserve">
+    <value>Fecha y hora de publicación</value>
   </data>
-  <data name="WebsiteGallery" xml:space="preserve">
-    <value>Website gallery</value>
+  <data name="SecurityPolicies" xml:space="preserve">
+    <value>Políticas de seguridad</value>
   </data>
-  <data name="GalleryUploadHint" xml:space="preserve">
-    <value>Drag and drop or click here to search</value>
+  <data name="StartDateTime" xml:space="preserve">
+    <value>Fecha y hora de inicio</value>
   </data>
-  <data name="GalleryUploadHintDetails" xml:space="preserve">
-    <value>Upload png or jpg files with minimal {0} x {1} px dimensions and no bigger than {2}MB</value>
+  <data name="TabPolicies" xml:space="preserve">
+    <value>Fechas y políticas de venta</value>
   </data>
-  <data name="Clear" xml:space="preserve">
-    <value>Clear</value>
+  <data name="TabSales" xml:space="preserve">
+    <value>Ventas</value>
   </data>
-  <data name="Next" xml:space="preserve">
-    <value>Next</value>
+  <data name="TabSuitesSales" xml:space="preserve">
+    <value>Palcos</value>
   </data>
-  <data name="ExternalEventKey" xml:space="preserve">
-    <value>External event key</value>
+  <data name="TicketsPreSale" xml:space="preserve">
+    <value>Preventa de boletos</value>
   </data>
-    <data name="ErrorSavingEvent" xml:space="preserve">
-    <value>There was an error saving the event</value>
+  <data name="TicketsSale" xml:space="preserve">
+    <value>Venta de boletos</value>
   </data>
-    <data name="CompletePreviousStepsWarning" xml:space="preserve">
-    <value>Please complete previous steps</value>
+  <data name="VenueAccess" xml:space="preserve">
+    <value>Acceso al recinto</value>
   </data>
-    <data name="ErrorLoadingVenue" xml:space="preserve">
-    <value>There was an error loading the venue</value>
+  <data name="WebSitePublishing" xml:space="preserve">
+    <value>Publicación en el sitio web</value>
   </data>
-    <data name="AllAges" xml:space="preserve">
-    <value>All ages</value>
+  <data name="AllAges" xml:space="preserve">
+    <value>Para toda la familia</value>
   </data>
-    <data name="AdultsOnly" xml:space="preserve">
-    <value>Adults only (18+)</value>
+  <data name="AdultsOnly" xml:space="preserve">
+    <value>Mayores de edad (18+)</value>
   </data>
-    <data name="None" xml:space="preserve">
-    <value>No restrictions</value>
+  <data name="None" xml:space="preserve">
+    <value>Sin restricciones</value>
   </data>
 </root>

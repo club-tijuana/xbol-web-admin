@@ -1,8 +1,83 @@
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Common.Constants
+@inject AppLocalizer<EventDetail> L
+
 <MudCard Class="pa-6 bg-white" Elevation="3">
-    <MudText Typo="Typo.h6" Color="Color.Secondary">Hola desde Fechas</MudText>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken">@L["TicketsPreSale"]</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.caption" Class="text-primary-darken">@L["StartDateTime"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@(EventSchedule?.PreSaleStartDate?.ToString(FormatConstants.DATE_TIME) ?? "-")</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.caption" Class="text-primary-darken">@L["EndDateTime"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@(EventSchedule?.PreSaleEndDate?.ToString(FormatConstants.DATE_TIME) ?? "-")</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken">@L["TicketsSale"]</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.caption" Class="text-primary-darken">@L["StartDateTime"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@(EventSchedule?.OnSaleDate?.ToString(FormatConstants.DATE_TIME) ?? "-")</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.caption" Class="text-primary-darken">@L["EndDateTime"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@(EventSchedule?.OffSaleDate?.ToString(FormatConstants.DATE_TIME) ?? "-")</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken">@L["WebSitePublishing"]</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.caption" Class="text-primary-darken">@L["PublishDateTime"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@(EventSchedule?.PublishedDate?.ToString(FormatConstants.DATE_TIME) ?? "-")</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken">@L["VenueAccess"]</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.caption" Class="text-primary-darken">@L["AccessDateTime"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@(EventSchedule?.OnSaleDate?.ToString(FormatConstants.DATE_TIME) ?? "-")</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.caption" Class="text-primary-darken">@L["AgeRestrictions"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@(Event?.AgeRestriction.ToString() ?? "-")</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" lg="6">
+            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">@L["SecurityPolicies"]</MudText>
+            <MudPaper Outlined="true" Class="pa-4" Style="min-height: 300px; width: 100%;">
+                @((MarkupString)(Event?.SecurityPolicies ?? string.Empty))
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">@L["AdditionalComments"]</MudText>
+            <MudPaper Outlined="true" Class="pa-4" Style="min-height: 300px; width: 100%">
+                @((MarkupString)(Event?.AdditionalComments ?? string.Empty))
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </MudCard>
 
 @code {
-    [Parameter] public long EventScheduleId { get; set; }
+    [Parameter] public EventInfoDTO? Event { get; set; }
+    [Parameter] public EventScheduleDTO? EventSchedule { get; set; }
 }
 

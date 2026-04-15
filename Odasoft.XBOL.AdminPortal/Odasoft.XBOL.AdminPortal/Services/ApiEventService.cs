@@ -42,7 +42,8 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.AvailableSeats,
             e.TotalSeats,
             e.ExternalEventKey,
-            e.PosterImageUrl ?? ""
+            e.PosterImageUrl ?? "",
+            e.BannerImageUrl ?? ""
         )).ToArray() ?? [];
 
         return new GridData<EventViewModel>
@@ -84,6 +85,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.TotalSeats,
             e.ExternalEventKey,
             e.PosterImageUrl ?? "",
+            e.BannerImageUrl ?? "",
             e.IsSeason
         )).ToArray() ?? [];
 

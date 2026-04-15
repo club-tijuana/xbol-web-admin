@@ -14,7 +14,7 @@ import {
   clearSelection,
   changeConfig,
   focusFilteredCategories,
-} from "/js/seatsioBase.js";
+} from "../js/seatsioBase.js";
 
 export {
   destroyChart,

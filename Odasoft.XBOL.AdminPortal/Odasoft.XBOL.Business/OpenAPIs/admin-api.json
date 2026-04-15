@@ -10953,6 +10953,10 @@
             "type": "string",
             "nullable": true
           },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
           "isSeason": {
             "type": "boolean"
           }

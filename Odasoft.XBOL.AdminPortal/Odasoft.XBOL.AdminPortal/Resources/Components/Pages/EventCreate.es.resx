@@ -147,4 +147,22 @@
   <data name="ExternalEventKey" xml:space="preserve">
     <value>Llave externa del evento</value>
   </data>
+  <data name="ErrorCreatingEvent" xml:space="preserve">
+    <value>Hubo un error al crear el evento</value>
+  </data>
+  <data name="CompletePreviousStepsWarning" xml:space="preserve">
+    <value>Por favor, completa los pasos anteriores antes de avanzar</value>
+  </data>
+  <data name="ErrorLoadingVenue" xml:space="preserve">
+    <value>Hubo un error al cargar el recinto</value>
+  </data>
+  <data name="AllAges" xml:space="preserve">
+    <value>Para toda la familia</value>
+  </data>
+  <data name="AdultsOnly" xml:space="preserve">
+    <value>Mayores de edad (18+)</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>Sin restricciones</value>
+  </data>
 </root>

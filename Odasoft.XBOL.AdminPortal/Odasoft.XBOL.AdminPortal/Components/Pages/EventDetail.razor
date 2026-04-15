@@ -1,5 +1,7 @@
 @page "/events/{EventId:long}"
 @page "/events/{EventId:long}/{Tab}"
+@page "/events/{EventId:long}/schedule/{ScheduleId:long}"
+@page "/events/{EventId:long}/schedule/{ScheduleId:long}/{Tab}"
 
 @using Odasoft.XBOL.AdminPortal.Components.Pages.EventDetails
 @using Odasoft.XBOL.AdminPortal.Components.Shared
@@ -28,11 +30,11 @@
         </LeftContent>
         <RightContent>
             <MudStack Row>
-                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled"
+                <MudButton StartIcon="@Icons.Material.Outlined.EventBusy" Color="Color.Error" Variant="Variant.Filled"
                            Class="text-uppercase" OnClick="DeleteEventAsync">
-                    @L["Delete"]
+                    @L["DeleteItem", L["Event"]]
                 </MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.Edit" Href="@($"./events/{EventId}/edit")"
+                <MudButton StartIcon="@Icons.Material.Outlined.Edit" Href="@($"./events/{EventId}/edit")"
                            Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">
                     @L["Edit"]
                 </MudButton>
@@ -47,39 +49,55 @@
     {
         <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
 
+        <MudToggleGroup T="long" Value="@_selectedSchedule" ValueChanged="OnScheduleChanged" CheckMark="false"
+                        Class="border-secondary-lighten mb-4 w-max d-flex" Color="Color.Secondary">
+            @foreach (var schedule in _event.Schedules)
+            {
+                <MudToggleItem Value="@schedule.Id" Text="@schedule.StartDateTime.ToString("MMMM dd h:mm tt")"
+                                Class="@($"px-4 {(_selectedSchedule == schedule.Id ? "bg-secondary-darken" : "")}")" />
+            }
+        </MudToggleGroup>
+
         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-@*             <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
+            <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
                             Class="border-secondary-lighten" Color="Color.Secondary">
-                <MudToggleItem Value="@TabMaps" Text="@L["TabMaps"].Value.ToUpper()"
-                               Class="@($"px-4 {(_selectedTab == TabMaps ? "bg-secondary-darken" : "")}")" />
-                <MudToggleItem Value="@TabSuites" Text="@L["TabSuites"].Value.ToUpper()"
-                               Class="@($"px-4 {(_selectedTab == TabSuites ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@TabSales" Text="@L["TabSales"].Value.ToUpper()"
+                Class="@($"px-4 {(_selectedTab == TabSales ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@TabSuitesSales" Text="@L["TabSuitesSales"].Value.ToUpper()"
+                Class="@($"px-4 {(_selectedTab == TabSuitesSales ? "bg-secondary-darken" : "")}")" />
                 <MudToggleItem Value="@TabPolicies" Text="@L["TabPolicies"].Value.ToUpper()"
                                Class="@($"px-4 {(_selectedTab == TabPolicies ? "bg-secondary-darken" : "")}")" />
-            </MudToggleGroup> *@
+            </MudToggleGroup>
             <MudStack Row Spacing="2">
-                <MudButton StartIcon="@Icons.Material.Filled.Map" Variant="Variant.Filled" Class="text-uppercase"
-                           Color="Color.Dark" Disabled="true">
-                    @L["NewMap"]
+                <MudButton StartIcon="@Icons.Material.Outlined.LocalActivity"
+                    Variant="Variant.Filled"
+                    Color="Color.Primary"
+                    Disabled="true">
+                    @L["BuySuites"]
                 </MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.MeetingRoom" Variant="Variant.Filled" Class="text-uppercase"
-                           Color="Color.Error" Disabled="true">
-                    @L["NewSuite"]
+                <MudButton StartIcon="@Icons.Material.Outlined.ShoppingCart"
+                    Variant="Variant.Filled"
+                    Color="Color.Primary" 
+                    OnClick="@(() => _navigationManager.NavigateTo($"./events/{_event.Id}/key/{_eventSchedule.ExternalEventKey}/booking"))">
+                    @L["BuyTickets"]
                 </MudButton>
             </MudStack>
         </MudStack>
 
+        @if (ScheduleId is not null)
+        {
         @if (_selectedTab == TabSales)
         {
-            <EventScheduleSales EventScheduleId="EventId" />
+                <EventScheduleSales EventScheduleId="ScheduleId.Value" />
         }
         else if (_selectedTab == TabSuitesSales)
         {
-            <EventScheduleSuitesSales EventScheduleId="EventId" />
+                <EventScheduleSuitesSales EventScheduleId="ScheduleId.Value" />
         }
         else if (_selectedTab == TabPolicies)
         {
-            <ScheduleAndPolicies EventScheduleId="EventId" />
+                <ScheduleAndPolicies Event="_event" EventSchedule="_eventSchedule" />
+            }
         }
     }
 
@@ -87,13 +105,15 @@
 
 @code {
     [Parameter] public long EventId { get; set; }
+    [Parameter] public long? ScheduleId { get; set; }
     [Parameter] public string? Tab { get; set; }
 
     private const string TabSales = "sales";
-    private const string TabSuitesSales = "suitesSales";
+    private const string TabSuitesSales = "suites-sales";
     private const string TabPolicies = "policies";
 
-    private string _selectedTab = TabSales;
+    private string _selectedTab = TabPolicies;
+    private long _selectedSchedule;
     private bool _loading = true;
     private bool _error;
     private EventInfoDTO? _event;
@@ -102,10 +122,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadEventAsync();
+
     }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         _selectedTab = Tab?.ToLowerInvariant() switch
         {
@@ -113,12 +133,28 @@
             TabPolicies => TabPolicies,
             _ => TabSales
         };
+
+        _selectedSchedule = ScheduleId ?? 0;
+
+        // TODO: Fix loading and reload data if any id is different
+        if (_event is null || _eventSchedule is null)
+        {
+            await LoadEventAsync();
+        }        
+    }
+
+    private void OnScheduleChanged(long scheduleId)
+    {
+        _selectedSchedule = scheduleId;
+        _navigationManager.NavigateTo($"./events/{EventId}/schedule/{_selectedSchedule}/{_selectedTab}", replace: true);
     }
 
     private void OnTabChanged(string tab)
     {
         _selectedTab = tab;
-        _navigationManager.NavigateTo($"./events/{EventId}/{tab}", replace: true);
+        var currentUri = new Uri(_navigationManager.Uri);
+        var baseUri = currentUri.GetLeftPart(UriPartial.Path).Substring(0, currentUri.GetLeftPart(UriPartial.Path).LastIndexOf('/'));
+        _navigationManager.NavigateTo($"{baseUri}/{tab}", replace: true);
     }
 
     private async Task LoadEventAsync()
@@ -129,14 +165,19 @@
         try
         {
             _event = await _eventService.GetEventByIdAsync(EventId);
-            _eventSchedule = _event?.Schedules?.First();
+            _eventSchedule = _event?.Schedules?.First(x => ScheduleId is null || x.Id == ScheduleId);
+            OnScheduleChanged(_eventSchedule?.Id ?? 0);
+            var horizontalImages = await _eventService.GetEventImageByTypeAsync(EventId, ImageType.HorizontalPoster);
+
+            var horizontalImage = horizontalImages.FirstOrDefault();
+
             _banner = new()
             {
                 Title = _event.Name,
                 Subtitle = _event.Subtitle,
                 StartDateTime = _eventSchedule?.StartDateTime.UtcDateTime,
                 EndDateTime = _eventSchedule?.EndDateTime?.UtcDateTime,
-                ImageUrl = _event.BannerImageUrl,
+                ImageUrl = horizontalImage is not null ? $"data:{horizontalImage.ContentType};base64,{horizontalImage.ImageBase64}" : _event.BannerImageUrl,
                 Venue = _event.VenueName,
                 ExternalKey = _eventSchedule?.ExternalEventKey,
             };
@@ -150,6 +191,7 @@
         finally
         {
             _loading = false;
+            StateHasChanged();
         }
     }
 

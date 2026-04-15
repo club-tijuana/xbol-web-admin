@@ -633,4 +633,7 @@
   <data name="CancelWithRefund" xml:space="preserve">
     <value>Cancelar con reembolso</value>
   </data>
+  <data name="DeleteItem" xml:space="preserve">
+    <value>Borrar {0}</value>
+  </data>
 </root>

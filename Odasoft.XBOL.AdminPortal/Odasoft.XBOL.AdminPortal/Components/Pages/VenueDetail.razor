@@ -10,6 +10,7 @@
 @inject AppLocalizer<VenueDetail> L;
 @inject VenuesService _venueService;
 @inject NavigationManager _navigationManager;
+@inject VenueMapsService _venueMapsService;
 @inject VenuesService _venueService;
 
 @inject IDialogService _dialogService;
@@ -168,7 +169,7 @@
         {
             try
             {
-                await _venueService.SaveVenueMap(newMap);
+                await _venueMapsService.SaveVenueMapAsync(newMap);
                 _snackbar.Add("Mapa agregado al recinto satisfactoriamente.", Severity.Success);
                 _updateMapKey = Guid.NewGuid().ToString();
             }

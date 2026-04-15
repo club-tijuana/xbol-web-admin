@@ -2,8 +2,8 @@
 @using Odasoft.XBOL.AdminPortal.Helpers;
 
 <MudCard Class="mb-4 bg-white" Elevation="3">
-    <MudGrid Class="m-0 p-0 align-center" Justify="Justify.FlexStart">
-        <MudItem xs="12" sm="4" lg="3" Class="pb-0 mb-0 d-flex">
+    <MudGrid Class="align-center" Justify="Justify.FlexStart">
+        <MudItem xs="12" md="3" Class="d-flex">
             @if (string.IsNullOrEmpty(Banner.ImageUrl))
 
             {
@@ -11,13 +11,13 @@
             }
             else
             {
-                <img src="@Banner.ImageUrl" class="img-fluid banner-img" />
+                <MudImage Src="@Banner.ImageUrl" Fluid />
             }
         </MudItem>
-        <MudItem xs="12" sm="4" lg="3" Class="pb-0 mb-0">
+        <MudItem xs="12" md="3">
             <MudText Typo="Typo.h6" Color="@Color.Secondary">@Banner.Title</MudText>
         </MudItem>
-        <MudItem xs="12" sm="4" lg="3" Class="d-flex flex-column pb-0 mb-0 justify-center">
+        <MudItem xs="12" md="3">
             @if (!string.IsNullOrWhiteSpace(Banner.Venue))
             {
                 <MudText Typo="Typo.subtitle2" Class="text-secondary-darken">@Banner.Venue</MudText>
@@ -29,7 +29,7 @@
                 </MudText>
             }
         </MudItem>
-        <MudItem xs="12" sm="12" lg="3" Class="d-flex justify-end pb-0 mb-0 pr-4 mt-2 mt-lg-0">
+        <MudItem xs="12" md="3" Class="d-flex justify-end pr-6">
             @if (!string.IsNullOrEmpty(Banner.ExternalKey))
             {
                 <MudStack>
