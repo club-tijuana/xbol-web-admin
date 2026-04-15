@@ -1,8 +1,9 @@
+using Odasoft.XBOL.Business.Services.Contracts;
 using Odasoft.XBOL.Models.Parameters;
 
 namespace Odasoft.XBOL.Business.Services
 {
-    public class SuitesService
+    public class SuitesService : ISuitesService
     {
         private IAdminClient _adminClient;
 
@@ -11,7 +12,7 @@ namespace Odasoft.XBOL.Business.Services
             _adminClient = adminClient;
         }
 
-        public async Task<SuiteResultPagedResponse> GetSuitesAsync(SuitesFilterParameters parameters)
+        public async Task<SuiteResponsePagedResponse> GetSuitesAsync(SuitesFilterParameters parameters)
         {
             var levels = parameters.Levels is not null
                     ? string.Join(",", parameters.Levels)
@@ -28,24 +29,24 @@ namespace Odasoft.XBOL.Business.Services
             return suites;
         }
 
-        public async Task<SuiteResult> GetSuiteByIdAsync(long suiteId)
+        public async Task<SuiteResponse> GetSuiteByIdAsync(long suiteId)
         {
             return await _adminClient.GetSuiteByIdAsync(suiteId);
         }
 
-        public async Task<bool> CreateSuiteAsync(CreateSuiteRequest request)
+        public async Task<long> CreateSuiteAsync(SuiteRequest request)
         {
             return await _adminClient.CreateSuiteAsync(request);
         }
 
-        public async Task<bool> UpdateSuiteAsync(UpdateSuiteRequest request)
+        public async Task UpdateSuiteAsync(long suiteId, SuiteRequest request)
         {
-            return await _adminClient.UpdateSuiteAsync(request);
+            await _adminClient.UpdateSuiteAsync(suiteId, request);
         }
 
-        public async Task<bool> DeleteSuiteAsync(long suiteId)
+        public async Task DeleteSuiteAsync(long suiteId)
         {
-            return await _adminClient.DeleteSuiteAsync(suiteId);
+            await _adminClient.DeleteSuiteAsync(suiteId);
         }
     }
 }

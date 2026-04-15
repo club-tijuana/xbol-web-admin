@@ -1,6 +1,7 @@
 @page "/suites/settings"
 
 @using Odasoft.XBOL.AdminPortal.Extensions;
+@using Odasoft.XBOL.Business.Services.Contracts;
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants
@@ -8,10 +9,11 @@
 @using Odasoft.XBOL.Models.ViewModels;
 
 @inject CatalogsService _catalogsService;
-@inject SuitesService _suitesService;
+@inject ISuitesService _suitesService;
 @inject ISnackbar _snackbar;
 @inject NavigationManager _navigationManager;
 @inject IDialogService _dialogService;
+@inject ILogger<SuiteSettings> Logger;
 
 <PageTitle>Palcos - Configuración</PageTitle>
 
@@ -19,7 +21,7 @@
     <PageActionBar>
         <RightContent>
             <MudButton StartIcon="@Icons.Material.Outlined.Add" OnClick="@(() => CreateSuite())"
-                    Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nuevo Palco</MudButton>
+                       Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Nuevo Palco</MudButton>
         </RightContent>
     </PageActionBar>
 </SectionContent>
@@ -46,7 +48,7 @@
                             <!-- Level multi-select -->
                             <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                                 <ActivatorContent>
-                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Secondary" />
+                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Secondary" OnClick="@context.ToggleAsync" />
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudStack Spacing="3" Class="pa-4" Style="width:375px">
@@ -107,7 +109,7 @@
                         <MudStack Row>
                             <MudTooltip Text="Editar" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Medium"
-                                               OnClick="@(() => _navigationManager.NavigateTo($"/suites/{context.Item.Id}/update"))" />
+                                               OnClick="@(() => _navigationManager.NavigateTo($"./suites/{context.Item.Id}/update"))" />
                             </MudTooltip>
 
                             <MudTooltip Text="Borrar" Placement="Placement.Top">
@@ -120,7 +122,7 @@
             </Columns>
 
             <PagerContent>
-                <CustomMudDataGridPager T="SuitesViewModel" />
+                <MudDataGridPager T="SuitesViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
@@ -135,7 +137,7 @@
     private SuitesFilterParameters _filters = new SuitesFilterParameters();
 
     private List<ListItem> _suiteLevels = [];
-    private IEnumerable<string> _selectedSuiteLevels = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedSuiteLevels = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,22 +162,22 @@
             PageSize = state.PageSize
         };
 
-        SuiteResultPagedResponse result = await _suitesService.GetSuitesAsync(_filters);
+        SuiteResponsePagedResponse result = await _suitesService.GetSuitesAsync(_filters);
 
         return new GridData<SuitesViewModel>
         {
             TotalItems = result.TotalCount,
-            Items = result.Items.Select(suite => new SuitesViewModel
+            Items = result.Items?.Select(suite => new SuitesViewModel
             {
                 Id = suite.Id,
                 Name = suite.Name,
                 Level = suite.SuiteLevelName,
-                Seats = suite.Seats
+                Seats = suite.Capacity
             }).ToArray() ?? []
         };
     }
 
-    private async Task<GridData<SuitesViewModel>> ServerReloadAsync(GridState<SuitesViewModel> state)
+    private async Task<GridData<SuitesViewModel>> ServerReloadAsync(GridState<SuitesViewModel> state, CancellationToken token)
     {
         _loading = true;
 
@@ -183,6 +185,10 @@
         {
             var data = await FetchFromServerAsync(state);
             return data;
+        }
+        catch (TaskCanceledException)
+        {
+            return new GridData<SuitesViewModel> { TotalItems = 0, Items = new List<SuitesViewModel>() };
         }
         catch (Exception ex)
         {
@@ -230,20 +236,13 @@
         {
             try
             {
-                bool result = await _suitesService.DeleteSuiteAsync(suiteId);
-                if (result)
-                {
-                    _snackbar.Add("Palco eliminado exitosamente.", Severity.Success);
-                    await _dataGrid.ReloadServerData();
-                }
-                else
-                {
-                    _snackbar.Add("Error al eliminar el palco.", Severity.Error);
-                }
+                await _suitesService.DeleteSuiteAsync(suiteId);
+                _snackbar.Add("Palco eliminado exitosamente.", Severity.Success);
+                await _dataGrid.ReloadServerData();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting suite: {ex.Message}");
+                Logger.LogError(ex, "Failed to delete suite {SuiteId}", suiteId);
                 _snackbar.Add("Error al eliminar el palco.", Severity.Error);
             }
         }

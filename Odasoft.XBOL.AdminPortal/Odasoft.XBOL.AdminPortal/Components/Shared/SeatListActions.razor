@@ -1,0 +1,15 @@
+@using Odasoft.XBOL.Common.Constants
+
+@if (Price is not null and not 0)
+{
+    <MudText Typo="Typo.caption" Color="Color.Secondary">@Price.Value.ToString(FormatConstants.CURRENCY)</MudText>
+}
+<MudTooltip Text="@Tooltip">
+    <MudIconButton Icon="@Icons.Material.Filled.Close" Style="padding:0;" Color="Color.Error" OnClick="OnRemove" />
+</MudTooltip>
+
+@code {
+    [Parameter] public decimal? Price { get; set; }
+    [Parameter] public string Tooltip { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnRemove { get; set; }
+}

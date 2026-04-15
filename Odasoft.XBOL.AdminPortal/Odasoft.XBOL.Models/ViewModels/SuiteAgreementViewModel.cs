@@ -7,8 +7,10 @@ namespace Odasoft.XBOL.Models.ViewModels
         public string SuiteName { get; set; } = "";
         public string SuiteLevel { get; set; } = "";
         public string OwnerName { get; set; } = "";
-        public string OwnerEmail { get; set; } = "";
-        public string OwnerPhone { get; set; } = "";
+        public string Email { get; set; } = "";
+        public long? PhoneRegionCodeId { get; set; }
+        public string DialCode { get; set; } = "";
+        public string PhoneNumber { get; set; } = "";
         public string StartDate { get; set; } = "";
         public string EndDate { get; set; } = "";
         public string FileName { get; set; } = "";

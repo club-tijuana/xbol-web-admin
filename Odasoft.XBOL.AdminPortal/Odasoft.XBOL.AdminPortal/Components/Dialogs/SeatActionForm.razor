@@ -1,0 +1,42 @@
+@using MudBlazor.Utilities
+@using Odasoft.XBOL.AdminPortal.Resources
+@using Odasoft.XBOL.AdminPortal.Components.Shared
+
+<MudForm @ref="_form">
+    <MudStack Spacing="4">
+        <AdminTextField Value="@Reason" ValueChanged="ReasonChanged" Label="@ReasonLabel"
+                        Placeholder="@ReasonPlaceholder" Field="@FormContext?.Field("Reason")" Required Lines="@(6)" />
+
+        @if (ShowColorPicker)
+        {
+            <MudColorPicker Value="@Color" ValueChanged="ColorChanged" Label="@ColorLabel" Variant="Variant.Outlined" Required
+                            RequiredError="@FormL["RequiredField"]"
+                            Validation="@(FormContext?.Field("Color").ValidationFor<MudColor>())"
+                            ColorPickerMode="ColorPickerMode.HEX" Class="flex-grow-1"
+                            Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.Circle"
+                            Style="@($"--mud-palette-action-default: {Color.Value};")" />
+        }
+    </MudStack>
+</MudForm>
+
+@code {
+    [Parameter] public string? Reason { get; set; }
+    [Parameter] public EventCallback<string?> ReasonChanged { get; set; }
+
+    [Parameter] public MudColor Color { get; set; } = new("#FF0000");
+    [Parameter] public EventCallback<MudColor> ColorChanged { get; set; }
+
+    [Parameter] public bool ShowColorPicker { get; set; } = true;
+    [Parameter] public FormContext? FormContext { get; set; }
+
+    [Parameter] public string ReasonLabel { get; set; } = string.Empty;
+    [Parameter] public string ReasonPlaceholder { get; set; } = string.Empty;
+    [Parameter] public string ColorLabel { get; set; } = string.Empty;
+
+    [Inject] private IStringLocalizer<AdminForm> FormL { get; set; } = default!;
+
+    private MudForm _form = default!;
+
+    public MudForm InnerForm => _form;
+}

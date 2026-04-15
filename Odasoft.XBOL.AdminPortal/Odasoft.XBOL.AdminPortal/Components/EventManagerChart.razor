@@ -1,0 +1,64 @@
+@using Microsoft.JSInterop
+@using Odasoft.XBOL.AdminPortal.States
+
+@inherits SeatsioChartBase
+
+<div id="@ChartId" style="height: 700px"></div>
+
+@code {
+    [Parameter] public string Mode { get; set; } = "manageForSaleConfig";
+    [Parameter] public string? BlockReasonLabel { get; set; }
+    [Parameter] public EventCallback<SeatInfo> OnSeatSelected { get; set; }
+    [Parameter] public EventCallback<string> OnSeatDeselected { get; set; }
+
+    protected override string ChartId => "event-manager-chart";
+
+    private DotNetObjectReference<EventManagerChart>? _objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/EventManagerChart.razor.js");
+
+            var config = new
+            {
+                secretKey = SecretKey,
+                @event = EventKey,
+                language = Language,
+                mode = Mode,
+                blockReasonLabel = BlockReasonLabel
+            };
+
+            _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null, bool forSale = true, string? reason = null, string? color = null)
+    {
+        if (OnSeatSelected.HasDelegate)
+            await OnSeatSelected.InvokeAsync(new SeatInfo { SeatId = seatId, Price = price, Category = category, ForSale = forSale, Reason = reason, Color = color });
+    }
+
+    [JSInvokable]
+    public async Task HandleSeatDeselected(string seatId)
+    {
+        if (OnSeatDeselected.HasDelegate)
+            await OnSeatDeselected.InvokeAsync(seatId);
+    }
+
+    [JSInvokable]
+    public Task LogActionToApiHookAsync(string action, object data)
+    {
+        // TODO: Call AdminAPI to log/audit this status change.
+        return Task.CompletedTask;
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        await base.DisposeAsync();
+        _objRef?.Dispose();
+    }
+}

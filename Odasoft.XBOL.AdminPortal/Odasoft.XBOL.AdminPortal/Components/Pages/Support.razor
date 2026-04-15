@@ -1,0 +1,435 @@
+@page "/support/"
+
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+
+@inject AppLocalizer<Support> _localizer;
+@inject ClientsService _clientService;
+@inject SupportService _supportService;
+
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+
+<PageTitle>@_localizer["Support"]</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
+
+    @* Page Title *@
+    <MudText Typo="Typo.h4" Class="mb-4 text-secondary">Soporte</MudText>
+
+    @* Search Section *@
+    <MudPaper Class="pa-4 mb-4 d-flex align-center gap-4" Elevation="1">
+        <MudTextField @bind-Value="_searchText" Label="@_localizer["SearchByOrderNumber"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" ShrinkLabel />
+        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Outlined.ClearAll">@_localizer["Clear"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Outlined.Search" OnClick="DoSearchAsync">@_localizer["Search"]</MudButton>
+    </MudPaper>
+
+    @if (_orderId.HasValue)
+    {
+        @* Top Action Buttons *@
+        <MudPaper Class="pa-4 mb-4 d-flex justify-end gap-4" Elevation="1">
+            <MudMenu Label="CANCELAR" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.ArrowDropDown" Disabled="@(_orderInfoResponse.Status == OrderStatus.Cancelled)">
+                <MudMenuItem Icon="@Icons.Material.Outlined.Delete" IconColor="@Color.Secondary" OnClick="CancelOrderAsync">@_localizer["CancelWithRefund"]</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Outlined.MoneyOff" IconColor="@Color.Secondary" OnClick="CancelOrderWithoutRefundAsync">@_localizer["CancelWithoutRefund"]</MudMenuItem>
+            </MudMenu>
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Send" Color="Color.Secondary" OnClick="ResendReceiptAsync"
+                       Disabled="@(_orderInfoResponse.Status == OrderStatus.Cancelled)">REENVIAR RECIBO</MudButton>
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" OnClick="OpenOrderOwnerDiagloAsync"
+                       Disabled="@(_orderInfoResponse.Status == OrderStatus.Cancelled)">ACTUALIZAR TITULAR</MudButton>
+        </MudPaper>
+
+        @* Order Summary Card *@
+        <MudPaper Class="pa-4 mb-4" Elevation="1">
+            <MudGrid>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudText Typo="Typo.caption" Color="Color.Warning">Orden</MudText>
+                    <MudText Typo="Typo.body1">@_orderInfoResponse.Reference</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudText Typo="Typo.caption" Color="Color.Warning">Nombre</MudText>
+                    <MudText Typo="Typo.body1">@_orderInfoResponse.ClientName</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudText Typo="Typo.caption" Color="Color.Warning">Teléfono</MudText>
+                    <MudText Typo="Typo.body1">@($"+{_orderInfoResponse.DialCode} {_orderInfoResponse.PhoneNumber}")</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudText Typo="Typo.caption" Color="Color.Warning">Correo electrónico</MudText>
+                    <MudText Typo="Typo.body1">@_orderInfoResponse.Email</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        @* Tabs and Selection Actions *@
+        <div class="d-flex justify-space-between align-center mb-2">
+            <MudTabs @bind-ActivePanelIndex="_activeTabIndex" Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-0">
+                <MudTabPanel Text="ORDEN" />
+                <MudTabPanel Text="BITÁCORA" />
+            </MudTabs>
+
+            @if (_activeTabIndex == 0)
+            {
+                <MudMenu Label="ACCIONES DE SELECCIÓN" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.ArrowDropDown" Disabled="@(_selectedItems.Count == 0)">
+                    <MudMenuItem Icon="@Icons.Material.Outlined.ConfirmationNumber" IconColor="Color.Secondary" OnClick="ReissueTicketsAsync">Reemitir boletos</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Outlined.Send" IconColor="Color.Secondary" OnClick="SendTicketsAsync">Enviar boletaje individual</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Outlined.CardGiftcard" IconColor="Color.Secondary" OnClick="SendCourtesiesAsync">Reenviar cortesías</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Outlined.BookOnline" IconColor="Color.Secondary" OnClick="ConvertTicketsAsync">Convertir digital / físico</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Outlined.Delete" IconColor="Color.Secondary" OnClick="CancelTicketsAsync">Cancelar boletos</MudMenuItem>
+                </MudMenu>
+            }
+        </div>
+
+        @* Tab Contents *@
+        <MudPaper Elevation="1" Class="pa-4">
+            @if (_activeTabIndex == 0)
+            {
+                <MudText Typo="Typo.h5" Class="mb-4 text-secondary">@_orderInfoResponse.Event</MudText>
+
+                <MudTable Items="@_orderInfo" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>Fecha y hora</MudTh>
+                        <MudTh>Cantidad</MudTh>
+                        <MudTh>Canal</MudTh>
+                        <MudTh>Vendedor</MudTh>
+                        <MudTh>Método de pago</MudTh>
+                        <MudTh>Importe total</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd Style="background-color: #fff8e1;">@context.OrderDateTime?.ToString("dd/MM/yyyy hh:mm tt")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@context.ItemQuantity</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.Channel.HasValue? _localizer[context.Channel?.ToString()] : "N/A")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@context.Seller</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.PaymentMethod.HasValue? _localizer[context.PaymentMethod.ToString()] : "N/A")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.Total?.ToString("C"))</MudTd>
+                    </RowTemplate>
+                </MudTable>
+
+                <MudTable Items="@_orderItems" MultiSelection="true" Elevation="0" RowDisabledFunc="@(element => element.IsCancelled ?? false)" @bind-SelectedItems="_selectedItems">
+                    <HeaderContent>
+                        <MudTh>Zona</MudTh>
+                        <MudTh>Sección</MudTh>
+                        <MudTh>Fila</MudTh>
+                        <MudTh>Asiento</MudTh>
+                        <MudTh>Tipo de boleto</MudTh>
+                        <MudTh>Subtotal</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Zone</MudTd>
+                        <MudTd>@context.Section</MudTd>
+                        <MudTd>@context.Row</MudTd>
+                        <MudTd>@context.Seat</MudTd>
+                        <MudTd>@((context.IsDigital ?? false) ? _localizer["Digital"] : _localizer["Physical"])</MudTd>
+                        <MudTd>@context.Price?.ToString("C")</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else if (_activeTabIndex == 1)
+            {
+                <MudText Typo="Typo.h5" Class="mb-4 text-secondary">Pase de Temporada CL2026</MudText>
+
+                <MudTable Items="@_orderActions" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>Fecha y hora</MudTh>
+                        <MudTh>Operador</MudTh>
+                        <MudTh>Asiento</MudTh>
+                        <MudTh>Estatus</MudTh>
+                        <MudTh>Descripción</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.CreatedAt.ToString("dd/MM/yyyy hh:mm tt")</MudTd>
+                        <MudTd>@context.CreatedBy</MudTd>
+                        <MudTd>@context.Seats</MudTd>
+                        <MudTd>@context.ActionName</MudTd>
+                        <MudTd>@context.Comments</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private string _searchText = "";
+    private string _searchQuery = "";
+    private int _activeTabIndex = 0;
+
+    private long? _orderId;
+    private OrderInfoResponse _orderInfoResponse = default!;
+    private List<OrderInfoResponse> _orderInfo = [];
+    private List<OrderItemResponse> _orderItems = [];
+    private ICollection<OrderActionResponse> _orderActions = [];
+    private bool _changeToDigital = true;
+    private string _newEmail = "";
+    private string _comments = "";
+    private HashSet<OrderItemResponse> _selectedItems = [];
+
+    private async Task SearchOrderAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            _orderId = null;
+        }
+
+        OrderInfoResponse? searchResult = await _supportService.SearchOrderByReferenceAsync(_searchQuery.Trim());
+
+        if (searchResult == null)
+        {
+            ClearData();
+            return;
+        }
+
+        _orderActions = await _supportService.GetOrderActionLogAsync(searchResult.OrderId.Value);
+
+        _orderId = searchResult.OrderId;
+        _orderInfoResponse = searchResult;
+        _orderInfo.Clear();
+        _orderInfo.Add(searchResult);
+        _orderItems = searchResult.Items?.Count() > 0 ? searchResult.Items.ToList() : [];
+        _activeTabIndex = 0;
+    }
+
+    private async Task DoSearchAsync()
+    {
+        _searchQuery = _searchText;
+
+        await SearchOrderAsync();
+    }
+
+    private void ClearData()
+    {
+        _orderId = null;
+        _orderInfoResponse = default!;
+        _orderInfo.Clear();
+        _orderItems.Clear();
+        _activeTabIndex = 0;
+    }
+
+    private async Task OpenOrderOwnerDiagloAsync()
+    {
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var parameters = new DialogParameters { ["ClientId"] = _orderInfoResponse.ClientId };
+
+        var dialog = await _dialogService.ShowAsync<OrderOwnerDialog>("Actualizar titular", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+        {
+            return;
+        }
+
+        if (result.Data is UpdateClientRequest clientRequest)
+        {
+            try
+            {
+                if (_orderInfoResponse.ClientId.HasValue)
+                {
+                    await _clientService.UpdateClientAsync(_orderInfoResponse.ClientId.Value, clientRequest);
+                    _selectedItems.Clear();
+                    await PerformOrderActionAsync(OrderAction.UpdateOrderHolder);
+                    await SearchOrderAsync();
+
+                    _snackbar.Add("Titular de la orden actualizado correctamente", Severity.Success);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error updating order owner: {ex.Message}");
+
+                _snackbar.Add("Ocurrió un error al actualizar el titular de la orden.", Severity.Error);
+            }
+        }
+    }
+
+    private async Task CancelOrderAsync()
+    {
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.CancelWithRefund);
+
+        if (result.HasValue)
+        {
+            if (result.Value)
+            {
+                _snackbar.Add("La orden ha sido cancelada.", Severity.Success);
+                await SearchOrderAsync();
+                return;
+            }
+
+            _snackbar.Add("Ocurrió un error al cancelar la orden.", Severity.Error);
+        }
+    }
+
+    private async Task CancelOrderWithoutRefundAsync()
+    {
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.CancelWithoutRefund);
+
+        if (result.HasValue)
+        {
+            if (result.Value)
+            {
+                _snackbar.Add("La orden ha sido cancelada.", Severity.Success);
+                await SearchOrderAsync();
+                return;
+            }
+
+            _snackbar.Add("Ocurrió un error al cancelar la orden.", Severity.Error);
+        }
+    }
+
+    private async Task ResendReceiptAsync()
+    {
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.ResendReceipt);
+
+        if (result.HasValue)
+        {
+            if (result.Value)
+            {
+                _snackbar.Add("El recibo ha sido reenviado.", Severity.Success);
+                await SearchOrderAsync();
+                return;
+            }
+
+            _snackbar.Add("Ocurrió un error al reenviar el recibo.", Severity.Error);
+        }    }
+
+    private async Task ReissueTicketsAsync()
+    {
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.ReissueTickets);
+
+        if (result.HasValue)
+        {
+            if (result.Value)
+            {
+                _snackbar.Add("Los boletos han sido reemitidos.", Severity.Success);
+                await SearchOrderAsync();
+                return;
+            }
+
+            _snackbar.Add("Ocurrió un error al reemitir los boletos.", Severity.Error);
+        }    }
+
+    private async Task SendTicketsAsync()
+    {
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.SendIndividualTickets);
+
+        if (result.HasValue)
+        {
+            if (result.Value)
+            {
+                _snackbar.Add("Los boletos han sido enviados.", Severity.Success);
+                await SearchOrderAsync();
+                return;
+            }
+
+            _snackbar.Add("Ocurrió un error al enviar los boletos.", Severity.Error);
+        }        ;
+    }
+
+    private async Task SendCourtesiesAsync()
+    {
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.ResendCourtesyTickets);
+
+        if (result.HasValue)
+        {
+            if (result.Value)
+            {
+                _snackbar.Add("Las cortesías han sido reenviadas.", Severity.Success);
+                await SearchOrderAsync();
+                return;
+            }
+
+            _snackbar.Add("Ocurrió un error al reenviar las cortesías.", Severity.Error);
+        }
+    }
+
+    private async Task ConvertTicketsAsync()
+    {
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.ConvertToDigitalPhysical);
+
+        if (result.HasValue)
+        {
+            if (result.Value)
+            {
+                _snackbar.Add("Los boletos han sido convertidos.", Severity.Success);
+                await SearchOrderAsync();
+                return;
+            }
+
+            _snackbar.Add("Ocurrió un error al convertir los boletos.", Severity.Error);
+        }
+    }
+
+    private async Task CancelTicketsAsync()
+    {
+        bool? result = await OpenOrderActionDialogAsync(OrderAction.CancelTickets);
+
+        if (result.HasValue)
+        {
+            if (result.Value)
+            {
+                _snackbar.Add("Los boletos han sido cancelados.", Severity.Success);
+                await SearchOrderAsync();
+                return;
+            }
+
+            _snackbar.Add("Ocurrió un error al cancelar los boletos.", Severity.Error);
+        }
+    }
+
+    private async Task<bool?> OpenOrderActionDialogAsync(OrderAction action)
+    {
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var parameters = new DialogParameters<OrderActionDialog>();
+        parameters.Add(p => p.OrderAction, action);
+
+        var dialog = await _dialogService.ShowAsync<OrderActionDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+        {
+            return null;
+        }
+
+        if (result.Data is OrderActionDialogResult diagloResult)
+        {
+            _comments = diagloResult.Comments;
+            _newEmail = diagloResult.Email;
+            _changeToDigital = diagloResult.ConvertToDigital;
+
+            return await PerformOrderActionAsync(action);
+        }
+
+        return false;
+    }
+
+    private async Task<bool> PerformOrderActionAsync(OrderAction action)
+    {
+
+        Dictionary<string, string> seats = [];
+
+        if (action == OrderAction.CancelWithRefund
+            || action == OrderAction.CancelWithoutRefund
+            || action == OrderAction.ReissueTickets)
+        {
+            seats = _orderItems
+                    .Where(i => i.IsCancelled == false)
+                    .ToDictionary(i => i.Id?.ToString() ?? "", i => i.SeatObjectKey ?? "");
+        }
+        else
+        {
+            seats = _selectedItems
+                    .Where(i => i.IsCancelled == false)
+                    .ToDictionary(i => i.Id?.ToString() ?? "", i => i.SeatObjectKey ?? "");
+        }
+
+        return await _supportService.PerformOrderActionAsync(_orderId.Value,
+            new OrderActionRequest
+            {
+                Action = action,
+                ActionName = _localizer[action.ToString()],
+                ChangeToDigital = _changeToDigital,
+                Comments = _comments,
+                NewEmail = _newEmail,
+                Seats = seats
+            });
+    }
+}

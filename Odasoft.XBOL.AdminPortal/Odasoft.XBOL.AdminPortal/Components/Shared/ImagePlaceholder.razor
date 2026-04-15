@@ -1,5 +1,5 @@
 <div class="placeholder-wrapper" style="width: @Width; height: @Height; background-color: @BackgroundColor;" role="img"
-     aria-label="Placeholder image">
+     aria-label="Placeholder image" @onclick="HandleOnClick">
 
     @* If IconSize is provided, use it (square sizing).
        If NOT provided, use smart scaling: 25% of height, but never smaller than 48px.
@@ -46,6 +46,14 @@
     /// If left null, the icon scales intelligently: 25% of height, minimum 48px.
     /// </summary>
     [Parameter] public string? IconSize { get; set; }
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    private async Task HandleOnClick()
+    {
+        await OnClick.InvokeAsync();
+    }
 }
 
 <style>

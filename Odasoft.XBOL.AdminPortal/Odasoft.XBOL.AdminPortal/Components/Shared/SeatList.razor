@@ -1,0 +1,111 @@
+@using Odasoft.XBOL.AdminPortal.States
+
+<style>
+    .order-item.mud-list-item:focus,
+    .order-item.mud-list-item:focus-visible,
+    .order-item.mud-list-item:focus-within {
+        background-color: transparent !important;
+    }
+
+    .order-item.mud-list-item.selected {
+        background-color: var(--mud-palette-action-default-hover) !important;
+    }
+</style>
+
+<MudPaper Outlined="true" Class="rounded overflow-hidden">
+    <MudPaper Class="rounded-0">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class=@($"mud-info {(Items.Any() ? "py-2 pl-4 pr-3" : "py-3 px-4")}")>
+            <MudText Typo="Typo.caption" Class="text-uppercase" Style="color: var(--mud-palette-white)">@Title</MudText>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                @if (Total is not null)
+                {
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-white)">@Total</MudText>
+                }
+                @if (Items.Any() && OnClearAll.HasDelegate)
+                {
+                    <MudIconButton Icon="@Icons.Material.Outlined.DeleteSweep"
+                                   Style="color: var(--mud-palette-secondary-lighten); padding:0;" aria-label="delete"
+                                   OnClick="HandleClearAll" />
+                }
+            </MudStack>
+        </MudStack>
+    </MudPaper>
+    <MudList T="SeatInfo" Dense="true" Gutters="false">
+        @foreach (var item in Items)
+        {
+            <MudListItem T="SeatInfo"
+                         Class="@($"order-item{(item.SeatId == _focusedSeatId ? " selected" : "")} py-1 pl-4 pr-3")" Value="@item"
+                         OnClick="@(() => HandleFocus(item.SeatId))">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
+                        @if (RowStatusContent != null)
+                        {
+                            @RowStatusContent(item)
+                        }
+                    </MudStack>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        @if (RowActionContent != null)
+                        {
+                            @RowActionContent(item)
+                        }
+                    </MudStack>
+                </MudStack>
+            </MudListItem>
+        }
+    </MudList>
+    @FooterContent
+</MudPaper>
+
+@code {
+    [Parameter]
+    public IEnumerable<SeatInfo> Items { get; set; } = [];
+
+    [Parameter]
+    public SeatsioChartBase? Chart { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Total { get; set; }
+
+    [Parameter]
+    public EventCallback OnClearAll { get; set; }
+
+    [Parameter]
+    public RenderFragment<SeatInfo>? RowStatusContent { get; set; }
+
+    [Parameter]
+    public RenderFragment<SeatInfo>? RowActionContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+
+    private string? _focusedSeatId;
+
+    private async Task HandleFocus(string seatId)
+    {
+        if (Chart is null) return;
+
+        if (_focusedSeatId is not null)
+            await Chart.UnfocusSeatAsync(_focusedSeatId);
+
+        _focusedSeatId = seatId;
+        await Chart.FocusSeatAsync(seatId);
+    }
+
+    private async Task HandleClearAll()
+    {
+        ClearFocus();
+        await OnClearAll.InvokeAsync();
+    }
+
+    public async Task ClearFocus()
+    {
+        if (Chart is not null && _focusedSeatId is not null)
+            await Chart.UnfocusSeatAsync(_focusedSeatId);
+
+        _focusedSeatId = null;
+    }
+}

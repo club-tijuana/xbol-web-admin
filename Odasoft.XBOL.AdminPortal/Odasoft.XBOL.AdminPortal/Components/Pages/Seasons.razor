@@ -4,10 +4,11 @@
 @using Odasoft.XBOL.AdminPortal.Components.Shared
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using Odasoft.XBOL.Business
-@inject IStringLocalizer<Seasons> L
+@inject AppLocalizer<Seasons> L
 @inject ISeasonService SeasonService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject ILogger<Seasons> Logger
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
@@ -22,7 +23,7 @@
         </LeftContent>
         <RightContent>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                       Href="/seasons/create">
+                       Href="./seasons/create">
                 @L["ButtonNewTournament"]
             </MudButton>
         </RightContent>
@@ -119,7 +120,7 @@
     private async Task OnTabChanged(string tab)
     {
         _selectedTab = tab;
-        var route = tab == UpcomingTab ? "/seasons/upcoming" : "/seasons/past";
+        var route = tab == UpcomingTab ? "./seasons/upcoming" : "./seasons/past";
         Navigation.NavigateTo(route, replace: true);
     }
 
@@ -140,8 +141,9 @@
 
             _seasons = result.Items?.ToList() ?? [];
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load seasons");
             Snackbar.Add(L["ErrorLoadingSeasons"], Severity.Error);
             _seasons = [];
         }

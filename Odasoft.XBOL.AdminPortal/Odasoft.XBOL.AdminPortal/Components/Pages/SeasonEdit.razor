@@ -1,12 +1,11 @@
 @page "/seasons/{Id:long}/edit"
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using Odasoft.XBOL.Business
-@inject IStringLocalizer<SeasonEdit> L
+@inject AppLocalizer<SeasonEdit> L
 @inject ISeasonService SeasonService
-@inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
-@using Newtonsoft.Json.Linq
+@inject ILogger<SeasonEdit> Logger
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -14,7 +13,7 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Secondary"
-                    Variant="Variant.Outlined" DropShadow="false" OnClick="GoBackAsync">
+                    Variant="Variant.Outlined" DropShadow="false" OnClick="@(() => _adminForm.GoBackAsync())">
                 @L["ButtonBack"]
             </MudButton>
         </LeftContent>
@@ -26,112 +25,70 @@
     return;
 }
 
-<MudCard Elevation="3">
-    <MudCardContent>
-        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-            <MudText Typo="Typo.h5">@L["PageTitle"]</MudText>
-            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RequiredFieldsNote"]</MudText>
-        </MudStack>
+<AdminForm @ref="_adminForm" Title="@L["PageTitle"]" OnSubmit="SaveAsync"
+           BackUrl="@($"./seasons/{Id}/events")" ErrorMessage="@L["UpdateError"]">
+    @* Row 1: Code, Name, StartDate, EndDate *@
+    <MudItem xs="12" lg="2">
+        <AdminTextField @bind-Value="_code" Label="@L["Code"].Value"
+                        Placeholder="@L["CodePlaceholder"].Value"
+                        Field="@context.Field("Code")" Required />
+    </MudItem>
+    <MudItem xs="12" lg="4">
+        <AdminTextField @bind-Value="_name" Label="@L["Name"].Value"
+                        Placeholder="@L["NamePlaceholder"].Value"
+                        Field="@context.Field("Name")" Required />
+    </MudItem>
+    <MudItem xs="12" lg="3">
+        <AdminDatePicker @bind-Date="_startDate" Label="@L["StartDate"].Value"
+                         Field="@context.Field("StartDate")" Required />
+    </MudItem>
+    <MudItem xs="12" lg="3">
+        <AdminDatePicker @bind-Date="_endDate" Label="@L["EndDate"].Value"
+                         Field="@context.Field("EndDate")" Required />
+    </MudItem>
 
-        <MudForm @ref="_form" @bind-IsValid="_formValid">
-            <MudGrid Spacing="4">
-                @* Row 1: Code, Name, StartDate, EndDate *@
-                <MudItem xs="12" lg="2">
-                    <MudTextField @bind-Value="Code" Label="@L["Code"]"
-                                  Variant="Variant.Outlined" Placeholder="@L["CodePlaceholder"]"
-                                  Required="true" RequiredError="@L["RequiredField"]"
-                                  Validation="@(ValidationFor<string>("Code"))" />
-                </MudItem>
-                <MudItem xs="12" lg="4">
-                    <MudTextField @bind-Value="Name" Label="@L["Name"]"
-                                  Variant="Variant.Outlined" Placeholder="@L["NamePlaceholder"]"
-                                  Required="true" RequiredError="@L["RequiredField"]"
-                                  Validation="@(ValidationFor<string>("Name"))" />
-                </MudItem>
-                <MudItem xs="12" lg="3">
-                    <MudDatePicker @bind-Date="StartDate"
-                                   Label="@L["StartDate"]"
-                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
-                                   Mask="@(new DateMask("dd/MM/yyyy"))"
-                                   Required="true" RequiredError="@L["RequiredField"]"
-                                   Validation="@(ValidationFor<DateTime?>("StartDate"))" />
-                </MudItem>
-                <MudItem xs="12" lg="3">
-                    <MudDatePicker @bind-Date="EndDate"
-                                   Label="@L["EndDate"]"
-                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
-                                   Mask="@(new DateMask("dd/MM/yyyy"))"
-                                   Required="true" RequiredError="@L["RequiredField"]"
-                                   Validation="@(ValidationFor<DateTime?>("EndDate"))" />
-                </MudItem>
+    @* Row 2: Description *@
+    <MudItem xs="12">
+        <AdminTextField @bind-Value="_description" Label="@L["Description"].Value"
+                        Lines="@(3)" Placeholder="@L["DescriptionPlaceholder"].Value" />
+    </MudItem>
 
-                @* Row 2: Description *@
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_description" Label="@L["Description"]"
-                                  Variant="Variant.Outlined" Lines="3" Placeholder="@L["DescriptionPlaceholder"]" />
-                </MudItem>
+    @* Row 3: BannerImageUrl, PosterImageUrl *@
+    <MudItem xs="12" lg="6">
+        <AdminTextField @bind-Value="_bannerImageUrl" Label="@L["BannerImageUrl"].Value"
+                        Placeholder="https://" />
+    </MudItem>
+    <MudItem xs="12" lg="6">
+        <AdminTextField @bind-Value="_posterImageUrl" Label="@L["PosterImageUrl"].Value"
+                        Placeholder="https://" />
+    </MudItem>
 
-                @* Row 3: BannerImageUrl, PosterImageUrl *@
-                <MudItem xs="12" lg="6">
-                    <MudTextField @bind-Value="_bannerImageUrl" Label="@L["BannerImageUrl"]"
-                                  Variant="Variant.Outlined" Placeholder="https://" />
-                </MudItem>
-                <MudItem xs="12" lg="6">
-                    <MudTextField @bind-Value="_posterImageUrl" Label="@L["PosterImageUrl"]"
-                                  Variant="Variant.Outlined" Placeholder="https://" />
-                </MudItem>
+    @* Row 4: LandingUrl *@
+    <MudItem xs="12">
+        <AdminTextField @bind-Value="_landingUrl" Label="@L["LandingUrl"].Value"
+                        Placeholder="https://" />
+    </MudItem>
 
-                @* Row 4: LandingUrl *@
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_landingUrl" Label="@L["LandingUrl"]"
-                                  Variant="Variant.Outlined" Placeholder="https://" />
-                </MudItem>
-
-                @* Row 5: PublishedDate, OnSaleDate, PreSaleDate, OffSaleDate *@
-                <MudItem xs="12" lg="3">
-                    <MudDatePicker @bind-Date="PublishedDate" Label="@L["PublishedDate"]"
-                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
-                                   Mask="@(new DateMask("dd/MM/yyyy"))"
-                                   Validation="@(ValidationFor<DateTime?>("PublishedDate"))" />
-                </MudItem>
-                <MudItem xs="12" lg="3">
-                    <MudDatePicker @bind-Date="PreSaleDate" Label="@L["PreSaleDate"]"
-                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
-                                   Mask="@(new DateMask("dd/MM/yyyy"))"
-                                   Validation="@(ValidationFor<DateTime?>("PreSaleDate"))" />
-                </MudItem>
-                <MudItem xs="12" lg="3">
-                    <MudDatePicker @bind-Date="OnSaleDate" Label="@L["OnSaleDate"]"
-                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
-                                   Mask="@(new DateMask("dd/MM/yyyy"))"
-                                   Validation="@(ValidationFor<DateTime?>("OnSaleDate"))" />
-                </MudItem>
-                <MudItem xs="12" lg="3">
-                    <MudDatePicker @bind-Date="OffSaleDate" Label="@L["OffSaleDate"]"
-                                   Variant="Variant.Outlined" DateFormat="dd/MM/yyyy"
-                                   Mask="@(new DateMask("dd/MM/yyyy"))"
-                                   Validation="@(ValidationFor<DateTime?>("OffSaleDate"))" />
-                </MudItem>
-            </MudGrid>
-        </MudForm>
-    </MudCardContent>
-
-    <MudCardActions Class="justify-end pa-4">
-        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" Disabled="@_saving"
-                   OnClick="SaveAsync" Class="text-uppercase">
-            @L["ButtonSave"]
-        </MudButton>
-    </MudCardActions>
-</MudCard>
+    @* Row 5: PublishedDate, OnSaleDate, PreSaleDate, OffSaleDate *@
+    <MudItem xs="12" lg="3">
+        <AdminDatePicker @bind-Date="_publishedDate" Label="@L["PublishedDate"].Value" />
+    </MudItem>
+    <MudItem xs="12" lg="3">
+        <AdminDatePicker @bind-Date="_preSaleDate" Label="@L["PreSaleDate"].Value" />
+    </MudItem>
+    <MudItem xs="12" lg="3">
+        <AdminDatePicker @bind-Date="_onSaleDate" Label="@L["OnSaleDate"].Value" />
+    </MudItem>
+    <MudItem xs="12" lg="3">
+        <AdminDatePicker @bind-Date="_offSaleDate" Label="@L["OffSaleDate"].Value" />
+    </MudItem>
+</AdminForm>
 
 @code {
     [Parameter] public long Id { get; set; }
 
-    private MudForm _form = default!;
-    private bool _formValid;
-    private bool _saving;
+    private AdminForm _adminForm = default!;
     private bool _loadingFailed;
-    private Dictionary<string, List<string>> _serverErrors = new(StringComparer.OrdinalIgnoreCase);
 
     private string? _code;
     private string? _name;
@@ -146,69 +103,6 @@
     private DateTime? _preSaleDate;
     private DateTime? _offSaleDate;
 
-    // Properties for binding with side-effects
-    private string? Code
-    {
-        get => _code;
-        set { _code = value; ClearFieldError("Code"); }
-    }
-
-    private string? Name
-    {
-        get => _name;
-        set { _name = value; ClearFieldError("Name"); }
-    }
-
-    private DateTime? StartDate
-    {
-        get => _startDate;
-        set { _startDate = value; ClearFieldError("StartDate"); ClearFieldError("EndDate"); }
-    }
-
-    private DateTime? EndDate
-    {
-        get => _endDate;
-        set { _endDate = value; ClearFieldError("EndDate"); ClearFieldError("StartDate"); }
-    }
-
-    private DateTime? PublishedDate
-    {
-        get => _publishedDate;
-        set { _publishedDate = value; ClearFieldError("PublishedDate"); }
-    }
-
-    private DateTime? OnSaleDate
-    {
-        get => _onSaleDate;
-        set { _onSaleDate = value; ClearFieldError("OnSaleDate"); }
-    }
-
-    private DateTime? PreSaleDate
-    {
-        get => _preSaleDate;
-        set { _preSaleDate = value; ClearFieldError("PreSaleDate"); }
-    }
-
-    private DateTime? OffSaleDate
-    {
-        get => _offSaleDate;
-        set { _offSaleDate = value; ClearFieldError("OffSaleDate"); }
-    }
-
-    // Original values for dirty-check
-    private string? _origCode;
-    private string? _origName;
-    private string? _origDescription;
-    private string? _origBannerImageUrl;
-    private string? _origPosterImageUrl;
-    private string? _origLandingUrl;
-    private DateTime? _origStartDate;
-    private DateTime? _origEndDate;
-    private DateTime? _origPublishedDate;
-    private DateTime? _origOnSaleDate;
-    private DateTime? _origPreSaleDate;
-    private DateTime? _origOffSaleDate;
-
     protected override async Task OnInitializedAsync()
     {
         try
@@ -221,149 +115,42 @@
             _bannerImageUrl = season.BannerImageUrl;
             _posterImageUrl = season.PosterImageUrl;
             _landingUrl = season.LandingUrl;
-            _startDate = ToNullableDateTime(season.StartDate);
-            _endDate = ToNullableDateTime(season.EndDate);
-            _publishedDate = ToNullableDateTime(season.PublishedDate);
-            _onSaleDate = ToNullableDateTime(season.OnSaleDate);
-            _preSaleDate = ToNullableDateTime(season.PreSaleDate);
-            _offSaleDate = ToNullableDateTime(season.OffSaleDate);
-
-            StoreOriginals();
+            _startDate = DateTimeHelpers.ToNullableDateTime(season.StartDate);
+            _endDate = DateTimeHelpers.ToNullableDateTime(season.EndDate);
+            _publishedDate = DateTimeHelpers.ToNullableDateTime(season.PublishedDate);
+            _onSaleDate = DateTimeHelpers.ToNullableDateTime(season.OnSaleDate);
+            _preSaleDate = DateTimeHelpers.ToNullableDateTime(season.PreSaleDate);
+            _offSaleDate = DateTimeHelpers.ToNullableDateTime(season.OffSaleDate);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load season {SeasonId}", Id);
             _loadingFailed = true;
             Snackbar.Add(L["LoadError"], Severity.Error);
-            Navigation.NavigateTo("/seasons");
+            Navigation.NavigateTo("./seasons");
         }
-    }
-
-    private void StoreOriginals()
-    {
-        _origCode = _code;
-        _origName = _name;
-        _origDescription = _description;
-        _origBannerImageUrl = _bannerImageUrl;
-        _origPosterImageUrl = _posterImageUrl;
-        _origLandingUrl = _landingUrl;
-        _origStartDate = _startDate;
-        _origEndDate = _endDate;
-        _origPublishedDate = _publishedDate;
-        _origOnSaleDate = _onSaleDate;
-        _origPreSaleDate = _preSaleDate;
-        _origOffSaleDate = _offSaleDate;
-    }
-
-    private bool HasChanges() =>
-        _code != _origCode || _name != _origName ||
-        _description != _origDescription || _bannerImageUrl != _origBannerImageUrl ||
-        _posterImageUrl != _origPosterImageUrl || _landingUrl != _origLandingUrl ||
-        _startDate != _origStartDate || _endDate != _origEndDate ||
-        _publishedDate != _origPublishedDate || _onSaleDate != _origOnSaleDate ||
-        _preSaleDate != _origPreSaleDate || _offSaleDate != _origOffSaleDate;
-
-    private async Task GoBackAsync()
-    {
-        if (HasChanges())
-        {
-            var result = await DialogService.ShowMessageBox(
-                L["UnsavedChangesTitle"],
-                L["UnsavedChangesMessage"],
-                yesText: L["UnsavedChangesConfirm"],
-                cancelText: L["UnsavedChangesCancel"]);
-
-            if (result is not true) return;
-        }
-
-        Navigation.NavigateTo($"/seasons/{Id}/events");
-    }
-
-    private IEnumerable<string> ValidateField(string fieldName)
-    {
-        if (_serverErrors.TryGetValue(fieldName, out var errors))
-        {
-            return errors;
-        }
-        return Enumerable.Empty<string>();
-    }
-
-    private Func<T, IEnumerable<string>> ValidationFor<T>(string fieldName) => _ => ValidateField(fieldName);
-
-    private void ClearFieldError(string fieldName)
-    {
-        if (_serverErrors.Remove(fieldName))
-        {
-            StateHasChanged();
-        }
-    }
-
-    private void HandleApiException(ApiException<ProblemDetails> ex)
-    {
-        _serverErrors.Clear();
-
-        if (ex.Result.AdditionalProperties != null &&
-            ex.Result.AdditionalProperties.TryGetValue("errors", out var errorsObj) &&
-            errorsObj is JObject errorsJson)
-        {
-            foreach (var property in errorsJson.Properties())
-            {
-                var errorMessages = property.Value.ToObject<List<string>>();
-                if (errorMessages != null)
-                {
-                    _serverErrors[property.Name] = errorMessages;
-                }
-            }
-        }
-
-        _form.Validate();
     }
 
     private async Task SaveAsync()
     {
-        await _form.Validate();
-        if (!_form.IsValid) return;
+        var request = new UpdateSeasonRequest
+        {
+            Code = _code,
+            Name = _name,
+            Description = _description,
+            BannerImageUrl = _bannerImageUrl,
+            PosterImageUrl = _posterImageUrl,
+            LandingUrl = _landingUrl,
+            StartDate = DateTimeHelpers.ToDateTimeOffset(_startDate),
+            EndDate = DateTimeHelpers.ToDateTimeOffset(_endDate),
+            PublishedDate = DateTimeHelpers.ToDateTimeOffset(_publishedDate),
+            OnSaleDate = DateTimeHelpers.ToDateTimeOffset(_onSaleDate),
+            PreSaleDate = DateTimeHelpers.ToDateTimeOffset(_preSaleDate),
+            OffSaleDate = DateTimeHelpers.ToDateTimeOffset(_offSaleDate),
+        };
 
-        _saving = true;
-        try
-        {
-            var request = new UpdateSeasonRequest
-            {
-                Code = _code,
-                Name = _name,
-                Description = _description,
-                BannerImageUrl = _bannerImageUrl,
-                PosterImageUrl = _posterImageUrl,
-                LandingUrl = _landingUrl,
-                StartDate = ToDateTimeOffset(_startDate),
-                EndDate = ToDateTimeOffset(_endDate),
-                PublishedDate = ToDateTimeOffset(_publishedDate),
-                OnSaleDate = ToDateTimeOffset(_onSaleDate),
-                PreSaleDate = ToDateTimeOffset(_preSaleDate),
-                OffSaleDate = ToDateTimeOffset(_offSaleDate),
-            };
-
-            await SeasonService.UpdateSeasonAsync(Id, request);
-            Snackbar.Add(L["UpdateSuccess"], Severity.Success);
-            Navigation.NavigateTo($"/seasons/{Id}/events");
-        }
-        catch (ApiException<ProblemDetails> ex)
-        {
-            HandleApiException(ex);
-            Snackbar.Add(ex.Result.Title ?? L["UpdateError"], Severity.Error);
-        }
-        catch (Exception)
-        {
-            Snackbar.Add(L["UpdateError"], Severity.Error);
-        }
-        finally
-        {
-            _saving = false;
-        }
+        await SeasonService.UpdateSeasonAsync(Id, request);
+        Snackbar.Add(L["UpdateSuccess"], Severity.Success);
+        Navigation.NavigateTo($"./seasons/{Id}/events");
     }
-
-    private static DateTime? ToNullableDateTime(DateTimeOffset? dto) =>
-        dto.HasValue && dto.Value != default ? dto.Value.DateTime : null;
-
-    private static DateTimeOffset ToDateTimeOffset(DateTime? date) =>
-        date.HasValue ? new DateTimeOffset(date.Value, TimeSpan.Zero) : default;
 }

@@ -1,0 +1,117 @@
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+
+@inject VenuesService _venuesService;
+@inject VenueMapsService _venueMapsService;
+
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+
+<MudCard Class="bg-white" Elevation="3" Style="height:650px;">
+    <MudGrid Class="mud-width-full">
+        <MudItem xs="12">
+            <MudTabs Rounded="true" ApplyEffectsToContainer="true" TabPanelsClass="pa-6">
+                @foreach (var map in _venueMaps)
+                {
+                    <MudTabPanel PanelClass="d-flex justify-center">
+                        <TabContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="px-3 mx-2">
+
+                                <MudText>@map.Name</MudText>
+
+                                <MudStack Row="true" Spacing="0" @onclick:stopPropagation="true">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => EditMapAsync(map.Id))"
+                                                   Title="Editar" />
+
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => DeleteMapAsync(map.Id))"
+                                                   Title="Eliminar" />
+                                </MudStack>
+                            </MudStack>
+                        </TabContent>
+                        <ChildContent>
+                            <MudPaper Class="w-100" Elevation="0" Style="border: none !important; box-shadow: none !important; outline: none !important">
+                                <MudImage ObjectFit="ObjectFit.Contain" Src="@map.ThumbnailUrl" Class="w-100" />
+                            </MudPaper>
+                        </ChildContent>
+                    </MudTabPanel>
+                }
+            </MudTabs>
+        </MudItem>
+    </MudGrid>
+</MudCard>
+
+@code {
+    [Parameter] public long VenueId { get; set; }
+
+    private ICollection<VenueMapResponse> _venueMaps = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _venueMaps = await _venueMapsService.GetVenueMapsByVenueAsync(VenueId);
+    }
+
+    private async Task EditMapAsync(long mapId)
+    {
+        var parameters = new DialogParameters<VenueMapDialog>
+        {
+            { x => x.VenueId, VenueId },
+            { x => x.VenueMapId, mapId }
+        };
+
+        var options = new DialogOptions { CloseButton = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = await _dialogService.ShowAsync<VenueMapDialog>("Editar mapa", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is VenueMapRequest updateMap)
+        {
+            try
+            {
+                await _venueMapsService.UpdateVenueMapAsync(mapId, updateMap);
+                _snackbar.Add("Mapa del recinto actualizado satisfactoriamente.", Severity.Success);
+                _venueMaps = await _venueMapsService.GetVenueMapsByVenueAsync(VenueId);
+            }
+            catch (Exception ex)
+            {
+                _snackbar.Add("Ocurrio un error al tratar de actualizar el mapa del recinto.", Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeleteMapAsync(long mapId)
+    {
+        var parameters = new DialogParameters<ConfirmDeleteDialog>
+        {
+            { x => x.Title, "Borrar mapa del recinto" },
+            { x => x.Message, "Al borrar el mapa no podra seleccionarse para un nuevo evento. ¿Esta seguro de que desea borrar el mapa del recinto?" }
+        };
+
+        var options = new DialogOptions { CloseButton = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = await _dialogService.ShowAsync<ConfirmDeleteDialog>("Editar mapa", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is bool deleteMap)
+        {
+            try
+            {
+                if (deleteMap)
+                {
+                    await _venueMapsService.DeleteVenueMapAsync(mapId);
+                    _snackbar.Add("Mapa del recinto fue eliminado satisfactoriamente.", Severity.Success);
+                    _venueMaps = await _venueMapsService.GetVenueMapsByVenueAsync(VenueId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _snackbar.Add("Ocurrio un error al tratar de eliminar el mapa del recinto.", Severity.Error);
+            }
+        }
+    }
+}
