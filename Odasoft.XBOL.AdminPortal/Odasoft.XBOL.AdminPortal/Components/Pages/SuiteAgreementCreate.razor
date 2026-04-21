@@ -126,7 +126,7 @@
         await base.OnInitializedAsync();
 
         _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
-        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync(null);
         _suiteLevelId = _suiteLevels.Any() ? _suiteLevels.First().Id : default;
 
         if (_suiteLevelId > 0)

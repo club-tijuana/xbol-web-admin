@@ -30,8 +30,15 @@ namespace Odasoft.XBOL.Business.Services
             return venueCities.Order().ToList();
         }
 
-        public async Task<List<ListItem>> GetSuiteLevelsAsync()
+        public async Task<List<ListItem>> GetSuiteLevelsAsync(long? venueId)
         {
+            if (venueId.HasValue)
+            {
+                var venueSuiteLevels = await _adminClient.GetSuiteLevelCatalogByVenueAsync(venueId.Value);
+
+                return venueSuiteLevels.OrderBy(x => x.Name).ToList();
+            }
+
             var suiteLevels = await _adminClient.GetSuiteLevelCatalogAsync();
             return suiteLevels.OrderBy(x => x.Name).ToList();
         }
@@ -54,9 +61,25 @@ namespace Odasoft.XBOL.Business.Services
             return regionCodes.OrderBy(x => x.RegionCode).ToList();
         }
 
-        public async Task<List<Amenity>> GetAmenitiesAsync()
+        public async Task<List<Amenity>> GetVenueAmenitiesAsync()
         {
-            var amenities = await _adminClient.GetAmenitiesCatalogAsync();
+            var amenities = await _adminClient.GetVenueAmenitiesCatalogAsync();
+
+            return amenities
+                    .Select(x => new Amenity
+                    {
+                        IconIdentifier = x.IconIdentifier,
+                        Id = x.Id,
+                        Name = x.Name
+                    })
+                    .OrderBy(x => x.Name)
+                    .ToList();
+        }
+
+        public async Task<List<Amenity>> GetSuiteAmenitiesAsync()
+        {
+            var amenities = await _adminClient.GetSuiteAmenitiesCatalogAsync();
+
             return amenities
                     .Select(x => new Amenity
                     {

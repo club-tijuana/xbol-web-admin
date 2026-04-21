@@ -6458,13 +6458,604 @@
         }
       }
     },
+    "/api/suite-amenities/{suiteId}/amenities": {
+      "get": {
+        "tags": [
+          "SuiteAmenities"
+        ],
+        "summary": "Retrieves the list of amenities associated with the specified suite.",
+        "operationId": "GetAmenitiesBySuiteAsync",
+        "parameters": [
+          {
+            "name": "suiteId",
+            "in": "path",
+            "description": "The unique identifier of the suite for which to retrieve amenities.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteAmenityResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteAmenityResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteAmenityResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "SuiteAmenities"
+        ],
+        "summary": "Saves the list of amenity identifiers associated with the specified suite.",
+        "description": "This action replaces any existing amenities for the suite with the provided list. The\r\n            operation is idempotent; repeated calls with the same parameters yield the same result.",
+        "operationId": "SaveSuiteAmenitiesAsync",
+        "parameters": [
+          {
+            "name": "suiteId",
+            "in": "path",
+            "description": "The unique identifier of the suite for which amenities are being set.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "A list of amenity identifiers to associate with the suite. The list may be empty to remove all amenities.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suite-amenities/amenities-catalog": {
+      "get": {
+        "tags": [
+          "SuiteAmenities"
+        ],
+        "summary": "Retrieves the catalog of available amenities for suites.",
+        "operationId": "GetSuiteAmenitiesCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteAmenityResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteAmenityResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteAmenityResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suite-images/{suiteId}": {
+      "get": {
+        "tags": [
+          "SuiteImages"
+        ],
+        "summary": "Retrieves the collection of images associated with the specified suite.",
+        "operationId": "GetSuiteImagesAsync",
+        "parameters": [
+          {
+            "name": "suiteId",
+            "in": "path",
+            "description": "The unique identifier of the suite for which to retrieve images.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteImageResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteImageResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteImageResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "SuiteImages"
+        ],
+        "summary": "Uploads an image for the specified suite and returns the result of the operation.",
+        "operationId": "UploadSuiteImageAsync",
+        "parameters": [
+          {
+            "name": "suiteId",
+            "in": "path",
+            "description": "The unique identifier of the suite to which the image will be associated.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "imageType": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ImageType"
+                      }
+                    ],
+                    "description": "The type of image being uploaded. Specifies how the image will be used or displayed."
+                  },
+                  "order": {
+                    "type": "integer",
+                    "description": "The display order of the image within the suite. Must be a non-negative integer.",
+                    "format": "int32"
+                  },
+                  "file": {
+                    "type": "string",
+                    "description": "The image file to upload. Must be a valid, non-null file provided in the form data.",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "imageType": {
+                  "style": "form"
+                },
+                "order": {
+                  "style": "form"
+                },
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suite-images/{suiteId}/image-type/{imageType}": {
+      "get": {
+        "tags": [
+          "SuiteImages"
+        ],
+        "summary": "Retrieves the collection of images associated with a specific suite and filtered by image type.",
+        "operationId": "GetSuiteImagesByImageTypeAsync",
+        "parameters": [
+          {
+            "name": "suiteId",
+            "in": "path",
+            "description": "The unique identifier of the suite for which to retrieve images.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "imageType",
+            "in": "path",
+            "description": "The type of images to retrieve for the specified suite.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ImageType"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteImageResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteImageResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteImageResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suite-images/{suiteImageId}": {
+      "put": {
+        "tags": [
+          "SuiteImages"
+        ],
+        "summary": "Updates the image associated with a suite by its unique identifier.",
+        "operationId": "UpdateSuiteImageByIdAsync",
+        "parameters": [
+          {
+            "name": "suiteImageId",
+            "in": "path",
+            "description": "The unique identifier of the suite image to update.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "imageType": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ImageType"
+                      }
+                    ],
+                    "description": "The type of the image to associate with the suite."
+                  },
+                  "order": {
+                    "type": "integer",
+                    "description": "The display order of the image within the suite. Must be a non-negative integer.",
+                    "format": "int32"
+                  },
+                  "file": {
+                    "type": "string",
+                    "description": "The image file to upload and associate with the suite. Cannot be null.",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "imageType": {
+                  "style": "form"
+                },
+                "order": {
+                  "style": "form"
+                },
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SuiteImages"
+        ],
+        "summary": "Deletes the suite image with the specified identifier.",
+        "description": "This action does not return content on successful deletion. If the suite image cannot\r\n            be deleted, an error message is provided in the response body.",
+        "operationId": "DeleteSuiteImageByIdAsync",
+        "parameters": [
+          {
+            "name": "suiteImageId",
+            "in": "path",
+            "description": "The unique identifier of the suite image to delete.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/suite-levels/catalog": {
       "get": {
         "tags": [
           "SuiteLevels"
         ],
-        "summary": "Retrieves the suite-level catalog as a collection of list items.",
+        "summary": "Retrieves the suite-level catalog as a list of items.",
         "operationId": "GetSuiteLevelCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suite-levels/catalog/{venueId}": {
+      "get": {
+        "tags": [
+          "SuiteLevels"
+        ],
+        "summary": "Retrieves the suite level catalog for the specified venue.",
+        "operationId": "GetSuiteLevelCatalogByVenueAsync",
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "description": "The unique identifier of the venue for which to retrieve the suite level catalog.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -6553,17 +7144,20 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "boolean"
+                  "type": "integer",
+                  "format": "int64"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "type": "integer",
+                  "format": "int64"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "boolean"
+                  "type": "integer",
+                  "format": "int64"
                 }
               }
             }
@@ -6785,56 +7379,22 @@
         }
       }
     },
-    "/api/suites": {
+    "/api/suites/venue/{venueId}": {
       "get": {
         "tags": [
           "Suites"
         ],
-        "summary": "Retrieves a list of all available suites.",
+        "summary": "Retrieves a list of suites available for the specified venue.",
         "operationId": "GetSuitesAsync",
         "parameters": [
           {
-            "name": "Levels",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "SearchTerm",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "SortBy",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Descending",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "Page",
-            "in": "query",
+            "name": "venueId",
+            "in": "path",
+            "description": "The unique identifier of the venue for which to retrieve suites.",
+            "required": true,
             "schema": {
               "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
+              "format": "int64"
             }
           }
         ],
@@ -6844,130 +7404,26 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResponsePagedResponse"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteResponse"
+                  }
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResponsePagedResponse"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteResponse"
+                  }
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuiteResponsePagedResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Suites"
-        ],
-        "summary": "Creates a new suite based on the specified request data.",
-        "operationId": "CreateSuiteAsync",
-        "requestBody": {
-          "description": "The details of the suite to create. Must not be null and must satisfy all model validation requirements.",
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/SuiteRequest"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuiteResponse"
                   }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/SuiteRequest"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/SuiteRequest"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/SuiteRequest"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
                 }
               }
             }
@@ -7163,6 +7619,121 @@
         "responses": {
           "204": {
             "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/suites": {
+      "post": {
+        "tags": [
+          "Suites"
+        ],
+        "summary": "Creates a new suite based on the specified request data.",
+        "operationId": "CreateSuiteAsync",
+        "requestBody": {
+          "description": "The details of the suite to create. Must not be null and must satisfy all model validation requirements.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SuiteRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SuiteRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SuiteRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SuiteRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "422": {
             "description": "Unprocessable Content",
@@ -7468,7 +8039,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AmenityResponse"
+                    "$ref": "#/components/schemas/VenueAmenityResponse"
                   }
                 }
               },
@@ -7476,7 +8047,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AmenityResponse"
+                    "$ref": "#/components/schemas/VenueAmenityResponse"
                   }
                 }
               },
@@ -7484,7 +8055,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AmenityResponse"
+                    "$ref": "#/components/schemas/VenueAmenityResponse"
                   }
                 }
               }
@@ -7496,11 +8067,13 @@
         "tags": [
           "VenueAmenities"
         ],
+        "summary": "Saves the list of amenity identifiers associated with the specified venue.",
         "operationId": "SaveVenueAmenitiesAsync",
         "parameters": [
           {
             "name": "venueId",
             "in": "path",
+            "description": "The unique identifier of the venue for which amenities are being set.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -7509,6 +8082,7 @@
           }
         ],
         "requestBody": {
+          "description": "A list of amenity identifiers to associate with the venue. The list may be empty to remove all amenities.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -7604,12 +8178,12 @@
         }
       }
     },
-    "/amenities-catalog": {
+    "/api/venue-amenities/amenities-catalog": {
       "get": {
         "tags": [
           "VenueAmenities"
         ],
-        "operationId": "GetAmenitiesCatalogAsync",
+        "operationId": "GetVenueAmenitiesCatalogAsync",
         "responses": {
           "200": {
             "description": "OK",
@@ -7618,7 +8192,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AmenityResponse"
+                    "$ref": "#/components/schemas/VenueAmenityResponse"
                   }
                 }
               },
@@ -7626,7 +8200,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AmenityResponse"
+                    "$ref": "#/components/schemas/VenueAmenityResponse"
                   }
                 }
               },
@@ -7634,7 +8208,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AmenityResponse"
+                    "$ref": "#/components/schemas/VenueAmenityResponse"
                   }
                 }
               }
@@ -8127,7 +8701,7 @@
         }
       }
     },
-    "/venue/{venueId}": {
+    "/api/venue-maps/venue/{venueId}": {
       "get": {
         "tags": [
           "VenueMaps"
@@ -9073,27 +9647,6 @@
           "None"
         ],
         "type": "string"
-      },
-      "AmenityResponse": {
-        "required": [
-          "iconIdentifier",
-          "id",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "iconIdentifier": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
       },
       "AvailabilityReasonSummaryResult": {
         "type": "object",
@@ -12711,9 +13264,53 @@
         },
         "additionalProperties": false
       },
+      "SuiteAmenityResponse": {
+        "required": [
+          "iconIdentifier",
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "iconIdentifier": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SuiteImageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "suiteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "imageBase64": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "SuiteRequest": {
         "required": [
-          "capacity",
+          "armchairs",
           "name",
           "suiteLevelId",
           "suiteType"
@@ -12734,14 +13331,28 @@
               }
             ]
           },
-          "capacity": {
+          "armchairs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "benches": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "foldingBenches": {
             "type": "integer",
             "format": "int32"
           },
           "policies": {
             "type": "string"
           },
-          "amenities": {
+          "additionalComments": {
+            "type": "string"
+          },
+          "externalMapKey": {
+            "type": "string"
+          },
+          "thumbnailUrl": {
             "type": "string"
           }
         },
@@ -12749,7 +13360,7 @@
       },
       "SuiteResponse": {
         "required": [
-          "capacity",
+          "armchairs",
           "id",
           "suiteLevelId",
           "venueId"
@@ -12784,44 +13395,29 @@
               }
             ]
           },
-          "capacity": {
+          "armchairs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "benches": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "foldingBenches": {
             "type": "integer",
             "format": "int32"
           },
           "policies": {
             "type": "string"
           },
-          "amenities": {
+          "additionalComments": {
             "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "SuiteResponsePagedResponse": {
-        "required": [
-          "page",
-          "pageSize",
-          "totalCount"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SuiteResponse"
-            }
           },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
+          "externalMapKey": {
+            "type": "string"
           },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pageSize": {
-            "type": "integer",
-            "format": "int32"
+          "thumbnailUrl": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -13281,6 +13877,27 @@
             "format": "int64"
           },
           "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueAmenityResponse": {
+        "required": [
+          "iconIdentifier",
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "iconIdentifier": {
             "type": "string"
           }
         },
@@ -13755,6 +14372,12 @@
     },
     {
       "name": "SuiteAgreements"
+    },
+    {
+      "name": "SuiteAmenities"
+    },
+    {
+      "name": "SuiteImages"
     },
     {
       "name": "SuiteLevels"

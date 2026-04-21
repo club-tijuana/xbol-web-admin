@@ -1,7 +1,196 @@
-<MudCard Class="pa-6 bg-white" Elevation="3">
-    <MudText Typo="Typo.h6" Color="Color.Secondary">Hola desde Palcos</MudText>
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services.Contracts;
+@using Odasoft.XBOL.Models;
+@using Odasoft.XBOL.Models.ViewModels;
+
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+@inject ISuitesService _suitesService;
+@inject NavigationManager _navigationManager;
+
+<MudCard Class="bg-white mud-width-full" Elevation="3">
+    <MudCardContent Class="pa-0">
+        <MudDataGrid @ref="_grid" Items="@GridData" Outlined="false" QuickFilter="_quickFilter" SortMode="SortMode.None">
+            <ToolBarContent>
+                <MudText Typo="Typo.h5" Class="mud-text-secondary">Palcos</MudText>
+                <MudSpacer />
+                <MudTextField T="string"
+                              @bind-Value="_searchString"
+                              Placeholder="Buscar"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.Search"
+                              IconSize="Size.Small"
+                              Class="mt-0"
+                              Style="max-width: 300px;"
+                              Immediate="true"
+                              DebounceInterval="500" />
+            </ToolBarContent>
+
+            <Columns>
+                <TemplateColumn Title="Nivel" HeaderStyle="font-weight: bold;">
+                    <CellTemplate>
+                        <MudText Color="Color.Primary">@context.Item.LevelName</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <PropertyColumn HeaderStyle="font-weight: bold;" Property="x => x.TotalOfArmchairs" Title="Total de butacas" />
+
+                <PropertyColumn HeaderStyle="font-weight: bold;" Property="x => x.TotalOfBenches" Title="Total de bancos" />
+
+                <PropertyColumn HeaderStyle="font-weight: bold;" Property="x => x.TotalOfFoldingBenches" Title="Total de plegables" />
+
+                <PropertyColumn HeaderStyle="font-weight: bold;" Property="x => x.TotalOfSuites" Title="Total palcos" />
+
+                @* // TODO: had logic to delete a venue level and it's child resources *@
+                @* <TemplateColumn>
+                    <CellTemplate>
+                        <div class="d-flex justify-end">
+                            <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" />
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn> *@
+
+                <HierarchyColumn T="SuiteGroupViewModel" IconSize="Size.Small" />
+            </Columns>
+
+            <ChildRowContent>
+                <MudCard Elevation="0" Class="pa-0 px-4 mud-width-full bg-transparent">
+                    <MudDataGrid Items="@context.Item.Suites" Elevation="0" Outlined="false" Class="border-none"
+                                 QuickFilter="@((SuiteViewModel suite) => FilterSuites(suite, context.Item.LevelName))"
+                                 SortMode="SortMode.None">
+                        <Columns>
+                            <PropertyColumn HeaderStyle="font-weight: bold;" Property="x => x.SuiteName" Title="No. de palco" />
+
+                            <PropertyColumn HeaderStyle="font-weight: bold;" Property="x => x.Armchairs" Title="Butacas" />
+
+                            <PropertyColumn HeaderStyle="font-weight: bold;" Property="x => x.Benches" Title="Bancos" />
+
+                            <PropertyColumn HeaderStyle="font-weight: bold;" Property="x => x.FoldingBenches" Title="Plegables" />
+
+                            <TemplateColumn>
+                                <CellTemplate Context="childContext">
+                                    <div class="d-flex justify-end">
+                                        <MudIconButton Icon="@Icons.Material.Outlined.Image" Size="Size.Small" OnClick="@(() => ShowSuiteDetails(childContext.Item))" />
+                                        <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Small" OnClick="@(() => EditSuite(childContext.Item.SuiteId))" />
+                                        <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" OnClick="@(() => DeleteSuite(childContext.Item.SuiteId))" />
+                                    </div>
+                                </CellTemplate>
+                            </TemplateColumn>
+                        </Columns>
+                    </MudDataGrid>
+                </MudCard>
+            </ChildRowContent>
+        </MudDataGrid>
+    </MudCardContent>
 </MudCard>
 
 @code {
     [Parameter] public long VenueId { get; set; }
+
+    private List<SuiteGroupViewModel> GridData = new();
+    private MudDataGrid<SuiteGroupViewModel> _grid;
+    private string _searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await LoadSuitesAsync();
+    }
+
+    private async Task LoadSuitesAsync()
+    {
+        ICollection<SuiteResponse> suites = await _suitesService.GetSuitesAsync(VenueId);
+
+        GridData = suites
+                    .GroupBy(suite => new { suite.SuiteLevelId, suite.SuiteLevelName })
+                    .Select(grup => new SuiteGroupViewModel
+                    {
+                        LevelId = grup.Key.SuiteLevelId,
+                        LevelName = grup.Key.SuiteLevelName ?? "",
+                        TotalOfArmchairs = grup.Sum(x => x.Armchairs),
+                        TotalOfBenches = grup.Sum(x => x.Benches ?? 0),
+                        TotalOfFoldingBenches = grup.Sum(x => x.FoldingBenches ?? 0),
+                        TotalOfSuites = grup.Count(),
+                        Suites = grup.Select(x => new SuiteViewModel
+                        {
+                            SuiteId = x.Id,
+                            SuiteName = x.Name ?? "",
+                            Armchairs = x.Armchairs,
+                            Benches = x.Benches ?? 0,
+                            FoldingBenches = x.FoldingBenches ?? 0
+                        }).OrderBy(x => x.SuiteName)
+                        .ToList()
+                    }).OrderBy(x => x.LevelName)
+                    .ToList();
+    }
+
+    private Func<SuiteGroupViewModel, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+        {
+            return true;
+        }
+
+        if (x.LevelName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (x.Suites.Any(s => s.SuiteName.Contains(_searchString, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return false;
+    };
+
+    private bool FilterSuites(SuiteViewModel suite, string levelName)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+        {
+            return true;
+        }
+
+        if (suite.SuiteName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (levelName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void EditSuite(long suiteId)
+    {
+        _navigationManager.NavigateTo($"./venues/{VenueId}/suites/{suiteId}/update");
+    }
+
+    private async Task ShowSuiteDetails(SuiteViewModel suite)
+    {
+        var parameters = new DialogParameters<SuiteDialog> { { x => x.SuiteId, suite.SuiteId } };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        await _dialogService.ShowAsync<SuiteDialog>($"Palco: {suite.SuiteName}", parameters, options);
+    }
+
+    private async Task DeleteSuite(long suiteId)
+    {
+        try
+        {
+            await _suitesService.DeleteSuiteAsync(suiteId);
+
+            await LoadSuitesAsync();
+
+            _snackbar.Add("Palco borrado satisfactoriamente.", Severity.Success);
+        }
+        catch (Exception)
+        {
+            _snackbar.Add("Ocurrio un error al tratar de borrar el palco.", Severity.Error);
+        }
+    }
 }

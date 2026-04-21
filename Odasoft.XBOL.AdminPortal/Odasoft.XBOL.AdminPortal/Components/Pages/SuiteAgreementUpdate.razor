@@ -107,7 +107,7 @@
 
         SuiteAgreementResult agreement = await _suiteAgreementsService.GetSuiteAgreementByIdAsync(_suiteAgreementId);
 
-        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync(null);
         _suiteLevelId = agreement.SuiteLevelId;
 
         if (_suiteLevelId > 0)

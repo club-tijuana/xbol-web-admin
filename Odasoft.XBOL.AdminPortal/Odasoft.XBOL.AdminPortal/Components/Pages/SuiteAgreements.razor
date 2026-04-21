@@ -10,9 +10,11 @@
 @inject IDialogService _dialogService;
 @inject IJSRuntime JS;
 @inject ISnackbar _snackbar;
+
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
 @inject SuiteAgreementsService _suiteAgreementsService;
+@inject VenuesService _venuesService;
 
 <PageTitle>Contratos de palcos</PageTitle>
 
@@ -183,12 +185,15 @@
     private DateTime? _startDate;
     private DateTime? _endDate;
 
+    private long venueId = 1;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
         await LoadSuitesCatalogAsync();
+
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync(null);
 
         await ServerReloadAsync();
     }
@@ -267,7 +272,7 @@
 
     private void CreateSuiteAgreement()
     {
-        _navigationManager.NavigateTo(SitePages.SUITE_AGREEMENTS_CREATE);
+        _navigationManager.NavigateTo($"./suite-agreements/{venueId}/update");
     }
 
     private void UpdateSuiteAgreement(long suiteAgreementId)

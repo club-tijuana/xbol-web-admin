@@ -1,29 +1,28 @@
-@page "/venues/create";
-@page "/venues/{venueId:long}/update";
+@page "/venues/{venueId:long}/suites/create";
+@page "/venues/{venueId:long}/suites/{suiteId:long}/update";
 
 @using Odasoft.XBOL.Business;
-@using Odasoft.XBOL.Business.ModelValidators;
-@using Odasoft.XBOL.Business.Services;
-@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Business.Services
+@using Odasoft.XBOL.Business.Services.Contracts
 @using Odasoft.XBOL.Models.DTO
-@using Odasoft.XBOL.Models.ViewModels;
 @using Radzen.Blazor
-@using SixLabors.ImageSharp;
+@using SixLabors.ImageSharp
 
-@inject ISnackbar _snackbar;
-
-@inject AppLocalizer<Venue> _localizer;
 @inject CatalogsService _catalogsService;
+@inject SuiteLevelsService _suiteLevelsService;
+
 @inject NavigationManager _navigationManager;
-@inject VenuesService _venuesService;
-@inject ILogger<Venue> Logger;
+
+@inject ILogger<Suite> _logger;
+@inject ISnackbar _snackbar;
+@inject ISuitesService _suitesService;
 
 <PageTitle>@_pageTitle</PageTitle>
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
         <LeftContent>
-            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToVenues())"
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToVenueDetails())"
                        Color="MudBlazor.Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
         </LeftContent>
     </PageActionBar>
@@ -33,88 +32,70 @@
     <MudPaper Class="pa-6" Elevation="3">
         <MudStepper @ref="_stepper" @bind-ActiveIndex="_activeIndex">
             <ChildContent>
-                <MudStep Title="Dirección de recinto y contacto">
-                    <MudForm @ref="_venueForm" Model="_request" @bind-IsValid="_isStepOneValid" Validation="@(venueValidator.ValidateValue)">
-                        <MudGrid Spacing="4">
-                            <MudItem xs="12" lg="8">
-                                <MudTextField Label="Nombre del recinto" @bind-Value="_request.Name" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12" lg="4">
-                                <MudSelect Label="Tipo" T="VenueCategory" @bind-Value="_request.Category" Variant="Variant.Outlined" Margin="Margin.Dense"
-                                           ToStringFunc="@(category => _localizer[category.ToString()].Value)" ShrinkLabel Required="true">
+                <MudStep Title="Palco y aforo">
+                    <MudGrid>
 
-                                    @foreach (var category in _venueCategories)
-                                    {
-                                        <MudSelectItem T="VenueCategory" Value="category">
-                                            @_localizer[category.ToString()]
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </MudItem>
-                            <MudItem xs="12">
-                                <MudText Typo="Typo.subtitle2">Dirección</MudText>
-                            </MudItem>
-                            <MudItem xs="12" lg="4">
-                                <MudTextField Label="Pais" @bind-Value="_request.Country" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12" lg="4">
-                                <MudTextField Label="Estado" @bind-Value="_request.State" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12" lg="4">
-                                <MudTextField Label="Cuidad" @bind-Value="_request.City" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12" lg="6">
-                                <MudTextField Label="Calle" @bind-Value="_request.StreetAddress" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12" lg="3">
-                                <MudTextField Label="Número" @bind-Value="_request.ExtNum" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12" lg="3">
-                                <MudTextField Label="Número interior" @bind-Value="_request.IntNum" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
-                            </MudItem>
-                            <MudItem xs="12" lg="4">
-                                <MudTextField Label="Código postal" @bind-Value="_request.ZipCode" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12" lg="8">
-                                <MudTextField Label="Colonia" @bind-Value="_request.Neighborhood" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12" lg="4">
-                                <MudNumericField Label="Latitud" @bind-Value="_request.Latitude" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12" lg="4">
-                                <MudNumericField Label="Longitud" @bind-Value="_request.Longitude" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
-                            </MudItem>
-                            <MudItem xs="12">
-                                <MudText Typo="Typo.subtitle2">Contacto</MudText>
-                            </MudItem>
-                            <MudItem xs="12" lg="6">
-                                <MudTextField Label="Nombre del contacto" @bind-Value="_request.ContactName" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
-                            </MudItem>
-                            <MudItem xs="12" lg="6">
-                                <MudTextField Label="URL a sitio oficial" @bind-Value="_request.LandingUrl" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Url" ShrinkLabel />
-                            </MudItem>
-                            <MudItem xs="12" lg="2">
-                                <MudSelect Label="Lada" @bind-Value="_request.PhoneRegionCodeId" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Clearable>
-                                    @foreach (var regionCode in _phoneRegionCodes)
-                                    {
-                                        <MudSelectItem T="long?" Value="regionCode.Id">
-                                            @($"+{regionCode.DialCode} {regionCode.RegionCode}")
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </MudItem>
-                            <MudItem xs="12" lg="4">
-                                <MudTextField Label="Teléfono" @bind-Value="_request.ContactPhoneNumber" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Telephone" ShrinkLabel />
-                            </MudItem>
+                        <MudItem xs="12">
+                            <MudRadioGroup @bind-Value="_opcionNivel" T="int" Color="Color.Primary">
+                                <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center">
 
-                            <MudItem xs="12" lg="6">
-                                <MudTextField Label="Correo electrónico" @bind-Value="_request.ContactEmail" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Email" ShrinkLabel />
-                            </MudItem>
-                        </MudGrid>
-                    </MudForm>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                                        <MudRadio Value="1" />
+                                        <MudSelect T="long"
+                                                   Label="Nivel"
+                                                   @bind-Value="_selectedLevelId"
+                                                   Disabled="@(_opcionNivel != 1)"
+                                                   Variant="Variant.Outlined"
+                                                   Dense="true"
+                                                   Margin="Margin.Dense"
+                                                   Style="min-width: 200px;"
+                                                   ShrinkLabel
+                                                   Required>
+                                            @foreach (var suiteLevel in _suiteLevels)
+                                            {
+                                                <MudSelectItem Value="@suiteLevel.Id">@suiteLevel.Name</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudStack>
+
+                                    <MudText Typo="Typo.body2" Class="mx-2">o</MudText>
+
+                                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                                        <MudRadio Value="2" />
+                                        <MudTextField @bind-Value="_newSuiteLevelName"
+                                                      Label="Nuevo nivel"
+                                                      Disabled="@(_opcionNivel != 2)"
+                                                      Variant="Variant.Outlined"
+                                                      Margin="Margin.Dense"
+                                                      ShrinkLabel
+                                                      Required />
+                                    </MudStack>
+                                </MudStack>
+                            </MudRadioGroup>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_suiteRequest.Name" Label="Número de palco" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_suiteRequest.ExternalMapKey" Label="Llave del mapa" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="4">
+                            <MudNumericField @bind-Value="_suiteRequest.Armchairs" Label="Butacas" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="4">
+                            <MudNumericField @bind-Value="_suiteRequest.Benches" Label="Bancos" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="4">
+                            <MudNumericField @bind-Value="_suiteRequest.FoldingBenches" Label="Plegables" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
+                        </MudItem>
+                    </MudGrid>
                 </MudStep>
                 <MudStep Title="Políticas y amenidades">
-
                     <MudGrid Class="mud-width-full">
 
                         <MudItem xs="12">
@@ -147,9 +128,9 @@
                         </MudItem>
 
                         <MudItem xs="12" lg="6">
-                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Políticas del recinto</MudText>
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Políticas del palco</MudText>
                             <MudPaper Outlined="true" Class="pa-0">
-                                <RadzenHtmlEditor @bind-Value="_request.Policies" Style="min-height: 300px; width: 100%;">
+                                <RadzenHtmlEditor @bind-Value="_suiteRequest.Policies" Style="min-height: 300px; width: 100%;">
                                     <RadzenHtmlEditorUndo Title="Deshacer" />
                                     <RadzenHtmlEditorRedo Title="Rehacer" />
                                     <RadzenHtmlEditorSeparator />
@@ -189,7 +170,7 @@
                         <MudItem xs="12" lg="6">
                             <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Comentarios adicionales</MudText>
                             <MudPaper Outlined="true" Class="pa-0">
-                                <RadzenHtmlEditor @bind-Value="_request.AdditionalComments" Style="min-height: 300px; width: 100%;">
+                                <RadzenHtmlEditor @bind-Value="_suiteRequest.AdditionalComments" Style="min-height: 300px; width: 100%;">
                                     <RadzenHtmlEditorUndo Title="Deshacer" />
                                     <RadzenHtmlEditorRedo Title="Rehacer" />
                                     <RadzenHtmlEditorSeparator />
@@ -320,7 +301,7 @@
 
                 @if (_activeIndex < 2)
                 {
-                    <MudButton OnClick="ValidateAndGoNextAsync"
+                    <MudButton OnClick="@(() => _stepper.NextStepAsync())"
                                EndIcon="@Icons.Material.Filled.ChevronRight"
                                Variant="Variant.Outlined"
                                Color="MudBlazor.Color.Primary">
@@ -336,14 +317,16 @@
                         GUARDAR
                     </MudButton>
                 }
+                @* </div> *@
             </ActionContent>
         </MudStepper>
     </MudPaper>
 </LoadingContainer>
 
 @code {
-    [Parameter]
-    public long? venueId { get; set; }
+
+    [Parameter] public long venueId { get; set; }
+    [Parameter] public long? suiteId { get; set; }
 
     // TODO: Get values from system settings
     private readonly long _maxFileSize = 10 * 1024 * 1024; // 10 MB
@@ -354,15 +337,15 @@
     private bool _isLoading = true;
 
     private MudStepper _stepper = null!;
-    private MudForm _venueForm = null!;
     private int _activeIndex = 0;
-    private bool _isStepOneValid;
 
-    private VenueRequest _request = new();
-    private VenueValidator venueValidator = new();
+    private SuiteRequest _suiteRequest = new();
 
-    private List<VenueCategory> _venueCategories = Enum.GetValues<VenueCategory>().ToList();
-    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
+    private int _opcionNivel = 1; // 1 = Select, 2 = Create
+    private long _selectedLevelId = 0;
+    private string _newSuiteLevelName = "";
+
+    private ICollection<ListItem> _suiteLevels = [];
 
     private List<Amenity> _amenities = [];
     private IReadOnlyCollection<Amenity> _selectedAmenities = [];
@@ -380,83 +363,79 @@
     {
         await base.OnInitializedAsync();
 
+        if (suiteId.HasValue)
+        {
+            _pageTitle = "Editar palco";
+        }
+        else
+        {
+            _pageTitle = "Nuevo palco";
+        }
+
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync(venueId);
+        _suiteLevels.Add(new ListItem { Id = 0, Name = "" });
+
+        _amenities = await _catalogsService.GetSuiteAmenitiesAsync();
+
+        if (suiteId.HasValue)
+        {
+            await LoadSuiteDataAsync();
+        }
+
+        _isLoading = false;
+
+        StateHasChanged();
+    }
+
+    private async Task GoToVenueDetails()
+    {
+        _navigationManager.NavigateTo($"./venues/{venueId}");
+    }
+
+    private async Task SaveAllAsync()
+    {
         try
         {
-            if (venueId.HasValue && venueId.Value > 0)
-            {
-                _pageTitle = "Editar recinto";
-                await LoadVenueDataAsync();
-            }
-            else
-            {
-                _pageTitle = "Nuevo recinto";
-            }
+            await SaveSuiteAsync();
+            await SaveAmenitiesAsync();
+            await SaveFacadeImageAsync();
+            await SaveGalleryImagesAsync();
 
-            _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
-        }
-        catch (ApiException apiEx)
-        {
-            if (apiEx.StatusCode == StatusCodes.Status404NotFound)
-            {
-                _snackbar.Add("Recinto no encontrado, redireccionando a la vista de recintos principal.", Severity.Warning);
-                _navigationManager.NavigateTo(SitePages.VENUES);
-            }
-            else
-            {
-                throw;
-            }
-
+            _snackbar.Add("Información del palco guardada satisfactoriamente.", Severity.Success);
+            _navigationManager.NavigateTo($"./venues/{venueId}");
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to load venue {VenueId}", venueId);
-            _snackbar.Add("Ocurrio un error al tratar de cargar la pagina, redireccionando a la vista de recintos pirncipal.", Severity.Error);
-            _navigationManager.NavigateTo(SitePages.VENUES);
-        }
-        finally
-        {
-            _isLoading = false;
+            _logger.LogError(ex, $"Error saving suite, {ex.Message}");
+            _snackbar.Add($"Ocurrio un error al tratar de guardar el palco.", Severity.Error);
         }
     }
 
-    private void GoToVenues()
-    {
-        var url = venueId.HasValue ? $"{SitePages.VENUES}/{venueId.Value}" : SitePages.VENUES;
-        _navigationManager.NavigateTo(url);
-    }
-
-    private async Task LoadVenueDataAsync()
+    private async Task LoadSuiteDataAsync()
     {
         try
         {
-            var venue = await _venuesService.GetVenueByIdAsync(venueId.Value);
+            var suite = await _suitesService.GetSuiteByIdAsync(suiteId.Value);
 
-            // TODO: Start auto mapping this
-            _request.Category = venue.Category ?? VenueCategory.Stadium;
-            _request.City = venue.City ?? "";
-            _request.ContactEmail = venue.ContactEmail ?? "";
-            _request.ContactName = venue.ContactName ?? "";
-            _request.ContactPhoneNumber = venue.ContactPhoneNumber ?? "";
-            _request.Country = venue.Country ?? "";
-            _request.ExtNum = venue.ExtNum ?? "";
-            _request.IntNum = venue.IntNum;
-            _request.Latitude = venue.Latitude ?? 0;
-            _request.Longitude = venue.Longitude ?? 0;
-            _request.LandingUrl = venue.LandingUrl;
-            _request.Name = venue.Name ?? "";
-            _request.Neighborhood = venue.Neighborhood ?? "";
-            _request.PhoneRegionCodeId = venue.PhoneRegionCodeId;
-            _request.State = venue.State ?? "";
-            _request.StreetAddress = venue.StreetAddress ?? "";
-            _request.ZipCode = venue.ZipCode ?? "";
-            _request.Policies = venue.Policies ?? "";
-            _request.AdditionalComments = venue.AdditionalComments ?? "";
+            _suiteRequest = new SuiteRequest
+            {
+                Name = suite.Name ?? "",
+                ExternalMapKey = suite.ExternalMapKey,
+                Armchairs = suite.Armchairs,
+                Benches = suite.Benches,
+                FoldingBenches = suite.FoldingBenches,
+                Policies = suite.Policies,
+                AdditionalComments = suite.AdditionalComments,
+                SuiteLevelId = suite.SuiteLevelId,
+                SuiteType = suite.SuiteType ?? SuiteType.Suite,
+                ThumbnailUrl = suite.ThumbnailUrl
+            };
 
-            _amenities = await _catalogsService.GetVenueAmenitiesAsync();
-            _selectedAmenities = await _venuesService.GetAmenitiesByVenueAsync(venueId.Value);
+            _selectedLevelId = suite.SuiteLevelId;
+            _selectedAmenities = await _suitesService.GetAmenitiesBySuiteAsync(suiteId.Value);
 
-            ICollection<VenueImageResponse> facadeImages = await _venuesService.GetVenueImageByTypeAsync(venueId.Value, ImageType.Facade);
-            var facade = facadeImages.FirstOrDefault();
+            ICollection<SuiteImageResponse> facadeImage = await _suitesService.GetSuiteImageByTypeAsync(suiteId.Value, ImageType.Facade);
+            var facade = facadeImage.FirstOrDefault();
 
             if (facade != null && facade.Id.HasValue)
             {
@@ -467,7 +446,7 @@
                 };
             }
 
-            ICollection<VenueImageResponse> galleryImages = await _venuesService.GetVenueImageByTypeAsync(venueId.Value, ImageType.Gallery);
+            ICollection<SuiteImageResponse> galleryImages = await _suitesService.GetSuiteImageByTypeAsync(suiteId.Value, ImageType.Gallery);
 
             foreach (var image in galleryImages)
             {
@@ -485,9 +464,144 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Unable to load venue '{venueId}' information. Error: {ex.Message}");
-            _snackbar.Add("Ocurrio un error al tratar de cargar el recinto. Redireccionara al listado de recintos.", Severity.Error);
-            _navigationManager.NavigateTo(SitePages.VENUES);
+            _logger.LogError(ex, $"Unable to load suite '{suiteId}' information. Error: {ex.Message}");
+            _snackbar.Add("Ocurrio un error al tratar de cargar el palco. Se redireccionara al detalle del recinto.", Severity.Error);
+            _navigationManager.NavigateTo($"./venues/{venueId}");
+        }
+    }
+
+    public async Task SaveSuiteAsync()
+    {
+        if (_opcionNivel == 1)
+        {
+            if (_selectedLevelId == 0)
+            {
+                _snackbar.Add("Por favor seleccione un nivel.", Severity.Error);
+                return;
+            }
+
+            _suiteRequest.SuiteLevelId = _selectedLevelId;
+        }
+        else if (_opcionNivel == 2)
+        {
+            if (string.IsNullOrWhiteSpace(_newSuiteLevelName))
+            {
+                _snackbar.Add("Por favor ingrese un nombre para el nuevo nivel.", Severity.Error);
+                return;
+            }
+
+            var newLevel = await _suiteLevelsService.CreateSuiteLevelAsync(new CreateSuiteLevelRequest
+            {
+                Name = _newSuiteLevelName,
+                VenueId = venueId
+            });
+
+            _suiteRequest.SuiteLevelId = newLevel;
+        }
+
+        if (suiteId.HasValue)
+        {
+            await _suitesService.UpdateSuiteAsync(suiteId.Value, _suiteRequest);
+        }
+        else
+        {
+            long newSuiteId = await _suitesService.CreateSuiteAsync(_suiteRequest);
+            suiteId = newSuiteId;
+        }
+    }
+
+    private async Task SaveAmenitiesAsync()
+    {
+        try
+        {
+            List<long> amenityIds = _selectedAmenities
+                                    .Select(a => a.Id)
+                                    .Distinct()
+                                    .ToList();
+
+            await _suitesService.SaveSuiteAmenitiesAsync(suiteId.Value, amenityIds);
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode != StatusCodes.Status201Created
+                && ex.StatusCode != StatusCodes.Status204NoContent)
+            {
+                throw;
+            }
+        }
+    }
+
+    private async Task SaveFacadeImageAsync()
+    {
+        try
+        {
+            if (_facadeImage == null)
+            {
+                return;
+            }
+
+            if (_facadeImage.Id.HasValue && _facadeImage.TempFile != null)
+            {
+                await _suitesService.UpdateSuiteImageAsync(suiteId.Value, ImageType.Facade, 0, new FileParameter(
+                    _facadeImage.TempFile.OpenReadStream(_maxFileSize),
+                    _facadeImage.TempFile.Name,
+                    _facadeImage.TempFile.ContentType
+                ));
+
+            }
+            else if (_facadeImage.TempFile != null)
+            {
+                await _suitesService.UploadSuiteImageAsync(suiteId.Value, ImageType.Facade, 0, new FileParameter(
+                    _facadeImage.TempFile.OpenReadStream(_maxFileSize),
+                    _facadeImage.TempFile.Name,
+                    _facadeImage.TempFile.ContentType
+                ));
+            }
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode != StatusCodes.Status201Created
+                && ex.StatusCode != StatusCodes.Status204NoContent)
+            {
+                throw;
+            }
+        }
+    }
+
+    private async Task SaveGalleryImagesAsync()
+    {
+        try
+        {
+            foreach (ImageModel image in _galleryImages.Values)
+            {
+                if (image.TempFile != null)
+                {
+                    if (image.Id.HasValue && image.TempFile != null)
+                    {
+                        await _suitesService.UpdateSuiteImageAsync(image.Id.Value, ImageType.Gallery, 0, new FileParameter(
+                            image.TempFile.OpenReadStream(_maxFileSize),
+                            image.TempFile.Name,
+                            image.TempFile.ContentType
+                        ));
+                    }
+                    else
+                    {
+                        await _suitesService.UploadSuiteImageAsync(suiteId.Value, ImageType.Gallery, 0, new FileParameter(
+                            image.TempFile.OpenReadStream(_maxFileSize),
+                            image.TempFile.Name,
+                            image.TempFile.ContentType
+                        ));
+                    }
+                }
+            }
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode != StatusCodes.Status201Created
+                && ex.StatusCode != StatusCodes.Status204NoContent)
+            {
+                throw;
+            }
         }
     }
 
@@ -504,6 +618,7 @@
             {
                 Name = file.Name,
                 TempFile = file
+
             };
         }
         else
@@ -521,7 +636,7 @@
         {
             if (_facadeImage.Id.HasValue)
             {
-                await _venuesService.DeleteVenueImageAsync(_facadeImage.Id.Value);
+                await _suitesService.DeleteSuiteImageAsync(_facadeImage.Id.Value);
             }
 
             _facadeImage = null;
@@ -597,7 +712,7 @@
         {
             if (file is not null && file.Id.HasValue)
             {
-                await _venuesService.DeleteVenueImageAsync(file.Id.Value);
+                await _suitesService.DeleteSuiteImageAsync(file.Id.Value);
             }
 
             _galleryImages.Remove(fileName);
@@ -616,7 +731,7 @@
         {
             if (galleryImage.Id.HasValue)
             {
-                await _venuesService.DeleteVenueImageAsync(galleryImage.Id.Value);
+                await _suitesService.DeleteSuiteImageAsync(galleryImage.Id.Value);
             }
         }
 
@@ -634,143 +749,6 @@
         if (!_dragging)
         {
             _dragClass = DefaultDragClass;
-        }
-    }
-
-    private async Task ValidateAndGoNextAsync()
-    {
-        if (_activeIndex == 0)
-        {
-            await _venueForm.ValidateAsync();
-
-            if (_isStepOneValid)
-            {
-                await _stepper.NextStepAsync();
-            }
-        }
-        else
-        {
-            await _stepper.NextStepAsync();
-        }
-    }
-
-    private async Task SaveAllAsync()
-    {
-        try
-        {
-            await SaveVenueAsync();
-            await SaveAmenitiesAsync();
-            await SaveFacadeImageAsync();
-            await SaveGalleryImagesAsync();
-
-            _snackbar.Add("Información del recinto guardada satisfactoriamente.", Severity.Success);
-            _navigationManager.NavigateTo(SitePages.VENUES);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An error ocurred while trying to save the venue. Error: {ex.Message}");
-            _snackbar.Add("Ocurrio un error al tratar de guardar el recinto.", Severity.Error);
-        }
-    }
-
-    private async Task SaveVenueAsync()
-    {
-        if (venueId.HasValue)
-        {
-            await _venuesService.UpdateVenueAsync(venueId.Value, _request);
-        }
-        else
-        {
-            long newVenueId = await _venuesService.CreateVenueAsync(_request);
-            venueId = newVenueId;
-        }
-    }
-
-    private async Task SaveFacadeImageAsync()
-    {
-        try
-        {
-            if (_facadeImage == null)
-            {
-                return;
-            }
-
-            if (_facadeImage.Id.HasValue && _facadeImage.TempFile != null)
-            {
-                await _venuesService.UpdateVenueImageAsync(_facadeImage.Id.Value, ImageType.Facade, 0, new FileParameter(
-                _facadeImage.TempFile.OpenReadStream(_maxFileSize),
-                _facadeImage.TempFile.Name,
-                _facadeImage.TempFile.ContentType));
-            }
-            else if (_facadeImage.Id.HasValue == false && _facadeImage.TempFile != null)
-            {
-                _facadeImage.Id = await _venuesService.UploadVenueImageAsync(venueId.Value, ImageType.Facade, 0, new FileParameter(
-                     _facadeImage.TempFile.OpenReadStream(_maxFileSize),
-                    _facadeImage.TempFile.Name,
-                    _facadeImage.TempFile.ContentType));
-            }
-        }
-        catch (ApiException apiEx)
-        {
-            if (apiEx.StatusCode != StatusCodes.Status201Created
-                && apiEx.StatusCode != StatusCodes.Status204NoContent)
-            {
-                throw;
-            }
-        }
-    }
-    private async Task SaveAmenitiesAsync()
-    {
-        try
-        {
-            List<long> amenityIds = _selectedAmenities
-                                    .Select(a => a.Id)
-                                    .Distinct()
-                                    .ToList();
-
-            await _venuesService.SaveVenueAmenitiesAsync(venueId.Value, amenityIds);
-        }
-        catch (ApiException apiEx)
-        {
-            if (apiEx.StatusCode != StatusCodes.Status201Created
-                && apiEx.StatusCode != StatusCodes.Status204NoContent)
-            {
-                throw;
-            }
-        }
-    }
-
-    private async Task SaveGalleryImagesAsync()
-    {
-        try
-        {
-            foreach (ImageModel image in _galleryImages.Values)
-            {
-                if (image.Id.HasValue && image.TempFile != null)
-                {
-                    await _venuesService.UpdateVenueImageAsync(image.Id.Value, ImageType.Gallery, 0, new FileParameter(
-                        image.TempFile.OpenReadStream(_maxFileSize),
-                        image.TempFile.Name,
-                        image.TempFile.ContentType
-                    ));
-                }
-                else if (image.TempFile != null)
-                {
-                    image.Id = await _venuesService.UploadVenueImageAsync(venueId.Value, ImageType.Gallery, 0, new FileParameter(
-                        image.TempFile.OpenReadStream(_maxFileSize),
-                        image.TempFile.Name,
-                        image.TempFile.ContentType
-                    ));
-                }
-            }
-        }
-        catch (ApiException apiEx)
-        {
-            if (apiEx.StatusCode != StatusCodes.Status201Created
-                && apiEx.StatusCode != StatusCodes.Status204NoContent)
-            {
-                throw;
-            }
         }
     }
 }
