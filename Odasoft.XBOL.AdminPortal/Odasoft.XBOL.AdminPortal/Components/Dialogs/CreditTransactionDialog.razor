@@ -2,15 +2,15 @@
 @using Odasoft.XBOL.Business
 @using XBOL.Models.ViewModels;
 
-@inject IStringLocalizer<CreditTransactionDialog> L
+@inject AppLocalizer<CreditTransactionDialog> L
 
 <MudDialog Class="py-4 pr-4" ActionsClass="mt-2" TitleClass="pb-2" Style="max-width: 400px;">
     <TitleContent>
         <MudText Typo="Typo.h5">Abonar a crédito</MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="AmountPaid" T="decimal" Label="Monto pagado" Class="m-2" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                      Margin="Margin.Dense" Variant="Variant.Outlined" ShrinkLabel></MudTextField>
+        <MudNumericField @bind-Value="AmountPaid" T="decimal" Label="Monto pagado" Class="m-2" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                         Margin="Margin.Dense" Variant="Variant.Outlined" ShrinkLabel Immediate="false" />
 
         <MudDatePicker @bind-Date="PaymentDate" Label="Fecha de pago" Class="m-2" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.EditCalendar"
                        Margin="Margin.Dense" Variant="Variant.Outlined" ShrinkLabel> </MudDatePicker>

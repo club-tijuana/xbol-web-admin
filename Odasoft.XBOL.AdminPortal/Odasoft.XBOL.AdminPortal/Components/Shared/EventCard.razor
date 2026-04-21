@@ -1,0 +1,97 @@
+@inject AppLocalizer<EventCard> L
+@inject NavigationManager _navigationManager;
+
+<MudCard Elevation="3" Style="cursor: pointer;" >
+    @if (string.IsNullOrEmpty(Event.BannerImageUrl))
+    {
+        <ImagePlaceholder Height="@(ThumbnailHeight + "px")" OnClick="HandleOnClick" />
+    }
+    else
+    {
+        <MudCardMedia Image="@(Event.BannerImageUrl)" Height="@ThumbnailHeight" @onclick="@HandleOnClick" />
+    }
+    <MudCardContent Class="py-2 px-3" @onclick="@HandleOnClick">
+        <MudGrid>
+            <MudItem xs="6">
+                <MudStack>
+                    <MudTooltip Text="@(Event.EventName)">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="truncate-text"><b>@(Event.EventName)</b></MudText>
+                    </MudTooltip>
+                    <MudText Typo="Typo.caption">@(Event.DateTime.ToString("d MMM yyyy"))</MudText>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="6" Class="d-flex justify-end">
+                <MudStack>
+                    <MudText Typo="Typo.caption">@L["Availability"]</MudText>
+                    <MudStack Row Justify="Justify.FlexEnd" AlignItems="AlignItems.Center" Spacing="1">
+                        <EventAvailability Available="@(Event.Available)" OmitTotal ExternalKey="@Event.ExternalEventKey" />
+                    </MudStack>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+    @if (ShowActions)
+    {
+        <MudDivider />
+        <MudCardActions>
+            <MudGrid Justify="Justify.SpaceEvenly">
+                <MudItem>
+                    <MudTooltip Text="@L["Edit"]" Placement="Placement.Top">
+                        <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                                       Size="Size.Small"
+                                       Color="Color.Secondary"
+                                       OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/edit"))" />
+                    </MudTooltip>
+                </MudItem>
+                <MudItem>
+                    <MudTooltip Text="@L["Tickets"]" Placement="Placement.Top">
+                        <MudIconButton
+                            Icon="@Icons.Material.Outlined.ShoppingCart"
+                            Size="Size.Small"
+                            Color="Color.Secondary"
+                            Disabled="@(Event.ExternalEventKey is null)"
+                            OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/key/{Event.ExternalEventKey}/booking"))" />
+                    </MudTooltip>
+                </MudItem>
+                <MudItem>
+                    <MudTooltip Text="@L["Suites"]" Placement="Placement.Top">
+                        <MudIconButton Icon="@Icons.Material.Outlined.LocalActivity"
+                                       Size="Size.Small"
+                                       Color="Color.Secondary"
+                                       Disabled
+                                       OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/suites"))" />
+                    </MudTooltip>
+                </MudItem>
+                <MudItem>
+                    <MudTooltip Text="@L["Availability"]" Placement="Placement.Top">
+                        <MudIconButton
+                            Icon="@Icons.Material.Outlined.Map"
+                            Size="Size.Small"
+                            Color="Color.Secondary"
+                            OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/key/{Event.ExternalEventKey}/availability"))" />
+                    </MudTooltip>
+                </MudItem>
+            </MudGrid>
+        </MudCardActions>
+    }
+    </MudCard>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public EventViewModel Event { get; set; }
+
+    [Parameter]
+    public int ThumbnailHeight { get; set; } = 120;
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    [Parameter]
+    public bool ShowActions { get; set; } = false;
+
+    private async Task HandleOnClick()
+    {
+        await OnClick.InvokeAsync();
+    }
+}

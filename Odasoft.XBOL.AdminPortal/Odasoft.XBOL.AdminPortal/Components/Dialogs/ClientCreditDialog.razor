@@ -83,10 +83,6 @@
     [Parameter] public ClientCreditViewModel Credit { get; set; } = default!;
     [Parameter] public LegalRepresentativeViewModel Representative { get; set; } = default!;
 
-    private decimal _amountPaid;
-    private DateTime? _paymentDate;
-    private string _paymentMethod = "";
-
     @* TODO: Pull this data from DB *@
     private Dictionary<string, string> _paymentMethods = new Dictionary<string, string>()
     {

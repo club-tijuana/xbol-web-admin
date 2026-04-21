@@ -2,9 +2,13 @@
 @using Odasoft.XBOL.Models.DTO
 
 <div class="d-flex mb-2">
-    <MudTextField @bind-Value="SelectedMinPrice" Class="mr-2" Label="Precio Mínimo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" ShrinkLabel Margin="Margin.Dense" />
+    <MudNumericField @bind-Value="SelectedMinPrice" Class="mr-2" Label="Precio Mínimo" Variant="Variant.Outlined" Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories"
+                     ShrinkLabel Margin="Margin.Dense" Immediate="false" />
 
-    <MudTextField @bind-Value="SelectedMaxPrice" Label="Precio Máximo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" ShrinkLabel Margin="Margin.Dense" />
+    <MudNumericField @bind-Value="SelectedMaxPrice" Label="Precio Máximo" Variant="Variant.Outlined" Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories"
+                     ShrinkLabel Margin="Margin.Dense" Immediate="false" />
 </div>
 
 @code {

@@ -1,0 +1,88 @@
+@using MudBlazor.Utilities
+@using Odasoft.XBOL.AdminPortal.Resources
+@using Odasoft.XBOL.Business
+@inject IAdminClient AdminClient
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<AdminForm> FormL
+@inject AppLocalizer<EditBlockedSeatDialog> L
+@inject ILogger<EditBlockedSeatDialog> Logger
+
+<BaseDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5">@L["Edit"].Value</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Error">*</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RequiredFieldsNote"]</MudText>
+    </TitleContent>
+    <ChildContent>
+        <SeatActionForm @ref="_seatActionForm" FormContext="_formContext"
+                        @bind-Reason="_reason" @bind-Color="_color"
+                        ReasonLabel="@L["ReasonLabel"].Value"
+                        ReasonPlaceholder="@L["BlockReasonPlaceholder"].Value"
+                        ColorLabel="@L["ColorLabel"].Value" />
+    </ChildContent>
+    <Actions>
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save"
+                   Disabled="_formContext.IsSaving" OnClick="SubmitAsync" Class="text-uppercase">@L["Save"]</MudButton>
+    </Actions>
+</BaseDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public List<string> SeatKeys { get; set; } = [];
+    [Parameter] public string ExternalKey { get; set; } = string.Empty;
+    [Parameter] public string? InitialReason { get; set; }
+    [Parameter] public string? InitialColor { get; set; }
+
+    private SeatActionForm _seatActionForm = default!;
+    private FormContext _formContext = default!;
+    private string? _reason;
+    private MudColor _color = new("#FF0000");
+
+    protected override void OnInitialized()
+    {
+        _formContext = new FormContext(StateHasChanged);
+        _reason = InitialReason;
+        if (!string.IsNullOrEmpty(InitialColor))
+            _color = new MudColor(InitialColor);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) _formContext.SetForm(_seatActionForm.InnerForm);
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (!await _formContext.ValidateAsync()) return;
+
+        _formContext.SetSaving(true);
+        try
+        {
+            var request = new BlockSeatsRequest
+            {
+                SeatKeys = SeatKeys,
+                Reason = _reason!,
+                Color = _color.ToString(MudColorOutputFormats.Hex),
+            };
+            await AdminClient.EditBlockedSeatsAsync(ExternalKey, request);
+            Snackbar.Add(L["SeatsUpdated"].Value, Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _formContext.HandleApiException(ex);
+            Snackbar.Add(ex.Result.Title ?? L["ErrorEditingSeats"].Value, Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to edit blocked seats");
+            Snackbar.Add(L["ErrorEditingSeats"].Value, Severity.Error);
+        }
+        finally
+        {
+            _formContext.SetSaving(false);
+        }
+    }
+}

@@ -13,7 +13,6 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject AuthenticationStateProvider AuthProvider
 
-
 <div class="login-page">
     <MudGrid Justify="Justify.Center">
         <MudItem xs="11" sm="8" md="6" lg="4" xl="3">
@@ -21,8 +20,7 @@
                 <MudTextField @bind-Value="email" Class="pb-6"
                               Label="Correo electrónico" Variant="Variant.Outlined"
                               Required="true" Margin="Margin.Dense"
-                              Immediate="true" />
-
+                              Immediate="true" InputType="InputType.Email" />
 
                 <MudTextField @bind-Value="password" Class="@PasswordInputClass"
                               Label="Contraseña" Variant="Variant.Outlined" InputType="@passwordInput"
@@ -31,7 +29,6 @@
                               Required="true" Margin="Margin.Dense"
                               Immediate="true" RequiredError="" />
 
-
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            Class="mt-4 text-uppercase"
@@ -39,7 +36,6 @@
                            OnClick="@LoginAsync">
                     Iniciar sesión
                 </MudButton>
-
 
                 @if (!string.IsNullOrEmpty(errorMessage))
                 {
@@ -51,7 +47,6 @@
         </MudItem>
     </MudGrid>
 </div>
-
 
 @code {
     private string email = string.Empty;
@@ -72,7 +67,7 @@
             errorMessage = "Credenciales inválidas";
             return;
         }
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("./");
     }
 
     private void TogglePasswordVisibility()

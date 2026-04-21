@@ -1,0 +1,99 @@
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Business.Services
+
+@inject VenueMapsService _venueMapsService;
+@inject ISnackbar _snackbar;
+
+<MudDialog Class="py-4 pr-4" ActionsClass="mt-2" TitleClass="pb-2" Style="max-width: 400px;">
+    <TitleContent>
+        <MudText Typo="Typo.h5">@( VenueMapId.HasValue ? "Editar mapa" : "Nuevo mapa" )</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudTextField @bind-Value="_request.Name" Label="Nombre" Required="true" RequiredError="Nombre del mapa es requerido."
+                          Margin="Margin.Dense" ShrinkLabel />
+            <MudTextField @bind-Value="_request.ExternalMapKey" Label="Llave del mapa" Required="true" RequiredError="Llave del mapa es requerida."
+                          Margin="Margin.Dense" ShrinkLabel />
+            <MudNumericField @bind-Value="_request.Capacity" Label="Capacidad" Required="true" RequiredError="La capacidad del mapa es requerida"
+                             Min="0" Margin="Margin.Dense" ShrinkLabel />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <div class="d-flex justify-center" style="width: 100%;">
+            <MudButton StartIcon="@Icons.Material.Filled.Save"
+                       Color="Color.Tertiary"
+                       Variant="Variant.Filled"
+                       OnClick="SubmitAsync"
+                       Disabled="@_isProcessing">
+                Guardar
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public long VenueId { get; set; }
+    [Parameter] public long? VenueMapId { get; set; }
+
+    private MudForm _form;
+    private VenueMapRequest _request { get; set; } = new();
+    private List<string> _existingMaps = [];
+    private bool _isProcessing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _request.VenueId = VenueId;
+
+        ICollection<VenueMapResponse> venueMaps = await _venueMapsService.GetVenueMapsByVenueAsync(VenueId);
+        _existingMaps = venueMaps.Select(vm => vm.Name).ToList();
+
+        if (VenueMapId.HasValue)
+        {
+            var venueMap = await _venueMapsService.GetVenueMapByIdAsync(VenueMapId.Value);
+
+            _request.Capacity = venueMap.Capacity;
+            _request.ExternalMapKey = venueMap.ExternalMapKey;
+            _request.Id = venueMap.Id;
+            _request.Name = venueMap.Name;
+            _request.ThumbnailUrl = venueMap.ThumbnailUrl;
+            _request.VenueId = venueMap.VenueId;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        await _form.Validate();
+        if (!_form.IsValid) return;
+
+        _isProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            if (_existingMaps.Contains(_request.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                _snackbar.Add("Ya existe un mapa con este nombre asignado al recinto.", Severity.Warning);
+                return;
+            }
+
+            try
+            {
+                Chart chart = await _venueMapsService.GetMapChart(_request.ExternalMapKey);
+                _request.ThumbnailUrl = chart.PublishedVersionThumbnailUrl;
+                MudDialog.Close(DialogResult.Ok(_request));
+                StateHasChanged();
+            }
+            catch (ApiException)
+            {
+                _snackbar.Add("La llave del mapa proporcionada es invalida.", Severity.Warning);
+                return;
+            }
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+}

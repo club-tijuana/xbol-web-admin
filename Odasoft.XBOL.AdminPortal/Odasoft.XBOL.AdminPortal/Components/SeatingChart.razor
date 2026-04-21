@@ -1,17 +1,19 @@
-@using Microsoft.JSInterop
-@using Odasoft.XBOL.AdminPortal.Components.Pages
-@using Odasoft.XBOL.AdminPortal.Components.Shared
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Models.DTO
-@using System.Text.Json
-@using System.Text.Json.Serialization
-@implements IAsyncDisposable
-@inject IJSRuntime JSRuntime
-@inject CartState CartState
-@inject IAdminClient AdminClient
-@inject ISnackbar Snackbar
-@inject IStringLocalizer<Events> Localizer
+@using Microsoft.JSInterop;
+@using Odasoft.XBOL.AdminPortal.Components.Pages;
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Models.DTO;
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+
+@implements IAsyncDisposable;
+
+@inject IJSRuntime JSRuntime;
+@inject CartState CartState;
+@inject IAdminClient AdminClient;
+@inject ISnackbar Snackbar;
+@inject AppLocalizer<Events> L;
 
 <LoadingContainer HasError="_error" ErrorMessage="@_errorMessage" IsLoading="_loading">
     <PriceFilter Chart="this" Categories="Prices.Where(x => x.Category is not null)" />
@@ -111,7 +113,6 @@
                 _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
 
                 var selectedSeats = SelectedSeats;
-                CartState.ClearCart();
 
                 await TrySelectObjectsAsync(selectedSeats.ToArray());
             }
@@ -143,7 +144,8 @@
         {
             SeatId = seatId,
             Price = price,
-            Category = category
+            Category = category,
+            IsSelected = true
         };
 
         CartState.AddSelectedSeat(seat);
@@ -168,14 +170,14 @@
     public void HandleHoldFailed(List<string> objects, object ticketTypes)
     {
         CartState.SetHoldBusyState(false);
-        InvokeAsync(() => Snackbar.Add(Localizer["Seats_HoldFailed"], Severity.Error));
+        InvokeAsync(() => Snackbar.Add(L["Seats_HoldFailed"], Severity.Error));
     }
 
     [JSInvokable]
     public void HandleSessionExpired()
     {
         CartState.ClearCart();
-        CartState.ClearToken();
+        CartState.ClearTokenAsync();
     }
 
     [JSInvokable]
