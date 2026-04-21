@@ -16,7 +16,7 @@
 @inject AppLocalizer<Events> L;
 
 <LoadingContainer HasError="_error" ErrorMessage="@_errorMessage" IsLoading="_loading">
-    <PriceFilter Chart="this" Categories="Prices.Where(x => x.Category is not null)" />
+    <PriceFilter Chart="this" Prices="Prices" />
 </LoadingContainer>
 <div id="@ChartId" style="height: 700px"></div>
 

@@ -1,5 +1,6 @@
 @page "/events/{EventId:long}/edit"
 @page "/events/{EventId:long}/schedules/{ScheduleId:long}/edit"
+@using Odasoft.XBOL.AdminPortal.Extensions
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
@@ -9,6 +10,8 @@
 @inject CatalogsService CatalogsService;
 @inject IEventService EventService;
 @inject VenuesService VenuesService
+@inject VenueMapsService VenueMapsService;
+@inject PriceService PriceService;
 @inject EventScheduleService ScheduleService
 @inject AppLocalizer<EventEdit> L
 @inject IDialogService DialogService
@@ -192,6 +195,152 @@
                                     </MudGrid>
                                 </MudItem>
                             </MudGrid>
+                        </MudForm>
+                    </MudStep>
+                    <MudStep Title="@L["ZonePrices"]">
+                        <MudForm @ref="_pricesForm" @bind-IsValid="_pricesValid" @onkeydown="OnKeyDownAsync">
+                            <MudTable 
+                                Items="_prices"
+                                GroupBy="_groupDefinition"
+                                Elevation="0"
+                                FixedHeader
+                                Height="400px">
+                                <ToolBarContent>
+                                    <MudText Typo="Typo.h5">@L["Zones"]</MudText>
+                                    @* <MudSpacer />
+                                    <MudTextField @bind-Value="_searchPrices" Placeholder="@L["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField> *@
+                                </ToolBarContent>
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    @foreach (var priceType in PriceTypes)
+                                    {
+                                        <col />
+                                    }
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetZoneName(x.BaseZoneId))">@L["Zone"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseSectionId))">@L["Section"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseRowId))">@L["Row"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseSeatId))">@L["Seat"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => x.ItemPrice)">@L["BasePrice"]</MudTableSortLabel></MudTh>
+                                    @foreach (var priceType in PriceTypes)
+                                    {
+                                        <MudTh>
+                                            @priceType
+                                            <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                                                           Color="MudBlazor.Color.Secondary"
+                                                           Size="MudBlazor.Size.Small"
+                                                           OnClick="@(() => OpenEditDialog(priceType))" />
+                                        </MudTh>
+                                    }
+                                    <MudTh>
+                                        <MudButton Color="MudBlazor.Color.Primary" IconColor="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Outlined.Add" OnClick="OpenAddDialog">@L["AlternativePrice"]</MudButton>
+                                    </MudTh>
+                                    <MudTh/>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd></MudTd>
+                                    <MudTd>
+                                        <AdminSelect T="long?"
+                                            Value="@context.BaseSectionId"
+                                            ValueChanged="@((long? newValue) => OnSectionChanged(context, newValue))"
+                                            Disabled="@context.IsZonePrice"
+                                            Placeholder="@L["Select"].Value">
+                                            @foreach(var section in GetSectionsFor(context.BaseZoneId))
+                                            {
+                                                <MudSelectItem T="long?" Value="section.Id">
+                                                    @(section.Name)
+                                                </MudSelectItem>
+                                            }
+                                        </AdminSelect>
+                                    </MudTd>
+                                    <MudTd>
+                                        <AdminSelect T="long?"
+                                                     Value="@context.BaseRowId"
+                                                     ValueChanged="@((long? newValue) => OnRowChanged(context, newValue))"
+                                                     Disabled="@context.IsZonePrice"
+                                                     Placeholder="@L["Select"].Value"
+                                                     Clearable="@true">
+                                            @foreach (var row in GetRowsFor(context.BaseSectionId))
+                                            {
+                                                <MudSelectItem T="long?" Value="row.Id">
+                                                    @(row.Name)
+                                                </MudSelectItem>
+                                            }
+                                        </AdminSelect>
+                                    </MudTd>
+                                    <MudTd>
+                                        <AdminSelect T="long?"
+                                                     @bind-Value="@context.BaseSeatId"
+                                                     Disabled="@context.IsZonePrice"
+                                                     Placeholder="@L["Select"].Value"
+                                                     Clearable="@true">
+                                            @foreach (var seat in GetSeatsFor(context.BaseRowId))
+                                            {
+                                                <MudSelectItem T="long?" Value="seat.Id">
+                                                    @(seat.SeatNumber)
+                                                </MudSelectItem>
+                                            }
+                                        </AdminSelect>
+                                    </MudTd>
+                                    <MudTd>
+                                        <AdminNumericField @bind-Value="@context.ItemPrice"
+                                                         Format="N2"
+                                                         Adornment="@Adornment.Start"
+                                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                                         Placeholder="0.00"
+                                                         HideSpinButtons="@true"
+                                                         Immediate="@false"
+                                                         Required/>
+                                    </MudTd>
+                                    @foreach (var priceType in PriceTypes)
+                                    {
+                                        <MudTd DataLabel="@priceType">
+                                            <AdminNumericField T="decimal?"
+                                                               Value="@GetPriceTypeValue(context, priceType)"
+                                                               ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType, newValue))"
+                                                               Clearable="@true"
+                                                               Format="N2"
+                                                               Adornment="@Adornment.Start"
+                                                               AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                                               Placeholder="0.00"
+                                                               HideSpinButtons="@true"
+                                                               Immediate="@false" />
+                                        </MudTd>
+                                    }
+                                    <MudTd></MudTd>
+                                    <MudTd>
+                                        @if (context.BaseRowId != null || context.BaseSectionId != null || context.BaseSeatId != null)
+                                        {
+                                            <MudTooltip Text="@L["Delete"]" Placement="Placement.Top">
+                                                <MudIconButton Icon="@Icons.Material.Outlined.Delete"
+                                                Color="MudBlazor.Color.Secondary"
+                                                Size="MudBlazor.Size.Medium"
+                                                OnClick="@(() => DeletePriceAsync(context))" />
+                                            </MudTooltip>
+                                        }
+                                    </MudTd>                                    
+                                </RowTemplate>
+                                <GroupHeaderTemplate>
+                                    <MudTh colspan="@(6 + PriceTypes.Count)">
+                                        <MudText Class="text-primary-darken" Typo="Typo.subtitle2">
+                                            @(GetZoneName(long.Parse(context.Key.ToString())))
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudIconButton 
+                                            Color="MudBlazor.Color.Primary"
+                                            Icon="@Icons.Material.Outlined.Add" 
+                                            OnClick="@(() => AddPrice(long.Parse(context.Key.ToString())))">@L["AddPrice"]</MudIconButton>
+                                    </MudTh>
+                                </GroupHeaderTemplate>
+                            </MudTable>
                         </MudForm>
                     </MudStep>
                     <MudStep Title="@L["DatesAndSalePolicies"]">
@@ -545,7 +694,7 @@
                     {
                         <MudButton OnClick="ValidateAndGoNextAsync"
                                    EndIcon="@Icons.Material.Filled.ChevronRight"
-                                   Variant="Variant.Outlined"
+                                   Variant="Variant.Text"
                                    Color="MudBlazor.Color.Primary">
                             @L["Next"]
                         </MudButton>
@@ -575,7 +724,7 @@
     private MudStepper _stepper = null!;
     private int _activeIndex = 0;
     private int _highestUnlockedStep = 0;
-    private int _maxIndex = 2;
+    private int _maxIndex = 3;
 
     private MudForm _descriptionForm = default!;
     private bool _descriptionFormValid;
@@ -584,6 +733,10 @@
     private MudForm _datesAndSalePoliciesForm = default!;
     private bool _datesAndSalePoliciesValid;
     private FormContext _datesAndSalePoliciesFormContext = default!;
+
+    private MudForm _pricesForm = default!;
+    private bool _pricesValid;
+    private FormContext _pricesFormContext = default!;
 
     private List<EventCategoryResult> _eventCategories = [];
     private IReadOnlyCollection<EventCategoryResult> _selectedCategories = [];
@@ -632,16 +785,35 @@
     private string? _additionalComments;
     private string _externalEventKey;
 
+    private List<PriceForm> _prices = [];
+    private string _searchPrices = string.Empty;
+    private TableGroupDefinition<PriceForm> _groupDefinition = new()
+    {
+        GroupName = "Zone",
+        Indentation = true,
+        Expandable = false,
+        Selector = (e) => e.BaseZoneId,
+        IsInitiallyExpanded = true
+    };
+
+    private List<string> PriceTypes { get; set; } = new();
+    private string _priceTypeName = string.Empty;
+
+    private VenueMapLayoutResponse _layout;
+
     private string? _venueAddress;
     private string? _venueCoordinates;
 
     private VenueResponse? _selectedVenue;
     private VenueMapResponse? _selectedVenueMap;
 
+    private static readonly DialogOptions _dialogOptions = new() { CloseButton = true };
+
     protected override async Task OnInitializedAsync()
     {
         _descriptionFormContext = new FormContext(StateHasChanged);
         _datesAndSalePoliciesFormContext = new FormContext(StateHasChanged);
+        _pricesFormContext = new FormContext(StateHasChanged);
         await LoadData();
     }
 
@@ -698,6 +870,39 @@
                 _gateOpenDate = DateTimeHelpers.ToNullableDateTime(schedule?.GateOpenDate);
                 _gateOpenTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.GateOpenDate);
                 _externalEventKey = schedule.ExternalEventKey;
+            }
+
+            _layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(_selectedVenueMap.Id);
+
+            try
+            {
+                PricesResponse priceResponse = await PriceService.GetPricesByScheduleAndVenueAsync(ScheduleId.Value, _selectedVenueMap.Id);
+
+                _prices = priceResponse.Prices.Select(x => new PriceForm
+                    {
+                        Id = x.Id,
+                        BaseZoneId = x.BaseZoneId,
+                        BaseSectionId = x.BaseSectionId,
+                        BaseRowId = x.BaseRowId,
+                        BaseSeatId = x.BaseSeatId,
+                        ItemPrice = x.ItemPrice,
+                        PriceTypes = x.PriceTypes.ToDictionary(pt => pt.Name, pt => pt.Price)
+                    }).ToList();
+
+                foreach (var priceType in priceResponse.PriceTypes)
+                {
+                    if (!PriceTypes.Contains(priceType.Name))
+                    {
+                        PriceTypes.Add(priceType.Name);
+                    }
+                }
+            }
+            catch (ApiException apiEx)
+            {
+                if (apiEx.StatusCode == StatusCodes.Status404NotFound)
+                {
+                    InitializePrices();
+                }
             }
 
             ICollection<EventImageResponse> horizontalImages = await EventService.GetEventImageByTypeAsync(EventId, ImageType.HorizontalPoster);
@@ -812,6 +1017,10 @@
                     isCurrentStepValid = await _descriptionFormContext.ValidateAsync();
                     break;
                 case 1:
+                    _pricesFormContext.SetForm(_pricesForm);
+                    isCurrentStepValid = await _pricesFormContext.ValidateAsync();
+                    break;
+                case 2:
                     _datesAndSalePoliciesFormContext.SetForm(_datesAndSalePoliciesForm);
                     isCurrentStepValid = await _datesAndSalePoliciesFormContext.ValidateAsync();
                     break;
@@ -846,7 +1055,7 @@
 
     private async Task GoBackAsync()
     {
-        if ((_descriptionForm is not null && _descriptionForm.IsTouched) || (_datesAndSalePoliciesForm is not null && _datesAndSalePoliciesForm.IsTouched))
+        if ((_descriptionForm is not null && _descriptionForm.IsTouched) || (_datesAndSalePoliciesForm is not null && _datesAndSalePoliciesForm.IsTouched) || (_pricesForm is not null && _pricesForm.IsTouched))
         {
             var result = await DialogService.ShowMessageBoxAsync(
                 L["UnsavedChangesTitle"],
@@ -924,6 +1133,8 @@
             };
 
             await ScheduleService.UpdateScheduleAsync(ScheduleId.Value, scheduleRequest);
+
+            await PriceService.UpdatePricesAsync(ScheduleId.Value, new PricesRequest { VenueMapId = _selectedVenueMap.Id, ReferenceId = ScheduleId.Value, ReferenceType = AdminSaleType.Event, Prices = _prices.Select(p => new PriceRequest{ BaseRowId = p.BaseRowId, BaseSeatId = p.BaseSeatId, BaseSectionId = p.BaseSectionId, BaseZoneId = p.BaseZoneId, ItemPrice = p.ItemPrice, Id = p.Id, PriceTypes = p.PriceTypes.Select(d => new PriceTypeRequest{Name = d.Key, Price = d.Value}).ToList()}).ToList() });
 
             await SaveHorizontalImageAsync();
             await SaveVerticalImageAsync();
@@ -1232,5 +1443,244 @@
                 throw;
             }
         }
+    }
+
+    private void OnSectionChanged(PriceForm price, long? sectionId)
+    {
+        price.BaseSectionId = sectionId;
+
+        price.BaseRowId = null;
+        price.BaseSeatId = null;
+        StateHasChanged();
+    }
+
+    private void OnRowChanged(PriceForm price, long? rowId)
+    {
+        price.BaseRowId = rowId;
+
+        price.BaseSeatId = null;
+        StateHasChanged();
+    }
+
+    private void AddPrice(long zoneId)
+    {
+        var sections = GetSectionsFor(zoneId);
+        _prices.Add(new PriceForm { BaseZoneId = zoneId, BaseSectionId = sections.FirstOrDefault()?.Id });
+    }
+
+    private IEnumerable<BaseSectionResponse>GetSectionsFor(long? zoneId)
+    {
+        if(zoneId == null)
+        {
+            return [];
+        }
+
+        var sections = _layout.Sections.Where(x => x.ZoneId == zoneId);
+
+        return sections;
+    }
+
+    private IEnumerable<BaseRowResponse> GetRowsFor(long? sectionId)
+    {
+        if(sectionId == null)
+        {
+            return [];
+        }
+
+        var rows = _layout.Rows.Where(x => x.SectionId == sectionId);
+
+        return rows;
+    }
+
+    private IEnumerable<BaseSeatResponse> GetSeatsFor(long? rowId)
+    {
+        if (rowId == null)
+        {
+            return [];
+        }
+
+        var seats = _layout.Seats.Where(x => x.RowId == rowId);
+
+        return seats;
+    }
+
+    private string GetZoneName(long? zoneId)
+    {
+        if(zoneId == null)
+        {
+            return string.Empty;
+        }
+
+        var zone = _layout.Zones?.FirstOrDefault(x => x.Id == zoneId);
+
+        return zone?.Name ?? string.Empty;
+    }
+
+    private string GetSectionName(long? sectionId)
+    {
+        if (sectionId == null)
+        {
+            return string.Empty;
+        }
+
+        var section = _layout.Sections?.FirstOrDefault(x => x.Id == sectionId);
+
+        return section?.Name ?? string.Empty;
+    }
+    private string GetRowName(long? rowId)
+    {
+        if (rowId == null)
+        {
+            return string.Empty;
+        }
+
+        var section = _layout.Rows?.FirstOrDefault(x => x.Id == rowId);
+
+        return section?.Name ?? string.Empty;
+    }
+    private string GetSeatName(long? seatId)
+    {
+        if (seatId == null)
+        {
+            return string.Empty;
+        }
+
+        var section = _layout.Seats?.FirstOrDefault(x => x.Id == seatId);
+
+        return section?.SeatNumber ?? string.Empty;
+    }
+
+    private void InitializePrices()
+    {
+        if (_layout.Zones is not null && _layout.Zones.Count > 0)
+        {
+            foreach (var zone in _layout.Zones)
+            {
+                _prices.Add(new PriceForm
+                {
+                   BaseZoneId = zone.Id 
+                });
+            }
+        }
+    }
+
+    private void AddPriceType(string type)
+    {
+        if (!string.IsNullOrWhiteSpace(type) && !PriceTypes.Contains(type))
+        {
+            PriceTypes.Add(type);
+        }
+    }
+
+    private void EditPriceType(string oldName, string newName)
+    {
+        if (string.IsNullOrWhiteSpace(newName) || PriceTypes.Contains(newName))
+        {
+            return;
+        }
+        int index = PriceTypes.IndexOf(oldName);
+        if (index != -1)
+        {
+            PriceTypes[index] = newName;
+            foreach (var price in _prices)
+            {
+                if (price.PriceTypes.ContainsKey(oldName))
+                {
+                    decimal? value = price.PriceTypes[oldName];
+                    price.PriceTypes.Remove(oldName);
+                    price.PriceTypes[newName] = value;
+                }
+            }
+        }
+    }
+
+    private async Task DeletePriceType()
+    {
+        PriceTypes.Remove(_priceTypeName);
+
+        foreach (var price in _prices)
+        {
+            if (price.PriceTypes.ContainsKey(_priceTypeName))
+            {
+                price.PriceTypes.Remove(_priceTypeName);
+            }
+        }
+    }
+
+    private decimal? GetPriceTypeValue(PriceForm row, string key)
+    {
+        return row.PriceTypes.TryGetValue(key, out var value) ? value : null;
+    }
+
+    private void SetPriceTypeValue(PriceForm row, string key, decimal? newValue)
+    {
+        row.PriceTypes[key] = newValue;
+    }
+
+    private async Task DeletePriceAsync(PriceForm price)
+    {
+        var confirmed = await DialogService.ShowConfirmDeleteAsync(
+        L["DeleteDialogTitle", L["Price"]],
+        L["DeleteDialogMessage"]);
+
+        if (!confirmed) return;
+
+        try
+        {
+            _prices.Remove(price);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting event: {ex.Message}");
+            Snackbar.Add(L["DeleteError"], Severity.Error);
+        }
+    }
+
+    private async Task OpenAddDialog()
+    {
+        var dialog = await DialogService.ShowAsync<PriceTypeDialogAdd>(null, _dialogOptions);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled && result.Data is not null)
+        {
+            var priceType = result.Data.ToString();
+            if (!string.IsNullOrWhiteSpace(priceType))
+            {
+                AddPriceType(priceType);
+            }
+        }
+    }
+
+    private async Task OpenEditDialog(string type)
+    {
+        _priceTypeName = type;
+
+        var parameters = new DialogParameters<PriceTypeDialogEdit>
+        {
+            { x => x.Name, _priceTypeName },
+            { x => x.OnDelete, EventCallback.Factory.Create(this, DeletePriceType) },
+        };
+        var dialog = await DialogService.ShowAsync<PriceTypeDialogEdit>(null, parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled && result.Data is not null)
+        {
+            var priceType = result.Data.ToString();
+            if (!string.IsNullOrWhiteSpace(priceType))
+            {
+                EditPriceType(_priceTypeName, priceType);          
+            }
+        }
+    }
+
+    public class PriceForm
+    {
+        public long? Id { get; set; }
+        public long? BaseZoneId { get; set; }
+        public long? BaseSectionId { get; set; }
+        public long? BaseRowId { get; set; }
+        public long? BaseSeatId { get; set; }
+        public decimal? ItemPrice { get; set; }
+        public Dictionary<string, decimal?> PriceTypes { get; set; } = new();
+
+        public bool IsZonePrice => BaseSectionId is null && BaseRowId is null && BaseSeatId is null;
     }
 }
