@@ -165,4 +165,16 @@
   <data name="None" xml:space="preserve">
     <value>Sin restricciones</value>
   </data>
+  <data name="ZonePrices" xml:space="preserve">
+    <value>Precios por zona</value>
+  </data>
+  <data name="Zones" xml:space="preserve">
+    <value>Zonas</value>
+  </data>
+  <data name="BasePrice" xml:space="preserve">
+    <value>Precio base</value>
+  </data>
+  <data name="AddPrice" xml:space="preserve">
+    <value>Agregar precio</value>
+  </data>
 </root>

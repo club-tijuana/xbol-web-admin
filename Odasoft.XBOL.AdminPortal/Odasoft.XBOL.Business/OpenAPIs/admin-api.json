@@ -4169,6 +4169,304 @@
         }
       }
     },
+    "/api/prices/{scheduleId}/venues/{venueMapId}": {
+      "get": {
+        "tags": [
+          "Prices"
+        ],
+        "summary": "Retrieves the prices for the specified schedule identifier.",
+        "description": "This method performs an asynchronous lookup for the schedule prices. If no schedule prices are\r\n            found for the given identifier, the response will be 404 Not Found.",
+        "operationId": "GetPricesByScheduleAndVenue",
+        "parameters": [
+          {
+            "name": "scheduleId",
+            "in": "path",
+            "description": "The unique identifier of the schedule prices to retrieve. Must be a positive long value.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "venueMapId",
+            "in": "path",
+            "description": "The unique identifier of the venue map to retrieve. Must be a positive long value.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricesResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricesResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricesResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prices": {
+      "post": {
+        "tags": [
+          "Prices"
+        ],
+        "summary": "Creates prices for an entity using the specified request data and returns the result of the operation.",
+        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\r\n            successful creation, a 201 Created response is returned with the location of the newly created prices. If\r\n            the creation fails, a 422 Unprocessable Entity response is returned.",
+        "operationId": "CreatePricesAsync",
+        "requestBody": {
+          "description": "The request object containing the details required to create new prices. Must not be null and must satisfy\r\n            model validation requirements.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricesResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricesResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prices/{id}": {
+      "put": {
+        "tags": [
+          "Prices"
+        ],
+        "summary": "Updates the existing prices of an entity identified by their unique identifier.",
+        "description": "The method validates the input model state before attempting to update the prices. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
+        "operationId": "UpdatePricesAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The unique identifier of the prices to update. Must be a positive long value.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "An object containing the updated prices details. This parameter is required and cannot be null.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/reports/{key}/summary/by-section": {
       "get": {
         "tags": [
@@ -8946,6 +9244,70 @@
         }
       }
     },
+    "/api/venue-maps/{venueMapId}/layout": {
+      "get": {
+        "tags": [
+          "VenueMaps"
+        ],
+        "summary": "Retrieves the venue map layout for the specified identifier.",
+        "description": "This method performs an asynchronous lookup for the venue map layout. If no venue map layout is\r\n            found for the given identifier, the response will be 404 Not Found.",
+        "operationId": "GetVenueMapLayoutById",
+        "parameters": [
+          {
+            "name": "venueMapId",
+            "in": "path",
+            "description": "The unique identifier of the venue map layout to retrieve. Must be a positive long value.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueMapLayoutResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueMapLayoutResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueMapLayoutResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/venue-maps/catalog/{venueId}": {
       "get": {
         "tags": [
@@ -9640,6 +10002,14 @@
   },
   "components": {
     "schemas": {
+      "AdminSaleType": {
+        "enum": [
+          "Event",
+          "SeasonPass",
+          "EventGroup"
+        ],
+        "type": "string"
+      },
       "AgeRestriction": {
         "enum": [
           "AllAges",
@@ -9734,6 +10104,75 @@
               "type": "integer",
               "format": "int32"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "BaseRowResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sectionId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BaseSeatResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "seatNumber": {
+            "type": "string"
+          },
+          "rowId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BaseSectionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "zoneId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BaseZoneResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "externalZoneKey": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -12614,6 +13053,206 @@
         },
         "additionalProperties": false
       },
+      "PriceRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseZoneId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseSectionId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseRowId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseSeatId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "itemPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "priceTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceTypeRequest"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseZoneId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseSectionId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseRowId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseSeatId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "itemPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceTypeResponse"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceTypeRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceTypeResponse": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PricesRequest": {
+        "type": "object",
+        "properties": {
+          "referenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "referenceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminSaleType"
+              }
+            ]
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceRequest"
+            }
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PricesResponse": {
+        "type": "object",
+        "properties": {
+          "referenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "referenceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminSaleType"
+              }
+            ]
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceResponse"
+            }
+          },
+          "priceTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceTypeResponse"
+            }
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "ProblemDetails": {
         "type": "object",
         "properties": {
@@ -13126,7 +13765,8 @@
         "properties": {
           "price": {
             "type": "number",
-            "format": "decimal"
+            "format": "decimal",
+            "nullable": true
           },
           "objects": {
             "type": "array",
@@ -13469,6 +14109,14 @@
           },
           "primary": {
             "type": "boolean",
+            "nullable": true
+          },
+          "unavailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "unavailableReason": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -13938,6 +14586,40 @@
         },
         "additionalProperties": false
       },
+      "VenueMapLayoutResponse": {
+        "type": "object",
+        "properties": {
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseZoneResponse"
+            }
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseSectionResponse"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseRowResponse"
+            }
+          },
+          "seats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseSeatResponse"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "VenueMapRequest": {
         "type": "object",
         "properties": {
@@ -14351,6 +15033,9 @@
     },
     {
       "name": "PhoneNumbers"
+    },
+    {
+      "name": "Prices"
     },
     {
       "name": "Reports"
