@@ -316,7 +316,7 @@
             // TODO: Move this to a proper service
             var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
             {
-                EventId = _cartState.CurrentEventId.Value,
+                EventScheduleId = _cartState.CurrentEventId.Value,
                 Seats = _cartState.SelectedSeatsKeys,
                 SaleType = SaleType.SeasonPass
             });

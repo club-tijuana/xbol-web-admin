@@ -21,7 +21,6 @@
 @inject CatalogsService _catalogsService
 @inject ILogger<BoxOfficeCheckout> Logger
 
-
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
 
 <MudForm @ref="_form" Model="_request" Validation="@(orderValidator.ValidateValue)">
@@ -129,7 +128,6 @@
                                    Clearable />
                 </MudItem>
             </MudGrid>
-        
         </MudItem>
         <MudItem xs="4">
             <MudStack>
@@ -304,7 +302,7 @@
             // TODO: Move this to a proper service
             var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
             {
-                EventId = _cartState.CurrentEventId.Value,
+                EventScheduleId = _cartState.CurrentEventId.Value,
                 Seats = _cartState.FinalSeatsSelection.Select(x => x.SeatId).ToList(),
                 SaleType = SaleType.Event
             });
@@ -490,7 +488,7 @@
                 Neighborhood = _request.Neighborhood,
                 Gender = _request.Gender,
                 Birthday = DateTimeHelpers.ToDateTimeOffset(_request.Birthday)
-            }, 
+            },
             TicketType = ItemType.Ticket,
         };
 
@@ -520,7 +518,6 @@
             _loadingState.Hide();
         }
     }
-
 
     public async ValueTask DisposeAsync()
     {
