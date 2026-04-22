@@ -375,7 +375,7 @@
                 ExternalKey = ExternalKey,
             };
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
             _navigation.NavigateTo(_bookingUrl);
@@ -520,7 +520,7 @@
         if (_isSubmitting)
             return;
 
-        await _form.Validate();
+        await _form.ValidateAsync();
 
         if (!_form.IsValid)
         {
@@ -566,7 +566,7 @@
 
             _navigation.NavigateTo(_successUrl);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 

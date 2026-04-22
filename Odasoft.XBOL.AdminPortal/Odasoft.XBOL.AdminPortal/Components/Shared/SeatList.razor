@@ -97,14 +97,16 @@
 
     private async Task HandleClearAll()
     {
-        ClearFocus();
+        await ClearFocusAsync();
         await OnClearAll.InvokeAsync();
     }
 
-    public async Task ClearFocus()
+    public async Task ClearFocusAsync()
     {
         if (Chart is not null && _focusedSeatId is not null)
+        {
             await Chart.UnfocusSeatAsync(_focusedSeatId);
+        }
 
         _focusedSeatId = null;
     }

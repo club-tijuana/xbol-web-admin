@@ -65,14 +65,14 @@
                                 <MudItem xs="12" sm="6">
                                     <MudGrid Spacing="4">
                                         <MudItem xs="12">
-                                            <AdminTextField 
-                                                @bind-Value="_name" 
+                                            <AdminTextField
+                                                @bind-Value="_name"
                                                 Label="@L["Name"].Value"
                                                 Field="@_descriptionFormContext.Field("Name")"
-                                                Required/>
+                                                Required />
                                         </MudItem>
                                         <MudItem xs="12">
-                                            <AdminTextField 
+                                            <AdminTextField
                                                 @bind-Value="_subtitle"
                                                 Label="@L["Subtitle"].Value"
                                                 Field="@_descriptionFormContext.Field("Subtitle")" />
@@ -97,7 +97,7 @@
                                             </MudSelect>
                                         </MudItem>
                                         <MudItem xs="12">
-                                            <AdminTextField 
+                                            <AdminTextField
                                                 @bind-Value="_shortDescription"
                                                 Label="@L["EventSummary"].Value"
                                                 Field="@_descriptionFormContext.Field("ShortDescription")"
@@ -151,7 +151,7 @@
                                 <MudItem xs="12" sm="6">
                                     <MudGrid Spacing="4">
                                         <MudItem xs="12" md="6">
-                                            <AdminSelect 
+                                            <AdminSelect
                                                 T="VenueResponse?"
                                                 Value="_selectedVenue"
                                                 ValueChanged="OnVenueSelected"
@@ -180,7 +180,7 @@
                                                           Variant="Variant.Outlined"
                                                           Margin="Margin.Dense"
                                                           Label="@L["Address"].Value"
-                                                          Disabled="@true"/>
+                                                          Disabled="@true" />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <MudTextField @bind-Value="_venueCoordinates"
@@ -188,7 +188,7 @@
                                                           Variant="Variant.Outlined"
                                                           Margin="Margin.Dense"
                                                           Disabled="@true" />
-                                        </MudItem>         
+                                        </MudItem>
                                         @if (_selectedVenueMap is not null)
                                         {
                                             <MudItem xs="12" Class="d-flex justify-center">
@@ -338,7 +338,9 @@
                                     <MudTh>
                                         <MudIconButton Color="MudBlazor.Color.Primary"
                                                        Icon="@Icons.Material.Outlined.Add"
-                                                       OnClick="@(() => AddPrice(long.Parse(context.Key.ToString())))">@L["AddPrice"]</MudIconButton>
+                                                       OnClick="@(() => AddPrice(long.Parse(context.Key.ToString())))">
+                                                       @L["AddPrice"]
+                                                       </MudIconButton>
                                     </MudTh>
                                 </GroupHeaderTemplate>
                             </MudTable>
@@ -384,24 +386,22 @@
                                     ;">@L["TicketsPreSale"]</MudText>
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker 
-                                        @bind-Date="_preSaleDate" 
+                                    <AdminDatePicker
+                                        @bind-Date="_preSaleDate"
                                         Label="@L["StartDate"].Value"
-                                        Field="@_datesAndSalePoliciesFormContext.Field("PreSaleDate")"
-                                        Required/>
+                                        Field="@_datesAndSalePoliciesFormContext.Field("PreSaleDate")" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudTimePicker 
-                                        @bind-Time="_preSaleTime" 
+                                    <MudTimePicker
+                                        @bind-Time="_preSaleTime"
                                         Label="@L["Time"].Value"
                                         Variant="Variant.Outlined"
                                         Margin="Margin.Dense"
                                         TimeFormat="h:mm tt"
-                                        AmPm="true"
-                                        Required/>
+                                        AmPm="true" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker @bind-Date="_presaleEndDate" Label="@L["EndDate"].Value" Required Field="@_datesAndSalePoliciesFormContext.Field("PreSaleEndDate")" />
+                                    <AdminDatePicker @bind-Date="_presaleEndDate" Label="@L["EndDate"].Value" Field="@_datesAndSalePoliciesFormContext.Field("PreSaleEndDate")" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="_preSaleEndTime"
@@ -409,8 +409,7 @@
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
-                                                   AmPm="true"
-                                                   Required/>
+                                                   AmPm="true" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12">
@@ -418,7 +417,7 @@
                                     ;">@L["TicketsSale"]</MudText>
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker @bind-Date="_onSaleDate" Label="@L["StartDate"].Value" Field="@_datesAndSalePoliciesFormContext.Field("OnSaleDate")" Required/>
+                                    <AdminDatePicker @bind-Date="_onSaleDate" Label="@L["StartDate"].Value" Field="@_datesAndSalePoliciesFormContext.Field("OnSaleDate")" Required />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="_onSaleTime"
@@ -426,8 +425,8 @@
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
-                                                   AmPm="true" 
-                                                   Required/>
+                                                   AmPm="true"
+                                                   Required />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="_offSaleDate" Label="@L["EndDate"].Value" Required Field="@_datesAndSalePoliciesFormContext.Field("OffSaleDate")" />
@@ -438,8 +437,8 @@
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
-                                                   AmPm="true" 
-                                                   Required/>
+                                                   AmPm="true"
+                                                   Required />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12" md="5">
@@ -449,7 +448,7 @@
                                             ;">@L["WebSitePublishing"]</MudText>
                                         </MudItem>
                                         <MudItem xs="12" md="7">
-                                            <AdminDatePicker @bind-Date="_publishedDate" Label="@L["PublishDate"].Value" Required Field="@_datesAndSalePoliciesFormContext.Field("PublishedDate")" />
+                                            <AdminDatePicker @bind-Date="_publishedDate" Label="@L["PublishDate"].Value" Field="@_datesAndSalePoliciesFormContext.Field("PublishedDate")" />
                                         </MudItem>
                                         <MudItem xs="12" md="5">
                                             <MudTimePicker @bind-Time="_publishedTime"
@@ -457,8 +456,7 @@
                                                            Variant="Variant.Outlined"
                                                            Margin="Margin.Dense"
                                                            TimeFormat="h:mm tt"
-                                                           AmPm="true" 
-                                                           Required/>
+                                                           AmPm="true" />
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
@@ -469,7 +467,7 @@
                                             ;">@L["VenueAccess"]</MudText>
                                         </MudItem>
                                         <MudItem xs="12" md="7">
-                                            <AdminDatePicker @bind-Date="_gateOpenDate" Label="@L["AccessDate"].Value" Required Field="@_datesAndSalePoliciesFormContext.Field("GateOpenDate")" />
+                                            <AdminDatePicker @bind-Date="_gateOpenDate" Label="@L["AccessDate"].Value" Field="@_datesAndSalePoliciesFormContext.Field("GateOpenDate")" />
                                         </MudItem>
                                         <MudItem xs="12" md="5">
                                             <MudTimePicker @bind-Time="_gateOpenTime"
@@ -477,8 +475,7 @@
                                                            Variant="Variant.Outlined"
                                                            Margin="Margin.Dense"
                                                            TimeFormat="h:mm tt"
-                                                           AmPm="true" 
-                                                           Required/>
+                                                           AmPm="true" />
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
@@ -486,8 +483,7 @@
                                 <MudItem xs="12" md="8">
                                     <AdminTextField @bind-Value="_externalEventKey"
                                                     Label="@L["ExternalEventKey"].Value"
-                                                    Field="@_descriptionFormContext.Field("ExternalEventKey")"
-                                                    Required />
+                                                    Field="@_descriptionFormContext.Field("ExternalEventKey")" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudSelect Label="@L["AgeRestrictions"]"
@@ -496,8 +492,7 @@
                                                Variant="Variant.Outlined"
                                                Margin="Margin.Dense"
                                                Validation="@(_descriptionFormContext.Field("AgeRestriction").ValidationFor<AgeRestriction?>())"
-                                               ToStringFunc="@(restriction => L[restriction.ToString()].Value)"
-                                               >
+                                               ToStringFunc="@(restriction => L[restriction.ToString()].Value)">
 
                                         @foreach (var restriction in _ageRestrictions)
                                         {
@@ -714,7 +709,7 @@
                         </MudButton>
                     }
                 </ActionContent>
-            </MudStepper>        
+            </MudStepper>
         </MudCardContent>
     </MudCard>
 </LoadingContainer>
@@ -784,7 +779,7 @@
     private AgeRestriction? _ageRestriction;
     private string? _securityPolicies;
     private string? _additionalComments;
-    private string _externalEventKey;
+    private string _externalEventKey = "";
 
     private List<PriceForm> _prices = [];
     private long? _currentPricesMapId;
@@ -900,7 +895,7 @@
             switch (_activeIndex)
             {
                 case 0:
-                    _descriptionFormContext.SetForm(_descriptionForm);                    
+                    _descriptionFormContext.SetForm(_descriptionForm);
                     isCurrentStepValid = await _descriptionFormContext.ValidateAsync();
                     break;
                 case 1:
@@ -908,7 +903,7 @@
                     isCurrentStepValid = await _pricesFormContext.ValidateAsync();
                     break;
                 case 2:
-                    _datesAndSalePoliciesFormContext.SetForm(_datesAndSalePoliciesForm);                    
+                    _datesAndSalePoliciesFormContext.SetForm(_datesAndSalePoliciesForm);
                     isCurrentStepValid = await _datesAndSalePoliciesFormContext.ValidateAsync();
                     break;
                 default:
@@ -1364,6 +1359,13 @@
     private void AddPrice(long zoneId)
     {
         var sections = GetSectionsFor(zoneId);
+
+        if (sections == null || sections.Count() == 0)
+        {
+            Snackbar.Add(L["NoSectionsInZone"], Severity.Warning);
+            return;
+        }
+
         _prices.Add(new PriceForm { BaseZoneId = zoneId, BaseSectionId = sections.FirstOrDefault()?.Id });
     }
 
@@ -1450,7 +1452,7 @@
     }
 
     private void InitializePrices()
-    {        
+    {
         if (_layout.Zones is not null && _layout.Zones.Count > 0)
         {
             _prices.Clear();

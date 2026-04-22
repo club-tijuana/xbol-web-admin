@@ -29,9 +29,8 @@
             <MudStack>
                 <MudText Typo="Typo.h5"><b>@_eventInfo.Name</b></MudText>
                 <MudStack Row>
-                    <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600
-    ;">@_eventInfo.VenueName</MudText>
-                    <MudText Typo="Typo.body1">@_eventSchedulueInfo.StartDateTime.ToString("dd/MM/yyyy h:mm tt")</MudText>
+                    <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600;">@_eventInfo.VenueName</MudText>
+                    <MudText Typo="Typo.body1">@_eventSchedulueInfo?.StartDateTime.ToString("dd/MM/yyyy h:mm tt")</MudText>
                 </MudStack>
             </MudStack>
             <MudButton OnClick="ReturnAsync" Variant="Variant.Filled" DropShadow="false" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
@@ -309,7 +308,7 @@
 
             _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
             await ReturnAsync();
@@ -451,7 +450,7 @@
         if (_isSubmitting)
             return;
 
-        await _form.Validate();
+        await _form.ValidateAsync();
 
         if (!_form.IsValid)
         {
@@ -505,7 +504,7 @@
 
             _navigation.NavigateTo("./box-office");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 

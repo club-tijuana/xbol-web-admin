@@ -133,7 +133,7 @@
             var basePath = Navigation.Uri.Contains("/xolopass/") ? "xolopass" : "events";
             Navigation.NavigateTo($"./{basePath}/{Id}/key/{ExternalKey}/booking/{holdToken.Token}/checkout");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             Snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
         }

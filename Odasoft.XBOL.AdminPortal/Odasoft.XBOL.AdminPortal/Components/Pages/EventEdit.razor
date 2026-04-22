@@ -199,7 +199,7 @@
                     </MudStep>
                     <MudStep Title="@L["ZonePrices"]">
                         <MudForm @ref="_pricesForm" @bind-IsValid="_pricesValid" @onkeydown="OnKeyDownAsync">
-                            <MudTable 
+                            <MudTable
                                 Items="_prices"
                                 GroupBy="_groupDefinition"
                                 Elevation="0"
@@ -228,7 +228,7 @@
                                     <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseSectionId))">@L["Section"]</MudTableSortLabel></MudTh>
                                     <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseRowId))">@L["Row"]</MudTableSortLabel></MudTh>
                                     <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseSeatId))">@L["Seat"]</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => x.ItemPrice)">@L["BasePrice"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => x.ItemPrice ?? 0)">@L["BasePrice"]</MudTableSortLabel></MudTh>
                                     @foreach (var priceType in PriceTypes)
                                     {
                                         <MudTh>
@@ -242,7 +242,7 @@
                                     <MudTh>
                                         <MudButton Color="MudBlazor.Color.Primary" IconColor="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Outlined.Add" OnClick="OpenAddDialog">@L["AlternativePrice"]</MudButton>
                                     </MudTh>
-                                    <MudTh/>
+                                    <MudTh />
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd></MudTd>
@@ -297,7 +297,7 @@
                                                          Placeholder="0.00"
                                                          HideSpinButtons="@true"
                                                          Immediate="@false"
-                                                         Required/>
+                                                         Required />
                                     </MudTd>
                                     @foreach (var priceType in PriceTypes)
                                     {
@@ -325,7 +325,7 @@
                                                 OnClick="@(() => DeletePriceAsync(context))" />
                                             </MudTooltip>
                                         }
-                                    </MudTd>                                    
+                                    </MudTd>
                                 </RowTemplate>
                                 <GroupHeaderTemplate>
                                     <MudTh colspan="@(6 + PriceTypes.Count)">
@@ -334,9 +334,9 @@
                                         </MudText>
                                     </MudTh>
                                     <MudTh>
-                                        <MudIconButton 
+                                        <MudIconButton
                                             Color="MudBlazor.Color.Primary"
-                                            Icon="@Icons.Material.Outlined.Add" 
+                                            Icon="@Icons.Material.Outlined.Add"
                                             OnClick="@(() => AddPrice(long.Parse(context.Key.ToString())))">@L["AddPrice"]</MudIconButton>
                                     </MudTh>
                                 </GroupHeaderTemplate>
@@ -385,8 +385,7 @@
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="_preSaleDate"
                                                      Label="@L["StartDate"].Value"
-                                                     Field="@_datesAndSalePoliciesFormContext.Field("PreSaleDate")"
-                                                     Required />
+                                                     Field="@_datesAndSalePoliciesFormContext.Field("PreSaleDate")" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="_preSaleTime"
@@ -394,11 +393,10 @@
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
-                                                   AmPm="true"
-                                                   Required />
+                                                   AmPm="true" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker @bind-Date="_presaleEndDate" Label="@L["EndDate"].Value" Required Field="@_datesAndSalePoliciesFormContext.Field("PreSaleEndDate")" />
+                                    <AdminDatePicker @bind-Date="_presaleEndDate" Label="@L["EndDate"].Value" Field="@_datesAndSalePoliciesFormContext.Field("PreSaleEndDate")" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="_preSaleEndTime"
@@ -406,8 +404,7 @@
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
-                                                   AmPm="true"
-                                                   Required />
+                                                   AmPm="true" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12">
@@ -446,7 +443,7 @@
                                             ;">@L["WebSitePublishing"]</MudText>
                                         </MudItem>
                                         <MudItem xs="12" md="7">
-                                            <AdminDatePicker @bind-Date="_publishedDate" Label="@L["PublishDate"].Value" Required Field="@_datesAndSalePoliciesFormContext.Field("PublishedDate")" />
+                                            <AdminDatePicker @bind-Date="_publishedDate" Label="@L["PublishDate"].Value" Field="@_datesAndSalePoliciesFormContext.Field("PublishedDate")" />
                                         </MudItem>
                                         <MudItem xs="12" md="5">
                                             <MudTimePicker @bind-Time="_publishedTime"
@@ -454,8 +451,7 @@
                                                            Variant="Variant.Outlined"
                                                            Margin="Margin.Dense"
                                                            TimeFormat="h:mm tt"
-                                                           AmPm="true"
-                                                           Required />
+                                                           AmPm="true" />
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
@@ -466,7 +462,7 @@
                                             ;">@L["VenueAccess"]</MudText>
                                         </MudItem>
                                         <MudItem xs="12" md="7">
-                                            <AdminDatePicker @bind-Date="_gateOpenDate" Label="@L["AccessDate"].Value" Required Field="@_datesAndSalePoliciesFormContext.Field("GateOpenDate")" />
+                                            <AdminDatePicker @bind-Date="_gateOpenDate" Label="@L["AccessDate"].Value" Field="@_datesAndSalePoliciesFormContext.Field("GateOpenDate")" />
                                         </MudItem>
                                         <MudItem xs="12" md="5">
                                             <MudTimePicker @bind-Time="_gateOpenTime"
@@ -474,16 +470,14 @@
                                                            Variant="Variant.Outlined"
                                                            Margin="Margin.Dense"
                                                            TimeFormat="h:mm tt"
-                                                           AmPm="true"
-                                                           Required />
+                                                           AmPm="true" />
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
                                 <MudItem xs="12" md="8">
                                     <AdminTextField @bind-Value="_externalEventKey"
                                                     Label="@L["ExternalEventKey"].Value"
-                                                    Field="@_descriptionFormContext.Field("ExternalEventKey")"
-                                                    Required />
+                                                    Field="@_descriptionFormContext.Field("ExternalEventKey")" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudSelect Label="@L["AgeRestrictions"]"
@@ -759,7 +753,6 @@
     private string _dragClass = DefaultDragClass;
     private bool _dragging = false;
 
-
     private string? _name;
     private string? _subtitle;
     private string? _shortDescription;
@@ -994,7 +987,7 @@
         }
         finally
         {
-            LoadingState.Hide();            
+            LoadingState.Hide();
         }
     }
 
@@ -1465,6 +1458,13 @@
     private void AddPrice(long zoneId)
     {
         var sections = GetSectionsFor(zoneId);
+
+        if (sections == null || sections.Count() == 0)
+        {
+            Snackbar.Add(L["NoSectionsInZone"], Severity.Warning);
+            return;
+        }
+
         _prices.Add(new PriceForm { BaseZoneId = zoneId, BaseSectionId = sections.FirstOrDefault()?.Id });
     }
 
@@ -1558,7 +1558,7 @@
             {
                 _prices.Add(new PriceForm
                 {
-                   BaseZoneId = zone.Id 
+                   BaseZoneId = zone.Id
                 });
             }
         }
@@ -1666,7 +1666,7 @@
             var priceType = result.Data.ToString();
             if (!string.IsNullOrWhiteSpace(priceType))
             {
-                EditPriceType(_priceTypeName, priceType);          
+                EditPriceType(_priceTypeName, priceType);
             }
         }
     }
