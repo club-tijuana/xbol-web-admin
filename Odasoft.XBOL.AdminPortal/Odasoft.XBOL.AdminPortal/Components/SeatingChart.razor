@@ -13,6 +13,7 @@
 @inject CartState CartState;
 @inject IAdminClient AdminClient;
 @inject ISnackbar Snackbar;
+@inject ILogger<SeatingChart> Logger;
 @inject AppLocalizer<Events> L;
 
 <LoadingContainer HasError="_error" ErrorMessage="@_errorMessage" IsLoading="_loading">
@@ -120,7 +121,8 @@
             {
                 _error = true;
                 _errorMessage = "Error al cargar el mapa de asientos";
-                Console.WriteLine($"SeatingChart error: {ex.Message}");
+
+                Logger.LogError(ex, "SeatingChart error");
                 StateHasChanged();
             }
             finally

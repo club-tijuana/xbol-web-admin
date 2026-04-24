@@ -451,6 +451,7 @@
             _request.ZipCode = venue.ZipCode ?? "";
             _request.Policies = venue.Policies ?? "";
             _request.AdditionalComments = venue.AdditionalComments ?? "";
+            _request.Status = venue.Status ?? VenueStatus.Draft;
 
             _amenities = await _catalogsService.GetVenueAmenitiesAsync();
             _selectedAmenities = await _venuesService.GetAmenitiesByVenueAsync(venueId.Value);

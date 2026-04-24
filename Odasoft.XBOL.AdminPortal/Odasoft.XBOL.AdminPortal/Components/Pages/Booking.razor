@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 
 @implements IDisposable
+@inject ILogger<Booking> Logger
 @inject CartState CartState
 @inject ISnackbar Snackbar
 @inject IAdminClient AdminClient
@@ -109,7 +110,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading seat management data: {ex.Message}");
+            Logger.LogError(ex, "Error loading seat management data");
             _error = true;
         }
         finally
@@ -133,8 +134,9 @@
             var basePath = Navigation.Uri.Contains("/xolopass/") ? "xolopass" : "events";
             Navigation.NavigateTo($"./{basePath}/{Id}/key/{ExternalKey}/booking/{holdToken.Token}/checkout");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to hold seats");
             Snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
         }
     }

@@ -259,6 +259,7 @@ else if(_selectedTab == TabPast)
 
     private async Task UpdateItemsAsync()
     {
+        _loadingState.Show();
         if(_selectedTab == TabPast)
         {
             if (_dataGrid is not null)
@@ -270,6 +271,7 @@ else if(_selectedTab == TabPast)
         {
             await UpdateUpcomingItems();
         }
+        _loadingState.Hide();
     }
 
     private async Task UpdateUpcomingItems()
