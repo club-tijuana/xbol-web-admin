@@ -225,22 +225,22 @@
   <data name="ExternalEventKey" xml:space="preserve">
     <value>Llave externa del evento</value>
   </data>
-    <data name="ErrorSavingEvent" xml:space="preserve">
+  <data name="ErrorSavingEvent" xml:space="preserve">
     <value>Hubo un error al guardar el evento</value>
   </data>
-    <data name="CompletePreviousStepsWarning" xml:space="preserve">
+  <data name="CompletePreviousStepsWarning" xml:space="preserve">
     <value>Por favor, completa los pasos anteriores antes de avanzar</value>
   </data>
-    <data name="ErrorLoadingVenue" xml:space="preserve">
+  <data name="ErrorLoadingVenue" xml:space="preserve">
     <value>Hubo un error al cargar el recinto</value>
   </data>
-    <data name="AllAges" xml:space="preserve">
+  <data name="AllAges" xml:space="preserve">
     <value>Para toda la familia</value>
   </data>
-    <data name="AdultsOnly" xml:space="preserve">
+  <data name="AdultsOnly" xml:space="preserve">
     <value>Mayores de edad (18+)</value>
   </data>
-    <data name="None" xml:space="preserve">
+  <data name="None" xml:space="preserve">
     <value>Sin restricciones</value>
   </data>
   <data name="ZonePrices" xml:space="preserve">
@@ -254,5 +254,8 @@
   </data>
   <data name="AddPrice" xml:space="preserve">
     <value>Agregar precio</value>
+  </data>
+  <data name="NoSectionsInZone" xml:space="preserve">
+    <value>No hay secciones en la zona</value>
   </data>
 </root>

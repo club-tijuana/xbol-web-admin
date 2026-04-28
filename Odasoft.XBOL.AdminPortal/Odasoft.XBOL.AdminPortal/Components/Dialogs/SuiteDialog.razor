@@ -50,7 +50,7 @@
                 </MudPaper>
 
                 <MudText Typo="Typo.subtitle2" Class="mb-2 font-weight-bold">Comentarios adicionales</MudText>
-                <MudPaper Outlined="true" Elevation="0" Class="pa-4 mb-6 rounded-lg border-solid border mud-border-lines-default" " Style="min-height: 290px; width: 100%">
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4 mb-6 rounded-lg border-solid border mud-border-lines-default" Style="min-height: 290px; width: 100%">
                     @((MarkupString)(_suite?.AdditionalComments ?? ""))
                 </MudPaper>
             </MudItem>
@@ -60,11 +60,11 @@
 
 @code {
     [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; }
+    private IMudDialogInstance MudDialog { get; set; } = null!;
 
     [Parameter] public long SuiteId { get; set; }
 
-    private SuiteResponse _suite { get; set; }
+    private SuiteResponse? _suite { get; set; }
 
     private List<Amenity> _amenities = [];
 

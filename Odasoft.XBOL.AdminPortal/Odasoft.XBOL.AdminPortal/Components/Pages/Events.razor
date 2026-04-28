@@ -225,7 +225,7 @@ else if(_selectedTab == TabPast)
 
     private IEnumerable<EventViewModel> EventsList { get; set; } = [];
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         _selectedTab = Tab?.ToLowerInvariant() switch
         {
@@ -233,7 +233,7 @@ else if(_selectedTab == TabPast)
             _ => TabUpcoming
         };
 
-        UpdateItems();
+        await UpdateItemsAsync();
     }
 
     private void OnTabChanged(string tab)
@@ -257,8 +257,9 @@ else if(_selectedTab == TabPast)
         }
     }
 
-    private async Task UpdateItems()
+    private async Task UpdateItemsAsync()
     {
+        _loadingState.Show();
         if(_selectedTab == TabPast)
         {
             if (_dataGrid is not null)
@@ -270,6 +271,7 @@ else if(_selectedTab == TabPast)
         {
             await UpdateUpcomingItems();
         }
+        _loadingState.Hide();
     }
 
     private async Task UpdateUpcomingItems()

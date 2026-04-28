@@ -4,7 +4,6 @@ using Odasoft.XBOL.Common.Options;
 using System.Net;
 using AppForwardedHeadersOptions = Odasoft.XBOL.Common.Options.ForwardedHeadersOptions;
 using AspNetForwardedHeadersOptions = Microsoft.AspNetCore.Builder.ForwardedHeadersOptions;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace Odasoft.XBOL.AdminPortal.Extensions;
 
@@ -67,7 +66,7 @@ public static class HostingConfiguration
             // Clear defaults (loopback only) — replace with explicit config if provided,
             // otherwise trust any upstream (safe when the container is only reachable via the proxy).
             opts.KnownProxies.Clear();
-            opts.KnownNetworks.Clear();
+            opts.KnownIPNetworks.Clear();
 
             foreach (var ip in cfg.KnownProxies ?? [])
             {
@@ -77,7 +76,7 @@ public static class HostingConfiguration
             foreach (var cidr in cfg.KnownNetworks ?? [])
             {
                 var parts = cidr.Split('/', 2);
-                opts.KnownNetworks.Add(new IPNetwork(
+                opts.KnownIPNetworks.Add(new System.Net.IPNetwork(
                     IPAddress.Parse(parts[0]),
                     int.Parse(parts[1])));
             }

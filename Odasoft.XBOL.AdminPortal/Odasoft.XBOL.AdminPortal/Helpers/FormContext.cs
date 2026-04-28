@@ -52,7 +52,7 @@ public class FormContext
             }
         }
 
-        _form?.Validate();
+        _form?.ValidateAsync();
     }
 
     internal async Task<bool> ValidateAsync()
@@ -62,7 +62,7 @@ public class FormContext
             return false;
         }
 
-        await _form.Validate();
+        await _form.ValidateAsync();
         return _form.IsValid;
     }
 }

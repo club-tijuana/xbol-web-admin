@@ -39,7 +39,7 @@
         {
             <MudListItem T="string" Class="@($"order-item{(_previousFocusedSeatId == item.SeatId ? " selected" : "")} {(AllowRemoval ? "py-1 pl-4 pr-3" : "py-2 px-4")}")" Value="@item.SeatId">
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}{(item.SelectedTicketType is not null ? $" - {item.SelectedTicketType}" : string.Empty)}")</MudText>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Price.ToString(FormatConstants.CURRENCY)</MudText>
                         @if (AllowRemoval)

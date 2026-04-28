@@ -11168,15 +11168,18 @@
           },
           "publishedDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "preSaleDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "preSaleEndDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "onSaleDate": {
             "type": "string",
@@ -11188,7 +11191,8 @@
           },
           "gateOpenDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "ageRestriction": {
             "allOf": [
@@ -12030,6 +12034,7 @@
       "EventScheduleDTO": {
         "required": [
           "availableSeats",
+          "endDateTime",
           "externalEventKey",
           "id",
           "startDateTime",
@@ -12048,20 +12053,22 @@
           },
           "endDateTime": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "format": "date-time"
           },
           "publishedDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "preSaleStartDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "preSaleEndDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "onSaleDate": {
             "type": "string",
@@ -12073,7 +12080,8 @@
           },
           "gateOpenDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "externalEventKey": {
             "type": "string"
@@ -12175,7 +12183,7 @@
         ],
         "type": "object",
         "properties": {
-          "eventId": {
+          "eventScheduleId": {
             "type": "integer",
             "format": "int64"
           },
@@ -14359,15 +14367,18 @@
           },
           "publishedDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "preSaleDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "preSaleEndDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "onSaleDate": {
             "type": "string",
@@ -14379,7 +14390,8 @@
           },
           "gateOpenDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "ageRestriction": {
             "allOf": [

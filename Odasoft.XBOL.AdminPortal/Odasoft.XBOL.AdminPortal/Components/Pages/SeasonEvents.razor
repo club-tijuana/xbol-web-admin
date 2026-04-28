@@ -316,7 +316,7 @@ else if (_selectedTab == TabPast)
 
     private IEnumerable<EventViewModel> EventsList { get; set; } = [];
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (SeasonId is not null)
         {
@@ -331,7 +331,7 @@ else if (_selectedTab == TabPast)
             };
         }
 
-        UpdateItems();
+        await UpdateItemsAsync();
     }
 
     private void OnTabChanged(string tab)
@@ -363,7 +363,7 @@ else if (_selectedTab == TabPast)
         }
     }
 
-    private async Task UpdateItems()
+    private async Task UpdateItemsAsync()
     {
         if (_selectedTab == TabPast)
         {

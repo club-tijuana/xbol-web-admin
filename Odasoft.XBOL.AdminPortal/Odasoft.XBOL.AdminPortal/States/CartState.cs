@@ -175,6 +175,7 @@ namespace Odasoft.XBOL.AdminPortal.States
         public required string SeatId { get; set; }
         public decimal Price { get; set; }
         public string? Category { get; set; }
+        public string? SelectedTicketType { get; set; }
         public bool? IsSold { get; set; }
         public bool IsSelected { get; set; }
         public bool ForSale { get; set; }

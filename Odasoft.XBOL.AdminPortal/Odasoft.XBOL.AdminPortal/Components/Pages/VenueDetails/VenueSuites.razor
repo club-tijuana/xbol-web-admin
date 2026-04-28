@@ -88,7 +88,7 @@
     [Parameter] public long VenueId { get; set; }
 
     private List<SuiteGroupViewModel> GridData = new();
-    private MudDataGrid<SuiteGroupViewModel> _grid;
+    private MudDataGrid<SuiteGroupViewModel> _grid = null!;
     private string _searchString = "";
 
     protected override async Task OnInitializedAsync()

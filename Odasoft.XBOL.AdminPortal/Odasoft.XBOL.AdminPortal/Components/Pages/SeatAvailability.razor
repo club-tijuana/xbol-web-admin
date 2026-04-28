@@ -151,7 +151,7 @@
 
     private async Task RemoveSelectionAsync(string objectId)
     {
-        _seatsList?.ClearFocus();
+        _seatsList?.ClearFocusAsync();
 
         if (_chartComponent is not null)
             await _chartComponent.DeselectSeatAsync(objectId);
@@ -159,7 +159,7 @@
 
     private async Task RemoveAllSelectionAsync()
     {
-        _seatsList?.ClearFocus();
+        _seatsList?.ClearFocusAsync();
 
         if (_chartComponent is not null)
             await _chartComponent.ClearSelection();
