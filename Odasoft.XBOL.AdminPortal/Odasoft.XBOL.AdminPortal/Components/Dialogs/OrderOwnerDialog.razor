@@ -1,0 +1,127 @@
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+
+@inject AppLocalizer<OrderOwnerDialog> _localizer;
+@inject CatalogsService _catalogsService;
+@inject ClientsService _clientsService;
+
+@inject ISnackbar _snackbar;
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Actualizar titular</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Error">*Campos obligatorios</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <MudSelect T="long?" Label="@_localizer["AreaCode"]" Variant="Variant.Outlined" Margin="Margin.Dense"
+                           @bind-Value="_clientRequest.PhoneRegionCodeId" For="@(() => _clientRequest.PhoneRegionCodeId)" Clearable>
+                    @foreach (var regionCode in _phoneRegionCodes)
+                    {
+                        <MudSelectItem T="long?" Value="regionCode.Id">
+                            @($"+{regionCode.DialCode} {regionCode.RegionCode}")
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="8">
+                <MudNumericField @bind-Value="_clientRequest.PhoneNumber" Label="Teléfono" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required />
+            </MudItem>
+
+            <MudItem xs="12" sm="12">
+                <MudTextField @bind-Value="_clientRequest.CompanyName" Label="Nombre completo" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="_clientRequest.Email" Label="Correo electrónico" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Email" ShrinkLabel Required />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="Gender?" @bind-Value="_clientRequest.Gender" Label="Genero" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Clearable>
+                    @foreach (var gender in genders)
+                    {
+                        <MudSelectItem T="Gender?" Value="@gender">
+                            <MudText Typo="Typo.body2">@_localizer[gender.ToString()]</MudText>
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="_clientRequest.City" Label="Ciudad" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="_clientRequest.Neighborhood" Label="Colonia" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudDatePicker @bind-Date="_dob" Label="Fecha de nacimiento" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudStack AlignItems="AlignItems.Center">
+            <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save" OnClick="Submit">GUARDAR</MudButton>
+        </MudStack>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public long ClientId { get; set; }
+
+    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
+    private UpdateClientRequest _clientRequest = new();
+    private List<Gender> genders = Enum.GetValues<Gender>().ToList();
+
+    private DateTime? _dob = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+        ClientDetailResult client = await _clientsService.GetClientDetailsAsync(ClientId);
+
+        _dob = client.DateOfBirth?.DateTime ?? null;
+
+        _clientRequest = new UpdateClientRequest
+        {
+            PhoneRegionCodeId = client.PhoneRegionCodeId,
+            PhoneNumber = client.PhoneNumber,
+            CompanyName = client.ClientName ?? "",
+            Email = client.Email,
+            Gender = client.Gender,
+            City = client.City,
+            Neighborhood = client.Neighborhood,
+            DateOfBirth = client.DateOfBirth,
+
+            Country = client.Country,
+            Street = client.StreetAddress,
+            ExtNumber = client.ExtNum,
+            IntNumber = client.IntNum,
+            PostalCode = client.PostalCode,
+            PersonTypeId = client.ClientType,
+            Rfc = client.TaxId,
+            SocialReason = client.BusinessName,
+            State = client.State
+        };
+    }
+
+    private void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(_clientRequest.PhoneNumber)
+            || string.IsNullOrWhiteSpace(_clientRequest.CompanyName)
+            || string.IsNullOrWhiteSpace(_clientRequest.Email))
+        {
+            _snackbar.Add("Nombre, teléfono y correo electrónico son requeridos.", Severity.Error);
+            return;        }
+
+        if (_dob.HasValue)
+        {
+            _clientRequest.DateOfBirth = _dob.Value.ToUniversalTime();
+        }
+
+        // Add form submission logic here
+        MudDialog.Close(DialogResult.Ok(_clientRequest));
+    }
+}

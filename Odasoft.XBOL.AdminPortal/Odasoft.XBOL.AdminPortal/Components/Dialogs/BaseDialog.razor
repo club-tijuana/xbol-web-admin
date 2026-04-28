@@ -1,6 +1,12 @@
-<MudDialog Class="py-4 pr-4" ActionsClass="mt-2" TitleClass="pb-2" Style="max-width: 400px;">
+<style>
+    .mud-dialog-title button.mud-icon-button {
+        color: var(--mud-palette-secondary) !important;
+    }
+</style>
+
+<MudDialog Class="py-4 pr-4" ActionsClass="mt-2 d-flex justify-center flex-grow-1" TitleClass="pb-2" Style="width: 400px; max-width: 100vw;">
     <TitleContent>
-        <MudText Typo="Typo.subtitle2">@Title</MudText>
+        @TitleContent
     </TitleContent>
     <DialogContent>
         @ChildContent
@@ -12,7 +18,7 @@
 
 @code {
     [Parameter]
-    public string Title { get; set; } = string.Empty;
+    public RenderFragment? TitleContent { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

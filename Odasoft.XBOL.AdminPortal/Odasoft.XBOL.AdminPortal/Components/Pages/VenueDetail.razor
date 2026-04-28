@@ -1,0 +1,189 @@
+@page "/venues/{VenueId:long}";
+@page "/venues/{VenueId:long}/{Tab}";
+
+@using Odasoft.XBOL.AdminPortal.Components.Pages.VenueDetails;
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
+
+@inject AppLocalizer<VenueDetail> L;
+@inject VenuesService _venueService;
+@inject NavigationManager _navigationManager;
+@inject VenueMapsService _venueMapsService;
+@inject VenuesService _venueService;
+
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="@(() => _navigationManager.NavigateTo(SitePages.VENUES))" Color="Color.Secondary"
+                       Variant="Variant.Outlined" Class="text-uppercase">
+                @L["GoBack"]
+            </MudButton>
+        </LeftContent>
+        <RightContent>
+            <MudButton StartIcon="@Icons.Material.Filled.Edit" Href="@($"./venues/{VenueId}/update")"
+                       Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">
+                @L["Edit"]
+            </MudButton>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<LoadingContainer IsLoading="_loading" HasError="_error" ErrorMessage="@L["ErrorLoading"]" OnRetry="LoadVenueAsync">
+
+    @if (_venue is not null)
+    {
+        <MudCard Class="mb-4 bg-white py-4 px-4" Elevation="3" Style="height:95px; overflow:hidden;">
+            <MudGrid Spacing="0" Class="" Justify="Justify.FlexStart" Style="height:100%;">
+                <MudItem xs="12" sm="6" lg="4" Class="d-flex align-start">
+                    <MudText Typo="Typo.h6" Color="Color.Secondary">@_venue.Name</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="4" Class="d-flex flex-column justify-center h-100">
+                    <MudText Typo="Typo.caption" Class="text-primary-darken mb-2">@L["Address"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        @($"{_venue.StreetAddress} {_venue.ExtNum}, {_venue.Neighborhood}, {_venue.ZipCode} {_venue.City}, {_venue.State}")
+                    </MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="4" Class="d-flex flex-column justify-center h-100">
+                    <MudText Typo="Typo.caption" Class="text-primary-darken mb-2">@L["Type"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        @(_venue.Category.HasValue ? L[_venue.Category.Value.ToString()] : "")
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+        </MudCard>
+
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+            <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
+                            Class="border-secondary-lighten" Color="Color.Secondary">
+                <MudToggleItem Value="@TabMaps" Text="@L["TabMaps"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabMaps ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@TabSuites" Text="@L["TabSuites"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabSuites ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@TabPolicies" Text="@L["TabPolicies"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabPolicies ? "bg-secondary-darken" : "")}")" />
+            </MudToggleGroup>
+            <MudStack Row Spacing="2">
+                <MudButton StartIcon="@Icons.Material.Filled.Map" Variant="Variant.Filled" Class="text-uppercase"
+                           Color="Color.Dark" OnClick="AddMapDialogAsync">
+                    @L["NewMap"]
+                </MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.EventSeat" Variant="Variant.Filled" Class="text-uppercase"
+                           Color="Color.Primary" OnClick="AddSuite">
+                    @L["NewSuite"]
+                </MudButton>
+            </MudStack>
+        </MudStack>
+
+        @if (_selectedTab == TabMaps)
+        {
+            <VenueMaps VenueId="VenueId" @key="_updateMapKey" />
+        }
+        else if (_selectedTab == TabSuites)
+        {
+            <VenueSuites VenueId="VenueId" />
+        }
+        else if (_selectedTab == TabPolicies)
+        {
+            <VenuePolicies VenueId="VenueId" />
+        }
+    }
+</LoadingContainer>
+
+@code {
+    [Parameter] public long VenueId { get; set; }
+    [Parameter] public string? Tab { get; set; }
+
+    private const string TabMaps = "maps";
+    private const string TabSuites = "suites";
+    private const string TabPolicies = "policies";
+
+    private string _selectedTab = TabMaps;
+    private bool _loading = true;
+    private bool _error;
+    private VenueResponse? _venue;
+    private string _updateMapKey = Guid.NewGuid().ToString();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenueAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _selectedTab = Tab?.ToLowerInvariant() switch
+        {
+            TabSuites => TabSuites,
+            TabPolicies => TabPolicies,
+            _ => TabMaps
+        };
+    }
+
+    private void OnTabChanged(string tab)
+    {
+        _selectedTab = tab;
+        _navigationManager.NavigateTo($"./venues/{VenueId}/{tab}", replace: true);
+    }
+
+    private async Task LoadVenueAsync()
+    {
+        _loading = true;
+        _error = false;
+
+        try
+        {
+            _venue = await _venueService.GetVenueByIdAsync(VenueId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading venue '{VenueId}': {ex.Message}");
+            _error = true;
+            _snackbar.Add(L["ErrorLoading"], Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task AddMapDialogAsync()
+    {
+        var parameters = new DialogParameters<VenueMapDialog>
+        {
+            { x => x.VenueId, VenueId }
+        };
+
+        var options = new DialogOptions { CloseButton = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = await _dialogService.ShowAsync<VenueMapDialog>("Nuevo mapa", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null
+            && !result.Canceled
+            && result.Data is VenueMapRequest newMap)
+        {
+            try
+            {
+                await _venueMapsService.SaveVenueMapAsync(newMap);
+                _snackbar.Add("Mapa agregado al recinto satisfactoriamente.", Severity.Success);
+                _updateMapKey = Guid.NewGuid().ToString();
+            }
+            catch (Exception)
+            {
+                _snackbar.Add("Ocurrio un error al tratar de salvar el mapa del recinto.", Severity.Error);
+            }
+        }
+    }
+
+    private async Task AddSuite()
+    {
+        _navigationManager.NavigateTo($"/venues/{VenueId}/suites/create");
+    }
+}

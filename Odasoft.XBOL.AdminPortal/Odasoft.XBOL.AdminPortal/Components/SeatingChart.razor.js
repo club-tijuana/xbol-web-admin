@@ -109,6 +109,7 @@ export async function trySelectObjects(chart, seats, dotNetHelper) {
   try {
     await chart?.trySelectObjects(seats);
   } catch (e) {
+    // TODO: Marcar ticket como vendido o eliminarlo de la lista
     dotNetHelper.invokeMethodAsync('NotifyError', "No se pudo seleccionar uno o mas asientos.");
   }  
 }

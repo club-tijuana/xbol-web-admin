@@ -1,26 +1,29 @@
-@page "/xolopass/checkout"
-@page "/xolopass/checkout/renovate/{orderReference}"
-@page "/xolopass/checkout/{seasonId:long}"
-@using Microsoft.Extensions.Options
-@using Odasoft.XBOL.AdminPortal.Components.Shared;
-@using Odasoft.XBOL.AdminPortal.Configs
-@using Odasoft.XBOL.AdminPortal.Services.Contracts
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.AdminPortal.ViewModels.Order
-@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Models.Constants
-@inject IStringLocalizer<SeasonPassCheckout> L
-@inject IOptions<SeatsIo> SeatsOptions
-@inject IAdminClient AdminApiClient
-@inject ISeasonService SeasonService
-@inject ISeasonPassService SeasonPassService
-@inject CartState CartState
-@inject IJSRuntime JSRuntime
-@inject ISnackbar Snackbar
-@inject NavigationManager Navigation
+@page "/xolopass/checkout";
+@page "/xolopass/checkout/renovate/{orderReference}";
+@page "/xolopass/checkout/{seasonId:long}";
 
-@inject NavigationManager NavigationManager
+@using Microsoft.Extensions.Options;
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.Services.Contracts;
+@using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.AdminPortal.ViewModels.Order;
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Common.Helpers
+
+@inject AppLocalizer<SeasonPassCheckout> L
+@inject IOptions<SeatsIoOptions> _seatsOptions;
+@inject ISeasonService _seasonService;
+@inject ISeasonPassService _seasonPassService;
+@inject CartState _cartState;
+@inject IJSRuntime JSRuntime;
+@inject ISnackbar _snackbar;
+@inject NavigationManager _navigationManager;
+@inject ClientsService _clientService;
+@inject CatalogsService _catalogsService;
+@inject ILogger<SeasonPassCheckout> Logger;
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
@@ -45,19 +48,19 @@
     </MudGrid>
     <MudGrid>
         <MudItem xs="12" sm="12" md="6" lg="1">
-            <MudSelect T="string"
+            <MudSelect T="long?"
                        Label="Lada"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        Disabled="IsRenovation"
-                       @bind-Value="_request.ClientContact.CountryPhoneISO"
+                       @bind-Value="_request.ClientContact.PhoneRegionCodeId"
                        ShrinkLabel
                        Required>
 
-                @foreach (var item in CountryDialCodes.Map)
+                @foreach (var regionCode in _phoneRegionCodes)
                 {
-                    <MudSelectItem T="string" Value="item.Value">
-                        @item.Value
+                    <MudSelectItem T="long?" Value="regionCode.Id">
+                        @($"+{regionCode.DialCode} {regionCode.RegionCode}")
                     </MudSelectItem>
                 }
             </MudSelect>
@@ -71,7 +74,7 @@
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           MaxLength="10"
-                          OnBlur="OnPhoneBlur"
+                          OnBlur="SearchOnBlur"
                           Disabled="IsRenovation"
                           InputType="InputType.Telephone"
                           ShrinkLabel />
@@ -82,12 +85,14 @@
                           @bind-Value="_request.ClientContact.Email"
                           Required="true" Margin="Margin.Dense"
                           Disabled="IsRenovation"
+                          OnBlur="SearchOnBlur"
+                          InputType="InputType.Email"
                           Immediate="true"
                           ShrinkLabel />
         </MudItem>
         <MudItem xs="12" sm="12" md="6" lg="3">
             <MudTextField T="string"
-                          @bind-Value="_request.ClientContact.Name"
+                          @bind-Value="_request.ClientContact.FirstName"
                           Label="Nombre del comprador " Variant="Variant.Outlined"
                           Required="true" Margin="Margin.Dense"
                           Disabled="IsRenovation"
@@ -121,12 +126,12 @@
                               EventId="SeasonId"
                               Prices="_prices"
                               SelectedSeats="SelectedSeats"
-                              OnChartRendered="HandleChartReady" />
+                              OnChartRendered="HandleChartReadyAsync" />
             }
         </MudItem>
         <MudItem xs="6">
             <div class="d-flex flex-column">
-                <OrderSummary></OrderSummary>
+                <OrderSummary AllowRemoval="false"></OrderSummary>
                 @if (_showValidationError)
                 {
                     <MudAlert Severity="Severity.Error" Dense="true" Class="mb-2">
@@ -163,42 +168,39 @@
     private bool _error = false;
     private ClientFilter clientFilter = new();
     private ClientSeasonEvent _clientSeasonEvent = new();
-    private BookSeasonRequest _request = new();
+    private SeasonBookingRequest _request = new();
     private ImageHeroBannerViewModel _seasonBanner = new();
     private bool IsRenovation => !string.IsNullOrEmpty(orderReference);
     private List<SeatInfo> _selectedSeats { get; set; } = [];
     private bool _showValidationError = false;
     private bool _isSubmitting = false;
+    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
     protected override async Task OnInitializedAsync()
     {
-        CartState.OnChange += async () =>
+        _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+
+        _cartState.OnChange += async () =>
         {
             await InvokeAsync(StateHasChanged);
         };
 
-        CartState.SetEvent(SeasonId);
+        _cartState.SetEvent(SeasonId);
         await LoadSeasonData();
     }
 
-    private async Task OnPhoneBlur(FocusEventArgs args)
+    private async Task SearchOnBlur(FocusEventArgs args)
     {
-        if (string.IsNullOrWhiteSpace(_request.ClientContact.CountryPhoneISO) ||
-            string.IsNullOrWhiteSpace(_request.ClientContact.PhoneNumber))
+        if (_request.ClientContact.PhoneRegionCodeId.HasValue == false
+            && string.IsNullOrWhiteSpace(_request.ClientContact.PhoneNumber)
+            && string.IsNullOrWhiteSpace(_request.ClientContact.Email))
         {
             return;
         }
 
-        ClientFilter clientFilter = new()
-        {
-            CountryPhoneISO = _request.ClientContact.CountryPhoneISO,
-            PhoneNumber = _request.ClientContact.PhoneNumber,
-            SeasonId = SeasonId
-        };
-
         try
         {
-            var result = await SeasonPassService.GetClientSeasonEventInfo(clientFilter);
+            var result = await _seasonPassService.GetClientSeasonEventInfo(clientFilter);
 
             if (result is null)
             {
@@ -209,20 +211,28 @@
             {
                 if (result.AlreadyRenewed is true)
                 {
-                    Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
-                    Navigation.NavigateTo("/xolopass");
+                    _snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
+                    _navigationManager.NavigateTo("./xolopass");
                 }
                 if (result.CanRenovate is false)
                 {
-                    Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
-                    Navigation.NavigateTo("/xolopass");
+                    _snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
+                    _navigationManager.NavigateTo("./xolopass");
                 }
             }
 
-            _request.ClientContact.Name = result.ClientContact.Name;
-            _request.ClientContact.LastName = result.ClientContact.LastName;
-            _request.ClientContact.Email = result.ClientContact.Email;
+            _request.ClientContact.FirstName = result.ClientContact?.Name ?? "";
+            _request.ClientContact.LastName = result.ClientContact?.LastName ?? "";
+            _request.ClientContact.FullName = $"{result.ClientContact?.Name} {result.ClientContact?.LastName}".Trim();
+            _request.ClientContact.Email = result.ClientContact?.Email ?? "";
 
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode == StatusCodes.Status404NotFound)
+            {
+                await SearchForClientAsync();
+            }
         }
         catch (Exception ex)
         {
@@ -233,7 +243,7 @@
 
     private void GoToSeasonpassList()
     {
-        NavigationManager.NavigateTo("/xolopass");
+        _navigationManager.NavigateTo("./xolopass");
     }
 
     private async Task LoadSeasonData()
@@ -243,61 +253,69 @@
 
         try
         {
-            _secretKey = SeatsOptions.Value.SecretKey;
+            _secretKey = _seatsOptions.Value.SecretKey;
 
             if (IsRenovation)
             {
-                _clientSeasonEvent = await SeasonPassService.GetClientSeasonEventByOrderReference(orderReference!);
+                _clientSeasonEvent = await _seasonPassService.GetClientSeasonEventByOrderReference(orderReference!);
                 if (_clientSeasonEvent != null)
                 {
-                    _request.EventKey = _clientSeasonEvent.SeasonKey;
-                    _request.ClientContact = _clientSeasonEvent.ClientContact;
-                    _request.RelatedOrderId = _clientSeasonEvent.RelatedOrderId;
+                    _request.SeasonKey = _clientSeasonEvent.SeasonKey ?? "";
+                    _request.ClientContact = new ClientInfoRequest
+                    {
+                        PhoneRegionCodeId = _clientSeasonEvent.ClientContact?.PhoneRegionCodeId,
+                        PhoneNumber = _clientSeasonEvent.ClientContact?.PhoneNumber ?? "",
+                        Email = _clientSeasonEvent.ClientContact?.Email ?? "",
+                        FirstName = _clientSeasonEvent.ClientContact?.Name ?? "",
+                        LastName = _clientSeasonEvent.ClientContact?.LastName ?? "",
+                        FullName = $"{_clientSeasonEvent.ClientContact?.Name} {_clientSeasonEvent.ClientContact?.LastName}".Trim(),
+                        Id = _clientSeasonEvent.ClientContact?.Id
+                    };
 
-                    _seasonKey = _request.EventKey;
+                    _seasonKey = _request.SeasonKey;
                     _selectedSeats = _clientSeasonEvent.Seats.Select(x => new SeatInfo
                     {
-                        SeatId = x.SeatId,
+                        SeatId = x.SeatId ?? "",
                         Price = (decimal)x.Price,
                         Category = x.Category
                     }).ToList();
 
                     if (_clientSeasonEvent.SeasonId is null)
                     {
-                        Snackbar.Add("Datos de temporada no válidos. Se requiere el ID de temporada.", Severity.Error);
-                        Navigation.NavigateTo("/xolopass");
+                        _snackbar.Add("Datos de temporada no válidos. Se requiere el ID de temporada.", Severity.Error);
+                        _navigationManager.NavigateTo("./xolopass");
                     }
                     else
                     {
 
                         SeasonId = _clientSeasonEvent.SeasonId.Value;
                         SelectedSeats = _selectedSeats.Select(x => x.SeatId).ToList();
-                        CartState.SelectedSeats = _selectedSeats;
+                        _cartState.SelectedSeats = _selectedSeats;
 
-                        var season = await SeasonService.GetSeasonByIdAsync(SeasonId);
+                        var season = await _seasonService.GetSeasonByIdAsync(SeasonId);
                         _prices = season.Prices?.ToList() ?? new();
-                        _seasonBanner = await SeasonService.GetSeasonBannerAsync(SeasonId);
+                        _seasonBanner = await _seasonService.GetSeasonBannerAsync(SeasonId);
 
                         if (_clientSeasonEvent.AlreadyRenewed is true)
                         {
-                            Snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
-                            Navigation.NavigateTo("/xolopass");
+                            _snackbar.Add("El cliente ya cuenta con una renovación.", Severity.Warning);
+                            _navigationManager.NavigateTo("./xolopass");
                         }
 
                         if (_clientSeasonEvent.CanRenovate is false)
                         {
-                            Snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
-                            Navigation.NavigateTo("/xolopass");
+                            _snackbar.Add("El cliente ya no puede renovar.", Severity.Warning);
+                            _navigationManager.NavigateTo("./xolopass");
                         }
                     }
                 }
             }
             else
             {
-                var season = await SeasonService.GetSeasonByIdAsync(SeasonId);
+                var season = await _seasonService.GetSeasonByIdAsync(SeasonId);
                 _seasonKey = season.ExternalSeasonKey ?? string.Empty;
                 _prices = season.Prices?.ToList() ?? new();
-                _seasonBanner = await SeasonService.GetSeasonBannerAsync(SeasonId);
+                _seasonBanner = await _seasonService.GetSeasonBannerAsync(SeasonId);
             }
         }
         catch
@@ -322,38 +340,38 @@
 
         try
         {
-            if (string.IsNullOrWhiteSpace(_request.ClientContact.CountryPhoneISO) ||
-            string.IsNullOrWhiteSpace(_request.ClientContact.PhoneNumber) ||
-            string.IsNullOrWhiteSpace(_request.ClientContact.Email) ||
-            string.IsNullOrWhiteSpace(_request.ClientContact.Name) ||
-            string.IsNullOrWhiteSpace(_request.ClientContact.LastName) ||
-            CartState.SelectedSeats is null ||
-            CartState.SelectedSeats.Count == 0)
+            if (_request.ClientContact.PhoneRegionCodeId.HasValue == false
+                || string.IsNullOrWhiteSpace(_request.ClientContact.PhoneNumber)
+                || string.IsNullOrWhiteSpace(_request.ClientContact.Email)
+                || string.IsNullOrWhiteSpace(_request.ClientContact.FirstName)
+                || string.IsNullOrWhiteSpace(_request.ClientContact.LastName)
+                || _cartState.SelectedSeats is null
+                || _cartState.SelectedSeats.Count == 0)
             {
                 _showValidationError = true;
-                Snackbar.Add("Faltan datos para continuar con la compra.", Severity.Warning);
+                _snackbar.Add("Faltan datos para continuar con la compra.", Severity.Warning);
                 return;
             }
 
-            _request.Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList();
-            _request.EventKey = _seasonKey;
-            _request.HoldToken = CartState.HoldToken ?? "";
-            _request.SeassonId = SeasonId;
+            _request.Seats = _cartState.SelectedSeats.ToDictionary(x => x.SeatId, x => x.Price);
+            _request.SeasonKey = _seasonKey ?? "";
+            _request.HoldToken = _cartState.HoldToken ?? "";
 
-            var result = await AdminApiClient.BookSeasonAsync(_request);
+            BookingResult result = await _seasonPassService.BookSeasonAsync(_request);
 
-            Snackbar.Add("Xolopass pagado con exito.", configure: c =>
+            _snackbar.Add("Xolopass pagado con exito.", configure: c =>
             {
                 c.SnackbarVariant = Variant.Text;
                 c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
                 c.IconColor = Color.Success;
             });
 
-            Navigation.NavigateTo("/xolopass");
+            _navigationManager.NavigateTo("./xolopass");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
+            Logger.LogError(ex, "Failed to process season pass checkout");
+            _snackbar.Add("Hubo un error, intenta mas tarde", Severity.Error);
         }
         finally
         {
@@ -361,19 +379,52 @@
         }
     }
 
-    private async Task HandleChartReady()
+    private async Task HandleChartReadyAsync()
     {
         if (SelectedSeats.Count > 0)
         {
-            CartState.SelectedSeats = _selectedSeats;
+            _cartState.SelectedSeats = _selectedSeats;
         }
 
         StateHasChanged();
     }
 
-    public void Dispose()
+    private async Task SearchForClientAsync()
     {
-        CartState.OnChange -= StateHasChanged;
+        try
+        {
+            ClientContactResponse? client = await _clientService.SearchClientAsync(
+                                                    _request.ClientContact.PhoneRegionCodeId,
+                                                    _request.ClientContact.PhoneNumber ?? "",
+                                                    _request.ClientContact.Email ?? "");
+
+            if (client is not null)
+            {
+                _request.ClientContact.Id = client.Id;
+                _request.ClientContact.FirstName = client.Name ?? "";
+                _request.ClientContact.LastName = client.LastName ?? "";
+                _request.ClientContact.Email = client.Email ?? "";
+                _request.ClientContact.FullName = $"{client.Name} {client.LastName}".Trim();
+                _request.ClientContact.PhoneRegionCodeId = client.PhoneRegionCodeId;
+                _request.ClientContact.PhoneNumber = client.PhoneNumber ?? "";
+            }
+        }
+        catch (ApiException ex)
+        {
+            // If the client is not found, we don't want to show an error, we just want to clear the form
+            if (ex.StatusCode != StatusCodes.Status404NotFound)
+            {
+                Console.WriteLine($"Unexpected error searching for client: {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unexpected error searching for client: {ex.Message}");
+        }
     }
 
+    public void Dispose()
+    {
+        _cartState.OnChange -= StateHasChanged;
+    }
 }

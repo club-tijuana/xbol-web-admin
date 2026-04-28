@@ -72,4 +72,16 @@
   <data name="NavSettingsRoles" xml:space="preserve">
     <value>Roles</value>
   </data>
+  <data name="SuccessfulPurchase" xml:space="preserve">
+    <value>Compra exitosa</value>
+  </data>
+  <data name="TrackingNumber" xml:space="preserve">
+    <value>Número de seguimiento</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Teléfono</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Correo electrónico</value>
+  </data>
 </root>

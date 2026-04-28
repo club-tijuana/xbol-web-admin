@@ -1,0 +1,777 @@
+@page "/venues/create";
+@page "/venues/{venueId:long}/update";
+
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.ModelValidators;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Models.DTO
+@using Odasoft.XBOL.Models.ViewModels;
+@using Radzen.Blazor
+@using SixLabors.ImageSharp;
+
+@inject ISnackbar _snackbar;
+
+@inject AppLocalizer<Venue> _localizer;
+@inject CatalogsService _catalogsService;
+@inject NavigationManager _navigationManager;
+@inject VenuesService _venuesService;
+@inject ILogger<Venue> Logger;
+
+<PageTitle>@_pageTitle</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToVenues())"
+                       Color="MudBlazor.Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<LoadingContainer IsLoading="_isLoading">
+    <MudPaper Class="pa-6" Elevation="3">
+        <MudStepper @ref="_stepper" @bind-ActiveIndex="_activeIndex">
+            <ChildContent>
+                <MudStep Title="Dirección de recinto y contacto">
+                    <MudForm @ref="_venueForm" Model="_request" @bind-IsValid="_isStepOneValid" Validation="@(venueValidator.ValidateValue)">
+                        <MudGrid Spacing="4">
+                            <MudItem xs="12" lg="8">
+                                <MudTextField Label="Nombre del recinto" @bind-Value="_request.Name" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12" lg="4">
+                                <MudSelect Label="Tipo" T="VenueCategory" @bind-Value="_request.Category" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                           ToStringFunc="@(category => _localizer[category.ToString()].Value)" ShrinkLabel Required="true">
+
+                                    @foreach (var category in _venueCategories)
+                                    {
+                                        <MudSelectItem T="VenueCategory" Value="category">
+                                            @_localizer[category.ToString()]
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.subtitle2">Dirección</MudText>
+                            </MudItem>
+                            <MudItem xs="12" lg="4">
+                                <MudTextField Label="Pais" @bind-Value="_request.Country" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12" lg="4">
+                                <MudTextField Label="Estado" @bind-Value="_request.State" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12" lg="4">
+                                <MudTextField Label="Cuidad" @bind-Value="_request.City" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12" lg="6">
+                                <MudTextField Label="Calle" @bind-Value="_request.StreetAddress" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12" lg="3">
+                                <MudTextField Label="Número" @bind-Value="_request.ExtNum" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12" lg="3">
+                                <MudTextField Label="Número interior" @bind-Value="_request.IntNum" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
+                            </MudItem>
+                            <MudItem xs="12" lg="4">
+                                <MudTextField Label="Código postal" @bind-Value="_request.ZipCode" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12" lg="8">
+                                <MudTextField Label="Colonia" @bind-Value="_request.Neighborhood" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12" lg="4">
+                                <MudNumericField Label="Latitud" @bind-Value="_request.Latitude" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12" lg="4">
+                                <MudNumericField Label="Longitud" @bind-Value="_request.Longitude" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.subtitle2">Contacto</MudText>
+                            </MudItem>
+                            <MudItem xs="12" lg="6">
+                                <MudTextField Label="Nombre del contacto" @bind-Value="_request.ContactName" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
+                            </MudItem>
+                            <MudItem xs="12" lg="6">
+                                <MudTextField Label="URL a sitio oficial" @bind-Value="_request.LandingUrl" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Url" ShrinkLabel />
+                            </MudItem>
+                            <MudItem xs="12" lg="2">
+                                <MudSelect Label="Lada" @bind-Value="_request.PhoneRegionCodeId" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Clearable>
+                                    @foreach (var regionCode in _phoneRegionCodes)
+                                    {
+                                        <MudSelectItem T="long?" Value="regionCode.Id">
+                                            @($"+{regionCode.DialCode} {regionCode.RegionCode}")
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" lg="4">
+                                <MudTextField Label="Teléfono" @bind-Value="_request.ContactPhoneNumber" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Telephone" ShrinkLabel />
+                            </MudItem>
+
+                            <MudItem xs="12" lg="6">
+                                <MudTextField Label="Correo electrónico" @bind-Value="_request.ContactEmail" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Email" ShrinkLabel />
+                            </MudItem>
+                        </MudGrid>
+                    </MudForm>
+                </MudStep>
+                <MudStep Title="Políticas y amenidades">
+
+                    <MudGrid Class="mud-width-full">
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle1" Class="mb-3 fw-bold">Amenidades y seguridad</MudText>
+
+                            <MudChipSet T="Amenity" SelectionMode="SelectionMode.MultiSelection" @bind-SelectedValues="_selectedAmenities">
+                                @foreach (var amenity in _amenities)
+                                {
+                                    bool isSelected = _selectedAmenities != null && _selectedAmenities.Any(a => a.Id == amenity.Id);
+
+                                    <MudChip Value="@amenity"
+                                             Variant="Variant.Text"
+                                             Color="MudBlazor.Color.Dark"
+                                             CheckedIcon="@string.Empty">
+                                        <div class="d-flex align-center">
+                                            @if (isSelected)
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Check" Size="@MudBlazor.Size.Small" Class="mr-2" />
+                                                <MudText Typo="Typo.body2" Style="color: white">@amenity.Name</MudText>
+                                            }
+                                            else
+                                            {
+                                                <MudIcon Icon="@IconHelper.GetIconFromIdentifier(amenity.IconIdentifier)" Size="@MudBlazor.Size.Small" Class="mr-2" />
+                                                <MudText Typo="Typo.body2" Color="@MudBlazor.Color.Dark">@amenity.Name</MudText>
+                                            }
+                                        </div>
+                                    </MudChip>
+                                }
+                            </MudChipSet>
+                        </MudItem>
+
+                        <MudItem xs="12" lg="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Políticas del recinto</MudText>
+                            <MudPaper Outlined="true" Class="pa-0">
+                                <RadzenHtmlEditor @bind-Value="_request.Policies" Style="min-height: 300px; width: 100%;">
+                                    <RadzenHtmlEditorUndo Title="Deshacer" />
+                                    <RadzenHtmlEditorRedo Title="Rehacer" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorBold Title="Negrita" />
+                                    <RadzenHtmlEditorItalic Title="Cursiva" />
+                                    <RadzenHtmlEditorUnderline Title="Subrayado" />
+                                    <RadzenHtmlEditorStrikeThrough Title="Tachado" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorAlignLeft Title="Alinear a la izquierda" />
+                                    <RadzenHtmlEditorAlignCenter Title="Centrar" />
+                                    <RadzenHtmlEditorAlignRight Title="Alinear a la derecha" />
+                                    <RadzenHtmlEditorJustify Title="Justificar" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorUnorderedList Title="Lista de viñetas" />
+                                    <RadzenHtmlEditorOrderedList Title="Lista numerada" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorColor Title="Color del texto" />
+                                    <RadzenHtmlEditorBackground Title="Color de fondo" />
+                                    <RadzenHtmlEditorRemoveFormat Title="Quitar formato" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorSubscript Title="Subíndice" />
+                                    <RadzenHtmlEditorSuperscript Title="Superíndice" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorLink Title="Insertar enlace" />
+                                    <RadzenHtmlEditorUnlink Title="Quitar enlace" />
+                                    <RadzenHtmlEditorImage Title="Insertar imagen" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorFontName Title="Fuente" Placeholder="Fuente" />
+                                    <RadzenHtmlEditorFontSize Title="Tamaño" Placeholder="Tamaño" />
+                                    <RadzenHtmlEditorFormatBlock Title="Formato" Placeholder="Párrafo" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorSource Title="Ver código HTML" />
+                                </RadzenHtmlEditor>
+                            </MudPaper>
+                        </MudItem>
+
+                        <MudItem xs="12" lg="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Comentarios adicionales</MudText>
+                            <MudPaper Outlined="true" Class="pa-0">
+                                <RadzenHtmlEditor @bind-Value="_request.AdditionalComments" Style="min-height: 300px; width: 100%;">
+                                    <RadzenHtmlEditorUndo Title="Deshacer" />
+                                    <RadzenHtmlEditorRedo Title="Rehacer" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorBold Title="Negrita" />
+                                    <RadzenHtmlEditorItalic Title="Cursiva" />
+                                    <RadzenHtmlEditorUnderline Title="Subrayado" />
+                                    <RadzenHtmlEditorStrikeThrough Title="Tachado" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorAlignLeft Title="Alinear a la izquierda" />
+                                    <RadzenHtmlEditorAlignCenter Title="Centrar" />
+                                    <RadzenHtmlEditorAlignRight Title="Alinear a la derecha" />
+                                    <RadzenHtmlEditorJustify Title="Justificar" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorUnorderedList Title="Lista de viñetas" />
+                                    <RadzenHtmlEditorOrderedList Title="Lista numerada" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorColor Title="Color del texto" />
+                                    <RadzenHtmlEditorBackground Title="Color de fondo" />
+                                    <RadzenHtmlEditorRemoveFormat Title="Quitar formato" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorSubscript Title="Subíndice" />
+                                    <RadzenHtmlEditorSuperscript Title="Superíndice" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorLink Title="Insertar enlace" />
+                                    <RadzenHtmlEditorUnlink Title="Quitar enlace" />
+                                    <RadzenHtmlEditorImage Title="Insertar imagen" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorFontName Title="Fuente" Placeholder="Fuente" />
+                                    <RadzenHtmlEditorFontSize Title="Tamaño" Placeholder="Tamaño" />
+                                    <RadzenHtmlEditorFormatBlock Title="Formato" Placeholder="Párrafo" />
+                                    <RadzenHtmlEditorSeparator />
+                                    <RadzenHtmlEditorSource Title="Ver código HTML" />
+                                </RadzenHtmlEditor>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+                </MudStep>
+                <MudStep Title="Galería de imágenes">
+                    <MudGrid Class="mud-width-full">
+
+                        <MudItem xs="12">
+                            <MudFileUpload @ref="_facadeImageUpload" T="IBrowserFile" FilesChanged="UploadFacadeAsync">
+                                <CustomContent>
+                                    <div class="d-flex align-center gap-4">
+                                        <MudButton StartIcon="@Icons.Material.Filled.UploadFile"
+                                                   Variant="Variant.Filled"
+                                                   Class="text-uppercase"
+                                                   Style="background-color: #546e7a; color: white;"
+                                                   OnClick="@context.OpenFilePickerAsync">
+                                            FACHADA
+                                        </MudButton>
+
+                                        @if (_facadeImage != null)
+                                        {
+                                            <MudText Typo="Typo.body1" Style="color: #455a64; font-weight: 500;">
+                                                @_facadeImage.Name
+                                            </MudText>
+
+                                            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Error" OnClick="DeleteFacadeAsync" />
+                                        }
+                                    </div>
+                                </CustomContent>
+                            </MudFileUpload>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">Galería de imágenes</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudFileUpload @ref="_galleryUpload" T="IReadOnlyList<IBrowserFile>" Accept=".jpg, .png, .jpeg" AppendMultipleFiles="true" DragAndDrop="true"
+                                           @bind-Dragging="@_dragging" @bind-Dragging:after="@ClearDragClass" FilesChanged="UploadGalleryImagesAsync">
+                                <CustomContent>
+                                    <MudPaper Height="300px;" Outlined="true" @onclick="@context.OpenFilePickerAsync" @ondragenter="@SetDragClass"
+                                              Class="@($"pa-4 {_dragClass}")">
+
+                                        <MudText Typo="Typo.body1">
+                                            Arrastre las imágenes aquí o haga clic para buscar
+                                        </MudText>
+                                        <MudText Typo="Typo.caption">
+                                            Se recomiendan archivos en png o jpg de dimensiones mínimas de 1920 x 1080 px y no mayores a 10MB
+                                        </MudText>
+
+                                        @if (_galleryImages != null && _galleryImages.Count() > 0)
+                                        {
+                                            <div class="mt-4 d-flex flex-wrap gap-2" style="z-index: 10;">
+                                                @foreach (var fileName in _galleryImages.Keys)
+                                                {
+                                                    <MudChip T="string" Color="MudBlazor.Color.Dark" OnClose="@(() => RemoveGalleryImageAsync(fileName))" @onclick:preventDefault="true">
+                                                        @fileName
+                                                    </MudChip>
+                                                }
+                                            </div>
+                                        }
+
+                                        @if (_galleryImages != null && _galleryImages.Any())
+                                        {
+                                            <div style="position: absolute; bottom: 16px; right: 16px; z-index: 20;">
+                                                <MudButton Variant="Variant.Outlined"
+                                                           StartIcon="@Icons.Material.Filled.Menu"
+                                                           Color="MudBlazor.Color.Secondary"
+                                                           OnClick="CleanGalleryImagesAsync">
+                                                    LIMPIAR
+                                                </MudButton>
+                                            </div>
+                                        }
+                                    </MudPaper>
+                                </CustomContent>
+                            </MudFileUpload>
+                        </MudItem>
+                    </MudGrid>
+                </MudStep>
+            </ChildContent>
+
+            <ActionContent Context="stepperContext">
+
+                @if (_activeIndex > 0)
+                {
+                    <MudButton OnClick="@(() => _stepper.PreviousStepAsync())"
+                               StartIcon="@Icons.Material.Filled.ChevronLeft"
+                               Variant="Variant.Outlined"
+                               Color="MudBlazor.Color.Primary">
+                        ATRÁS
+                    </MudButton>
+                }
+
+                <MudSpacer />
+
+                @if (_activeIndex < 2)
+                {
+                    <MudButton OnClick="ValidateAndGoNextAsync"
+                               EndIcon="@Icons.Material.Filled.ChevronRight"
+                               Variant="Variant.Outlined"
+                               Color="MudBlazor.Color.Primary">
+                        SIGUIENTE
+                    </MudButton>
+                }
+                else if (_activeIndex == 2)
+                {
+                    <MudButton OnClick="SaveAllAsync"
+                               Variant="Variant.Filled"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               Color="MudBlazor.Color.Tertiary">
+                        GUARDAR
+                    </MudButton>
+                }
+            </ActionContent>
+        </MudStepper>
+    </MudPaper>
+</LoadingContainer>
+
+@code {
+    [Parameter]
+    public long? venueId { get; set; }
+
+    // TODO: Get values from system settings
+    private readonly long _maxFileSize = 10 * 1024 * 1024; // 10 MB
+    private readonly int _minWidth = 1920;
+    private readonly int _minHeight = 1080;
+
+    private string _pageTitle = "";
+    private bool _isLoading = true;
+
+    private MudStepper _stepper = null!;
+    private MudForm _venueForm = null!;
+    private int _activeIndex = 0;
+    private bool _isStepOneValid;
+
+    private VenueRequest _request = new();
+    private VenueValidator venueValidator = new();
+
+    private List<VenueCategory> _venueCategories = Enum.GetValues<VenueCategory>().ToList();
+    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
+
+    private List<Amenity> _amenities = [];
+    private IReadOnlyCollection<Amenity> _selectedAmenities = [];
+
+    private MudFileUpload<IBrowserFile> _facadeImageUpload = null!;
+    private ImageModel? _facadeImage;
+    private MudFileUpload<IReadOnlyList<IBrowserFile>> _galleryUpload = null!;
+    private Dictionary<string, ImageModel> _galleryImages = [];
+
+    private const string DefaultDragClass = "relative d-flex flex-column p-r gap-2 rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
+    private string _dragClass = DefaultDragClass;
+    private bool _dragging = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            if (venueId.HasValue && venueId.Value > 0)
+            {
+                _pageTitle = "Editar recinto";
+                await LoadVenueDataAsync();
+            }
+            else
+            {
+                _pageTitle = "Nuevo recinto";
+            }
+
+            _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode == StatusCodes.Status404NotFound)
+            {
+                _snackbar.Add("Recinto no encontrado, redireccionando a la vista de recintos principal.", Severity.Warning);
+                _navigationManager.NavigateTo(SitePages.VENUES);
+            }
+            else
+            {
+                throw;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load venue {VenueId}", venueId);
+            _snackbar.Add("Ocurrio un error al tratar de cargar la pagina, redireccionando a la vista de recintos pirncipal.", Severity.Error);
+            _navigationManager.NavigateTo(SitePages.VENUES);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void GoToVenues()
+    {
+        var url = venueId.HasValue ? $"{SitePages.VENUES}/{venueId.Value}" : SitePages.VENUES;
+        _navigationManager.NavigateTo(url);
+    }
+
+    private async Task LoadVenueDataAsync()
+    {
+        try
+        {
+            var venue = await _venuesService.GetVenueByIdAsync(venueId.Value);
+
+            // TODO: Start auto mapping this
+            _request.Category = venue.Category ?? VenueCategory.Stadium;
+            _request.City = venue.City ?? "";
+            _request.ContactEmail = venue.ContactEmail ?? "";
+            _request.ContactName = venue.ContactName ?? "";
+            _request.ContactPhoneNumber = venue.ContactPhoneNumber ?? "";
+            _request.Country = venue.Country ?? "";
+            _request.ExtNum = venue.ExtNum ?? "";
+            _request.IntNum = venue.IntNum;
+            _request.Latitude = venue.Latitude ?? 0;
+            _request.Longitude = venue.Longitude ?? 0;
+            _request.LandingUrl = venue.LandingUrl;
+            _request.Name = venue.Name ?? "";
+            _request.Neighborhood = venue.Neighborhood ?? "";
+            _request.PhoneRegionCodeId = venue.PhoneRegionCodeId;
+            _request.State = venue.State ?? "";
+            _request.StreetAddress = venue.StreetAddress ?? "";
+            _request.ZipCode = venue.ZipCode ?? "";
+            _request.Policies = venue.Policies ?? "";
+            _request.AdditionalComments = venue.AdditionalComments ?? "";
+            _request.Status = venue.Status ?? VenueStatus.Draft;
+
+            _amenities = await _catalogsService.GetVenueAmenitiesAsync();
+            _selectedAmenities = await _venuesService.GetAmenitiesByVenueAsync(venueId.Value);
+
+            ICollection<VenueImageResponse> facadeImages = await _venuesService.GetVenueImageByTypeAsync(venueId.Value, ImageType.Facade);
+            var facade = facadeImages.FirstOrDefault();
+
+            if (facade != null && facade.Id.HasValue)
+            {
+                _facadeImage = new ImageModel
+                {
+                    Id = facade.Id,
+                    Name = facade.Title ?? ""
+                };
+            }
+
+            ICollection<VenueImageResponse> galleryImages = await _venuesService.GetVenueImageByTypeAsync(venueId.Value, ImageType.Gallery);
+
+            foreach (var image in galleryImages)
+            {
+                if (string.IsNullOrWhiteSpace(image.Title))
+                {
+                    continue;
+                }
+
+                _galleryImages.Add(image.Title, new ImageModel
+                {
+                    Id = image.Id,
+                    Name = image.Title
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unable to load venue '{venueId}' information. Error: {ex.Message}");
+            _snackbar.Add("Ocurrio un error al tratar de cargar el recinto. Redireccionara al listado de recintos.", Severity.Error);
+            _navigationManager.NavigateTo(SitePages.VENUES);
+        }
+    }
+
+    private async Task UploadFacadeAsync(IBrowserFile file)
+    {
+        if (file == null)
+        {
+            return;
+        }
+
+        if (_facadeImage == null)
+        {
+            _facadeImage = new ImageModel
+            {
+                Name = file.Name,
+                TempFile = file
+            };
+        }
+        else
+        {
+            _facadeImage.Name = file.Name;
+            _facadeImage.TempFile = file;
+        }
+
+        await _facadeImageUpload.ClearAsync();
+    }
+
+    private async Task DeleteFacadeAsync()
+    {
+        if (_facadeImage != null)
+        {
+            if (_facadeImage.Id.HasValue)
+            {
+                await _venuesService.DeleteVenueImageAsync(_facadeImage.Id.Value);
+            }
+
+            _facadeImage = null;
+            await _facadeImageUpload.ClearAsync();
+        }
+    }
+
+    private async Task UploadGalleryImagesAsync(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files == null || !files.Any())
+        {
+            return;
+        }
+
+        foreach (var file in files)
+        {
+            if (file.Size > _maxFileSize)
+            {
+                _snackbar.Add($"El archivo '{file.Name}' supera el límite de 10MB.", Severity.Error);
+                continue;
+            }
+
+            try
+            {
+                using var stream = file.OpenReadStream(_maxFileSize);
+
+                var imageInfo = await Image.IdentifyAsync(stream);
+
+                if (imageInfo == null)
+                {
+                    _snackbar.Add($"El archivo '{file.Name}' no es una imagen válida.", Severity.Error);
+                    continue;
+                }
+
+                if (imageInfo.Width < _minWidth || imageInfo.Height < _minHeight)
+                {
+                    _snackbar.Add($"La imagen '{file.Name}' mide {imageInfo.Width}x{imageInfo.Height}px. El mínimo es {_minWidth}x{_minHeight}px.", Severity.Warning);
+                    continue;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while trying to read the file '{file.Name}'. Error: {ex.Message}");
+                _snackbar.Add($"Error al procesar '{file.Name}': El formato podría no estar soportado.", Severity.Error);
+                continue;
+            }
+
+            if (_galleryImages.ContainsKey(file.Name))
+            {
+                _galleryImages[file.Name].TempFile = file;
+            }
+            else
+            {
+                _galleryImages.Add(file.Name, new ImageModel
+                {
+                    Name = file.Name,
+                    TempFile = file
+                });
+            }
+        }
+
+        if (_galleryUpload != null)
+        {
+            await _galleryUpload.ClearAsync();
+        }
+    }
+
+    private async Task RemoveGalleryImageAsync(string fileName)
+    {
+        ImageModel? file = _galleryImages.GetValueOrDefault(fileName);
+
+        try
+        {
+            if (file is not null && file.Id.HasValue)
+            {
+                await _venuesService.DeleteVenueImageAsync(file.Id.Value);
+            }
+
+            _galleryImages.Remove(fileName);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error ocurred while trying to remove a gallery image. Error: {ex.Message}");
+            _snackbar.Add($"Ocurrio un error al tratar de eliminar la imgen '{fileName}'.", Severity.Error);
+        }
+
+    }
+
+    private async Task CleanGalleryImagesAsync()
+    {
+        foreach (ImageModel galleryImage in _galleryImages.Values)
+        {
+            if (galleryImage.Id.HasValue)
+            {
+                await _venuesService.DeleteVenueImageAsync(galleryImage.Id.Value);
+            }
+        }
+
+        _galleryImages.Clear();
+    }
+
+    private void SetDragClass()
+    {
+        _dragClass = $"{DefaultDragClass} mud-border-success";
+        _dragging = true;
+    }
+
+    private void ClearDragClass()
+    {
+        if (!_dragging)
+        {
+            _dragClass = DefaultDragClass;
+        }
+    }
+
+    private async Task ValidateAndGoNextAsync()
+    {
+        if (_activeIndex == 0)
+        {
+            await _venueForm.ValidateAsync();
+
+            if (_isStepOneValid)
+            {
+                await _stepper.NextStepAsync();
+            }
+        }
+        else
+        {
+            await _stepper.NextStepAsync();
+        }
+    }
+
+    private async Task SaveAllAsync()
+    {
+        try
+        {
+            await SaveVenueAsync();
+            await SaveAmenitiesAsync();
+            await SaveFacadeImageAsync();
+            await SaveGalleryImagesAsync();
+
+            _snackbar.Add("Información del recinto guardada satisfactoriamente.", Severity.Success);
+            _navigationManager.NavigateTo(SitePages.VENUES);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error ocurred while trying to save the venue. Error: {ex.Message}");
+            _snackbar.Add("Ocurrio un error al tratar de guardar el recinto.", Severity.Error);
+        }
+    }
+
+    private async Task SaveVenueAsync()
+    {
+        if (venueId.HasValue)
+        {
+            await _venuesService.UpdateVenueAsync(venueId.Value, _request);
+        }
+        else
+        {
+            long newVenueId = await _venuesService.CreateVenueAsync(_request);
+            venueId = newVenueId;
+        }
+    }
+
+    private async Task SaveFacadeImageAsync()
+    {
+        try
+        {
+            if (_facadeImage == null)
+            {
+                return;
+            }
+
+            if (_facadeImage.Id.HasValue && _facadeImage.TempFile != null)
+            {
+                await _venuesService.UpdateVenueImageAsync(_facadeImage.Id.Value, ImageType.Facade, 0, new FileParameter(
+                _facadeImage.TempFile.OpenReadStream(_maxFileSize),
+                _facadeImage.TempFile.Name,
+                _facadeImage.TempFile.ContentType));
+            }
+            else if (_facadeImage.Id.HasValue == false && _facadeImage.TempFile != null)
+            {
+                _facadeImage.Id = await _venuesService.UploadVenueImageAsync(venueId.Value, ImageType.Facade, 0, new FileParameter(
+                     _facadeImage.TempFile.OpenReadStream(_maxFileSize),
+                    _facadeImage.TempFile.Name,
+                    _facadeImage.TempFile.ContentType));
+            }
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode != StatusCodes.Status201Created
+                && apiEx.StatusCode != StatusCodes.Status204NoContent)
+            {
+                throw;
+            }
+        }
+    }
+    private async Task SaveAmenitiesAsync()
+    {
+        try
+        {
+            List<long> amenityIds = _selectedAmenities
+                                    .Select(a => a.Id)
+                                    .Distinct()
+                                    .ToList();
+
+            await _venuesService.SaveVenueAmenitiesAsync(venueId.Value, amenityIds);
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode != StatusCodes.Status201Created
+                && apiEx.StatusCode != StatusCodes.Status204NoContent)
+            {
+                throw;
+            }
+        }
+    }
+
+    private async Task SaveGalleryImagesAsync()
+    {
+        try
+        {
+            foreach (ImageModel image in _galleryImages.Values)
+            {
+                if (image.Id.HasValue && image.TempFile != null)
+                {
+                    await _venuesService.UpdateVenueImageAsync(image.Id.Value, ImageType.Gallery, 0, new FileParameter(
+                        image.TempFile.OpenReadStream(_maxFileSize),
+                        image.TempFile.Name,
+                        image.TempFile.ContentType
+                    ));
+                }
+                else if (image.TempFile != null)
+                {
+                    image.Id = await _venuesService.UploadVenueImageAsync(venueId.Value, ImageType.Gallery, 0, new FileParameter(
+                        image.TempFile.OpenReadStream(_maxFileSize),
+                        image.TempFile.Name,
+                        image.TempFile.ContentType
+                    ));
+                }
+            }
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode != StatusCodes.Status201Created
+                && apiEx.StatusCode != StatusCodes.Status204NoContent)
+            {
+                throw;
+            }
+        }
+    }
+}

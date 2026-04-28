@@ -5,7 +5,7 @@
 @using Odasoft.XBOL.AdminPortal.ViewModels.Order
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Common.Constants
-@inject IStringLocalizer<SeasonPass> L
+@inject AppLocalizer<SeasonPass> L
 @inject ISeasonPassService SeasonPassService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -61,11 +61,11 @@
 
                         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                             <ActivatorContent>
-                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" />
+                                <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" OnClick="@context.ToggleAsync" />
                             </ActivatorContent>
                             <ChildContent>
                                 <MudStack Spacing="3" Class="pa-4" Style="width:375px">
-                                    <MudSelect T="SeasonPassRenewalType ?"
+                                    <MudSelect T="SeasonPassRenewalType?"
                                                Label="@L["FilterRenewalType"]"
                                                MultiSelection="true"
                                                Placeholder="@L["Selector"]"
@@ -78,7 +78,7 @@
 
                                         @foreach (var type in _seasonPassRenewalTypeList)
                                         {
-                                            <MudSelectItem T="SeasonPassRenewalType ?" Value="@((SeasonPassRenewalType?)type.Value)">
+                                            <MudSelectItem T="SeasonPassRenewalType?" Value="@((SeasonPassRenewalType?)type.Value)">
                                                 <MudText Typo="Typo.body2">@type.Label</MudText>
                                             </MudSelectItem>
                                         }
@@ -201,7 +201,7 @@
                     <th class="mud-table-cell" colspan="@(_orderListFilters.RenovationMode ? 2 : 1)">
                     </th>
                 </tr>
-                @foreach (var seasonPass in context.Item.SeasonPasses)
+                @foreach (var seasonPass in context.Item.SeasonPasses ?? [])
                 {
                     <tr class="mud-table-row">
                         <td class="mud-table-cell mud-table-child-content" colspan="2">
@@ -230,7 +230,7 @@
                                     <div class="d-flex flex-column">
                                         <MudGrid>
                                             <MudItem xs="12">
-                                                <MudSelect T="SeasonPassStatus?" Label="@L["SelectorSeasonPassStatus"]" @bind-Value="_seasonPassStatusRequest.SeasonPassStatus"
+                                                <MudSelect T="SeasonPassStatus ?" Label="@L["SelectorSeasonPassStatus"]" @bind-Value="_seasonPassStatusRequest.SeasonPassStatus"
                                                            Margin="Margin.Dense"
                                                            Variant="Variant.Outlined" ShrinkLabel>
                                                     @foreach (var status in _seasonPassStatusList)
@@ -244,13 +244,13 @@
                                             @if (_seasonPassStatusRequest.SeasonPassStatus == SeasonPassStatus.Suspended)
                                             {
                                                 <MudItem xs="12">
-                                                    <MudSelect T="SeasonPassSuspendedReason?" Label="@L["SelectorSeasonPassSuspendedReason"]" @bind-Value="_seasonPassStatusRequest.SeasonPassSuspendedReason"
+                                                    <MudSelect T="SeasonPassSuspendedReason ?" Label="@L["SelectorSeasonPassSuspendedReason"]" @bind-Value="_seasonPassStatusRequest.SeasonPassSuspendedReason"
                                                                Placeholder="@L["Selector"]"
                                                                Margin="Margin.Dense"
                                                                Variant="Variant.Outlined" ShrinkLabel>
                                                         @foreach (var suspendedReason in _seasonPassSuspendedReasonList)
                                                         {
-                                                            <MudSelectItem T="SeasonPassSuspendedReason ?" Value="@((SeasonPassSuspendedReason?)suspendedReason.Value)">
+                                                            <MudSelectItem T="SeasonPassSuspendedReason?" Value="@((SeasonPassSuspendedReason?)suspendedReason.Value)">
                                                                 <MudText Typo="Typo.body2">@suspendedReason.Label</MudText>
                                                             </MudSelectItem>
                                                         }
@@ -285,7 +285,7 @@
                 }
             </ChildRowRenderer>
             <PagerContent>
-                <CustomMudDataGridPager T="OrderListItem" />
+                <MudDataGridPager T="OrderListItem" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
@@ -466,7 +466,7 @@
         await _dataGrid.ReloadServerData();
     }
 
-    private async Task<GridData<OrderListItem>> ServerReload(GridState<OrderListItem> state)
+    private async Task<GridData<OrderListItem>> ServerReload(GridState<OrderListItem> state, CancellationToken token)
     {
         GridData<OrderListItem> result = new GridData<OrderListItem>();
         _loading = true;
@@ -483,6 +483,24 @@
 
             return await FetchFromServer(state);
         }
+        catch (TaskCanceledException)
+        {
+            return new GridData<OrderListItem>
+            {
+                Items = Array.Empty<OrderListItem>(),
+                TotalItems = 0
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading season passes: {ex.Message}");
+            Snackbar.Add(L["ErrorLoadingSeasonPasses"], Severity.Error);
+            return new GridData<OrderListItem>
+            {
+                Items = Array.Empty<OrderListItem>(),
+                TotalItems = 0
+            };
+        }
         finally
         {
             _loading = false;
@@ -491,14 +509,14 @@
 
     private void GoToCheckoutSeasonpass()
     {
-        if (_orderListFilters.SeasonId is null)
+        if (_orderListFilters.SeasonId is null || _selectedSeason.ExternalSeasonKey is null)
             return;
 
-        NavigationManager.NavigateTo($"/xolopass/checkout/{_selectedSeason.Id}");
+        NavigationManager.NavigateTo($"./xolopass/{_selectedSeason.Id}/key/{_selectedSeason.ExternalSeasonKey}/booking");
     }
 
     private void OnRenewClick(OrderListItem item)
     {
-        NavigationManager.NavigateTo($"/xolopass/checkout/renovate/{item.Order}");
+        NavigationManager.NavigateTo($"./xolopass/checkout/renovate/{item.Order}");
     }
 }

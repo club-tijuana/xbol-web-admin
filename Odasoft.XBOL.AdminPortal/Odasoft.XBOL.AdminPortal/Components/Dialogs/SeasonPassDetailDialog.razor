@@ -1,0 +1,206 @@
+@using Odasoft.XBOL.Common.Constants
+@inject AppLocalizer<SeasonPassDetailDialog> L
+<MudDialog Style="min-width: 643px; min-height: 635px;">
+    <TitleContent>
+        <MudStack AlignItems="AlignItems.Start">
+            <MudToggleGroup @bind-Value="_selectedTab" CheckMark="false"
+                            Class="border-secondary-lighten" Color="Color.Secondary">
+                <MudToggleItem Value="@OrderTab" Text="@L["Order"]"
+                               Class="@($"px-6 {(_selectedTab == OrderTab ? "bg-secondary-darken" : " ")}")" />
+                <MudToggleItem Value="@HistoryTab" Text="@L["History"]"
+                               Class="@($"px-6 {(_selectedTab == HistoryTab ? "bg-secondary-darken" : " ")}")" />
+            </MudToggleGroup>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Style="min-width: 600px; min-height: 450px;">
+            <MudItem xs="12">
+                <MudStack Row AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h5">@History.TrackingNumber</MudText>
+                    <MudChip T="string" Class="@GetRenewalTypeColor(Order.LastSeasonRenewalType)" Size="Size.Small">
+                        @L[Order.LastSeasonRenewalType.ToString()]
+                    </MudChip>
+                </MudStack>
+            </MudItem>
+            @if(_selectedTab == OrderTab)
+            {
+                <MudItem xs="12" md="6">
+                    <MudStack>
+                        <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Name"]</b></MudText>
+                        <MudText Color="Color.Secondary" Typo="Typo.body1"><b>@Order.ClientName</b></MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudStack>
+                        <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Phone"]</b></MudText>
+                        <MudText Color="Color.Secondary" Typo="Typo.body1">@Order.PhoneNumber</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudStack>
+                        <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Email"]</b></MudText>
+                        <MudText Color="Color.Secondary" Typo="Typo.body1">@Order.Email</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudStack>
+                        <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["CityNeighborhood"]</b></MudText>
+                        <MudText Color="Color.Secondary" Typo="Typo.body1">@Order.CityNeighborhood</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack>
+                        <MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Event"]</b></MudText>
+                        <MudText Color="Color.Secondary" Typo="Typo.body1"><b>@Order.EventName</b></MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTable Items="@Order.Tickets" Hover="true" Breakpoint="Breakpoint.None" CellClass="border-none px-0 py-2" Elevation="0">
+                        <ColGroup>
+                            <col style="width: 100px;" />
+                            <col style="width: 100px;" />
+                            <col style="width: 100px;" />
+                        </ColGroup>
+                        <HeaderContent>
+                            <MudTh><MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Zone"]</b></MudText></MudTh>
+                            <MudTh><MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Section"]</b></MudText></MudTh>
+                            <MudTh><MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Seat"]</b></MudText></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="@L["Zone"]">@context.Zone</MudTd>
+                            <MudTd DataLabel="@L["Section"]">@context.Section</MudTd>
+                            <MudTd DataLabel="@L["Seat"]">@context.Seat</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+            }
+            else if(_selectedTab == HistoryTab)
+            {
+                <MudItem xs="12">
+                    <MudTable Items="@History.Movements" Hover="true" Breakpoint="Breakpoint.None" CellClass="border-none px-0 py-2" Elevation="0">
+                        <HeaderContent>
+                            <MudTh><MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Date"]</b></MudText></MudTh>
+                            <MudTh><MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Event"]</b></MudText></MudTh>
+                            <MudTh><MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Seats"]</b></MudText></MudTh>
+                            <MudTh><MudText Class="text-primary-darken" Typo="Typo.caption"><b>@L["Status"]</b></MudText></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="@L["Date"]">@context.Date.ToString(FormatConstants.DATE_ONLY)</MudTd>
+                            <MudTd DataLabel="@L["Event"]">@context.EventName</MudTd>
+                            <MudTd DataLabel="@L["Seats"]">@context.Seats</MudTd>
+                            <MudTd DataLabel="@L["Status"]">
+                                <MudChip T="string" Class="@GetRenewalTypeColor(context.Status)" Size="Size.Small">@L[context.Status.ToString()]
+                                </MudChip>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <div class="flex-grow-1 d-flex justify-space-between pa-3">
+            <MudButton StartIcon="@Icons.Material.Outlined.ShoppingCart" OnClick="ModifyAndPurchase"
+                       Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">@L["ModifyAndPurchase"]</MudButton>
+            <MudButton StartIcon="@Icons.Material.Filled.ShoppingCartCheckout" OnClick="Renew"
+                       Color="Color.Tertiary" Variant="Variant.Filled" Class="text-uppercase">@L["Renew"]</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const string OrderTab = "order";
+    private const string HistoryTab = "history";
+
+    private string _selectedTab = OrderTab;
+
+    public OrderInfo Order { get; set; } = new();
+    public SeasonPassHistory History { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Order = new()
+            {
+                Id = 1,
+                ClientName = "Juan Antonio Pérez López",
+                PhoneNumber = "+1 (61) 1245-6789",
+                Email = "juanperez@gmail.com",
+                CityNeighborhood = "San Diego / Downtown",
+                EventName = "Pase de Temporada CL2026",
+                TrackingNumber = "CAL178700",
+                LastSeasonRenewalType = SeasonPassRenewalType.Replacement,
+                Tickets = [new() { Zone = "Platea", Section = "Platea D", Seat = "Platea D-A-1" }, new() { Zone = "Platea", Section = "Platea D", Seat = "Platea D-A-2" }, new() { Zone = "Platea", Section = "Platea D", Seat = "Platea D-A-3" }, new() { Zone = "Platea", Section = "Platea D", Seat = "Platea D-A-4" }]
+            };
+
+        History = new()
+            {
+                TrackingNumber = "CAL178700",
+            Movements = [new() { Date = DateTimeOffset.Now, EventName = "Pase de Temporada CL2026", Seats = 4, Status = SeasonPassRenewalType.Replacement }, new() { Date = DateTimeOffset.Now, EventName = "Pase de Temporada CL2026", Seats = 4, Status = SeasonPassRenewalType.Renewal }, new() { Date = DateTimeOffset.Now.AddYears(-1), EventName = "Pase de Temporada CL2025", Seats = 5, Status = SeasonPassRenewalType.Renewal }, new() { Date = DateTimeOffset.Now.AddYears(-2), EventName = "Pase de Temporada CL2024", Seats = 5, Status = SeasonPassRenewalType.Renewal }, new() { Date = DateTimeOffset.Now.AddYears(-3), EventName = "Pase de Temporada CL2023", Seats = 5, Status = SeasonPassRenewalType.Renewal }, new() { Date = DateTimeOffset.Now.AddYears(-4), EventName = "Pase de Temporada CL2022", Seats = 5, Status = SeasonPassRenewalType.Renewal }, new() { Date = DateTimeOffset.Now.AddYears(-5), EventName = "Pase de Temporada CL2022", Seats = 5, Status = SeasonPassRenewalType.Renewal }, new() { Date = DateTimeOffset.Now.AddYears(-6), EventName = "Pase de Temporada CL2021", Seats = 5, Status = SeasonPassRenewalType.New }]
+            };
+    }
+
+    private Task ModifyAndPurchase()
+    {
+        return Task.CompletedTask;
+    }
+
+    private Task Renew()
+    {
+        return Task.CompletedTask;
+    }
+
+    private async Task OnTabChanged(string tab)
+    {
+        _selectedTab = tab;
+        StateHasChanged();
+    }
+
+    private static string GetRenewalTypeColor(SeasonPassRenewalType? status) => status switch
+    {
+        SeasonPassRenewalType.New => "text-secondary",
+        SeasonPassRenewalType.Renewal => "bg-primary-lighten text-warning",
+        SeasonPassRenewalType.Replacement => "bg-tertiary-lighten text-tertiary-darken",
+        _ => string.Empty
+    };
+
+    public class OrderInfo
+    {
+        public double Id { get; set; }
+        public string TrackingNumber { get; set; }
+        public string ClientName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Email { get; set; }
+        public string CityNeighborhood { get; set; }
+        public string EventName { get; set; }
+        public SeasonPassRenewalType LastSeasonRenewalType { get; set; }
+        public IEnumerable<TicketInfo> Tickets { get; set; }
+    }
+
+    public class TicketInfo
+    {
+        public string Zone { get; set; }
+        public string Section { get; set; }
+        public string Seat { get; set; }
+    }
+
+    public class SeasonPassHistory
+    {
+        public string TrackingNumber { get; set; }
+        public IEnumerable<SeasonPassMovement> Movements { get; set; }
+    }
+
+    public class SeasonPassMovement
+    {
+        public DateTimeOffset Date { get; set; }
+        public string EventName { get; set; }
+        public int Seats { get; set; }
+        public SeasonPassRenewalType Status { get; set; }
+    }
+
+    public enum SeasonPassRenewalType
+    {
+        New,
+        Renewal,
+        Replacement
+    }
+}

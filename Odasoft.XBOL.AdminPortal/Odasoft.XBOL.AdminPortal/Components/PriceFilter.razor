@@ -2,9 +2,13 @@
 @using Odasoft.XBOL.Models.DTO
 
 <div class="d-flex mb-2">
-    <MudTextField @bind-Value="SelectedMinPrice" Class="mr-2" Label="Precio Mínimo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" ShrinkLabel Margin="Margin.Dense" />
+    <MudNumericField @bind-Value="SelectedMinPrice" Class="mr-2" Label="Precio Mínimo" Variant="Variant.Outlined" Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories"
+                     ShrinkLabel Margin="Margin.Dense" Immediate="false" />
 
-    <MudTextField @bind-Value="SelectedMaxPrice" Label="Precio Máximo" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories" ShrinkLabel Margin="Margin.Dense" />
+    <MudNumericField @bind-Value="SelectedMaxPrice" Label="Precio Máximo" Variant="Variant.Outlined" Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.AttachMoney" DebounceInterval="_interval" OnDebounceIntervalElapsed="UpdateFilteredCategories"
+                     ShrinkLabel Margin="Margin.Dense" Immediate="false" />
 </div>
 
 @code {
@@ -12,7 +16,7 @@
     public SeatingChart? Chart { get; set; }
 
     [Parameter]
-    public IEnumerable<SeatsIoPriceDTO> Categories { get; set; } = [];
+    public IEnumerable<SeatsIoPriceDTO> Prices { get; set; } = [];
 
     private int _interval = 500;
 
@@ -26,8 +30,8 @@
     protected override void OnInitialized()
     {
         // TODO: Handle what to display when categories prices are not loaded or empty
-        _maxPrice = Categories.Max(x => x.Price ?? 0);
-        _minPrice = Categories.Min(x => x.Price ?? 0);
+        _maxPrice = Prices.Max(x => x.Price ?? x.TicketTypes?.Max(x => x.Price) ?? 0);
+        _minPrice = Prices.Min(x => x.Price ?? x.TicketTypes?.Min(x => x.Price) ?? 0);
         SelectedMaxPrice = (int)_maxPrice;
         SelectedMinPrice = (int)_minPrice;
     }
@@ -37,7 +41,8 @@
         if (Chart is null)
             return;
 
-        var filteredCategories = Categories
+        var filteredCategories = Prices
+            .Where(x => x.Category is not null)
             .Where(c => (c.Price >= SelectedMinPrice && c.Price <= SelectedMaxPrice) || (c.TicketTypes?.Any(x => x.Price >= SelectedMinPrice && x.Price <= SelectedMaxPrice) ?? false))
             .Select(c => c.Category)
             .ToArray();

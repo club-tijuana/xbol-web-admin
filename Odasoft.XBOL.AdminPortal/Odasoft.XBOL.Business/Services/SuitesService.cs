@@ -1,8 +1,9 @@
-using Odasoft.XBOL.Models.Parameters;
+using Odasoft.XBOL.Business.Services.Contracts;
+using Odasoft.XBOL.Models.DTO;
 
 namespace Odasoft.XBOL.Business.Services
 {
-    public class SuitesService
+    public class SuitesService : ISuitesService
     {
         private IAdminClient _adminClient;
 
@@ -11,41 +12,69 @@ namespace Odasoft.XBOL.Business.Services
             _adminClient = adminClient;
         }
 
-        public async Task<SuiteResultPagedResponse> GetSuitesAsync(SuitesFilterParameters parameters)
+        public async Task<ICollection<SuiteResponse>> GetSuitesAsync(long venueId)
         {
-            var levels = parameters.Levels is not null
-                    ? string.Join(",", parameters.Levels)
-                    : string.Empty;
-
-            var suites = await _adminClient.GetSuitesAsync(
-                levels,
-                parameters.SearchTerm,
-                parameters.SortBy,
-                parameters.Descending,
-                parameters.Page,
-                parameters.PageSize);
+            ICollection<SuiteResponse> suites = await _adminClient.GetSuitesAsync(venueId);
 
             return suites;
         }
 
-        public async Task<SuiteResult> GetSuiteByIdAsync(long suiteId)
+        public async Task<SuiteResponse> GetSuiteByIdAsync(long suiteId)
         {
             return await _adminClient.GetSuiteByIdAsync(suiteId);
         }
 
-        public async Task<bool> CreateSuiteAsync(CreateSuiteRequest request)
+        public async Task<long> CreateSuiteAsync(SuiteRequest request)
         {
             return await _adminClient.CreateSuiteAsync(request);
         }
 
-        public async Task<bool> UpdateSuiteAsync(UpdateSuiteRequest request)
+        public async Task UpdateSuiteAsync(long suiteId, SuiteRequest request)
         {
-            return await _adminClient.UpdateSuiteAsync(request);
+            await _adminClient.UpdateSuiteAsync(suiteId, request);
         }
 
-        public async Task<bool> DeleteSuiteAsync(long suiteId)
+        public async Task DeleteSuiteAsync(long suiteId)
         {
-            return await _adminClient.DeleteSuiteAsync(suiteId);
+            await _adminClient.DeleteSuiteAsync(suiteId);
+        }
+
+        public async Task<List<Amenity>> GetAmenitiesBySuiteAsync(long suiteId)
+        {
+            ICollection<SuiteAmenityResponse> suiteAmenities = await _adminClient.GetAmenitiesBySuiteAsync(suiteId);
+
+            return suiteAmenities
+                    .Select(a => new Amenity
+                    {
+                        Id = a.Id,
+                        Name = a.Name,
+                        IconIdentifier = a.IconIdentifier
+                    }).ToList();
+        }
+
+        public async Task SaveSuiteAmenitiesAsync(long suiteId, List<long> amenityIds)
+        {
+            await _adminClient.SaveSuiteAmenitiesAsync(suiteId, amenityIds);
+        }
+
+        public async Task<long> UploadSuiteImageAsync(long suiteId, ImageType imageType, int order, FileParameter imageFile)
+        {
+            return await _adminClient.UploadSuiteImageAsync(suiteId, imageType, order, imageFile);
+        }
+
+        public async Task DeleteSuiteImageAsync(long suiteImageId)
+        {
+            await _adminClient.DeleteSuiteImageByIdAsync(suiteImageId);
+        }
+
+        public async Task UpdateSuiteImageAsync(long suiteImageId, ImageType imageType, int order, FileParameter file)
+        {
+            await _adminClient.UpdateSuiteImageByIdAsync(suiteImageId, imageType, order, file);
+        }
+
+        public async Task<ICollection<SuiteImageResponse>> GetSuiteImageByTypeAsync(long suiteId, ImageType imageType)
+        {
+            return await _adminClient.GetSuiteImagesByImageTypeAsync(suiteId, imageType);
         }
     }
 }

@@ -4,6 +4,7 @@
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Common.Helpers
 
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
@@ -17,7 +18,7 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteAgreementsAsync())"
-                    Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+                       Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
         </LeftContent>
     </PageActionBar>
 </SectionContent>
@@ -56,10 +57,20 @@
                 <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerName" Label="Propietario" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerEmail" Label="Correo electrónico" InputType="InputType.Email" Margin="Margin.Dense" ShrinkLabel Required />
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_email" Label="Correo electrónico" InputType="InputType.Email" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerPhone" Label="Teléfono" InputType="InputType.Telephone" Margin="Margin.Dense" ShrinkLabel Required />
+                <MudSelect Class="d-flex" Variant="Variant.Outlined" @bind-Value="_phoneRegionCodeId" Label="Lada" Margin="Margin.Dense" ShrinkLabel Required Clearable>
+                    @foreach (var regionCode in _phoneRegionCodes)
+                    {
+                        <MudSelectItem T="long?" Value="regionCode.Id">
+                            @($"+{regionCode.DialCode} {regionCode.RegionCode}")
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_phoneNumber" Label="Teléfono" InputType="InputType.Telephone" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
         </MudGrid>
     </MudCardContent>
@@ -80,19 +91,23 @@
     private DateTime? _endDate;
 
     private string _ownerName = "";
-    private string _ownerEmail = "";
-    private string _ownerPhone = "";
+    private string _email = "";
+    private long? _phoneRegionCodeId;
+    private string _phoneNumber = "";
 
-    private ICollection<ListItem> _suiteLevels = [];
-    private ICollection<ListItem> _suites = [];
+    private List<ListItem> _suiteLevels = [];
+    private List<ListItem> _suites = [];
+    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
+        _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+
         SuiteAgreementResult agreement = await _suiteAgreementsService.GetSuiteAgreementByIdAsync(_suiteAgreementId);
 
-        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync(null);
         _suiteLevelId = agreement.SuiteLevelId;
 
         if (_suiteLevelId > 0)
@@ -105,8 +120,9 @@
         _endDate = agreement.EndDate.Date;
 
         _ownerName = agreement.OwnerName ?? "";
-        _ownerEmail = agreement.OwnerEmail ?? "";
-        _ownerPhone = agreement.OwnerPhone ?? "";
+        _email = agreement.Email ?? "";
+        _phoneRegionCodeId = agreement.PhoneRegionCodeId;
+        _phoneNumber = agreement.PhoneNumber ?? "";
 
         StateHasChanged();
     }
@@ -151,8 +167,9 @@
                 Id = _suiteAgreementId,
                 SuiteId = _suiteId,
                 OwnerName = _ownerName,
-                OwnerEmail = _ownerEmail,
-                OwnerPhone = _ownerPhone,
+                Email = _email,
+                PhoneRegionCodeId = _phoneRegionCodeId,
+                PhoneNumber = _phoneNumber,
                 StartDate = _startDate.HasValue ? _startDate.Value.ToUniversalTime() : default,
                 EndDate = _endDate.HasValue ? _endDate.Value.ToUniversalTime() : default
             });

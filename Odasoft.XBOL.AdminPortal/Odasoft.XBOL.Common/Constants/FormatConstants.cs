@@ -5,5 +5,6 @@ namespace Odasoft.XBOL.Common.Constants
         public const string CURRENCY = "C";
         public const string CURRENCY_AMOUNT = "C2";
         public const string DATE_ONLY = "dd/MM/yyyy";
+        public const string DATE_TIME = "dd/MM/yyyy hh:mm tt";
     }
 }
