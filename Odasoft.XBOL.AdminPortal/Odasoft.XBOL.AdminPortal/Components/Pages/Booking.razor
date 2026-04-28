@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 
 @implements IDisposable
+@inject ILogger<Booking> Logger
 @inject CartState CartState
 @inject ISnackbar Snackbar
 @inject IAdminClient AdminClient
@@ -109,7 +110,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading seat management data: {ex.Message}");
+            Logger.LogError(ex, "Error loading seat management data");
             _error = true;
         }
         finally
@@ -123,6 +124,7 @@
     {
         try
         {
+            // TODO: Sometimes holds get done before redirection and chart deselects them because it takes them as holded by someone else
             var holdToken = await AdminClient.HoldSeatsByKeyAsync(ExternalKey, new HoldSeatsBody
             {
                 Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList()
@@ -135,6 +137,7 @@
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to hold seats");
             Snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
         }
     }

@@ -37,9 +37,8 @@
                     <MudStack>
                         <MudText Typo="Typo.h5"><b>@_eventName</b></MudText>
                         <MudStack Row>
-                            <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600
-                            ;">@_eventInfo.Venue</MudText>
-                            <MudText Typo="Typo.body1">@_eventInfo.StartDate?.ToString("dd/MM/yyyy h:mm tt")</MudText>
+                            <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600;">@_eventInfo?.Venue</MudText>
+                            <MudText Typo="Typo.body1">@_eventInfo?.StartDate?.ToString("dd/MM/yyyy h:mm tt")</MudText>
                         </MudStack>
                     </MudStack>
                     <MudButton Variant="Variant.Filled"
@@ -49,7 +48,7 @@
                                Color="Color.Primary"
                                Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
                                @onclick="NextStep">
-                        @(_holdProcessing? L["Seats_HoldProcessing"] : L["PaymentMethod"])
+                        @(_holdProcessing ? L["Seats_HoldProcessing"] : L["PaymentMethod"])
                     </MudButton>
                 </MudItem>
                 <MudItem xs="7">
@@ -60,14 +59,13 @@
                 </MudItem>
             </MudGrid>
         }
-        else if(_currentStep == 2)
+        else if (_currentStep == 2)
         {
-            <BoxOfficeSeasonCheckout 
-                OnReturn="PreviousStep" 
-                EventKey="@_eventKey" 
-                _eventInfo="_eventInfo" 
-                IsRenewal="IsRenewal"
-                OrderInfo="OrderInfo">
+            <BoxOfficeSeasonCheckout OnReturn="PreviousStep"
+                                     EventKey="@_eventKey"
+                                     _eventInfo="_eventInfo"
+                                     IsRenewal="IsRenewal"
+                                     OrderInfo="OrderInfo">
             </BoxOfficeSeasonCheckout>
         }
     </MudPaper>
@@ -76,7 +74,6 @@
 @code {
     [Parameter]
     public string? OrderReference { get; set; }
-
 
     [Parameter]
     public long SeasonId { get; set; }
@@ -127,18 +124,18 @@
                 List<SeatInfo> orderSeats = OrderInfo.Items
                     .Where(i => i.SeatObjectKey != null)
                     .Select(i => new SeatInfo
-                        {
-                            SeatId = i.SeatObjectKey!,
-                            Category = i.Zone,
-                            Price = i.RenewalPrice ?? i.Price ?? 0,
-                            SourceOrderItemId = OrderInfo.OrderId,
-                            IsSold = i.IsSold
-                        }).ToList();
+                    {
+                        SeatId = i.SeatObjectKey!,
+                        Category = i.Zone,
+                        Price = i.RenewalPrice ?? i.Price ?? 0,
+                        SourceOrderItemId = OrderInfo.OrderId,
+                        IsSold = i.IsSold
+                    }).ToList();
 
                 CartState.LoadOrder(OrderInfo.CurrentSeasonId ?? 0, orderSeats);
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Console.WriteLine($"Error getting order: {ex.Message}");
             Snackbar.Add(L["OrderNotFound", OrderReference], Severity.Warning);

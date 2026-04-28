@@ -54,7 +54,7 @@
                 <MudItem xs="12" sm="6" lg="4" Class="d-flex flex-column justify-center h-100">
                     <MudText Typo="Typo.caption" Class="text-primary-darken mb-2">@L["Type"]</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        @(_venue.Category.HasValue? L[_venue.Category.Value.ToString()] : "")
+                        @(_venue.Category.HasValue ? L[_venue.Category.Value.ToString()] : "")
                     </MudText>
                 </MudItem>
             </MudGrid>
@@ -75,8 +75,8 @@
                            Color="Color.Dark" OnClick="AddMapDialogAsync">
                     @L["NewMap"]
                 </MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.MeetingRoom" Variant="Variant.Filled" Class="text-uppercase"
-                           Color="Color.Error" Disabled="true">
+                <MudButton StartIcon="@Icons.Material.Filled.EventSeat" Variant="Variant.Filled" Class="text-uppercase"
+                           Color="Color.Primary" OnClick="AddSuite">
                     @L["NewSuite"]
                 </MudButton>
             </MudStack>
@@ -165,7 +165,9 @@
         var dialog = await _dialogService.ShowAsync<VenueMapDialog>("Nuevo mapa", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is VenueMapRequest newMap)
+        if (result != null
+            && !result.Canceled
+            && result.Data is VenueMapRequest newMap)
         {
             try
             {
@@ -173,10 +175,15 @@
                 _snackbar.Add("Mapa agregado al recinto satisfactoriamente.", Severity.Success);
                 _updateMapKey = Guid.NewGuid().ToString();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _snackbar.Add("Ocurrio un error al tratar de salvar el mapa del recinto.", Severity.Error);
             }
         }
+    }
+
+    private async Task AddSuite()
+    {
+        _navigationManager.NavigateTo($"/venues/{VenueId}/suites/create");
     }
 }

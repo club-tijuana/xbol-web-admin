@@ -13,10 +13,11 @@
 @inject CartState CartState;
 @inject IAdminClient AdminClient;
 @inject ISnackbar Snackbar;
+@inject ILogger<SeatingChart> Logger;
 @inject AppLocalizer<Events> L;
 
 <LoadingContainer HasError="_error" ErrorMessage="@_errorMessage" IsLoading="_loading">
-    <PriceFilter Chart="this" Categories="Prices.Where(x => x.Category is not null)" />
+    <PriceFilter Chart="this" Prices="Prices" />
 </LoadingContainer>
 <div id="@ChartId" style="height: 700px"></div>
 
@@ -120,7 +121,8 @@
             {
                 _error = true;
                 _errorMessage = "Error al cargar el mapa de asientos";
-                Console.WriteLine($"SeatingChart error: {ex.Message}");
+
+                Logger.LogError(ex, "SeatingChart error");
                 StateHasChanged();
             }
             finally
@@ -138,13 +140,14 @@
     }
 
     [JSInvokable]
-    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null)
+    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null, string? selectedTicketType = null)
     {
         SeatInfo seat = new SeatInfo
         {
             SeatId = seatId,
             Price = price,
             Category = category,
+            SelectedTicketType = selectedTicketType,
             IsSelected = true
         };
 

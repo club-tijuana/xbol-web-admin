@@ -77,7 +77,7 @@
                 </MudButton>
                 <MudButton StartIcon="@Icons.Material.Outlined.ShoppingCart"
                     Variant="Variant.Filled"
-                    Color="Color.Primary" 
+                    Color="Color.Primary"
                     OnClick="@(() => _navigationManager.NavigateTo($"./events/{_event.Id}/key/{_eventSchedule.ExternalEventKey}/booking"))">
                     @L["BuyTickets"]
                 </MudButton>
@@ -100,7 +100,6 @@
             }
         }
     }
-
 </LoadingContainer>
 
 @code {
@@ -140,7 +139,7 @@
         if (_event is null || _eventSchedule is null)
         {
             await LoadEventAsync();
-        }        
+        }
     }
 
     private void OnScheduleChanged(long scheduleId)
@@ -176,7 +175,7 @@
                 Title = _event.Name,
                 Subtitle = _event.Subtitle,
                 StartDateTime = _eventSchedule?.StartDateTime.UtcDateTime,
-                EndDateTime = _eventSchedule?.EndDateTime?.UtcDateTime,
+                EndDateTime = _eventSchedule?.EndDateTime.UtcDateTime,
                 ImageUrl = horizontalImage is not null ? $"data:{horizontalImage.ContentType};base64,{horizontalImage.ImageBase64}" : _event.BannerImageUrl,
                 Venue = _event.VenueName,
                 ExternalKey = _eventSchedule?.ExternalEventKey,

@@ -636,4 +636,22 @@
   <data name="DeleteItem" xml:space="preserve">
     <value>Delete {0}</value>
   </data>
+  <data name="Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="AlternativePrice" xml:space="preserve">
+    <value>Alternative price</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Price" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Row" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value>Select</value>
+  </data>
 </root>

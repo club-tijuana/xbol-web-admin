@@ -81,7 +81,7 @@ namespace Odasoft.XBOL.Business.Services
 
         public async Task<List<Amenity>> GetAmenitiesByVenueAsync(long venueId)
         {
-            ICollection<AmenityResponse> venueAmenities = await _adminClient.GetAmenitiesByVenueAsync(venueId);
+            ICollection<VenueAmenityResponse> venueAmenities = await _adminClient.GetAmenitiesByVenueAsync(venueId);
 
             return venueAmenities
                     .Select(x => new Amenity
@@ -92,7 +92,7 @@ namespace Odasoft.XBOL.Business.Services
                     }).ToList();
         }
 
-        public async Task SaveVenueAmenities(long venueId, List<long> amenityIds)
+        public async Task SaveVenueAmenitiesAsync(long venueId, List<long> amenityIds)
         {
             await _adminClient.SaveVenueAmenitiesAsync(venueId, amenityIds);
         }

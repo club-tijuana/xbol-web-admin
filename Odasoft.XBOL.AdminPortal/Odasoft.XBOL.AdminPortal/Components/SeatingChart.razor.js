@@ -37,7 +37,8 @@ export async function renderChart(containerId, config, dotNetHelper) {
     language: config.language,
     categoryFilter: config.categoryFilter,
     onObjectSelected: obj => {
-      dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, obj.pricing?.price ?? 0, obj.category?.label);
+      let price = obj.pricing?.price ?? obj.pricing?.ticketTypes?.find((seat) => seat.ticketType == obj.selectedTicketType)?.price ?? 0;
+      dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, price, obj.category?.label, obj.selectedTicketType);
     },
     onObjectDeselected: obj => {
       dotNetHelper.invokeMethodAsync('HandleSeatDeselected', obj.id);

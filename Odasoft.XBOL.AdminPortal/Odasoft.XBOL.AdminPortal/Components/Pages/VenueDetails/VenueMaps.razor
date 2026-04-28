@@ -69,7 +69,9 @@
         var dialog = await _dialogService.ShowAsync<VenueMapDialog>("Editar mapa", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is VenueMapRequest updateMap)
+        if (result != null
+            && !result.Canceled
+            && result.Data is VenueMapRequest updateMap)
         {
             try
             {
@@ -77,7 +79,7 @@
                 _snackbar.Add("Mapa del recinto actualizado satisfactoriamente.", Severity.Success);
                 _venueMaps = await _venueMapsService.GetVenueMapsByVenueAsync(VenueId);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _snackbar.Add("Ocurrio un error al tratar de actualizar el mapa del recinto.", Severity.Error);
             }
@@ -97,7 +99,9 @@
         var dialog = await _dialogService.ShowAsync<ConfirmDeleteDialog>("Editar mapa", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is bool deleteMap)
+        if (result != null
+            && !result.Canceled
+            && result.Data is bool deleteMap)
         {
             try
             {
@@ -108,7 +112,7 @@
                     _venueMaps = await _venueMapsService.GetVenueMapsByVenueAsync(VenueId);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _snackbar.Add("Ocurrio un error al tratar de eliminar el mapa del recinto.", Severity.Error);
             }

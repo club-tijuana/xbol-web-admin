@@ -316,14 +316,14 @@
             // TODO: Move this to a proper service
             var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
             {
-                EventId = _cartState.CurrentEventId.Value,
+                EventScheduleId = _cartState.CurrentEventId.Value,
                 Seats = _cartState.SelectedSeatsKeys,
                 SaleType = SaleType.SeasonPass
             });
 
             _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
             await OnReturn.InvokeAsync();
@@ -471,7 +471,7 @@
         if (_isSubmitting)
             return;
 
-        await _form.Validate();
+        await _form.ValidateAsync();
 
         if (!_form.IsValid)
         {
@@ -526,7 +526,7 @@
 
             _navigation.NavigateTo("./box-office");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 

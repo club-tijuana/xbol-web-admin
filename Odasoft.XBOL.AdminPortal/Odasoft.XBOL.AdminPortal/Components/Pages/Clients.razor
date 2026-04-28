@@ -369,7 +369,7 @@
                 _snackbar.Add("Empresa eliminada correctamente", Severity.Success);
                 await _dataGrid.ReloadServerData();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _snackbar.Add("Error al eliminar la empresa. Intente de nuevo más tarde.", Severity.Error);
             }

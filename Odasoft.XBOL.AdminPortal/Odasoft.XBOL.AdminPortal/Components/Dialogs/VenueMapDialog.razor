@@ -32,14 +32,14 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
 
     [Parameter] public long VenueId { get; set; }
     [Parameter] public long? VenueMapId { get; set; }
 
-    private MudForm _form;
+    private MudForm _form = null!;
     private VenueMapRequest _request { get; set; } = new();
-    private List<string> _existingMaps = [];
+    private List<string> _existingMaps = new List<string>();
     private bool _isProcessing = false;
 
     protected override async Task OnInitializedAsync()
@@ -47,7 +47,7 @@
         _request.VenueId = VenueId;
 
         ICollection<VenueMapResponse> venueMaps = await _venueMapsService.GetVenueMapsByVenueAsync(VenueId);
-        _existingMaps = venueMaps.Select(vm => vm.Name).ToList();
+        _existingMaps = venueMaps.Select(vm => vm.Name!).ToList();
 
         if (VenueMapId.HasValue)
         {
@@ -64,7 +64,7 @@
 
     private async Task SubmitAsync()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
         if (!_form.IsValid) return;
 
         _isProcessing = true;
@@ -80,7 +80,7 @@
 
             try
             {
-                Chart chart = await _venueMapsService.GetMapChart(_request.ExternalMapKey);
+                Chart chart = await _venueMapsService.GetMapChart(_request.ExternalMapKey ?? "");
                 _request.ThumbnailUrl = chart.PublishedVersionThumbnailUrl;
                 MudDialog.Close(DialogResult.Ok(_request));
                 StateHasChanged();
