@@ -6202,6 +6202,37 @@
         }
       }
     },
+    "/api/settings/client-credit": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Retrieves the client credit settings.",
+        "operationId": "GetClientCreditSettings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientCreditSettings"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientCreditSettings"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientCreditSettings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/suite-agreements": {
       "get": {
         "tags": [
@@ -8317,11 +8348,13 @@
         "tags": [
           "VenueAmenities"
         ],
+        "summary": "Retrieves the list of amenities available for the specified venue.",
         "operationId": "GetAmenitiesByVenueAsync",
         "parameters": [
           {
             "name": "venueId",
             "in": "path",
+            "description": "The unique identifier of the venue for which to retrieve amenities.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -8481,6 +8514,7 @@
         "tags": [
           "VenueAmenities"
         ],
+        "summary": "Retrieves a list of amenities for use in selection lists or dropdowns.",
         "operationId": "GetVenueAmenitiesCatalogAsync",
         "responses": {
           "200": {
@@ -10624,6 +10658,18 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientCreditSettings": {
+        "type": "object",
+        "properties": {
+          "validateClientHasCredit": {
+            "type": "boolean"
+          },
+          "validateClientCreditLimit": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -15066,6 +15112,9 @@
     },
     {
       "name": "SeatManagement"
+    },
+    {
+      "name": "Settings"
     },
     {
       "name": "SuiteAgreements"
