@@ -45,6 +45,12 @@
     [Parameter]
     public EventCallback OnChartRendered { get; set; }
 
+    [Parameter]
+    public string Session { get; set; } = SESSION_NONE;
+
+    [Parameter]
+    public string? HoldToken { get; set; }
+
     private const string SESSION_CONTINUE = "continue";
     private const string SESSION_NONE = "none";
     private const string SESSION_MANUAL = "manual";
@@ -103,7 +109,8 @@
                 {
                     secretKey = SecretKey,
                     @event = EventKey,
-                    session = SESSION_NONE,
+                    session = Session,
+                    holdToken = HoldToken,
                     pricing = jsonElement,
                     channels = Channels,
                     categoryFilter = categoryFilter,
@@ -113,9 +120,14 @@
 
                 _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
 
-                var selectedSeats = SelectedSeats;
-
-                await TrySelectObjectsAsync(selectedSeats.ToArray());
+                // Only re-select programmatically when starting from a clean
+                // session. With session="manual" the chart already renders the
+                // seats held by the token; calling trySelectObjects on them
+                // raises "object not in selectable status" from seats.io.
+                if (Session == SESSION_NONE)
+                {
+                    await TrySelectObjectsAsync(SelectedSeats.ToArray());
+                }
             }
             catch (Exception ex)
             {
