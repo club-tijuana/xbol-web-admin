@@ -2780,11 +2780,13 @@
         "tags": [
           "EventSchedule"
         ],
+        "summary": "Retrieves the event schedule with the specified identifier.",
         "operationId": "GetScheduleByIdAsync",
         "parameters": [
           {
             "name": "scheduleId",
             "in": "path",
+            "description": "The unique identifier of the event schedule to retrieve.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -10541,6 +10543,9 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "hasCredit": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -10589,6 +10594,9 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "hasCredit": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -14042,12 +14050,6 @@
           },
           "additionalComments": {
             "type": "string"
-          },
-          "externalMapKey": {
-            "type": "string"
-          },
-          "thumbnailUrl": {
-            "type": "string"
           }
         },
         "additionalProperties": false
@@ -14105,12 +14107,6 @@
             "type": "string"
           },
           "additionalComments": {
-            "type": "string"
-          },
-          "externalMapKey": {
-            "type": "string"
-          },
-          "thumbnailUrl": {
             "type": "string"
           }
         },

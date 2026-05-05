@@ -1,10 +1,10 @@
-@using FluentValidation
-@using Microsoft.Extensions.Options
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Business.Services
-@using Odasoft.XBOL.Common.Constants
-@using Odasoft.XBOL.Common.Helpers
+@using FluentValidation;
+@using Microsoft.Extensions.Options;
+@using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
+@using Odasoft.XBOL.Common.Helpers;
 
 @implements IAsyncDisposable;
 
@@ -16,9 +16,9 @@
 @inject IOptions<SeatsIoOptions> SeatsOptions
 @inject AppLocalizer<Events> L
 @inject LoadingState _loadingState;
-@inject IDialogService _dialogService
-@inject ClientsService _clientsService
-@inject CatalogsService _catalogsService
+@inject IDialogService _dialogService;
+@inject ClientsService _clientsService;
+@inject CatalogsService _catalogsService;
 @inject OrdersService OrdersService;
 @inject ILogger<BoxOfficeSeasonCheckout> Logger;
 

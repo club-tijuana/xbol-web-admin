@@ -1,25 +1,25 @@
-@using FluentValidation
-@using Microsoft.Extensions.Options
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Business.Services
-@using Odasoft.XBOL.Common.Constants
-@using Odasoft.XBOL.Common.Helpers
+@using FluentValidation;
+@using Microsoft.Extensions.Options;
+@using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
+@using Odasoft.XBOL.Common.Helpers;
 
 @implements IAsyncDisposable;
 
-@inject CartState _cartState
+@inject CartState _cartState;
 @inject PersistentDialogState _persistentDialogState;
-@inject ISnackbar _snackbar
-@inject IAdminClient _adminClient
-@inject NavigationManager _navigation
-@inject IOptions<SeatsIoOptions> SeatsOptions
-@inject AppLocalizer<Events> L
+@inject ISnackbar _snackbar;
+@inject IAdminClient _adminClient;
+@inject NavigationManager _navigation;
+@inject IOptions<SeatsIoOptions> SeatsOptions;
+@inject AppLocalizer<Events> L;
 @inject LoadingState _loadingState;
-@inject IDialogService _dialogService
-@inject ClientsService _clientsService
-@inject CatalogsService _catalogsService
-@inject ILogger<BoxOfficeCheckout> Logger
+@inject IDialogService _dialogService;
+@inject ClientsService _clientsService;
+@inject CatalogsService _catalogsService;
+@inject ILogger<BoxOfficeCheckout> Logger;
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
 

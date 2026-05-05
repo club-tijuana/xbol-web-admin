@@ -10,10 +10,10 @@
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
-@using Odasoft.XBOL.Common.Constants
-@using Odasoft.XBOL.Common.Helpers
+@using Odasoft.XBOL.Common.Constants;
+@using Odasoft.XBOL.Common.Helpers;
 
-@inject AppLocalizer<SeasonPassCheckout> L
+@inject AppLocalizer<SeasonPassCheckout> L;
 @inject IOptions<SeatsIoOptions> _seatsOptions;
 @inject ISeasonService _seasonService;
 @inject ISeasonPassService _seasonPassService;
@@ -180,10 +180,7 @@
     {
         _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
 
-        _cartState.OnChange += async () =>
-        {
-            await InvokeAsync(StateHasChanged);
-        };
+        _cartState.OnChange += StateHasChanged;
 
         _cartState.SetEvent(SeasonId);
         await LoadSeasonData();

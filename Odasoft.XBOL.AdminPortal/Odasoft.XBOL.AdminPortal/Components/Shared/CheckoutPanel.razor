@@ -18,6 +18,7 @@
 @inject IDialogService _dialogService
 @inject ClientsService _clientsService
 @inject CatalogsService _catalogsService
+@inject SettingsService _settingsService
 @inject ILogger<CheckoutPanel> Logger
 @inject PersistentDialogState _persistentDialogState
 
@@ -199,9 +200,9 @@
                                          Margin="Margin.Dense"
                                          Placeholder="0.00"
                                          HideSpinButtons="true"
-                                         Disabled="IsFreeTicket"
+                                         Disabled="@CreditAmountIsDisable()"
                                          Immediate="false" />
-                        <MudButton Variant="Variant.Outlined" @onclick="SetAllCreditAsync" Disabled="IsFreeTicket">TODO</MudButton>
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllCreditAsync" Disabled="@CreditAmountIsDisable()">TODO</MudButton>
                     </MudItem>
                     <MudItem xs="12" class="d-flex gap-4 align-center">
                         <MudNumericField @bind-Value="_request.OtherAmount"
@@ -362,6 +363,8 @@
     private Color PendingPayColor => IsFreeTicket ? Color.Secondary : PendingPay > 0 ? Color.Error : PendingPay < 0 ? Color.Tertiary : Color.Secondary;
     private bool IsFreeTicket => TicketType == "Cortesía";
     private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
+    private bool _validateClientHasCredit = false;
+    private bool _clientHasCredit = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -376,7 +379,14 @@
 
         try
         {
-            _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+            var phoneTask = _catalogsService.GetPhoneRegionCodesAsync();
+            var creditSettingsTask = _settingsService.GetClientCreditSettingsAsync();
+            await Task.WhenAll(phoneTask, creditSettingsTask);
+
+            _phoneRegionCodes = await phoneTask;
+            var creditSettings = await creditSettingsTask;
+
+            _validateClientHasCredit = creditSettings?.ValidateClientHasCredit ?? false;
         }
         catch (Exception ex)
         {
@@ -384,6 +394,16 @@
             _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
             await OnBookingFailed.InvokeAsync(ex);
         }
+    }
+
+    private bool CreditAmountIsDisable()
+    {
+        if (_validateClientHasCredit)
+        {
+            return (IsFreeTicket || !_clientHasCredit);
+        }
+
+        return IsFreeTicket;
     }
 
     private async Task SearchOnBlurAsync(FocusEventArgs args)
@@ -401,14 +421,16 @@
             {
                 _request.FullName = $"{client.Name} {client.LastName}";
                 _request.PhoneRegionCodeId = client.PhoneRegionCodeId;
-                _request.PhoneNumber = client.PhoneNumber;
-                _request.Email = client.Email;
+                _request.PhoneNumber = string.IsNullOrWhiteSpace(client.PhoneNumber) ? _request.PhoneNumber : client.PhoneNumber;
+                _request.Email =  string.IsNullOrWhiteSpace(client.Email) ? _request.Email : client.Email;
                 _request.ClientId = client.Id;
                 _request.City = client.City;
                 _request.Neighborhood = client.Neighbourhood;
                 _request.Gender = (ClientGender?)client.Gender;
                 _request.Birthday = DateTimeHelpers.ToNullableDateTime(client.Dob);
             }
+
+            _clientHasCredit = client?.HasCredit ?? false;
         }
         catch (ApiException ex)
         {
@@ -513,7 +535,15 @@
     private void SetAllCreditAsync()
     {
         ClearAmountsAsync();
-        _request.CreditAmount = _cartState.TotalPrice;
+
+        if (_validateClientHasCredit)
+        {
+            _request.CreditAmount = _clientHasCredit ? _cartState.TotalPrice : 0;
+        }
+        else
+        {
+            _request.CreditAmount = _cartState.TotalPrice;
+        }
     }
 
     private void SetAllOtherAsync()
@@ -526,6 +556,11 @@
     {
         if (_isSubmitting)
             return;
+
+        if (_validateClientHasCredit && !_clientHasCredit)
+        {
+            _request.CreditAmount = 0;
+        }
 
         await _form.ValidateAsync();
 

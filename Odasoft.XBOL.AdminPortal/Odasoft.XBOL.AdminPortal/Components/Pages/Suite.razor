@@ -36,61 +36,57 @@
                     <MudGrid>
 
                         <MudItem xs="12">
-                            <MudRadioGroup @bind-Value="_opcionNivel" T="int" Color="Color.Primary">
-                                <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center">
+                            <MudRadioGroup T="int" @bind-Value="_opcionNivel">
+                                <MudGrid>
+                                    <MudItem xs="12" sm="6" lg="3">
+                                        <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center">
+                                            <MudRadio Value="1" />
+                                            <MudSelect T="long"
+                                                       Label="Nivel"
+                                                       @bind-Value="_selectedLevelId"
+                                                       Disabled="@(_opcionNivel != 1)"
+                                                       Variant="Variant.Outlined"
+                                                       Dense="true"
+                                                       Margin="Margin.Dense"
+                                                       ShrinkLabel>
+                                                @foreach (var suiteLevel in _suiteLevels)
+                                                {
+                                                    <MudSelectItem Value="@suiteLevel.Id">@suiteLevel.Name</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </MudStack>
+                                    </MudItem>
 
-                                    <MudStack Row="true" AlignItems="AlignItems.Center">
-                                        <MudRadio Value="1" />
-                                        <MudSelect T="long"
-                                                   Label="Nivel"
-                                                   @bind-Value="_selectedLevelId"
-                                                   Disabled="@(_opcionNivel != 1)"
-                                                   Variant="Variant.Outlined"
-                                                   Dense="true"
-                                                   Margin="Margin.Dense"
-                                                   Style="min-width: 200px;"
-                                                   ShrinkLabel
-                                                   Required>
-                                            @foreach (var suiteLevel in _suiteLevels)
-                                            {
-                                                <MudSelectItem Value="@suiteLevel.Id">@suiteLevel.Name</MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                    </MudStack>
-
-                                    <MudText Typo="Typo.body2" Class="mx-2">o</MudText>
-
-                                    <MudStack Row="true" AlignItems="AlignItems.Center">
-                                        <MudRadio Value="2" />
-                                        <MudTextField @bind-Value="_newSuiteLevelName"
-                                                      Label="Nuevo nivel"
-                                                      Disabled="@(_opcionNivel != 2)"
-                                                      Variant="Variant.Outlined"
-                                                      Margin="Margin.Dense"
-                                                      ShrinkLabel
-                                                      Required />
-                                    </MudStack>
-                                </MudStack>
+                                    <MudItem xs="12" sm="6" lg="3">
+                                        <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center">
+                                            <MudRadio Value="2" />
+                                            <MudTextField @bind-Value="_newSuiteLevelName"
+                                                          Label="Nuevo nivel"
+                                                          Disabled="@(_opcionNivel != 2)"
+                                                          Variant="Variant.Outlined"
+                                                          Margin="Margin.Dense"
+                                                          ShrinkLabel />
+                                        </MudStack>
+                                    </MudItem>
+                                </MudGrid>
                             </MudRadioGroup>
                         </MudItem>
 
-                        <MudItem xs="12" sm="6">
+                        <MudItem xs="12"></MudItem>
+
+                        <MudItem xs="12" sm="6" md="3">
                             <MudTextField @bind-Value="_suiteRequest.Name" Label="Número de palco" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
                         </MudItem>
 
-                        <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="_suiteRequest.ExternalMapKey" Label="Llave del mapa" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
-                        </MudItem>
-
-                        <MudItem xs="12" sm="4">
+                        <MudItem xs="12" sm="6" md="3">
                             <MudNumericField @bind-Value="_suiteRequest.Armchairs" Label="Butacas" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Required="true" />
                         </MudItem>
 
-                        <MudItem xs="12" sm="4">
+                        <MudItem xs="12" sm="6" md="3">
                             <MudNumericField @bind-Value="_suiteRequest.Benches" Label="Bancos" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
                         </MudItem>
 
-                        <MudItem xs="12" sm="4">
+                        <MudItem xs="12" sm="6" md="3">
                             <MudNumericField @bind-Value="_suiteRequest.FoldingBenches" Label="Plegables" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel />
                         </MudItem>
                     </MudGrid>
@@ -301,7 +297,7 @@
 
                 @if (_activeIndex < 2)
                 {
-                    <MudButton OnClick="@(() => _stepper.NextStepAsync())"
+                    <MudButton OnClick="ValidateStepAsync"
                                EndIcon="@Icons.Material.Filled.ChevronRight"
                                Variant="Variant.Outlined"
                                Color="MudBlazor.Color.Primary">
@@ -397,8 +393,11 @@
         try
         {
             await SaveSuiteAsync();
+
             await SaveAmenitiesAsync();
+
             await SaveFacadeImageAsync();
+
             await SaveGalleryImagesAsync();
 
             _snackbar.Add("Información del palco guardada satisfactoriamente.", Severity.Success);
@@ -420,15 +419,13 @@
             _suiteRequest = new SuiteRequest
             {
                 Name = suite.Name ?? "",
-                ExternalMapKey = suite.ExternalMapKey,
                 Armchairs = suite.Armchairs,
                 Benches = suite.Benches,
                 FoldingBenches = suite.FoldingBenches,
                 Policies = suite.Policies,
                 AdditionalComments = suite.AdditionalComments,
                 SuiteLevelId = suite.SuiteLevelId,
-                SuiteType = suite.SuiteType ?? SuiteType.Suite,
-                ThumbnailUrl = suite.ThumbnailUrl
+                SuiteType = suite.SuiteType ?? SuiteType.Suite
             };
 
             _selectedLevelId = suite.SuiteLevelId;
@@ -474,22 +471,10 @@
     {
         if (_opcionNivel == 1)
         {
-            if (_selectedLevelId == 0)
-            {
-                _snackbar.Add("Por favor seleccione un nivel.", Severity.Error);
-                return;
-            }
-
             _suiteRequest.SuiteLevelId = _selectedLevelId;
         }
         else if (_opcionNivel == 2)
         {
-            if (string.IsNullOrWhiteSpace(_newSuiteLevelName))
-            {
-                _snackbar.Add("Por favor ingrese un nombre para el nuevo nivel.", Severity.Error);
-                return;
-            }
-
             var newLevel = await _suiteLevelsService.CreateSuiteLevelAsync(new CreateSuiteLevelRequest
             {
                 Name = _newSuiteLevelName,
@@ -750,5 +735,42 @@
         {
             _dragClass = DefaultDragClass;
         }
+    }
+
+    private async Task ValidateStepAsync()
+    {
+        if (_activeIndex == 0)
+        {
+            if (_opcionNivel == 1)
+            {
+                if (_selectedLevelId == 0)
+                {
+                    _snackbar.Add("Por favor seleccione un nivel.", Severity.Error);
+                    return;
+                }
+            }
+            else if (_opcionNivel == 2)
+            {
+                if (string.IsNullOrWhiteSpace(_newSuiteLevelName))
+                {
+                    _snackbar.Add("Por favor ingrese un nombre para el nuevo nivel.", Severity.Error);
+                    return;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(_suiteRequest.Name))
+            {
+                _snackbar.Add("Por favor ingrese un número de palco.", Severity.Error);
+                return;
+            }
+
+            if (_suiteRequest.Armchairs < 1)
+            {
+                _snackbar.Add("Por favor ingrese un número butacas mayor a cero.", Severity.Error);
+                return;
+            }
+        }
+
+        await _stepper.NextStepAsync();
     }
 }
