@@ -39,7 +39,7 @@
                           SelectedSeats="@GetInitialSelectedSeats()" />
         </MudItem>
         <MudItem xs="4" Class="mt-8">
-            <OrderSummary Chart="_seatingChart" />
+            <OrderSummary Chart="_seatingChart" AllowPartialUpdate="@IsRenewal" />
         </MudItem>
     </MudGrid>
 </MudPaper>
@@ -65,6 +65,9 @@
 
     [Parameter]
     public bool ClearCartOnInit { get; set; } = true;
+
+    [Parameter]
+    public bool IsRenewal { get; set; }
 
     private SeatingChart? _seatingChart;
     private string _secretKey = string.Empty;

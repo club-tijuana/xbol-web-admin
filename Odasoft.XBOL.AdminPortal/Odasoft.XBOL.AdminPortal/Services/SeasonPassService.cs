@@ -6,24 +6,6 @@ namespace Odasoft.XBOL.AdminPortal.Services
 {
     public class SeasonPassService(IAdminClient apiClient) : ISeasonPassService
     {
-        public async Task<BookingResult> BookSeasonAsync(SeasonBookingRequest request)
-        {
-            var result = await apiClient.BookSeasonSeatsAsync(request);
-            return result;
-        }
-
-        public async Task<ClientSeasonEvent> GetClientSeasonEventByOrderReference(string orderReference)
-        {
-            var result = await apiClient.GetClientSeasonEventByOrderReferenceAsync(orderReference);
-            return result;
-        }
-
-        public async Task<ClientSeasonEvent> GetClientSeasonEventInfo(ClientFilter filter)
-        {
-            var result = await apiClient.GetClientSeasonEventInfoAsync(filter);
-            return result;
-        }
-
         public async Task<List<EnumItemDto>> GetSeasonPassRenewalTypeList()
         {
             var result = await apiClient.GetSeasonPassRenewalTypeListAsync();

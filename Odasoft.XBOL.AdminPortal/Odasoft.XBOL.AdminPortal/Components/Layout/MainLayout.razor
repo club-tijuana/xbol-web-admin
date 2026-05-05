@@ -89,6 +89,28 @@
                         <MudText Typo="Typo.body1">@(_currentBooking.ClientEmail ?? "-")</MudText>
                     </MudStack>
                 </MudItem>
+                @if (_currentConfirmation is { SecuredSeats.Count: > 0 } cSecured)
+                {
+                    <MudItem xs="12">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption" Color="Color.Success" Class="text-uppercase">@L["SecuredSeats_Title"]</MudText>
+                            <MudText Typo="Typo.body2">@string.Format(L["SecuredSeats_Body"], FormatSeats(cSecured.SecuredSeats))</MudText>
+                        </MudStack>
+                    </MudItem>
+                }
+                @if (_currentConfirmation is { PendingSeats.Count: > 0 } cPending)
+                {
+                    <MudItem xs="12">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption" Color="Color.Warning" Class="text-uppercase">@L["PendingSeats_Title"]</MudText>
+                            <MudText Typo="Typo.body2">
+                                @(cPending.ReleaseDate is { } rd
+                                    ? string.Format(L["PendingSeats_BodyWithDate"], FormatSeats(cPending.PendingSeats), rd.LocalDateTime.ToString("d 'de' MMMM, HH:mm"))
+                                    : string.Format(L["PendingSeats_BodyNoDate"], FormatSeats(cPending.PendingSeats)))
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+                }
             </MudGrid>
         }
     </DialogContent>
@@ -98,6 +120,7 @@
     private bool _drawerOpen = true;
     private bool _showNotification;
     private BookingResult? _currentBooking;
+    private RenewalConfirmation? _currentConfirmation;
 
     private readonly DialogOptions _notificationOptions = new()
     {
@@ -121,6 +144,7 @@
                 return;
 
             _currentBooking = PersistentDialogState.BookingResult;
+            _currentConfirmation = PersistentDialogState.RenewalConfirmation;
             PersistentDialogState.ClearBookingResult();
 
             await InvokeAsync(async () =>
@@ -132,6 +156,7 @@
 
                 _showNotification = false;
                 _currentBooking = null;
+                _currentConfirmation = null;
                 StateHasChanged();
             });
         }
@@ -156,4 +181,8 @@
     {
         Navigation.LocationChanged -= OnLocationChanged;
     }
+
+    private static string FormatSeats(IReadOnlyList<RenewalSeatLine> seats) =>
+        string.Join(", ", seats.Select(s =>
+            string.IsNullOrWhiteSpace(s.Category) ? s.SeatId : $"{s.Category} - {s.SeatId}"));
 }

@@ -1,12 +1,15 @@
 @using FluentValidation
+@using Newtonsoft.Json
 @using Odasoft.XBOL.AdminPortal.Components.Pages
 @using Odasoft.XBOL.AdminPortal.Helpers
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.AdminPortal.ViewModels
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
 @using Odasoft.XBOL.Common.Constants
 @using Odasoft.XBOL.Common.Helpers
+@using Odasoft.XBOL.Models.DTO
 
 @implements IAsyncDisposable
 
@@ -140,7 +143,7 @@
                 </MudGrid>
             </MudItem>
             <MudItem xs="4">
-                <OrderSummary AllowRemoval="false"></OrderSummary>
+                <OrderSummary AllowRemoval="false" AllowPartialUpdate="@IsRenewal" />
             </MudItem>
             <MudItem xs="4">
                 <MudGrid>
@@ -310,6 +313,21 @@
     [Parameter]
     public bool ExpireHoldOnDispose { get; set; } = true;
 
+    [Parameter]
+    public long? ReferenceOrderId { get; set; }
+
+    [Parameter]
+    public CheckoutPrefill? Prefill { get; set; }
+
+    [Parameter]
+    public bool IsRenewal { get; set; }
+
+    [Parameter]
+    public DateTimeOffset? ReleaseDate { get; set; }
+
+    [Parameter]
+    public EventCallback<List<ConflictedSeat>> OnSeatsConflicted { get; set; }
+
     MudForm _form;
 
     private bool _isValid = false;
@@ -377,6 +395,8 @@
             return;
         }
 
+        ApplyPrefill();
+
         try
         {
             var phoneTask = _catalogsService.GetPhoneRegionCodesAsync();
@@ -404,6 +424,24 @@
         }
 
         return IsFreeTicket;
+    }
+
+    private void ApplyPrefill()
+    {
+        if (Prefill is null)
+        {
+            return;
+        }
+
+        _request.ClientId = Prefill.ClientId;
+        _request.PhoneRegionCodeId = Prefill.PhoneRegionCodeId;
+        _request.PhoneNumber = Prefill.PhoneNumber;
+        _request.Email = Prefill.Email;
+        _request.FullName = Prefill.FullName;
+        _request.City = Prefill.City;
+        _request.Neighborhood = Prefill.Neighborhood;
+        _request.Gender = Prefill.Gender;
+        _request.Birthday = Prefill.Birthday;
     }
 
     private async Task SearchOnBlurAsync(FocusEventArgs args)
@@ -574,9 +612,10 @@
 
         var request = new BookSeatsBody
         {
-            Seats = _cartState.SelectedSeats.ToDictionary(x => x.SeatId, x => x.Price),
+            Seats = _cartState.FinalSeatsSelection.ToDictionary(x => x.SeatId, x => x.Price),
             HoldToken = _cartState.HoldToken ?? "",
             TicketType = ItemType,
+            ReferenceOrderId = ReferenceOrderId,
             ClientContact = new ClientInfoRequest
             {
                 Id = _request.ClientId,
@@ -604,13 +643,39 @@
         {
             var result = await _adminClient.BookSeatsByKeyAsync(ExternalKey, request);
 
-            _persistentDialogState.SetBookingResult(result);
+            RenewalConfirmation? confirmation = null;
+            if (IsRenewal)
+            {
+                var booked = _cartState.FinalSeatsSelection;
+                var secured = booked
+                    .Where(s => s.SourceOrderItemId is not null)
+                    .Select(s => new RenewalSeatLine(s.SeatId, s.Category))
+                    .ToList();
+                var pending = booked
+                    .Where(s => s.SourceOrderItemId is null)
+                    .Select(s => new RenewalSeatLine(s.SeatId, s.Category))
+                    .ToList();
+                confirmation = new RenewalConfirmation(secured, pending, ReleaseDate);
+            }
+
+            _persistentDialogState.SetBookingResult(result, confirmation);
 
             _skipNavigationCheck = true;
             _cartState.ClearCart();
             _cartState.ClearTokenAsync();
 
             await OnBookingSucceeded.InvokeAsync(result);
+        }
+        catch (ApiException apiEx) when (apiEx.StatusCode == StatusCodes.Status422UnprocessableEntity
+                                          && OnSeatsConflicted.HasDelegate)
+        {
+            Logger.LogError(apiEx, "Seat conflict on book");
+            _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
+
+            var conflicts = ParseSeatConflicts(apiEx.Response);
+            await ExpireHoldTokenAsync();
+            await OnSeatsConflicted.InvokeAsync(conflicts);
+            await OnBookingFailed.InvokeAsync(apiEx);
         }
         catch (Exception ex)
         {
@@ -624,6 +689,41 @@
         {
             _isSubmitting = false;
             _loadingState.Hide();
+        }
+    }
+
+    private List<ConflictedSeat> ParseSeatConflicts(string? responseBody)
+    {
+        if (string.IsNullOrWhiteSpace(responseBody))
+        {
+            return [];
+        }
+
+        try
+        {
+            var parsed = JsonConvert.DeserializeObject<SeatsIoErrorResponse>(responseBody);
+            var details = parsed?.Errors;
+            if (details is null || details.Count == 0)
+            {
+                return [];
+            }
+
+            return details
+                .Where(d => !string.IsNullOrWhiteSpace(d.Code))
+                .Select(d =>
+                {
+                    var seat = _cartState.SelectedSeats.FirstOrDefault(s => s.SeatId == d.Code);
+                    var label = seat is not null
+                        ? $"{seat.Category?.ToUpper() ?? string.Empty} SECCIÓN {seat.SeatId}".Trim()
+                        : (d.Message ?? d.Code!);
+                    return new ConflictedSeat(d.Code!, label);
+                })
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to parse SeatsIoErrorResponse");
+            return [];
         }
     }
 
