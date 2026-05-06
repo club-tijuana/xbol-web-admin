@@ -39,5 +39,14 @@ namespace Odasoft.XBOL.AdminPortal.Services
         {
             await apiClient.UpdateSeasonPassStatusAsync(id, request);
         }
+
+        public Task<ClientSeasonEvent> GetClientSeasonEventInfo(ClientFilter filter)
+            => apiClient.GetClientSeasonEventInfoAsync(filter);
+
+        public Task<ClientSeasonEvent> GetClientSeasonEventByOrderReference(string orderReference)
+            => apiClient.GetClientSeasonEventByOrderReferenceAsync(orderReference);
+
+        public Task<BookingResult> BookSeasonAsync(SeasonBookingRequest request)
+            => apiClient.BookSeasonSeatsAsync(request);
     }
 }

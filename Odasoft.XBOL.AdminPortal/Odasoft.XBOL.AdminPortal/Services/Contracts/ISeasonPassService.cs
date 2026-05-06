@@ -14,4 +14,10 @@ public interface ISeasonPassService
     public Task<List<EnumItemDto>> GetSeasonPassRenewalTypeList();
 
     public Task UpdateSeasonPassStatusAsync(long id, SeasonPassStatusRequest request);
+
+    public Task<ClientSeasonEvent> GetClientSeasonEventInfo(ClientFilter filter);
+
+    public Task<ClientSeasonEvent> GetClientSeasonEventByOrderReference(string orderReference);
+
+    public Task<BookingResult> BookSeasonAsync(SeasonBookingRequest request);
 }
