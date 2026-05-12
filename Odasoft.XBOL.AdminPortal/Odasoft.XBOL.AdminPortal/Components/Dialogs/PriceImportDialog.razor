@@ -1,0 +1,127 @@
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.Business.Services
+@using System.Text.Json
+@inject ISnackbar Snackbar
+@inject AppLocalizer<PriceImportDialog> L
+@inject PriceService PriceService
+
+<BaseDialog Class="py-4" ActionsClass="mt-2 px-6">
+    <TitleContent>
+        <MudText Typo="Typo.h5">@L["ImportPrices"]</MudText>
+    </TitleContent>
+    <ChildContent>
+        <MudStack>
+            <MudAlert Severity="Severity.Info">@L["ImportInfo"]</MudAlert>
+            <MudFileUpload @ref="@_fileUpload"
+                           T="IBrowserFile"
+                           For="@(() => _file)"
+                           @bind-Files="_file"
+                           OnFilesChanged="UploadFiles">
+                <CustomContent>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="@context.OpenFilePickerAsync"
+                               StartIcon="@Icons.Material.Filled.CloudUpload">
+                        @L["ChooseFile"]
+                    </MudButton>
+                </CustomContent>
+                <SelectedTemplate />
+            </MudFileUpload>
+
+            @foreach (var row in errors)
+            {
+                <MudAlert Severity="Severity.Warning">@(row.RowNumber > 0 ? $"{L["Row"]} {row.RowNumber}: " : L["General"])</MudAlert>
+                foreach (var error in row.Errors)
+                {
+                    <MudText Typo="Typo.subtitle1">- @error</MudText>
+                }
+            }
+        </MudStack>
+    </ChildContent>
+    <Actions>
+@*         <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete"
+                   OnClick="DeleteAsync">@L["Delete"]</MudButton>
+        <MudSpacer />
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save"
+                   OnClick="SubmitAsync">@L["Save"]</MudButton> *@
+    </Actions>
+</BaseDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public long EventId { get; set; }
+
+    [Parameter]
+    public long VenueMapId { get; set; }
+
+    private IEnumerable<CsvRowError> errors = [];
+
+    private MudFileUpload<IBrowserFile> _fileUpload;
+
+    private IBrowserFile _file { get; set; }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var validation = await PriceService.ValidatePricesCsvAsync(EventId, VenueMapId, new FileParameter(
+                        _file.OpenReadStream(),
+                        _file.Name,
+                        _file.ContentType));
+
+            MudDialog.Close(DialogResult.Ok(validation));
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode == StatusCodes.Status400BadRequest)
+            {
+                try
+                {
+                    var resultProp = apiEx.GetType().GetProperty("Result");
+                    if (resultProp != null)
+                    {
+                        var val = resultProp.GetValue(apiEx);
+                        if (val is IEnumerable<CsvRowError> enumVal)
+                        {
+                            errors = enumVal;
+                        }
+                        else if (val is string jsonVal)
+                        {
+                            errors = JsonSerializer.Deserialize<IEnumerable<CsvRowError>>(jsonVal, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Array.Empty<CsvRowError>();
+                        }
+                        else
+                        {
+                            errors = Array.Empty<CsvRowError>();
+                        }
+                    }
+                    else
+                    {
+                        var contentProp = apiEx.GetType().GetProperty("Content") ?? apiEx.GetType().GetProperty("Response");
+                        var content = contentProp?.GetValue(apiEx) as string;
+                        if (!string.IsNullOrEmpty(content))
+                        {
+                            errors = JsonSerializer.Deserialize<IEnumerable<CsvRowError>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Array.Empty<CsvRowError>();
+                        }
+                        else
+                        {
+                            errors = Array.Empty<CsvRowError>();
+                        }
+                    }
+                }
+                catch (Exception ex2)
+                {
+                    Console.WriteLine($"Failed to parse validation errors: {ex2}");
+                    Snackbar.Add($"Error verifying file: {ex2.Message}", Severity.Error);
+                    errors = Array.Empty<CsvRowError>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error verifying file: {ex.Message}", Severity.Error);
+        }
+    }
+}

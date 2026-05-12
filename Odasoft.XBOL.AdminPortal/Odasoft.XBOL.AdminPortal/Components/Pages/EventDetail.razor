@@ -13,6 +13,7 @@
 
 @inject AppLocalizer<EventDetail> L
 @inject IEventService _eventService
+@inject MediaService _mediaService
 @inject NavigationManager _navigationManager
 @inject IDialogService _dialogService
 @inject ISnackbar _snackbar
@@ -166,7 +167,7 @@
             _event = await _eventService.GetEventByIdAsync(EventId);
             _eventSchedule = _event?.Schedules?.First(x => ScheduleId is null || x.Id == ScheduleId);
             OnScheduleChanged(_eventSchedule?.Id ?? 0);
-            var horizontalImages = await _eventService.GetEventImageByTypeAsync(EventId, ImageType.HorizontalPoster);
+            var horizontalImages = await _mediaService.GetReferenceMediaByMediaTypeAsync(EventId, AdminSaleType.Event, MediaType.Banner);
 
             var horizontalImage = horizontalImages.FirstOrDefault();
 
@@ -176,7 +177,7 @@
                 Subtitle = _event.Subtitle,
                 StartDateTime = _eventSchedule?.StartDateTime.UtcDateTime,
                 EndDateTime = _eventSchedule?.EndDateTime.UtcDateTime,
-                ImageUrl = horizontalImage is not null ? $"data:{horizontalImage.ContentType};base64,{horizontalImage.ImageBase64}" : _event.BannerImageUrl,
+                ImageUrl = horizontalImage is not null ? horizontalImage.Url ?? $"data:{horizontalImage.ContentType};base64,{horizontalImage.ImageBase64}" : _event.BannerImageUrl,
                 Venue = _event.VenueName,
                 ExternalKey = _eventSchedule?.ExternalEventKey,
             };

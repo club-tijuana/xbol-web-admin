@@ -35,6 +35,7 @@
     </MudButton>
 </MudStack>
 
+<LoadingContainer IsLoading="_loading">
 @if (_selectedTab == TabUpcoming)
 {
     <MudGrid Spacing="4">
@@ -195,10 +196,11 @@ else if(_selectedTab == TabPast)
         </MudCardContent>
     </MudCard>
 }
-@code {
+</LoadingContainer>
+    @code {
     [Parameter] public string? Tab { get; set; }
 
-    private bool _loading;
+    private bool _loading = true;
     private string searchString = "";
     private MudDataGrid<EventViewModel> _dataGrid = default!;
 
@@ -215,7 +217,7 @@ else if(_selectedTab == TabPast)
     private const string TabUpcoming = "upcoming";
     private const string TabPast = "past";
 
-    private string _selectedTab = TabUpcoming;
+    private string _selectedTab = string.Empty;
 
     private int _page = QueryParamsConstants.DEFAULT_PAGE;
     private int _pageSize = QueryParamsConstants.DEFAULT_PAGE_SIZE;
@@ -227,34 +229,58 @@ else if(_selectedTab == TabPast)
 
     protected override async Task OnParametersSetAsync()
     {
+        var currentTab = _selectedTab;
+
         _selectedTab = Tab?.ToLowerInvariant() switch
         {
             TabPast => TabPast,
             _ => TabUpcoming
         };
 
-        await UpdateItemsAsync();
+        if (currentTab != _selectedTab)
+        {
+            await UpdateItemsAsync();
+        }
     }
 
     private void OnTabChanged(string tab)
     {
-        _selectedTab = tab;
         _navigationManager.NavigateTo($"./events/{tab}", replace: true);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _venues = await _catalogsService.GetVenuesAsync();
+                _availableCategories = (await _eventService.GetCategoriesAsync())
+                    .Where(c => c.IsActive == true).ToList();
+
+
+                await UpdateItemsAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to load event filters");
+                _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
+            }
+            finally
+            {
+                _loading = false;
+                StateHasChanged();
+            }
+        }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        _selectedTab = Tab?.ToLowerInvariant() switch
         {
-            _venues = await _catalogsService.GetVenuesAsync();
-            _availableCategories = (await _eventService.GetCategoriesAsync())
-                .Where(c => c.IsActive == true).ToList();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to load event filters");
-            _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
-        }
+            TabPast => TabPast,
+            _ => TabUpcoming
+        };
     }
 
     private async Task UpdateItemsAsync()

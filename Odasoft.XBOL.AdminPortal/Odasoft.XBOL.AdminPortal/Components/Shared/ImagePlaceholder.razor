@@ -1,4 +1,4 @@
-<div class="placeholder-wrapper" style="width: @Width; height: @Height; background-color: @BackgroundColor;" role="img"
+<div class="placeholder-wrapper @Class" style="width: @Width; height: @Height; background-color: @BackgroundColor;" role="img"
      aria-label="Placeholder image" @onclick="HandleOnClick">
 
     @* If IconSize is provided, use it (square sizing).
@@ -46,6 +46,11 @@
     /// If left null, the icon scales intelligently: 25% of height, minimum 48px.
     /// </summary>
     [Parameter] public string? IconSize { get; set; }
+
+    /// <summary>
+    /// Optional: Applies classes to placeholder.
+    /// </summary>
+    [Parameter] public string? Class { get; set; } = string.Empty;
 
     [Parameter]
     public EventCallback OnClick { get; set; }

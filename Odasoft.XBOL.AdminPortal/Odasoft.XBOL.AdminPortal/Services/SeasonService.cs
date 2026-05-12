@@ -12,7 +12,8 @@ namespace Odasoft.XBOL.AdminPortal.Services
                 startDate: null,
                 endDate: null,
                 status: status,
-                period: period,
+                // TODO: Do a proper fix
+                period: [period.Value],
                 searchTerm: null,
                 sortBy: sortBy,
                 descending: descending,

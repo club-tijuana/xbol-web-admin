@@ -29,8 +29,8 @@ public interface IEventService
     );
 
     Task<List<EventCategoryResult>> GetCategoriesAsync();
-    Task<EventResult> CreateEventAsync(CreateEventRequest request);
-    Task UpdateEventAsync(long id, UpdateEventRequest request);
+    Task<EventResult> CreateEventAsync(EventRequest request);
+    Task UpdateEventAsync(long id, EventRequest request);
     Task DeleteEventAsync(long id);
     Task<EventInfoDTO> GetEventByIdAsync(long id);
     Task<long> UploadEventImageAsync(long eventId, ImageType imageType, int order, FileParameter imageFile);

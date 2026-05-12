@@ -102,9 +102,9 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         return result.ToList();
     }
 
-    public async Task<EventResult> CreateEventAsync(CreateEventRequest request) => await adminClient.CreateEventAsync(request);
+    public async Task<EventResult> CreateEventAsync(EventRequest request) => await adminClient.CreateEventAsync(request);
 
-    public async Task UpdateEventAsync(long id, UpdateEventRequest request) => await adminClient.UpdateEventAsync(id, request);
+    public async Task UpdateEventAsync(long id, EventRequest request) => await adminClient.UpdateEventAsync(id, request);
 
     public async Task DeleteEventAsync(long id)
             => await adminClient.DeleteEventAsync(id);

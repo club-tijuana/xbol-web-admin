@@ -16,5 +16,28 @@ namespace Odasoft.XBOL.Business.Services
         {
             return await _adminClient.GetPricesByScheduleAndVenueAsync(scheduleId, venueId);
         }
+
+        public async Task<FileResponse?> DownloadPricesCsvAsync(long? scheduleId, long venueMapId)
+        {
+            try
+            {
+                PricesCsvRequest request = new()
+                {
+                    ScheduleId = scheduleId,
+                    VenueMapId = venueMapId
+                };
+                return await _adminClient.DownloadPricesCsvAsync(request);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error downloading prices template: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<ICollection<PriceResponse>> ValidatePricesCsvAsync(long eventId, long venueMapId, FileParameter file)
+        {
+            return await _adminClient.ValidatePricesCsvAsync(eventId, venueMapId, file);
+        }
     }
 }

@@ -1,7 +1,10 @@
+@page "/events/create"
 @page "/events/{EventId:long}/edit"
 @page "/events/{EventId:long}/schedules/{ScheduleId:long}/edit"
+@using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.AdminPortal.Extensions
 @using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.AdminPortal.ViewModels.Event
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
 @using Radzen.Blazor
@@ -12,12 +15,14 @@
 @inject VenuesService VenuesService
 @inject VenueMapsService VenueMapsService;
 @inject PriceService PriceService;
-@inject EventScheduleService ScheduleService
+@inject EventScheduleService ScheduleService;
+@inject MediaService MediaService;
 @inject AppLocalizer<EventEdit> L
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject LoadingState LoadingState;
+@inject IJSRuntime JS;
 @inject ILogger<EventEdit> Logger
 
 <style>
@@ -34,7 +39,7 @@
     }
 </style>
 
-<PageTitle>@L["PageTitle"]</PageTitle>
+<PageTitle>@_pageTitle</PageTitle>
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
@@ -51,11 +56,11 @@
     IsLoading="_loading"
     HasError="_error"
     ErrorMessage="@L["ErrorLoadingEvent"]"
-    OnRetry="LoadData">
+                  OnRetry="InitializeForm">
     <MudCard Elevation="3">
         <MudCardContent Class="pa-6">
             <MudStack Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Class="mb-4">
-                <MudText Typo="Typo.h5">@L["PageTitle"]</MudText>
+                <MudText Typo="Typo.h5">@($"{_pageTitle}{(_activeIndex > 0 && !string.IsNullOrWhiteSpace(_name) ? $" - {_name}" : string.Empty)}")</MudText>
                 <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">@L["RequiredFieldsNote"]</MudText>
             </MudStack>
 
@@ -197,18 +202,21 @@
                             </MudGrid>
                         </MudForm>
                     </MudStep>
-                    <MudStep Title="@L["ZonePrices"]">
+                    <MudStep Title="@L["ZonePrices"]">                        
                         <MudForm @ref="_pricesForm" @bind-IsValid="_pricesValid" @onkeydown="OnKeyDownAsync">
                             <MudTable
                                 Items="_prices"
                                 GroupBy="_groupDefinition"
                                 Elevation="0"
-                                FixedHeader
-                                Height="400px">
+                                FixedHeader>
                                 <ToolBarContent>
                                     <MudText Typo="Typo.h5">@L["Zones"]</MudText>
-                                    @* <MudSpacer />
-                                    <MudTextField @bind-Value="_searchPrices" Placeholder="@L["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField> *@
+                                    <MudSpacer />
+                                    <MudStack Row AlignItems="AlignItems.Center">
+                                        <MudButton StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => DownloadCsvAsync())" Color="MudBlazor.Color.Secondary" Variant="Variant.Filled">@L["DownloadTemplate"]</MudButton>
+                                        <MudButton StartIcon="@Icons.Material.Filled.FileUpload" Color="MudBlazor.Color.Secondary" Variant="Variant.Filled" OnClick="OpenPriceImportDialog">@L["ImportPrices"]</MudButton>
+                                        @* <MudTextField @bind-Value="_searchPrices" Placeholder="@L["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField> *@
+                                    </MudStack>
                                 </ToolBarContent>
                                 <ColGroup>
                                     <col />
@@ -583,55 +591,187 @@
                             </MudGrid>
                         </MudForm>
                     </MudStep>
-                    <MudStep Title="@L["PosterAndGallery"]">
+                    <MudStep Title="@L["Images"]">
                         <MudGrid Spacing="7">
                             <MudItem xs="12">
-                                <MudFileUpload @ref="_horizontalImageUpload" T="IBrowserFile" FilesChanged="UploadHorizontalAsync">
-                                    <CustomContent>
-                                        <div class="d-flex align-center gap-4">
-                                            <MudButton StartIcon="@Icons.Material.Filled.Upload"
-                                                       Variant="Variant.Filled"
-                                                       Class="text-uppercase"
-                                                       Style="background-color: #546e7a; color: white;"
-                                                       OnClick="@context.OpenFilePickerAsync">
-                                                @L["HorizontalPoster"]
-                                            </MudButton>
-
-                                            @if (_horizontalImage != null)
-                                            {
-                                                <MudText Typo="Typo.body1" Style="color: #455a64; font-weight: 500;">
-                                                    @_horizontalImage.Name
-                                                </MudText>
-
-                                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Error" OnClick="DeleteHorizontalAsync" />
-                                            }
-                                        </div>
-                                    </CustomContent>
-                                </MudFileUpload>
+                                <MudStack>
+                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["EventBanner"]</MudText>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.caption">@L["EventBannerDimensions"]</MudText>
+                                        <MudText Typo="Typo.caption">@L["EventBannerDescription"]</MudText>
+                                    </MudStack>
+                                </MudStack>
                             </MudItem>
                             <MudItem xs="12">
-                                <MudFileUpload @ref="_verticalImageUpload" T="IBrowserFile" FilesChanged="UploadVerticalAsync">
+                                <MudFileUpload 
+                                    @ref="_bannerImageUpload" 
+                                    T="IBrowserFile" 
+                                    FilesChanged="(file) => AddImage(file, MediaType.Banner)"
+                                    Accept=".jpg, .png, .jpeg">
                                     <CustomContent>
                                         <div class="d-flex align-center gap-4">
                                             <MudButton StartIcon="@Icons.Material.Filled.Upload"
                                                        Variant="Variant.Filled"
-                                                       Class="text-uppercase"
-                                                       Style="background-color: #546e7a; color: white;"
+                                                       Color="MudBlazor.Color.Secondary"
                                                        OnClick="@context.OpenFilePickerAsync">
-                                                @L["VerticalPoster"]
+                                                @L["EventBanner"]
                                             </MudButton>
 
-                                            @if (_verticalImage != null)
+                                            @if (_bannerImage != null)
                                             {
-                                                <MudText Typo="Typo.body1" Style="color: #455a64; font-weight: 500;">
-                                                    @_verticalImage.Name
-                                                </MudText>
-
-                                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Error" OnClick="DeleteVerticalAsync" />
+                                                <MudChip T="string" 
+                                                    Variant="Variant.Text"
+                                                    Color="MudBlazor.Color.Dark" 
+                                                    OnClose="() => DeleteImageAsync(MediaType.Banner)"
+                                                    CloseIcon="@Icons.Material.Filled.Close">
+                                                    @_bannerImage?.Name
+                                                </MudChip>
                                             }
                                         </div>
                                     </CustomContent>
+                                    <SelectedTemplate />
                                 </MudFileUpload>
+                            </MudItem>
+                            <MudItem xs="12"> 
+                                <MudStack Row Spacing="13">
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
+
+                                        @if (string.IsNullOrEmpty(_bannerImage?.Src))
+                                        {
+                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
+                                        }
+                                        else
+                                        {                                    
+                                            <MudImage Src="@_bannerImage.Src"
+                                                      Class="rounded-lg"
+                                                      ObjectFit="ObjectFit.Cover"
+                                                      ObjectPosition="ObjectPosition.Center"
+                                                      Height="200"
+                                                      Width="355" />
+                                        }
+                                    </MudStack>
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["SquareImagePreview"]</MudText>
+
+                                        @if (string.IsNullOrEmpty(_bannerImage?.Src))
+                                        {
+                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="200px" />
+                                        }
+                                        else
+                                        {
+                                            <MudImage Src="@_bannerImage.Src"
+                                                      Class="rounded-lg"
+                                                      ObjectFit="ObjectFit.Cover"
+                                                      ObjectPosition="ObjectPosition.Center"
+                                                      Height="200"
+                                                      Width="200" />
+                                        }
+                                    </MudStack>                                    
+                                </MudStack>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudStack>
+                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["Sponsors"]</MudText>
+                                    <MudText Typo="Typo.caption">@L["SponsorsDescription"]</MudText>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="12" lg="6">
+                                <MudStack>                                
+                                    <MudFileUpload @ref="_sponsorUploads[0]"
+                                                   T="IBrowserFile"
+                                                   FilesChanged="(file) => AddImage(file, MediaType.Sponsor)"
+                                                   Accept=".jpg, .png, .jpeg">
+                                        <CustomContent>
+                                            <div class="d-flex align-center gap-4">
+                                                <MudButton StartIcon="@Icons.Material.Filled.Upload"
+                                                           Variant="Variant.Filled"
+                                                           Color="MudBlazor.Color.Secondary"
+                                                           OnClick="@context.OpenFilePickerAsync">
+                                                    @L["Sponsor"] 1
+                                                </MudButton>
+
+                                                @if (_sponsorImages[0] != null)
+                                                {
+                                                    <MudChip T="string"
+                                                             Variant="Variant.Text"
+                                                             Color="MudBlazor.Color.Dark"
+                                                             OnClose="() => DeleteImageAsync(MediaType.Sponsor)"
+                                                             CloseIcon="@Icons.Material.Filled.Close">
+                                                        @_sponsorImages[0]?.Name
+                                                    </MudChip>
+                                                }
+                                            </div>
+                                        </CustomContent>
+                                        <SelectedTemplate />
+                                    </MudFileUpload>
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
+
+                                        @if (string.IsNullOrEmpty(_sponsorImages[0]?.Src))
+                                        {
+                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
+                                        }
+                                        else
+                                        {
+                                            <MudImage Src="@_sponsorImages[0].Src"
+                                                      Class="rounded-lg"
+                                                      ObjectFit="ObjectFit.Cover"
+                                                      ObjectPosition="ObjectPosition.Center"
+                                                      Height="200"
+                                                      Width="355" />
+                                        }
+                                    </MudStack>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="12" lg="6">
+                                <MudStack>
+                                    <MudFileUpload @ref="_sponsorUploads[1]"
+                                                   T="IBrowserFile"
+                                                   FilesChanged="(file) => AddImage(file, MediaType.Sponsor, 1)"
+                                                   Accept=".jpg, .png, .jpeg">
+                                        <CustomContent>
+                                            <div class="d-flex align-center gap-4">
+                                                <MudButton StartIcon="@Icons.Material.Filled.Upload"
+                                                           Variant="Variant.Filled"
+                                                           Color="MudBlazor.Color.Secondary"
+                                                           OnClick="@context.OpenFilePickerAsync">
+                                                    @L["Sponsor"] 2
+                                                </MudButton>
+
+                                                @if (_sponsorImages[1] != null)
+                                                {
+                                                    <MudChip T="string"
+                                                             Variant="Variant.Text"
+                                                             Color="MudBlazor.Color.Dark"
+                                                             OnClose="() => DeleteImageAsync(MediaType.Sponsor, 1)"
+                                                             CloseIcon="@Icons.Material.Filled.Close">
+                                                        @_sponsorImages[1]?.Name
+                                                    </MudChip>
+                                                }
+                                            </div>
+                                        </CustomContent>
+                                        <SelectedTemplate />
+                                    </MudFileUpload>
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
+
+                                        @if (string.IsNullOrEmpty(_sponsorImages[1]?.Src))
+                                        {
+                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
+                                        }
+                                        else
+                                        {
+                                            <MudImage Src="@_sponsorImages[1].Src"
+                                                      Class="rounded-lg"
+                                                      ObjectFit="ObjectFit.Cover"
+                                                      ObjectPosition="ObjectPosition.Center"
+                                                      Height="200"
+                                                      Width="355" />
+                                        }
+                                    </MudStack>
+                                </MudStack>
                             </MudItem>
 
                             <MudItem xs="12">
@@ -657,7 +797,13 @@
                                                 <div class="mt-4 d-flex flex-wrap gap-2" style="z-index: 10;">
                                                     @foreach (var fileName in _galleryImages.Keys)
                                                     {
-                                                        <MudChip T="string" Color="MudBlazor.Color.Dark" OnClose="@(() => RemoveGalleryImageAsync(fileName))" @onclick:preventDefault="true">
+                                                        <MudChip T="string"
+                                                                 Variant="Variant.Filled"
+                                                                 Class="bg-secondary-darken"
+                                                                 Color="MudBlazor.Color.Dark"
+                                                                 OnClose="@(() => RemoveGalleryImageAsync(fileName))"
+                                                                 CloseIcon="@Icons.Material.Filled.Close"
+                                                                 @onclick:preventDefault="true">
                                                             @fileName
                                                         </MudChip>
                                                     }
@@ -677,7 +823,28 @@
                                             }
                                         </MudPaper>
                                     </CustomContent>
+                                    <SelectedTemplate />
                                 </MudFileUpload>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudStack>
+                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["GalleryPreview"]</MudText>
+                                    <MudCarousel 
+                                        @ref="_carousel"
+                                        ItemsSource="_galleryImages"
+                                        Style="height:200px; width: 355px;" 
+                                        ShowArrows 
+                                        ShowBullets>
+                                        <ItemTemplate>
+                                            <MudImage Src="@context.Value.Src"
+                                                      Class="rounded-lg"
+                                                      ObjectFit="ObjectFit.Cover"
+                                                      ObjectPosition="ObjectPosition.Center"
+                                                      Height="200"
+                                                      Width="355" />
+                                        </ItemTemplate>
+                                    </MudCarousel>
+                                </MudStack>
                             </MudItem>
                         </MudGrid>
                     </MudStep>
@@ -709,11 +876,13 @@
 </LoadingContainer>
 
 @code {
-    [Parameter] public long EventId { get; set; }
+    [Parameter] public long? EventId { get; set; }
     [Parameter] public long? ScheduleId { get; set; }
 
+    private string _pageTitle = "";
     private bool _loading = true;
     private bool _error = false;
+    private bool _isEdit = false;
 
     private MudStepper _stepper = null!;
     private int _activeIndex = 0;
@@ -738,12 +907,13 @@
     private List<VenueResponse> _venues = [];
     private List<VenueMapResponse> _venueMaps = [];
 
-    private MudFileUpload<IBrowserFile> _horizontalImageUpload = null!;
-    private ImageModel? _horizontalImage;
-    private MudFileUpload<IBrowserFile> _verticalImageUpload = null!;
-    private ImageModel? _verticalImage;
+    private MudFileUpload<IBrowserFile> _bannerImageUpload = null!;
+    private ImageModel? _bannerImage;
+    private MudFileUpload<IBrowserFile>[] _sponsorUploads = new MudFileUpload<IBrowserFile>[2];
+    private ImageModel?[] _sponsorImages = new ImageModel?[2];
     private MudFileUpload<IReadOnlyList<IBrowserFile>> _galleryUpload = null!;
     private Dictionary<string, ImageModel> _galleryImages = [];
+    private MudCarousel<KeyValuePair<string, ImageModel>> _carousel;
 
     private readonly long _maxFileSize = 10 * 1024 * 1024; // 10 MB
     private readonly int _minWidth = 1920;
@@ -779,6 +949,7 @@
     private string _externalEventKey;
 
     private List<PriceForm> _prices = [];
+    private long? _currentPricesMapId;
     private string _searchPrices = string.Empty;
     private TableGroupDefinition<PriceForm> _groupDefinition = new()
     {
@@ -802,31 +973,79 @@
 
     private static readonly DialogOptions _dialogOptions = new() { CloseButton = true };
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _descriptionFormContext.SetForm(_descriptionForm);
+            await InitializeForm();
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         _descriptionFormContext = new FormContext(StateHasChanged);
         _datesAndSalePoliciesFormContext = new FormContext(StateHasChanged);
         _pricesFormContext = new FormContext(StateHasChanged);
-        await LoadData();
+    }
+
+    private async Task InitializeForm()
+    {
+        _loading = true;
+        _error = false;
+        StateHasChanged();
+        try
+        {
+            await LoadCatalogs();
+            if (EventId.HasValue && EventId.Value > 0)
+            {
+                _pageTitle = L["EditEvent"];
+                _isEdit = true;
+                await LoadData();
+            }
+            else
+            {
+                _pageTitle = L["CreateEvent"];
+                _isEdit = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load data");
+            _error = true;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadCatalogs()
+    {
+        var venueTask = CatalogsService.GetVenuesAsync();
+        var catTask = EventService.GetCategoriesAsync();
+
+        await Task.WhenAll(venueTask, catTask);
+
+        _venues = await venueTask;
+        _eventCategories = (await catTask).Where(c => c.IsActive == true).ToList();
     }
 
     private async Task LoadData()
     {
+        if(EventId is null || EventId <= 0)
+        {
+            return;
+        }
+
         _loading = true;
         _error = false;
         StateHasChanged();
 
         try
         {
-            var venueTask = CatalogsService.GetVenuesAsync();
-            var catTask = EventService.GetCategoriesAsync();
-            var eventTask = EventService.GetEventByIdAsync(EventId);
-            await Task.WhenAll(venueTask, catTask, eventTask);
-
-            _venues = await venueTask;
-            _eventCategories = (await catTask).Where(c => c.IsActive == true).ToList();
-
-            var eventResult = await eventTask;
+            var eventResult = await EventService.GetEventByIdAsync(EventId.Value);
 
             ScheduleId = ScheduleId ?? eventResult.Schedules?.First().Id;
 
@@ -867,62 +1086,40 @@
 
             _layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(_selectedVenueMap.Id);
 
-            try
+            await LoadPrices();
+
+            ICollection<MediaResponse> bannerImages = await MediaService.GetReferenceMediaByMediaTypeAsync(EventId.Value, AdminSaleType.Event, MediaType.Banner);
+            var banner = bannerImages.FirstOrDefault();
+
+            if (banner != null && banner.Id.HasValue)
             {
-                PricesResponse priceResponse = await PriceService.GetPricesByScheduleAndVenueAsync(ScheduleId.Value, _selectedVenueMap.Id);
-
-                _prices = priceResponse.Prices.Select(x => new PriceForm
-                    {
-                        Id = x.Id,
-                        BaseZoneId = x.BaseZoneId,
-                        BaseSectionId = x.BaseSectionId,
-                        BaseRowId = x.BaseRowId,
-                        BaseSeatId = x.BaseSeatId,
-                        ItemPrice = x.ItemPrice,
-                        PriceTypes = x.PriceTypes.ToDictionary(pt => pt.Name, pt => pt.Price)
-                    }).ToList();
-
-                foreach (var priceType in priceResponse.PriceTypes)
+                _bannerImage = new ImageModel
                 {
-                    if (!PriceTypes.Contains(priceType.Name))
-                    {
-                        PriceTypes.Add(priceType.Name);
-                    }
-                }
-            }
-            catch (ApiException apiEx)
-            {
-                if (apiEx.StatusCode == StatusCodes.Status404NotFound)
-                {
-                    InitializePrices();
-                }
-            }
-
-            ICollection<EventImageResponse> horizontalImages = await EventService.GetEventImageByTypeAsync(EventId, ImageType.HorizontalPoster);
-            var horizontal = horizontalImages.FirstOrDefault();
-
-            if (horizontal != null && horizontal.Id.HasValue)
-            {
-                _horizontalImage = new ImageModel
-                {
-                    Id = horizontal.Id,
-                    Name = horizontal.Title
+                    Id = banner.Id,
+                    Name = banner.Title,
+                    Src = banner.ImageBase64 != null ? $"data:{banner.ContentType};base64,{banner.ImageBase64}" : string.Empty,
+                    MediaType = MediaType.Banner                    
                 };
             }
 
-            ICollection<EventImageResponse> verticalImages = await EventService.GetEventImageByTypeAsync(EventId, ImageType.VerticalPoster);
-            var vertical = verticalImages.FirstOrDefault();
+            ICollection<MediaResponse> sponsorImages = await MediaService.GetReferenceMediaByMediaTypeAsync(EventId.Value, AdminSaleType.Event, MediaType.Sponsor);
 
-            if (vertical != null && vertical.Id.HasValue)
+            foreach (var sponsor in sponsorImages)
             {
-                _verticalImage = new ImageModel
+                if (sponsor != null && sponsor.Id.HasValue)
                 {
-                    Id = vertical.Id,
-                    Name = vertical.Title
-                };
+                    _sponsorImages[sponsor.Order.Value] = new ImageModel
+                    {
+                        Id = sponsor.Id,
+                        Name = sponsor.Title,
+                        Src = sponsor.ImageBase64 != null ? $"data:{sponsor.ContentType};base64,{sponsor.ImageBase64}" : string.Empty,
+                        Order = sponsor.Order ?? 0,
+                        MediaType = MediaType.Sponsor
+                    };
+                }
             }
 
-            ICollection<EventImageResponse> galleryImages = await EventService.GetEventImageByTypeAsync(EventId, ImageType.Gallery);
+            ICollection<MediaResponse> galleryImages = await MediaService.GetReferenceMediaByMediaTypeAsync(EventId.Value, AdminSaleType.Event, MediaType.Gallery);
 
             foreach (var image in galleryImages)
             {
@@ -935,7 +1132,10 @@
                 _galleryImages.Add(image.Title, new ImageModel
                 {
                     Id = image.Id,
-                    Name = image.Title
+                    Name = image.Title,
+                    Src = image.ImageBase64 != null ? $"data:{image.ContentType};base64,{image.ImageBase64}" : string.Empty,
+                    Order = image.Order ?? 0,
+                    MediaType = MediaType.Gallery
                 });
             }
         }
@@ -948,14 +1148,6 @@
         {
             _loading = false;
             StateHasChanged();
-        }
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _descriptionFormContext.SetForm(_descriptionForm);
         }
     }
 
@@ -1033,6 +1225,16 @@
                 {
                     _highestUnlockedStep = _activeIndex + 1;
                 }
+
+                if (_activeIndex == 0)
+                {
+                    if (_currentPricesMapId != _selectedVenueMap.Id)
+                    {
+                        _layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(_selectedVenueMap.Id);
+                        await LoadPrices();
+                        _currentPricesMapId = _selectedVenueMap.Id;
+                    }
+                }
             }
         }
         else if (arg.Action == StepAction.Activate)
@@ -1091,9 +1293,8 @@
         LoadingState.Show();
         try
         {
-            var request = new UpdateEventRequest
+            var request = new EventRequest
             {
-                Id = EventId,
                 Name = _name,
                 Subtitle = _subtitle,
                 CategoryIds = _selectedCategories.Where(c => c.Id.HasValue).Select(c => c.Id!.Value).ToList(),
@@ -1105,11 +1306,10 @@
                 AgeRestriction = _ageRestriction
             };
 
-            await EventService.UpdateEventAsync(EventId, request);
+            await SaveEventAsync(request);
 
-            var scheduleRequest = new UpdateEventScheduleRequest
+            var scheduleRequest = new EventScheduleRequest
             {
-                Id = ScheduleId,
                 EventId = EventId,
                 StartDateTime = DateTimeHelpers.ToDateTimeOffset(_startDate, _startTime),
                 EndDateTime = DateTimeHelpers.ToDateTimeOffset(_endDate, _endTime),
@@ -1125,12 +1325,20 @@
                 AdditionalComments = _additionalComments
             };
 
-            await ScheduleService.UpdateScheduleAsync(ScheduleId.Value, scheduleRequest);
+            await SaveEventScheduleAsync(scheduleRequest);
 
-            await PriceService.UpdatePricesAsync(ScheduleId.Value, new PricesRequest { VenueMapId = _selectedVenueMap.Id, ReferenceId = ScheduleId.Value, ReferenceType = AdminSaleType.Event, Prices = _prices.Select(p => new PriceRequest{ BaseRowId = p.BaseRowId, BaseSeatId = p.BaseSeatId, BaseSectionId = p.BaseSectionId, BaseZoneId = p.BaseZoneId, ItemPrice = p.ItemPrice, Id = p.Id, PriceTypes = p.PriceTypes.Select(d => new PriceTypeRequest{Name = d.Key, Price = d.Value}).ToList()}).ToList() });
+            var priceRequest = new PricesRequest { 
+                VenueMapId = _selectedVenueMap.Id,
+                ReferenceId = ScheduleId.Value,
+                ReferenceType = AdminSaleType.Event,
+                Prices = _prices.Select(p => new PriceRequest { BaseRowId = p.BaseRowId, BaseSeatId = p.BaseSeatId, BaseSectionId = p.BaseSectionId, BaseZoneId = p.BaseZoneId, ItemPrice = p.ItemPrice, Id = p.Id, PriceTypes = p.PriceTypes.Select(d => new PriceTypeRequest { Name = d.Key, Price = d.Value }).ToList() }).ToList() 
+            };
 
-            await SaveHorizontalImageAsync();
-            await SaveVerticalImageAsync();
+            await SavePricesAsync(priceRequest);
+
+            await SaveImageAsync(_bannerImage);
+            await SaveImageAsync(_sponsorImages[0]);
+            await SaveImageAsync(_sponsorImages[1]);
             await SaveGalleryImagesAsync();
 
             Snackbar.Add(L["UpdateSuccess", L["Event"]], Severity.Success);
@@ -1153,80 +1361,139 @@
         }
     }
 
-    private async Task UploadHorizontalAsync(IBrowserFile file)
+    private async Task SaveEventAsync(EventRequest request)
+    {
+        if (_isEdit)
+        {
+            await EventService.UpdateEventAsync(EventId.Value, request);
+        }
+        else
+        {
+            EventResult result = await EventService.CreateEventAsync(request);
+            EventId = result.Id;
+        }
+    }
+
+    private async Task SaveEventScheduleAsync(EventScheduleRequest request)
+    {
+        if (_isEdit)
+        {
+            await ScheduleService.UpdateScheduleAsync(ScheduleId.Value, request);
+        }
+        else
+        {
+            var result = await ScheduleService.CreateScheduleAsync(request);
+            ScheduleId = result.Id;
+        }
+    }
+
+    private async Task SavePricesAsync(PricesRequest request)
+    {
+        if (_isEdit)
+        {
+            await PriceService.UpdatePricesAsync(ScheduleId.Value, request);
+        }
+        else
+        {
+            await PriceService.CreatePricesAsync(request);
+        }
+    }
+
+    private async Task AddImage(IBrowserFile file, MediaType mediaType, int order = 0)
     {
         if (file == null)
         {
             return;
         }
 
-        if (_horizontalImage == null)
+        if (file.Size > _maxFileSize)
         {
-            _horizontalImage = new ImageModel
-            {
-                Name = file.Name,
-                TempFile = file
-            };
-        }
-        else
-        {
-            _horizontalImage.Name = file.Name;
-            _horizontalImage.TempFile = file;
-        }
-
-        await _horizontalImageUpload.ClearAsync();
-    }
-
-    private async Task UploadVerticalAsync(IBrowserFile file)
-    {
-        if (file == null)
-        {
+            // TODO: Internationalization
+            Snackbar.Add($"El archivo '{file.Name}' supera el límite de 10MB.", Severity.Error);
             return;
         }
 
-        if (_verticalImage == null)
+        using var stream = file.OpenReadStream(_maxFileSize);
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+
+        memoryStream.Position = 0;
+
+        var imageInfo = await Image.IdentifyAsync(memoryStream);
+        if (imageInfo == null)
         {
-            _verticalImage = new ImageModel
+            Snackbar.Add($"El archivo '{file.Name}' no es una imagen válida.", Severity.Error);
+            return;
+        }
+
+        if (imageInfo.Width < _minWidth || imageInfo.Height < _minHeight)
+        {
+            Snackbar.Add($"La imagen '{file.Name}' mide {imageInfo.Width}x{imageInfo.Height}px. El mínimo es {_minWidth}x{_minHeight}px.", Severity.Warning);
+            return;
+        }
+
+        var fileBytes = memoryStream.ToArray();
+
+        var src = $"data:{file.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
+
+        var newImage = new ImageModel
             {
                 Name = file.Name,
-                TempFile = file
+                TempFile = file,
+                Src = src,
+                Order = order,
+                MediaType = mediaType
             };
-        }
-        else
+
+        switch (mediaType)
         {
-            _verticalImage.Name = file.Name;
-            _verticalImage.TempFile = file;
-        }
-
-        await _verticalImageUpload.ClearAsync();
-    }
-
-    private async Task DeleteHorizontalAsync()
-    {
-        if (_horizontalImage != null)
-        {
-            if (_horizontalImage.Id.HasValue)
-            {
-                await EventService.DeleteEventImageAsync(_horizontalImage.Id.Value);
-            }
-
-            _horizontalImage = null;
-            await _horizontalImageUpload.ClearAsync();
+            case MediaType.Banner:
+                newImage.Id = _bannerImage?.Id;
+                _bannerImage = newImage;
+                await _bannerImageUpload.ClearAsync();
+                break;
+            case MediaType.Sponsor:
+                newImage.Id = _sponsorImages[order]?.Id;
+                _sponsorImages[order] = newImage;
+                await _sponsorUploads[order].ClearAsync();
+                break;
+            default:
+                return;
         }
     }
 
-    private async Task DeleteVerticalAsync()
+    private async Task DeleteImageAsync(MediaType mediaType, int order = 0)
     {
-        if (_verticalImage != null)
+        switch (mediaType)
         {
-            if (_verticalImage.Id.HasValue)
-            {
-                await EventService.DeleteEventImageAsync(_verticalImage.Id.Value);
-            }
+            case MediaType.Banner:
+                if (_bannerImage != null)
+                {
+                    if (_bannerImage.Id.HasValue)
+                    {
+                        await MediaService.DeleteMediaAsync(_bannerImage.Id.Value);
+                    }
 
-            _verticalImage = null;
-            await _verticalImageUpload.ClearAsync();
-        }
+                    _bannerImage = null;
+                    await _bannerImageUpload.ClearAsync();
+                }
+                break;
+            case MediaType.Sponsor:
+                var image = _sponsorImages[order];
+                if(image != null)
+                {
+                    if (image.Id.HasValue)
+                    {
+                        await MediaService.DeleteMediaAsync(image.Id.Value);
+                    }
+
+                    _sponsorImages[order] = null;
+                    await _sponsorUploads[order].ClearAsync();
+                }
+                break;
+            default:
+                return;
+        }        
     }
 
     private async Task UploadGalleryImagesAsync(IReadOnlyList<IBrowserFile> files)
@@ -1244,11 +1511,17 @@
                 continue;
             }
 
+            string src = string.Empty;
             try
             {
                 using var stream = file.OpenReadStream(_maxFileSize);
+                using var memoryStream = new MemoryStream();
 
-                var imageInfo = await Image.IdentifyAsync(stream);
+                await stream.CopyToAsync(memoryStream);
+
+                memoryStream.Position = 0;
+
+                var imageInfo = await Image.IdentifyAsync(memoryStream);
                 if (imageInfo == null)
                 {
                     Snackbar.Add($"El archivo '{file.Name}' no es una imagen válida.", Severity.Error);
@@ -1260,24 +1533,31 @@
                     Snackbar.Add($"La imagen '{file.Name}' mide {imageInfo.Width}x{imageInfo.Height}px. El mínimo es {_minWidth}x{_minHeight}px.", Severity.Warning);
                     continue;
                 }
+
+                var fileBytes = memoryStream.ToArray();
+
+                src = $"data:{file.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred while trying to read the file '{file.Name}'. Error: {ex.Message}");
                 Snackbar.Add($"Error al procesar '{file.Name}': El formato podría no estar soportado.", Severity.Error);
                 continue;
-            }
+            }            
 
             if (_galleryImages.ContainsKey(file.Name))
             {
                 _galleryImages[file.Name].TempFile = file;
+                _galleryImages[file.Name].Src = src;
             }
             else
             {
                 _galleryImages.Add(file.Name, new ImageModel
                 {
                     Name = file.Name,
-                    TempFile = file
+                    TempFile = file,
+                    Src = src,
+                    MediaType = MediaType.Gallery
                 });
             }
         }
@@ -1286,6 +1566,8 @@
         {
             await _galleryUpload.ClearAsync();
         }
+
+        _carousel.MoveTo(_galleryImages.Count - 1);
     }
 
     private async Task RemoveGalleryImageAsync(string fileName)
@@ -1296,10 +1578,12 @@
         {
             if (file is not null && file.Id.HasValue)
             {
-                await EventService.DeleteEventImageAsync(file.Id.Value);
+                await MediaService.DeleteMediaAsync(file.Id.Value);
             }
 
             _galleryImages.Remove(fileName);
+            await Task.Delay(1);
+            _carousel.MoveTo(Math.Max(_galleryImages.Count - 1, 0));
         }
         catch (Exception ex)
         {
@@ -1315,11 +1599,13 @@
         {
             if (galleryImage.Id.HasValue)
             {
-                await EventService.DeleteEventImageAsync(galleryImage.Id.Value);
+                await MediaService.DeleteMediaAsync(galleryImage.Id.Value);
             }
         }
 
         _galleryImages.Clear();
+        await Task.Delay(1);
+        _carousel.MoveTo(0);
     }
 
     private void SetDragClass()
@@ -1336,62 +1622,28 @@
         }
     }
 
-    private async Task SaveHorizontalImageAsync()
+    private async Task SaveImageAsync(ImageModel? image)
     {
         try
         {
-            if (_horizontalImage == null)
+            if (image == null)
             {
                 return;
             }
 
-            if (_horizontalImage.Id.HasValue && _horizontalImage.TempFile != null)
+            if (image.Id.HasValue && image.TempFile != null)
             {
-                await EventService.UpdateEventImageAsync(_horizontalImage.Id.Value, ImageType.HorizontalPoster, 0, new FileParameter(
-                _horizontalImage.TempFile.OpenReadStream(_maxFileSize),
-                _horizontalImage.TempFile.Name,
-                _horizontalImage.TempFile.ContentType));
+                await MediaService.UpdateMediaAsync(image.Id.Value, new FileParameter(
+                image.TempFile.OpenReadStream(_maxFileSize),
+                image.TempFile.Name,
+                image.TempFile.ContentType), image.MediaType, image.Order);
             }
-            else if (_horizontalImage.Id.HasValue == false && _horizontalImage.TempFile != null)
+            else if (image.Id.HasValue == false && image.TempFile != null)
             {
-                _horizontalImage.Id = await EventService.UploadEventImageAsync(EventId, ImageType.HorizontalPoster, 0, new FileParameter(
-                     _horizontalImage.TempFile.OpenReadStream(_maxFileSize),
-                    _horizontalImage.TempFile.Name,
-                    _horizontalImage.TempFile.ContentType));
-            }
-        }
-        catch (ApiException apiEx)
-        {
-            if (apiEx.StatusCode != StatusCodes.Status201Created
-                && apiEx.StatusCode != StatusCodes.Status204NoContent)
-            {
-                throw;
-            }
-        }
-    }
-
-    private async Task SaveVerticalImageAsync()
-    {
-        try
-        {
-            if (_verticalImage == null)
-            {
-                return;
-            }
-
-            if (_verticalImage.Id.HasValue && _verticalImage.TempFile != null)
-            {
-                await EventService.UpdateEventImageAsync(_verticalImage.Id.Value, ImageType.VerticalPoster, 0, new FileParameter(
-                _verticalImage.TempFile.OpenReadStream(_maxFileSize),
-                _verticalImage.TempFile.Name,
-                _verticalImage.TempFile.ContentType));
-            }
-            else if (_verticalImage.Id.HasValue == false && _verticalImage.TempFile != null)
-            {
-                _verticalImage.Id = await EventService.UploadEventImageAsync(EventId, ImageType.VerticalPoster, 0, new FileParameter(
-                     _verticalImage.TempFile.OpenReadStream(_maxFileSize),
-                    _verticalImage.TempFile.Name,
-                    _verticalImage.TempFile.ContentType));
+                image.Id = await MediaService.UploadMediaAsync(EventId.Value, AdminSaleType.Event, image.MediaType, image.Order, new FileParameter(
+                     image.TempFile.OpenReadStream(_maxFileSize),
+                    image.TempFile.Name,
+                    image.TempFile.ContentType));
             }
         }
         catch (ApiException apiEx)
@@ -1408,19 +1660,18 @@
     {
         try
         {
-            foreach (ImageModel image in _galleryImages.Values)
+            foreach (var(index, image) in _galleryImages.Values.Index())
             {
                 if (image.Id.HasValue && image.TempFile != null)
                 {
-                    await EventService.UpdateEventImageAsync(image.Id.Value, ImageType.Gallery, 0, new FileParameter(
+                    await MediaService.UpdateMediaAsync(image.Id.Value, new FileParameter(
                         image.TempFile.OpenReadStream(_maxFileSize),
                         image.TempFile.Name,
-                        image.TempFile.ContentType
-                    ));
+                        image.TempFile.ContentType), image.MediaType, index);
                 }
                 else if (image.TempFile != null)
                 {
-                    image.Id = await EventService.UploadEventImageAsync(EventId, ImageType.Gallery, 0, new FileParameter(
+                    image.Id = await MediaService.UploadMediaAsync(EventId.Value, AdminSaleType.Event, image.MediaType, index, new FileParameter(
                         image.TempFile.OpenReadStream(_maxFileSize),
                         image.TempFile.Name,
                         image.TempFile.ContentType
@@ -1550,10 +1801,51 @@
         return section?.SeatNumber ?? string.Empty;
     }
 
-    private void InitializePrices()
+    private async Task LoadPrices()
+    {
+        if(ScheduleId == null || _selectedVenueMap == null)
+        {
+            InitializeEmptyPrices();
+            return;
+        }
+
+        try
+        {
+            PricesResponse priceResponse = await PriceService.GetPricesByScheduleAndVenueAsync(ScheduleId.Value, _selectedVenueMap.Id);
+
+            _prices = priceResponse.Prices.Select(x => new PriceForm
+            {
+                Id = x.Id,
+                BaseZoneId = x.BaseZoneId,
+                BaseSectionId = x.BaseSectionId,
+                BaseRowId = x.BaseRowId,
+                BaseSeatId = x.BaseSeatId,
+                ItemPrice = x.ItemPrice,
+                PriceTypes = x.PriceTypes.ToDictionary(pt => pt.Name, pt => pt.Price)
+            }).ToList();
+
+            foreach (var priceType in priceResponse.PriceTypes)
+            {
+                if (!PriceTypes.Contains(priceType.Name))
+                {
+                    PriceTypes.Add(priceType.Name);
+                }
+            }
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode == StatusCodes.Status404NotFound)
+            {
+                InitializeEmptyPrices();
+            }
+        }
+    }
+
+    private void InitializeEmptyPrices()
     {
         if (_layout.Zones is not null && _layout.Zones.Count > 0)
         {
+            _prices.Clear();
             foreach (var zone in _layout.Zones)
             {
                 _prices.Add(new PriceForm
@@ -1671,16 +1963,82 @@
         }
     }
 
-    public class PriceForm
+    private async Task DownloadCsvAsync()
     {
-        public long? Id { get; set; }
-        public long? BaseZoneId { get; set; }
-        public long? BaseSectionId { get; set; }
-        public long? BaseRowId { get; set; }
-        public long? BaseSeatId { get; set; }
-        public decimal? ItemPrice { get; set; }
-        public Dictionary<string, decimal?> PriceTypes { get; set; } = new();
+        try
+        {
+            FileResponse? file = await PriceService.DownloadPricesCsvAsync(ScheduleId, _selectedVenueMap?.Id ?? default);
 
-        public bool IsZonePrice => BaseSectionId is null && BaseRowId is null && BaseSeatId is null;
+            if (file is null)
+            {
+                throw new Exception("No file was received for download.");
+            }
+            else
+            {
+                await DownloadFileAsync(file);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error trying to get file: {ex.Message}");
+            Snackbar.Add(L["ErrorDownloadingPricesTemplate"], Severity.Error);
+        }
+    }
+
+    private async Task DownloadFileAsync(FileResponse file)
+    {
+        try
+        {
+            string contentDisposition = file.Headers["Content-Disposition"].FirstOrDefault() ?? "";
+            string filename = "";
+
+            if (ContentDispositionHeaderValue.TryParse(contentDisposition, out var disposition))
+            {
+                filename = disposition.FileNameStar.Value ?? disposition.FileName.Value ?? filename;
+                filename = filename.Trim('\"');
+            }
+
+            using var streamRef = new DotNetStreamReference(stream: file.Stream);
+
+            await JS.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+
+            Snackbar.Add(L["SuccesfulFileDownload"], Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error downloading file: {ex.Message}");
+            Snackbar.Add(L["ErrorDownloadingPricesTemplate"], Severity.Error);
+        }
+    }
+
+    private async Task OpenPriceImportDialog()
+    {
+        var parameters = new DialogParameters<PriceImportDialog> { { x => x.EventId, EventId }, { x => x.VenueMapId, _selectedVenueMap.Id } };
+        var dialog = await DialogService.ShowAsync<PriceImportDialog>(parameters);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            Console.WriteLine(result.Data);
+            IEnumerable<PriceResponse> priceResponses = (IEnumerable<PriceResponse>)result.Data;
+            _prices = priceResponses.Select(x => new PriceForm()
+            {
+                BaseZoneId = x.BaseZoneId,
+                BaseSectionId = x.BaseSectionId,
+                BaseRowId = x.BaseRowId,
+                BaseSeatId = x.BaseSeatId,
+                ItemPrice = x.ItemPrice,
+                PriceTypes = x.PriceTypes.ToDictionary(pt => pt.Name, pt => pt.Price)
+            }).ToList();
+
+            foreach (var priceType in _prices.SelectMany(x => x.PriceTypes))
+            {
+                if (!PriceTypes.Contains(priceType.Key))
+                {
+                    PriceTypes.Add(priceType.Key);
+                }
+            }
+        }
     }
 }
