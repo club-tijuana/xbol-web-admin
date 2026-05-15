@@ -35,6 +35,20 @@ Configure secrets using .NET Secret Manager:
 dotnet user-secrets set "SeatsIo:SecretKey" "YOUR_KEY" --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
 ```
 
+#### Firebase Service Account (local development)
+
+The portal uses Firebase Admin SDK (GCIP) to issue and verify its HttpOnly session cookie. A Google Cloud service account key is required. Do not commit the key to the repo; use .NET user secrets instead.
+
+1. Download the service account JSON key from the GCP Console (`IAM & Admin -> Service Accounts -> Keys`).
+2. Set the key as a user secret:
+
+```bash
+dotnet user-secrets set "GcipAuth:ServiceAccountJson" "$(cat path/to/service-account-key.json)" \
+  --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
+```
+
+The app reads `GcipAuth:ServiceAccountJson` at startup and creates a `GoogleCredential` from it. The `TenantId` and `ProjectId` are already set in `appsettings.json` and do not need to be overridden.
+
 List configured secrets:
 
 ```bash
@@ -43,7 +57,7 @@ dotnet user-secrets list --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPo
 
 ### Configuration
 
-Edit `appsettings.Development.json` for local settings (API base address, authentication, etc.). Settings cascade: `appsettings.json` -> `appsettings.{Environment}.json` -> environment variables. All settings are validated at startup.
+Edit `appsettings.Development.json` for local settings (API base address, Firebase admin tenant, etc.). Settings cascade: `appsettings.json` -> `appsettings.{Environment}.json` -> environment variables. Required settings are validated at startup.
 
 IDE autocomplete is provided by `appsettings.schema.json`, which regenerates automatically on Debug builds.
 
@@ -89,8 +103,11 @@ The app secret stores environment variables using ASP.NET's `__` (double undersc
 {
     "AdminApiClient__BaseAddress": "https://dev-api.admin.pwrticket.mx",
     "SeatsIo__SecretKey": "<seats.io secret key>",
-    "Authentication__AllowedUsers__0__Email": "admin@xbol.com",
-    "Authentication__AllowedUsers__0__Password": "P@ssw0rd1234"
+    "FirebaseAuth__ApiKey": "<firebase web api key>",
+    "FirebaseAuth__AuthDomain": "<firebase auth domain>",
+    "FirebaseAuth__ProjectId": "boletera-qa",
+    "FirebaseAuth__AppId": "<firebase web app id>",
+    "FirebaseAuth__TenantId": "admin-jgh5r"
 }
 ```
 

@@ -3,12 +3,15 @@
 @using Odasoft.XBOL.AdminPortal.Services
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using Odasoft.XBOL.AdminPortal.States
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Claims
 @inherits LayoutComponentBase
 @layout ThemeLayout
 @inject IAuthService AuthService
 @inject LoadingState LoadingState
 @inject NavigationManager Navigation
-@inject AuthStateProvider AuthStateProvider
+@inject AntiforgeryStateProvider Antiforgery
+@inject BrowserFormPostJsInterop FormPost
 @inject AppLocalizer<MainLayout> L
 @inject PersistentDialogState PersistentDialogState
 
@@ -36,7 +39,16 @@
                                OnClick="@context.ToggleAsync" />
             </ActivatorContent>
             <ChildContent>
-                <MudMenuItem Label="@L["Logout"]" OnClick="Logout" />
+                <AuthorizeView>
+                    <Authorized Context="auth">
+                        <MudStack Spacing="0" Class="px-4 py-3 profile-menu-header">
+                            <MudText Typo="Typo.subtitle2">@GetDisplayName(auth.User)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@GetEmail(auth.User)</MudText>
+                        </MudStack>
+                        <MudDivider />
+                    </Authorized>
+                </AuthorizeView>
+                <MudMenuItem Icon="@Icons.Material.Filled.Logout" Label="@L["Logout"]" OnClick="Logout" />
             </ChildContent>
         </MudMenu>
     </MudAppBar>
@@ -174,7 +186,17 @@
     private async Task Logout()
     {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo("./login");
+        var antiforgery = Antiforgery.GetAntiforgeryToken();
+        if (antiforgery is null)
+        {
+            Navigation.NavigateTo("login", forceLoad: true);
+            return;
+        }
+
+        await FormPost.PostAsync("auth/logout", new Dictionary<string, string?>
+        {
+            [antiforgery.FormFieldName] = antiforgery.Value
+        });
     }
 
     public void Dispose()
@@ -185,4 +207,13 @@
     private static string FormatSeats(IReadOnlyList<RenewalSeatLine> seats) =>
         string.Join(", ", seats.Select(s =>
             string.IsNullOrWhiteSpace(s.Category) ? s.SeatId : $"{s.Category} - {s.SeatId}"));
+
+    private static string GetDisplayName(ClaimsPrincipal user) =>
+        user.FindFirst("name")?.Value
+        ?? user.Identity?.Name
+        ?? user.FindFirst(ClaimTypes.Email)?.Value
+        ?? string.Empty;
+
+    private static string GetEmail(ClaimsPrincipal user) =>
+        user.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
 }

@@ -1,3 +1,4 @@
+using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.Common.Options;
 using System.ComponentModel;
 using System.Text.Json;
@@ -79,8 +80,14 @@ public static class AppSettingsSchemaGenerator
         [Description("Admin API client settings")]
         public AdminApiClientOptions? AdminApiClient { get; set; }
 
-        [Description("Portal authentication settings")]
-        public AuthenticationOptions? Authentication { get; set; }
+        [Description("Firebase Web SDK authentication settings for admin users")]
+        public FirebaseAuthOptions? FirebaseAuth { get; set; }
+
+        [Description("Firebase Admin SDK authentication settings")]
+        public GcipAuthOptions? GcipAuth { get; set; }
+
+        [Description("Admin API Firebase session cookie settings")]
+        public AdminSessionCookieOptions? AdminSession { get; set; }
 
         [Description("Seats.io integration settings")]
         public SeatsIoOptions? SeatsIo { get; set; }

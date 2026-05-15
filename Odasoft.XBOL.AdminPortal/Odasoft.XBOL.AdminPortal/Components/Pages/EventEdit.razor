@@ -1,6 +1,7 @@
 @page "/events/create"
 @page "/events/{EventId:long}/edit"
 @page "/events/{EventId:long}/schedules/{ScheduleId:long}/edit"
+@attribute [Authorize]
 @using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.AdminPortal.Extensions
 @using Odasoft.XBOL.AdminPortal.States
