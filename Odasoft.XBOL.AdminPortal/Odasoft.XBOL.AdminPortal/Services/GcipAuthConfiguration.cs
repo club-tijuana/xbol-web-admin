@@ -1,5 +1,4 @@
 using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
 
 namespace Odasoft.XBOL.AdminPortal.Services;
 
@@ -21,11 +20,9 @@ public static class GcipAuthConfiguration
     {
         var appOptions = new AppOptions
         {
-            Credential = !string.IsNullOrWhiteSpace(options.ServiceAccountJson)
-#pragma warning disable CS0618
-                ? GoogleCredential.FromJson(options.ServiceAccountJson)
-                : GoogleCredential.FromFile(options.ServiceAccountJsonPath!)
-#pragma warning restore CS0618
+            Credential = GoogleServiceAccountCredentialFactory.Create(
+                options.ServiceAccountJson,
+                options.ServiceAccountJsonPath)
         };
 
         if (!string.IsNullOrWhiteSpace(options.ProjectId))

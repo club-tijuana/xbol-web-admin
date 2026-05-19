@@ -49,6 +49,27 @@ dotnet user-secrets set "GcipAuth:ServiceAccountJson" "$(cat path/to/service-acc
 
 The app reads `GcipAuth:ServiceAccountJson` at startup and creates a `GoogleCredential` from it. The `TenantId` and `ProjectId` are already set in `appsettings.json` and do not need to be overridden.
 
+#### Cloud Storage DataProtection Keys
+
+Local development uses ASP.NET Core's local DataProtection key storage. Google Cloud Storage key-ring persistence is only used outside `ASPNETCORE_ENVIRONMENT=Development`.
+
+For deployed GKE targets, configure the service account JSON and environment-specific key-ring object through runtime secrets:
+
+```bash
+# Cloud storage has its own Service Account
+CloudStorage__ServiceAccountJson=<service account json>
+
+# Make sure to change <env> to the desired namespace
+DataProtection__KeyRingObjectName=data-protection/<env>/xbol-web-admin-key-ring.xml
+```
+
+`CloudStorage:ServiceAccountJsonPath` can be used instead of inline JSON when running a deployed-environment configuration locally:
+
+```bash
+dotnet user-secrets set "CloudStorage:ServiceAccountJsonPath" "path/to/cloud-storage-service-account-key.json" \
+  --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
+```
+
 List configured secrets:
 
 ```bash
@@ -102,6 +123,9 @@ The app secret stores environment variables using ASP.NET's `__` (double undersc
 ```json
 {
     "AdminApiClient__BaseAddress": "https://dev-api.admin.pwrticket.mx",
+    "CloudStorage__BucketName": "<cloud storage bucket name>",
+    "CloudStorage__ServiceAccountJson": "<cloud storage service account json>",
+    "DataProtection__KeyRingObjectName": "data-protection/dev/xbol-web-admin-key-ring.xml",
     "SeatsIo__SecretKey": "<seats.io secret key>",
     "FirebaseAuth__ApiKey": "<firebase web api key>",
     "FirebaseAuth__AuthDomain": "<firebase auth domain>",

@@ -7,7 +7,9 @@ namespace Odasoft.XBOL.AdminPortal.Extensions;
 public static class OptionsConfiguration
 {
     public static IServiceCollection ConfigureOptions(
-        this IServiceCollection services, IConfiguration configuration)
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         services.AddOptions<AdminApiClientOptions>()
             .BindConfiguration("AdminApiClient")
@@ -23,7 +25,28 @@ public static class OptionsConfiguration
             .BindConfiguration("GcipAuth")
             .ValidateDataAnnotations()
             .Validate(ValidateGcipAuthOptions, "GcipAuth requires ServiceAccountJson or ServiceAccountJsonPath.")
+            .Validate(ValidateGcipAuthCredentialSource, "GcipAuth service account credentials are invalid or unavailable.")
             .ValidateOnStart();
+
+        if (!environment.IsDevelopment())
+        {
+            services.AddOptions<CloudStorageOptions>()
+                .BindConfiguration("CloudStorage")
+                .ValidateDataAnnotations()
+                .Validate(
+                    ValidateCloudStorageOptions,
+                    "CloudStorage:ServiceAccountJson or CloudStorage:ServiceAccountJsonPath is required.")
+                .Validate(
+                    ValidateCloudStorageCredentialSource,
+                    "CloudStorage service account credentials are invalid or unavailable.")
+                .ValidateOnStart();
+
+            services.AddOptions<DataProtectionKeyRingOptions>()
+                .BindConfiguration("DataProtection")
+                .ValidateDataAnnotations()
+                .Validate(ValidateDataProtectionKeyRingOptions, "DataProtection has invalid key-ring settings.")
+                .ValidateOnStart();
+        }
 
         services.AddOptions<AdminSessionCookieOptions>()
             .BindConfiguration("AdminSession")
@@ -60,6 +83,50 @@ public static class OptionsConfiguration
     {
         return !string.IsNullOrWhiteSpace(options.ServiceAccountJson)
             || !string.IsNullOrWhiteSpace(options.ServiceAccountJsonPath);
+    }
+
+    private static bool ValidateGcipAuthCredentialSource(GcipAuthOptions options)
+    {
+        return ValidateServiceAccountCredentialSource(options.ServiceAccountJson, options.ServiceAccountJsonPath);
+    }
+
+    private static bool ValidateCloudStorageOptions(CloudStorageOptions options)
+    {
+        return !string.IsNullOrWhiteSpace(options.ServiceAccountJson)
+            || !string.IsNullOrWhiteSpace(options.ServiceAccountJsonPath);
+    }
+
+    private static bool ValidateCloudStorageCredentialSource(CloudStorageOptions options)
+    {
+        return ValidateServiceAccountCredentialSource(options.ServiceAccountJson, options.ServiceAccountJsonPath);
+    }
+
+    private static bool ValidateServiceAccountCredentialSource(string? serviceAccountJson, string? serviceAccountJsonPath)
+    {
+        return GoogleServiceAccountCredentialFactory.Validate(serviceAccountJson, serviceAccountJsonPath);
+    }
+
+    private static bool ValidateDataProtectionKeyRingOptions(DataProtectionKeyRingOptions options)
+    {
+        if (string.IsNullOrWhiteSpace(options.ApplicationName))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(options.KeyRingObjectName))
+        {
+            return false;
+        }
+
+        if (options.KeyRingObjectName.StartsWith("/", StringComparison.Ordinal)
+            || options.KeyRingObjectName.EndsWith("/", StringComparison.Ordinal)
+            || options.KeyRingObjectName.Contains("//", StringComparison.Ordinal)
+            || options.KeyRingObjectName.Contains("..", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return !options.KeyRingObjectName.Any(char.IsControl);
     }
 
     private static bool ValidateAdminSessionOptions(AdminSessionCookieOptions options)
