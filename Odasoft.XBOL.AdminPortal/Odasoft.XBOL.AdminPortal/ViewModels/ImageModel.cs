@@ -8,6 +8,8 @@ namespace Odasoft.XBOL.AdminPortal.ViewModels
         public long? Id { get; set; }
         public string Name { get; set; } = "";
         public IBrowserFile? TempFile { get; set; }
+        public byte[]? FileBytes { get; set; }
+        public string ContentType { get; set; } = "";
         public string Src { get; set; } = string.Empty;
         public int Order { get; set; } = 0;
         public ImageType ImageType { get; set; }

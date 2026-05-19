@@ -35,9 +35,9 @@ namespace Odasoft.XBOL.Business.Services
             }
         }
 
-        public async Task<ICollection<PriceResponse>> ValidatePricesCsvAsync(long eventId, long venueMapId, FileParameter file)
+        public async Task<ICollection<PriceResponse>> ValidatePricesCsvAsync(long venueMapId, FileParameter file)
         {
-            return await _adminClient.ValidatePricesCsvAsync(eventId, venueMapId, file);
+            return await _adminClient.ValidatePricesCsvAsync(venueMapId, file);
         }
     }
 }

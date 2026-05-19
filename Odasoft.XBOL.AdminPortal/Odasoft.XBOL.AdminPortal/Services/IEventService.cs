@@ -33,8 +33,7 @@ public interface IEventService
     Task UpdateEventAsync(long id, EventRequest request);
     Task DeleteEventAsync(long id);
     Task<EventInfoDTO> GetEventByIdAsync(long id);
-    Task<long> UploadEventImageAsync(long eventId, ImageType imageType, int order, FileParameter imageFile);
-    Task DeleteEventImageAsync(long eventImageId);
-    Task UpdateEventImageAsync(long eventImageId, ImageType imageType, int order, FileParameter file);
-    Task<ICollection<EventImageResponse>> GetEventImageByTypeAsync(long eventId, ImageType imageType);
+    Task ApproveEventAsync(long id);
+    Task RejectEventAsync(long id);
+    Task PublishEventAsync(long id);
 }

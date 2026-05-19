@@ -4,7 +4,7 @@
     }
 </style>
 
-<MudDialog Class="@Class" ActionsClass="@ActionsClass" TitleClass="pb-2" Style="width: 400px; max-width: 100vw;">
+<MudDialog Class="@Class" ActionsClass="@ActionsClass" TitleClass="@TitleClass" Style="width: 400px; max-width: 100vw;">
     <TitleContent>
         @TitleContent
     </TitleContent>
@@ -31,4 +31,7 @@
 
     [Parameter]
     public string ActionsClass { get; set; } = "mt-2 d-flex justify-center flex-grow-1";
+
+    [Parameter]
+    public string TitleClass { get; set; } = "pb-2";
 }

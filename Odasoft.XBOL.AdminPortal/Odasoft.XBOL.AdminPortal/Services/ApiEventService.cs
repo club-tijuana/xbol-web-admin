@@ -41,6 +41,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.VenueName ?? "",
             e.AvailableSeats,
             e.TotalSeats,
+            e.Status,
             e.ExternalEventKey,
             e.PosterImageUrl ?? "",
             e.BannerImageUrl ?? ""
@@ -83,6 +84,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             e.VenueName ?? "",
             e.AvailableSeats,
             e.TotalSeats,
+            e.Status,
             e.ExternalEventKey,
             e.PosterImageUrl ?? "",
             e.BannerImageUrl ?? "",
@@ -114,23 +116,9 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
             ? string.Join(", ", categories.Select(c => c.DisplayName))
             : "";
 
-    public async Task<long> UploadEventImageAsync(long eventId, ImageType imageType, int order, FileParameter imageFile)
-    {
-        return await adminClient.UploadEventImageAsync(eventId, imageType, order, imageFile);
-    }
+    public async Task ApproveEventAsync(long id) => await adminClient.ApproveEventAsync(id);
 
-    public async Task DeleteEventImageAsync(long eventImageId)
-    {
-        await adminClient.DeleteEventImageByIdAsync(eventImageId);
-    }
+    public async Task RejectEventAsync(long id) => await adminClient.RejectEventAsync(id);
 
-    public async Task UpdateEventImageAsync(long eventImageId, ImageType imageType, int order, FileParameter file)
-    {
-        await adminClient.UpdateEventImageByIdAsync(eventImageId, imageType, order, file);
-    }
-
-    public async Task<ICollection<EventImageResponse>> GetEventImageByTypeAsync(long eventId, ImageType imageType)
-    {
-        return await adminClient.GetEventImagesByImageTypeAsync(eventId, imageType);
-    }
+    public async Task PublishEventAsync(long id) => await adminClient.PublishEventAsync(id);
 }

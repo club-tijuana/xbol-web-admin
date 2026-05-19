@@ -52,9 +52,6 @@
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter]
-    public long EventId { get; set; }
-
-    [Parameter]
     public long VenueMapId { get; set; }
 
     private IEnumerable<CsvRowError> errors = [];
@@ -67,7 +64,7 @@
     {
         try
         {
-            var validation = await PriceService.ValidatePricesCsvAsync(EventId, VenueMapId, new FileParameter(
+            var validation = await PriceService.ValidatePricesCsvAsync(VenueMapId, new FileParameter(
                         _file.OpenReadStream(),
                         _file.Name,
                         _file.ContentType));
