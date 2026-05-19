@@ -23,13 +23,13 @@ public class AuthService(
         }
         catch (JSException ex)
         {
-            await firebaseAuth.SignOutAsync();
+            await SignOutBestEffortAsync();
             logger.LogWarning(ex, "Firebase sign-in failed for {Email}", email);
             return AuthResult.Failed(AuthErrorCodes.InvalidCredentials);
         }
         catch (Exception ex)
         {
-            await firebaseAuth.SignOutAsync();
+            await SignOutBestEffortAsync();
             logger.LogError(ex, "Unexpected login failure for {Email}", email);
             return AuthResult.Failed(AuthErrorCodes.LoginFailed);
         }
@@ -65,7 +65,7 @@ public class AuthService(
         }
         catch (ApiException<ProblemDetails> ex)
         {
-            await firebaseAuth.SignOutAsync();
+            await SignOutBestEffortAsync();
             logger.LogWarning(
                 ex,
                 "Admin invitation registration failed for {Email} with status {StatusCode}",
@@ -75,13 +75,13 @@ public class AuthService(
         }
         catch (JSException ex)
         {
-            await firebaseAuth.SignOutAsync();
+            await SignOutBestEffortAsync();
             logger.LogWarning(ex, "Firebase sign-in after registration failed for {Email}", email);
             return AuthResult.Failed(AuthErrorCodes.LoginFailed);
         }
         catch (Exception ex)
         {
-            await firebaseAuth.SignOutAsync();
+            await SignOutBestEffortAsync();
             logger.LogError(ex, "Unexpected registration failure for {Email}", email);
             return AuthResult.Failed(AuthErrorCodes.RegistrationFailed);
         }
@@ -117,13 +117,13 @@ public class AuthService(
         }
         catch (JSException ex)
         {
-            await firebaseAuth.SignOutAsync();
+            await SignOutBestEffortAsync();
             logger.LogWarning(ex, "Firebase password reset failed.");
             return AuthResult.Failed(AuthErrorCodes.PasswordResetFailed);
         }
         catch (Exception ex)
         {
-            await firebaseAuth.SignOutAsync();
+            await SignOutBestEffortAsync();
             logger.LogError(ex, "Unexpected password reset failure.");
             return AuthResult.Failed(AuthErrorCodes.PasswordResetFailed);
         }
@@ -131,6 +131,22 @@ public class AuthService(
 
     public async Task LogoutAsync()
     {
-        await firebaseAuth.SignOutAsync();
+        await SignOutBestEffortAsync();
+    }
+
+    private async Task SignOutBestEffortAsync()
+    {
+        try
+        {
+            await firebaseAuth.SignOutAsync();
+        }
+        catch (JSException ex)
+        {
+            logger.LogWarning(ex, "Firebase sign-out cleanup failed.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Unexpected Firebase sign-out cleanup failure.");
+        }
     }
 }
