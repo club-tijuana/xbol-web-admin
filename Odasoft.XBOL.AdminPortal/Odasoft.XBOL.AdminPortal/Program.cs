@@ -71,6 +71,7 @@ app.UseRequestLocalization();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseAnonymousPageAuthRedirects();
 app.UseAuthorization();
 
 app.UseAntiforgery();
