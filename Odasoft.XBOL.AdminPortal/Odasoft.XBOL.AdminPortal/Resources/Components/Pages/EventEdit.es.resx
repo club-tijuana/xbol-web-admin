@@ -300,4 +300,19 @@
   <data name="GalleryPreview" xml:space="preserve">
     <value>Vista previa de galería</value>
   </data>
+  <data name="FinishReview" xml:space="preserve">
+    <value>Terminar revisión</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publicar</value>
+  </data>
+  <data name="TimeToPurchaseInMinutes" xml:space="preserve">
+    <value>Tiempo de compra (minutos)</value>
+  </data>
+  <data name="ReviewDescription" xml:space="preserve">
+    <value>Favor de revisar que toda la información ingresada sea correcta. Al terminar presione 'Terminar revisión' si todo está en orden presione 'Aprobar'; de lo contrario, 'Requiere cambios' para realizar las correcciones necesarias.</value>
+  </data>
+  <data name="Organizer" xml:space="preserve">
+    <value>Promotor</value>
+  </data>
 </root>

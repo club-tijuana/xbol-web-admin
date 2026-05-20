@@ -15,6 +15,7 @@ namespace Odasoft.XBOL.Business.Extensions
             services.AddScoped<CreditTransactionsService>();
             services.AddScoped<MediaService>();
             services.AddScoped<OrdersService>();
+            services.AddScoped<OrganizersService>();
             services.AddScoped<PriceService>();
             services.AddScoped<SettingsService>();
             services.AddScoped<SuiteAgreementsService>();

@@ -300,4 +300,16 @@
   <data name="GalleryPreview" xml:space="preserve">
     <value>Gallery preview</value>
   </data>
+  <data name="FinishReview" xml:space="preserve">
+    <value>Finish review</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publish</value>
+  </data>
+  <data name="TimeToPurchaseInMinutes" xml:space="preserve">
+    <value>Time to purchase (minutes)</value>
+  </data>
+  <data name="Organizer" xml:space="preserve">
+    <value>Organizer</value>
+  </data>
 </root>

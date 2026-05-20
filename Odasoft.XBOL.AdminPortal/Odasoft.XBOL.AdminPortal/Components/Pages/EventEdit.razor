@@ -15,6 +15,7 @@
 
 @inject CatalogsService CatalogsService;
 @inject IEventService EventService;
+@inject OrganizersService OrganizersService;
 @inject VenuesService VenuesService
 @inject VenueMapsService VenueMapsService;
 @inject PriceService PriceService;
@@ -85,9 +86,9 @@
                   OnRetry="InitializeForm">
     <MudCard Elevation="3">
         <MudCardContent Class="pa-6">
-            <MudStack Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Class="mb-4">
+            <MudStack Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch" Class="mb-4">
                 <MudStack Row>
-                    <MudText Typo="Typo.h5">@($"{_pageTitle}{(_activeIndex > 0 && !string.IsNullOrWhiteSpace(_name) ? $" - {_name}" : string.Empty)}")</MudText>
+                    <MudText Typo="Typo.h5">@($"{(_isEdit || _isReview ? _name : _pageTitle)}")</MudText>
                     @if (!_isReview)
                     {
                         <EventStatusChip Status="_eventStatus"></EventStatusChip>
@@ -95,7 +96,12 @@
                 </MudStack>
                 @if (_isReview)
                 {
-                    <MudAlert Severity="Severity.Warning">@L["ReviewDescription"]</MudAlert>
+                    <MudAlert 
+                        Severity="Severity.Warning"
+                        Class="bg-primary-lighten text-secondary w-100"
+                        Dense
+                        NoIcon
+                    >@L["ReviewDescription"]</MudAlert>
                 }
                 else
                 {                    
@@ -108,6 +114,19 @@
                     <MudStep Title="@L["DescriptionAndVenue"]">
                         <MudForm @ref="_descriptionForm" @bind-IsValid="_descriptionFormValid" @onkeydown="OnKeyDownAsync">
                             <MudGrid Spacing="7">
+                                <MudItem xs="12">
+                                    <AdminSelect Label="@(L["Organizer"].Value)"
+                                               @bind-Value="_organizerId"
+                                               Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
+
+                                        @foreach (var organizer in _organizers)
+                                        {
+                                            <MudSelectItem T="long?" Value="organizer.Id" >
+                                                @organizer.Name
+                                            </MudSelectItem>
+                                        }
+                                    </AdminSelect>
+                                </MudItem>
                                 <MudItem xs="12" sm="6">
                                     <MudGrid Spacing="4">
                                         <MudItem xs="12">
@@ -581,10 +600,17 @@
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
-                                <MudItem xs="12" md="8">
+                                <MudItem xs="12" md="6">
                                     <AdminTextField @bind-Value="_externalEventKey"
                                                     Label="@L["ExternalEventKey"].Value"
                                                     Field="@_descriptionFormContext.Field("ExternalEventKey")"
+                                                    Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                </MudItem>
+                                <MudItem xs="12" md="2">
+                                    <AdminNumericField @bind-Value="_holdExpirationInMinutes"
+                                                       Label="@L["TimeToPurchaseInMinutes"].Value"
+                                                    Field="@_datesAndSalePoliciesFormContext.Field("HoldExpirationInMinutes")"
+                                                    HideSpinButtons="@true"
                                                     Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -1025,6 +1051,7 @@
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
     private List<VenueResponse> _venues = [];
     private List<VenueMapResponse> _venueMaps = [];
+    private List<ListItem> _organizers = [];
 
     private MudFileUpload<IBrowserFile> _bannerImageUpload = null!;
     private ImageModel? _bannerImage;
@@ -1063,10 +1090,11 @@
     private TimeSpan? _publishedTime;
     private DateTime? _gateOpenDate;
     private TimeSpan? _gateOpenTime;
+    private int? _holdExpirationInMinutes;
     private AgeRestriction? _ageRestriction;
     private string? _securityPolicies;
     private string? _additionalComments;
-    private string _externalEventKey;
+    private string? _externalEventKey;
 
     private List<PriceForm> _prices = [];
     private long? _currentPricesMapId;
@@ -1088,6 +1116,7 @@
     private string? _venueAddress;
     private string? _venueCoordinates;
 
+    private long? _organizerId;
     private VenueResponse? _selectedVenue;
     private VenueMapResponse? _selectedVenueMap;
 
@@ -1125,9 +1154,9 @@
             await LoadCatalogs();
             if (EventId.HasValue && EventId.Value > 0)
             {
-                _pageTitle = L["EditEvent"];
                 _isEdit = true;
                 await LoadData();
+                _pageTitle = _name;
             }
             else
             {
@@ -1151,11 +1180,13 @@
     {
         var venueTask = CatalogsService.GetVenuesAsync();
         var catTask = EventService.GetCategoriesAsync();
+        var organizersTask = OrganizersService.GetOrganizersCatalogAsync();
 
-        await Task.WhenAll(venueTask, catTask);
+        await Task.WhenAll(venueTask, catTask, organizersTask);
 
         _venues = await venueTask;
         _eventCategories = (await catTask).Where(c => c.IsActive == true).ToList();
+        _organizers = (await organizersTask).ToList();
     }
 
     private async Task LoadData()
@@ -1186,6 +1217,7 @@
             _additionalComments = eventResult.AdditionalComments;
             _selectedCategories = eventResult.Categories.ToList();
             _eventStatus = eventResult.Status;
+            _organizerId = eventResult.OrganizerId;
 
             await OnVenueSelected(_venues.FirstOrDefault(v => v.Id == eventResult.VenueId));
             await OnVenueMapSelected(_venueMaps.FirstOrDefault(m => m.Id == eventResult.VenueMapId));
@@ -1208,6 +1240,7 @@
                 _publishedTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PublishedDate);
                 _gateOpenDate = DateTimeHelpers.ToNullableDateTime(schedule?.GateOpenDate);
                 _gateOpenTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.GateOpenDate);
+                _holdExpirationInMinutes = schedule.HoldExpirationInMinutes;
                 _externalEventKey = schedule.ExternalEventKey;
             }
 
@@ -1430,7 +1463,8 @@
                 VenueMapId = _selectedVenueMap.Id,
                 SecurityPolicies = _securityPolicies,
                 AdditionalComments = _additionalComments,
-                AgeRestriction = _ageRestriction
+                AgeRestriction = _ageRestriction,
+                OrganizerId = _organizerId
             };
 
             await SaveEventAsync(request);
@@ -1449,7 +1483,8 @@
                 ExternalEventKey = _externalEventKey,
                 AgeRestriction = _ageRestriction,
                 SecurityPolicies = _securityPolicies,
-                AdditionalComments = _additionalComments
+                AdditionalComments = _additionalComments,
+                HoldExpirationInMinutes = _holdExpirationInMinutes
             };
 
             await SaveEventScheduleAsync(scheduleRequest);

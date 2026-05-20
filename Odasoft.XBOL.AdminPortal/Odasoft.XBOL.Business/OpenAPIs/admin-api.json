@@ -4801,6 +4801,46 @@
         }
       }
     },
+    "/api/organizers/catalog": {
+      "get": {
+        "tags": [
+          "Organizer"
+        ],
+        "summary": "Retrieves the organizer catalog as a collection of list items.",
+        "operationId": "GetOrganizerCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/phone-region-codes": {
       "get": {
         "tags": [
@@ -12693,6 +12733,15 @@
             "type": "string",
             "nullable": true
           },
+          "organizerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizerName": {
+            "type": "string",
+            "nullable": true
+          },
           "ageRestriction": {
             "allOf": [
               {
@@ -12707,6 +12756,11 @@
           },
           "additionalComments": {
             "type": "string",
+            "nullable": true
+          },
+          "holdExpirationInMinutes": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "status": {
@@ -12831,6 +12885,11 @@
             "format": "int64",
             "nullable": true
           },
+          "organizerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -12880,6 +12939,11 @@
             "format": "int64"
           },
           "venueMapId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizerId": {
             "type": "integer",
             "format": "int64",
             "nullable": true
@@ -12985,6 +13049,11 @@
               }
             ]
           },
+          "holdExpirationInMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "prices": {
             "type": "array",
             "items": {
@@ -13055,6 +13124,11 @@
           },
           "additionalComments": {
             "type": "string",
+            "nullable": true
+          },
+          "holdExpirationInMinutes": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -16080,6 +16154,9 @@
     },
     {
       "name": "Orders"
+    },
+    {
+      "name": "Organizer"
     },
     {
       "name": "PhoneNumbers"
