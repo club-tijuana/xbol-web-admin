@@ -27,6 +27,7 @@ public static class AdminSessionEndpointConfiguration
         FirebaseAuth firebaseAuth,
         TenantAwareFirebaseAuth tenantAuth,
         IHttpClientFactory httpClientFactory,
+        ILoggerFactory loggerFactory,
         IOptions<AdminSessionCookieOptions> sessionOptions,
         HttpContext context,
         CancellationToken cancellationToken)
@@ -57,12 +58,15 @@ public static class AdminSessionEndpointConfiguration
             return LoginRedirect(context, "session");
         }
 
-        var client = httpClientFactory.CreateClient("AdminApiSession");
-        using var profileRequest = new HttpRequestMessage(HttpMethod.Get, "auth/me");
-        profileRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
-        using var profileResponse = await client.SendAsync(profileRequest, cancellationToken);
-        if (!profileResponse.IsSuccessStatusCode)
-            return LoginRedirect(context, "admin_profile");
+        var logger = loggerFactory.CreateLogger("Odasoft.XBOL.AdminPortal.AdminSession");
+        var profileValidationResult = await ValidateAdminProfileAsync(httpClientFactory, logger, idToken, cancellationToken);
+        if (profileValidationResult is not AdminProfileValidationResult.Valid)
+        {
+            var error = profileValidationResult is AdminProfileValidationResult.Unavailable
+                ? "admin_api_unavailable"
+                : "admin_profile";
+            return LoginRedirect(context, error);
+        }
 
         var sessionCookie = await firebaseAuth.CreateSessionCookieAsync(
             idToken,
@@ -75,6 +79,50 @@ public static class AdminSessionEndpointConfiguration
             BuildSessionCookieOptions(options, DateTimeOffset.UtcNow.Add(options.Lifetime)));
 
         return Results.LocalRedirect(returnUrl);
+    }
+
+    private static async Task<AdminProfileValidationResult> ValidateAdminProfileAsync(
+        IHttpClientFactory httpClientFactory,
+        ILogger logger,
+        string idToken,
+        CancellationToken cancellationToken)
+    {
+        var client = httpClientFactory.CreateClient("AdminApiSession");
+        using var profileRequest = new HttpRequestMessage(HttpMethod.Get, "auth/me");
+        profileRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
+
+        try
+        {
+            using var profileResponse = await client.SendAsync(profileRequest, cancellationToken);
+            if (profileResponse.IsSuccessStatusCode)
+            {
+                return AdminProfileValidationResult.Valid;
+            }
+
+            logger.LogWarning(
+                "Admin profile check failed with status {StatusCode}.",
+                (int)profileResponse.StatusCode);
+            return profileResponse.StatusCode is System.Net.HttpStatusCode.Unauthorized
+                ? AdminProfileValidationResult.ProfileRejected
+                : AdminProfileValidationResult.Unavailable;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "Admin profile check failed while contacting Admin API.");
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "Admin profile check timed out while contacting Admin API.");
+        }
+
+        return AdminProfileValidationResult.Unavailable;
+    }
+
+    private enum AdminProfileValidationResult
+    {
+        Valid,
+        ProfileRejected,
+        Unavailable
     }
 
     private static IResult DeleteSession(IOptions<AdminSessionCookieOptions> sessionOptions, HttpContext context)

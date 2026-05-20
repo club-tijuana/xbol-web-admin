@@ -101,6 +101,7 @@
         if (!string.IsNullOrWhiteSpace(Error))
             errorMessage = Error switch
             {
+                "admin_api_unavailable" => L["AdminApiUnavailableError"],
                 "admin_profile" => L["AdminProfileError"],
                 "session" => L["LoginFailed"],
                 _ => L["LoginFailed"]

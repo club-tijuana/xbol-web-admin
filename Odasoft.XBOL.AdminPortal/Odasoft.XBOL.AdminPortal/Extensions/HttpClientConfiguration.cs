@@ -15,6 +15,7 @@ public static class HttpClientConfiguration
         services.AddHttpClient("AdminApiSession", (provider, client) =>
         {
             ConfigureAdminApiClient(provider, client);
+            client.Timeout = TimeSpan.FromSeconds(5);
         });
 
         services.AddScoped<HttpClient>(provider =>
