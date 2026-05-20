@@ -1,5 +1,4 @@
 using FirebaseAdmin.Auth;
-using FirebaseAdmin.Auth.Multitenancy;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Odasoft.XBOL.AdminPortal.Services;

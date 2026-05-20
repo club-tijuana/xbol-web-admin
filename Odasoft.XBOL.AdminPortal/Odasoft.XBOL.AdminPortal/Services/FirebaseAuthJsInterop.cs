@@ -63,6 +63,8 @@ public sealed class FirebaseAuthJsInterop(
     public async ValueTask DisposeAsync()
     {
         if (_module is not null)
+        {
             await _module.DisposeAsync();
+        }
     }
 }

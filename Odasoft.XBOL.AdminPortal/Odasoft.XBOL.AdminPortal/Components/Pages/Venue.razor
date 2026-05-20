@@ -1,23 +1,22 @@
 @page "/venues/create";
 @page "/venues/{venueId:long}/update";
+
 @attribute [Authorize]
 
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.ModelValidators;
 @using Odasoft.XBOL.Business.Services;
-@using Odasoft.XBOL.Common.Constants
-@using Odasoft.XBOL.Models.DTO
-@using Odasoft.XBOL.Models.ViewModels;
-@using Radzen.Blazor
+@using Odasoft.XBOL.Common.Constants;
+@using Odasoft.XBOL.Models.DTO;
+@using Radzen.Blazor;
 @using SixLabors.ImageSharp;
-
-@inject ISnackbar _snackbar;
 
 @inject AppLocalizer<Venue> _localizer;
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
 @inject VenuesService _venuesService;
 @inject ILogger<Venue> Logger;
+@inject ISnackbar _snackbar;
 
 <PageTitle>@_pageTitle</PageTitle>
 

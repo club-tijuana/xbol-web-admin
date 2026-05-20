@@ -36,7 +36,9 @@ public static class AdminSessionEndpointConfiguration
         var returnUrl = GetLocalRedirectUrl(context, form["returnUrl"].ToString());
 
         if (string.IsNullOrWhiteSpace(idToken))
+        {
             return LoginRedirect(context, "session");
+        }
 
         FirebaseToken token;
         try
@@ -62,7 +64,9 @@ public static class AdminSessionEndpointConfiguration
         profileRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
         using var profileResponse = await client.SendAsync(profileRequest, cancellationToken);
         if (!profileResponse.IsSuccessStatusCode)
+        {
             return LoginRedirect(context, "admin_profile");
+        }
 
         var sessionCookie = await firebaseAuth.CreateSessionCookieAsync(
             idToken,
@@ -107,7 +111,9 @@ public static class AdminSessionEndpointConfiguration
     private static string GetLocalRedirectUrl(HttpContext context, string? returnUrl)
     {
         if (string.IsNullOrWhiteSpace(returnUrl))
+        {
             return BuildAppPath(context, "/");
+        }
 
         return RedirectHttpResult.IsLocalUrl(returnUrl)
             ? returnUrl
@@ -125,7 +131,9 @@ public static class AdminSessionEndpointConfiguration
     {
         authTime = default;
         if (!claims.TryGetValue("auth_time", out var value))
+        {
             return false;
+        }
 
         long seconds;
         switch (value)

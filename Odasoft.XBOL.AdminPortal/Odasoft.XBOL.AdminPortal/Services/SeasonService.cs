@@ -17,8 +17,8 @@ namespace Odasoft.XBOL.AdminPortal.Services
                 searchTerm: null,
                 sortBy: sortBy,
                 descending: descending,
-                page: null,
-                pageSize: null);
+                page: 1,
+                pageSize: 1000);
         }
 
         public async Task<SeasonResult> GetSeasonByIdAsync(long id)

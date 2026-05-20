@@ -4,12 +4,10 @@
 
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.AdminPortal.Extensions;
-@using Odasoft.XBOL.AdminPortal.Services.Contracts;
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
+@using Odasoft.XBOL.AdminPortal.States;
 @using Odasoft.XBOL.Business;
-@using Odasoft.XBOL.Business.Services
-@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
 
 @inject AppLocalizer<Events> L;
 @inject IEventService _eventService;
@@ -258,7 +256,6 @@ else if(_selectedTab == TabPast)
                 _venues = await _catalogsService.GetVenuesAsync();
                 _availableCategories = (await _eventService.GetCategoriesAsync())
                     .Where(c => c.IsActive == true).ToList();
-
 
                 await UpdateItemsAsync();
             }

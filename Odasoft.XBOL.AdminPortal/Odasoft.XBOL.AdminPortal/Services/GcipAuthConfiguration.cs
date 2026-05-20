@@ -29,7 +29,9 @@ public static class GcipAuthConfiguration
         };
 
         if (!string.IsNullOrWhiteSpace(options.ProjectId))
+        {
             appOptions.ProjectId = options.ProjectId;
+        }
 
         return appOptions;
     }

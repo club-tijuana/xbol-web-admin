@@ -24,6 +24,8 @@ public sealed class BrowserFormPostJsInterop(IJSRuntime jsRuntime) : IAsyncDispo
     public async ValueTask DisposeAsync()
     {
         if (_module is not null)
+        {
             await _module.DisposeAsync();
+        }
     }
 }

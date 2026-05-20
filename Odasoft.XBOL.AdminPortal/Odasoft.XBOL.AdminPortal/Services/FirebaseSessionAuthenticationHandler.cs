@@ -55,7 +55,9 @@ public sealed class FirebaseSessionAuthenticationHandler : AuthenticationHandler
         }
 
         if (!string.Equals(decoded.TenantId, _gcipOptions.TenantId, StringComparison.Ordinal))
+        {
             return AuthenticateResult.Fail($"Session cookie tenant does not match expected tenant '{_gcipOptions.TenantId}'.");
+        }
 
         var principal = new ClaimsPrincipal(new ClaimsIdentity(BuildClaims(decoded), Scheme.Name));
         var ticket = new AuthenticationTicket(principal, Scheme.Name);
@@ -71,18 +73,26 @@ public sealed class FirebaseSessionAuthenticationHandler : AuthenticationHandler
         };
 
         if (token.TenantId is not null)
+        {
             claims.Add(new Claim(TenantClaimType, token.TenantId));
+        }
 
         if (token.Claims.TryGetValue("email", out var email) && email is string emailValue)
+        {
             claims.Add(new Claim(ClaimTypes.Email, emailValue));
+        }
 
         if (token.Claims.TryGetValue("name", out var name) && name is string nameValue)
+        {
             claims.Add(new Claim(ClaimTypes.Name, nameValue));
+        }
 
         if (token.Claims.TryGetValue("firebase", out var firebase) && firebase is IDictionary<string, object> firebaseClaims)
         {
             if (firebaseClaims.TryGetValue("sign_in_provider", out var provider) && provider is string providerValue)
+            {
                 claims.Add(new Claim(SignInProviderClaimType, providerValue));
+            }
         }
 
         return claims;

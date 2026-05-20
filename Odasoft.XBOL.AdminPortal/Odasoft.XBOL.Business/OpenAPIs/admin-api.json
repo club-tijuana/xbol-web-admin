@@ -926,6 +926,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -934,6 +935,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1791,6 +1793,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1799,6 +1802,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1896,6 +1900,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1904,6 +1909,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -5589,6 +5595,183 @@
         }
       }
     },
+    "/api/sales": {
+      "get": {
+        "tags": [
+          "Sales"
+        ],
+        "summary": "Retrieves a paginated list of sales based on the provided filtering, sorting, and pagination parameters.",
+        "operationId": "GetSalesAsync",
+        "parameters": [
+          {
+            "name": "AdminSaleType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ReferenceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PaymentTypes",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            }
+          },
+          {
+            "name": "SaleChannel",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/SaleChannel"
+              }
+            }
+          },
+          {
+            "name": "OrderStatus",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponsePagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponsePagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponsePagedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/season-pass/status-list": {
       "get": {
         "tags": [
@@ -5890,6 +6073,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -5898,6 +6082,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -10447,6 +10632,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -10455,6 +10641,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -10957,7 +11144,7 @@
         "enum": [
           "Event",
           "SeasonPass",
-          "EventGroup"
+          "Bundle"
         ],
         "type": "string"
       },
@@ -13677,7 +13864,7 @@
           "channel": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/PayformType"
+                "$ref": "#/components/schemas/SaleChannel"
               }
             ]
           },
@@ -13890,10 +14077,9 @@
       },
       "OrderListItemPagedResponse": {
         "required": [
-          "currentPage",
+          "page",
           "pageSize",
-          "totalItems",
-          "totalPages"
+          "totalCount"
         ],
         "type": "object",
         "properties": {
@@ -13903,19 +14089,15 @@
               "$ref": "#/components/schemas/OrderListItem"
             }
           },
-          "currentPage": {
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
             "type": "integer",
             "format": "int32"
           },
           "pageSize": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalItems": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
             "type": "integer",
             "format": "int32"
           }
@@ -14063,17 +14245,21 @@
         ],
         "type": "string"
       },
-      "OrderType": {
+      "OrderTag": {
         "enum": [
-          "Ticket",
-          "SeasonPass"
+          "SecondaryMarket",
+          "App",
+          "Website",
+          "PaymentLink",
+          "OxxoPay"
         ],
         "type": "string"
       },
-      "PayformType": {
+      "OrderType": {
         "enum": [
-          "Online",
-          "BoxOffice"
+          "Ticket",
+          "SeasonPass",
+          "Bundle"
         ],
         "type": "string"
       },
@@ -14451,6 +14637,136 @@
           "holdToken": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SaleChannel": {
+        "enum": [
+          "Online",
+          "BoxOffice"
+        ],
+        "type": "string"
+      },
+      "SaleDetailResponse": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zone": {
+            "type": "string"
+          },
+          "section": {
+            "type": "string"
+          },
+          "row": {
+            "type": "string"
+          },
+          "seat": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderTag"
+            }
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SaleResponse": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "orderReference": {
+            "type": "string"
+          },
+          "purchaseEmail": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paymentType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            ]
+          },
+          "saleChannel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SaleChannel"
+              }
+            ]
+          },
+          "orderStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            ]
+          },
+          "expirationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaleDetailResponse"
+            }
+          },
+          "showDetails": {
+            "type": "boolean"
+          },
+          "purchaseDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SaleResponsePagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaleResponse"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -16166,6 +16482,9 @@
     },
     {
       "name": "Reports"
+    },
+    {
+      "name": "Sales"
     },
     {
       "name": "SeasonPass"

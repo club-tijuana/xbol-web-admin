@@ -4,20 +4,19 @@
 @page "/events/{EventId:long}/schedule/{ScheduleId:long}/{Tab}"
 @attribute [Authorize]
 
-@using Odasoft.XBOL.AdminPortal.Components.Pages.EventDetails
-@using Odasoft.XBOL.AdminPortal.Components.Shared
-@using Odasoft.XBOL.AdminPortal.Extensions
-@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Business.Services
-@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.AdminPortal.Components.Pages.EventDetails;
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.Extensions;
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
 
-@inject AppLocalizer<EventDetail> L
-@inject IEventService _eventService
-@inject MediaService _mediaService
-@inject NavigationManager _navigationManager
-@inject IDialogService _dialogService
-@inject ISnackbar _snackbar
+@inject AppLocalizer<EventDetail> L;
+@inject IEventService _eventService;
+@inject MediaService _mediaService;
+@inject NavigationManager _navigationManager;
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
 
 <PageTitle>@(_event?.Name ?? "")</PageTitle>
 
@@ -56,7 +55,7 @@
             @foreach (var schedule in _event.Schedules)
             {
                 <MudToggleItem Value="@schedule.Id" Text="@schedule.StartDateTime.ToString("MMMM dd h:mm tt")"
-                                Class="@($"px-4 {(_selectedSchedule == schedule.Id ? "bg-secondary-darken" : "")}")" />
+                               Class="@($"px-4 {(_selectedSchedule == schedule.Id ? "bg-secondary-darken" : "")}")" />
             }
         </MudToggleGroup>
 
@@ -64,23 +63,23 @@
             <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
                             Class="border-secondary-lighten" Color="Color.Secondary">
                 <MudToggleItem Value="@TabSales" Text="@L["TabSales"].Value.ToUpper()"
-                Class="@($"px-4 {(_selectedTab == TabSales ? "bg-secondary-darken" : "")}")" />
+                               Class="@($"px-4 {(_selectedTab == TabSales ? "bg-secondary-darken" : "")}")" />
                 <MudToggleItem Value="@TabSuitesSales" Text="@L["TabSuitesSales"].Value.ToUpper()"
-                Class="@($"px-4 {(_selectedTab == TabSuitesSales ? "bg-secondary-darken" : "")}")" />
+                               Class="@($"px-4 {(_selectedTab == TabSuitesSales ? "bg-secondary-darken" : "")}")" />
                 <MudToggleItem Value="@TabPolicies" Text="@L["TabPolicies"].Value.ToUpper()"
                                Class="@($"px-4 {(_selectedTab == TabPolicies ? "bg-secondary-darken" : "")}")" />
             </MudToggleGroup>
             <MudStack Row Spacing="2">
                 <MudButton StartIcon="@Icons.Material.Outlined.LocalActivity"
-                    Variant="Variant.Filled"
-                    Color="Color.Primary"
-                    Disabled="true">
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="true">
                     @L["BuySuites"]
                 </MudButton>
                 <MudButton StartIcon="@Icons.Material.Outlined.ShoppingCart"
-                    Variant="Variant.Filled"
-                    Color="Color.Primary"
-                    OnClick="@(() => _navigationManager.NavigateTo($"./events/{_event.Id}/key/{_eventSchedule.ExternalEventKey}/booking"))">
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="@(() => _navigationManager.NavigateTo($"./events/{_event.Id}/key/{_eventSchedule.ExternalEventKey}/booking"))">
                     @L["BuyTickets"]
                 </MudButton>
             </MudStack>
@@ -88,16 +87,16 @@
 
         @if (ScheduleId is not null)
         {
-        @if (_selectedTab == TabSales)
-        {
-                <EventScheduleSales EventScheduleId="ScheduleId.Value" />
-        }
-        else if (_selectedTab == TabSuitesSales)
-        {
+            @if (_selectedTab == TabSales)
+            {
+                <EventScheduleSales SaleType="AdminSaleType.Event" ReferenceId="EventId" />
+            }
+            else if (_selectedTab == TabSuitesSales)
+            {
                 <EventScheduleSuitesSales EventScheduleId="ScheduleId.Value" />
-        }
-        else if (_selectedTab == TabPolicies)
-        {
+            }
+            else if (_selectedTab == TabPolicies)
+            {
                 <ScheduleAndPolicies Event="_event" EventSchedule="_eventSchedule" />
             }
         }

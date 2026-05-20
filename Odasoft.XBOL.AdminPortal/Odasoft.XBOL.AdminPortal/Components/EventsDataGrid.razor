@@ -1,11 +1,8 @@
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
-@using Odasoft.XBOL.AdminPortal.Extensions;
-@using Odasoft.XBOL.AdminPortal.Services.Contracts;
-@using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 
-@inject AppLocalizer<EventsDataGrid> L
+@inject AppLocalizer<EventsDataGrid> L;
 @inject IEventService _eventService;
 @inject CatalogsService _catalogsService;
 @inject ISnackbar _snackbar;

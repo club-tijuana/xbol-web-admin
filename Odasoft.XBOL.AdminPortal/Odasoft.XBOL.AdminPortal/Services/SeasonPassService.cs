@@ -18,7 +18,7 @@ namespace Odasoft.XBOL.AdminPortal.Services
 
             return new GridData<OrderListItem>
             {
-                TotalItems = response.TotalItems,
+                TotalItems = response.TotalCount,
                 Items = response.Items ?? [],
             };
         }

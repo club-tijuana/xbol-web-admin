@@ -1,17 +1,18 @@
 @page "/season-pass"
+
 @attribute [Authorize]
-@using System.Globalization
-@using Odasoft.XBOL.AdminPortal.Extensions
-@using Odasoft.XBOL.AdminPortal.Services.Contracts
-@using Odasoft.XBOL.AdminPortal.ViewModels.Order
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Common.Constants
-@inject AppLocalizer<SeasonPass> L
-@inject ISeasonPassService SeasonPassService
-@inject IDialogService DialogService
-@inject ISnackbar Snackbar
-@inject NavigationManager NavigationManager
-@inject ISeasonService SeasonService
+
+@using System.Globalization;
+@using Odasoft.XBOL.AdminPortal.Services.Contracts;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Common.Constants;
+
+@inject AppLocalizer<SeasonPass> L;
+@inject ISeasonPassService SeasonPassService;
+@inject IDialogService DialogService;
+@inject ISnackbar Snackbar;
+@inject NavigationManager NavigationManager;
+@inject ISeasonService SeasonService;
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
