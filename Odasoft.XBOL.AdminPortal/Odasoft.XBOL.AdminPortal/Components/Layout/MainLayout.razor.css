@@ -7,3 +7,7 @@
 .nav-link-rounded .mud-nav-link {
     border-radius: 4px;
 }
+
+.profile-menu-header {
+    min-width: 14rem;
+}

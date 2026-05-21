@@ -3,7 +3,7 @@
 @inject ISnackbar Snackbar
 @inject AppLocalizer<PriceTypeDialogEdit> L
 
-<BaseDialog>
+<BaseDialog Class="py-4" ActionsClass="mt-2 px-6">
     <TitleContent>
         <MudText Typo="Typo.h5">@L["AlternativePrice"]</MudText>
         <MudText Typo="Typo.caption" Color="Color.Error">*</MudText>
@@ -16,6 +16,7 @@
     <Actions>
         <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete"
                    Disabled="_formContext.IsSaving" OnClick="DeleteAsync">@L["Delete"]</MudButton>
+        <MudSpacer />
         <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save"
                    Disabled="_formContext.IsSaving" OnClick="SubmitAsync">@L["Save"]</MudButton>
     </Actions>

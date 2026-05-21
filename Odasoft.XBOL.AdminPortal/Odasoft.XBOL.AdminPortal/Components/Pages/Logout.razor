@@ -1,16 +1,31 @@
-﻿@page "/logout"
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Authorization
-@using Odasoft.XBOL.AdminPortal.Services.Contracts
-@inject IAuthService AuthService
-@inject NavigationManager Navigation
+@page "/logout"
+
 @attribute [Authorize]
 
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Forms;
+@using Odasoft.XBOL.AdminPortal.Services;
+@using Odasoft.XBOL.AdminPortal.Services.Contracts;
+
+@inject IAuthService AuthService;
+@inject AntiforgeryStateProvider Antiforgery;
+@inject BrowserFormPostJsInterop FormPost;
+@inject NavigationManager Navigation;
 
 @code {
     protected override async Task OnInitializedAsync()
     {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo("./login", true);
+        var antiforgery = Antiforgery.GetAntiforgeryToken();
+        if (antiforgery is null)
+        {
+            Navigation.NavigateTo("login", forceLoad: true);
+            return;
+        }
+
+        await FormPost.PostAsync("auth/logout", new Dictionary<string, string?>
+        {
+            [antiforgery.FormFieldName] = antiforgery.Value
+        });
     }
 }

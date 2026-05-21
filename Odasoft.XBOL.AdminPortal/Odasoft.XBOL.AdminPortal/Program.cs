@@ -75,6 +75,7 @@ app.UseAuthorization();
 
 app.UseAntiforgery();
 
+app.MapAdminSessionEndpoints();
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 

@@ -150,6 +150,10 @@ h1:focus {
     color: var(--mud-palette-warning) !important;
 }
 
+.text-white {
+    color: var(--mud-palette-white) !important;
+}
+
 .mud-nav-link, .mud-nav-group > .mud-nav-link > .mud-nav-link-text {
     font-weight: var(--mud-typography-subtitle2-weight) !important;
 }

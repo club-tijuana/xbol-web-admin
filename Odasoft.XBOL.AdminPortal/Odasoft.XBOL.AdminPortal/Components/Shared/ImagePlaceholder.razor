@@ -1,8 +1,8 @@
-<div class="placeholder-wrapper" style="width: @Width; height: @Height; background-color: @BackgroundColor;" role="img"
+<div class="placeholder-wrapper @Class" style="@ComputedStyle" role="img"
      aria-label="Placeholder image" @onclick="HandleOnClick">
 
     @* If IconSize is provided, use it (square sizing).
-       If NOT provided, use smart scaling: 25% of height, but never smaller than 48px.
+       If NOT provided, use smart scaling: 25% of height, but never smaller than 48px. 
     *@
     <svg style="@(IconSize != null ? $"width: {IconSize}; height: {IconSize};" : "height: max(25%, 48px); width: auto;")"
          viewBox="248 153 104 94" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -13,15 +13,12 @@
         <path opacity="0.4"
               d="M290 245H310C328.856 245 338.284 245 344.142 239.142C347.017 236.267 348.481 232.533 349.226 227.247L321.74 196.898C320.631 195.688 319.066 195 317.425 195C315.872 195 314.383 195.617 313.286 196.715L290 220L279.196 209.197C278.11 208.11 276.637 207.5 275.101 207.5C273.446 207.5 271.871 208.207 270.772 209.444L251.313 230.239C252.161 233.993 253.558 236.842 255.858 239.142C261.716 245 271.144 245 290 245Z"
               fill="#B4BBC7" />
-        <path
-        d="M310 155H290C271.144 155 261.716 155 255.858 160.858C250 166.716 250 176.144 250 195V205C250 223.856 250 233.284 255.858 239.142C261.716 245 271.144 245 290 245H310C328.856 245 338.284 245 344.142 239.142C350 233.284 350 223.856 350 205V195C350 176.144 350 166.716 344.142 160.858C338.284 155 328.856 155 310 155Z"
-        stroke="#B4BBC7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-        <path
-        d="M282.5 190C286.642 190 290 186.642 290 182.5C290 178.358 286.642 175 282.5 175C278.358 175 275 178.358 275 182.5C275 186.642 278.358 190 282.5 190Z"
-        stroke="#B4BBC7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-        <path
-        d="M347.5 225L321.74 196.898C320.631 195.688 319.065 195 317.425 195C315.872 195 314.383 195.617 313.285 196.715L290 220L279.196 209.197C278.11 208.11 276.637 207.5 275.101 207.5C273.447 207.5 271.871 208.207 270.772 209.444L252.5 230"
-        stroke="#B4BBC7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M310 155H290C271.144 155 261.716 155 255.858 160.858C250 166.716 250 176.144 250 195V205C250 223.856 250 233.284 255.858 239.142C261.716 245 271.144 245 290 245H310C328.856 245 338.284 245 344.142 239.142C350 233.284 350 223.856 350 205V195C350 176.144 350 166.716 344.142 160.858C338.284 155 328.856 155 310 155Z"
+              stroke="#B4BBC7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M282.5 190C286.642 190 290 186.642 290 182.5C290 178.358 286.642 175 282.5 175C278.358 175 275 178.358 275 182.5C275 186.642 278.358 190 282.5 190Z"
+              stroke="#B4BBC7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M347.5 225L321.74 196.898C320.631 195.688 319.065 195 317.425 195C315.872 195 314.383 195.617 313.285 196.715L290 220L279.196 209.197C278.11 208.11 276.637 207.5 275.101 207.5C273.447 207.5 271.871 208.207 270.772 209.444L252.5 230"
+              stroke="#B4BBC7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
 </div>
 
@@ -32,9 +29,15 @@
     [Parameter] public string Width { get; set; } = "100%";
 
     /// <summary>
-    /// Total height of the placeholder container. Supports any CSS unit.
+    /// Total height of the placeholder container. Supports any CSS unit. Ignored if Ratio is provided.
     /// </summary>
     [Parameter] public string Height { get; set; } = "100%";
+
+    /// <summary>
+    /// Optional: Aspect ratio of the placeholder (e.g., "16/9", "4/3", "1").
+    /// When provided, this overrides the Height parameter to maintain responsiveness.
+    /// </summary>
+    [Parameter] public string? Ratio { get; set; }
 
     /// <summary>
     /// Background color of the container. Defaults to the standard gray (#DDDFE4).
@@ -47,8 +50,32 @@
     /// </summary>
     [Parameter] public string? IconSize { get; set; }
 
+    /// <summary>
+    /// Optional: Applies classes to placeholder.
+    /// </summary>
+    [Parameter] public string? Class { get; set; } = string.Empty;
+
     [Parameter]
     public EventCallback OnClick { get; set; }
+
+    private string ComputedStyle
+    {
+        get
+        {
+            var style = $"width: {Width}; background-color: {BackgroundColor};";
+
+            if (!string.IsNullOrWhiteSpace(Ratio))
+            {
+                style += $" aspect-ratio: {Ratio};";
+            }
+            else
+            {
+                style += $" height: {Height};";
+            }
+
+            return style;
+        }
+    }
 
     private async Task HandleOnClick()
     {

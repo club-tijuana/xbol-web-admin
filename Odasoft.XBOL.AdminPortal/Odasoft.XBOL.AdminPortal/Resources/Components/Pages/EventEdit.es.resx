@@ -258,4 +258,61 @@
   <data name="NoSectionsInZone" xml:space="preserve">
     <value>No hay secciones en la zona</value>
   </data>
+  <data name="DownloadTemplate" xml:space="preserve">
+    <value>Descargar plantilla</value>
+  </data>
+  <data name="ImportPrices" xml:space="preserve">
+    <value>Importar precios</value>
+  </data>
+  <data name="ErrorDownloadingPricesTemplate" xml:space="preserve">
+    <value>Hubo un error al descargar la plantilla</value>
+  </data>
+  <data name="SuccesfulFileDownload" xml:space="preserve">
+    <value>Archivo descargado correctamente</value>
+  </data>
+  <data name="Images" xml:space="preserve">
+    <value>Imágenes</value>
+  </data>
+  <data name="EventBanner" xml:space="preserve">
+    <value>Carátula del evento</value>
+  </data>
+  <data name="EventBannerDimensions" xml:space="preserve">
+    <value>Cargue una imagen en formato horizontal 16:9 (dimensiones mínimas de 1920 x 1080 px).</value>
+  </data>
+  <data name="EventBannerDescription" xml:space="preserve">
+    <value>La composición y texto deben estar alineados al centro (1:1) dejando los laterales solo para elementos decorativos, para asegurar que nada se pierda al recortar la imagen a un cuadrado.</value>
+  </data>
+  <data name="HorizontalImagePreview" xml:space="preserve">
+    <value>Vista previa 16:9</value>
+  </data>
+  <data name="SquareImagePreview" xml:space="preserve">
+    <value>Vista previa 1:1</value>
+  </data>
+  <data name="Sponsors" xml:space="preserve">
+    <value>Patrocinadores</value>
+  </data>
+  <data name="SponsorsDescription" xml:space="preserve">
+    <value>Los patrocinadores aparecerán en el boleto en PDF y en el sitio web. Cargue una imagen en formato horizontal 16:9 (dimensiones mínimas de 1920 x 1080 px).</value>
+  </data>
+  <data name="Sponsor" xml:space="preserve">
+    <value>Patrocinador</value>
+  </data>
+  <data name="GalleryPreview" xml:space="preserve">
+    <value>Vista previa de galería</value>
+  </data>
+  <data name="FinishReview" xml:space="preserve">
+    <value>Terminar revisión</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publicar</value>
+  </data>
+  <data name="TimeToPurchaseInMinutes" xml:space="preserve">
+    <value>Tiempo de compra (minutos)</value>
+  </data>
+  <data name="ReviewDescription" xml:space="preserve">
+    <value>Favor de revisar que toda la información ingresada sea correcta. Al terminar presione 'Terminar revisión' si todo está en orden presione 'Aprobar'; de lo contrario, 'Requiere cambios' para realizar las correcciones necesarias.</value>
+  </data>
+  <data name="Organizer" xml:space="preserve">
+    <value>Promotor</value>
+  </data>
 </root>

@@ -41,7 +41,6 @@ public abstract class SeatsioChartBase : ComponentBase, IAsyncDisposable
         }
     }
 
-
     public async ValueTask ClearSelection()
     {
         if (_module is not null && _chart is not null)

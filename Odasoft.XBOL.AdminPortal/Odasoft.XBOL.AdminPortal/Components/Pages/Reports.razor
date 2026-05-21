@@ -1,0 +1,456 @@
+@page "/reports"
+
+@using Odasoft.XBOL.AdminPortal.ViewModels.Reports
+@using Odasoft.XBOL.AdminPortal.Services.Contracts
+@using Odasoft.XBOL.Business
+@using System.Globalization
+@using System.Text.Json
+
+@inject IAdminClient _adminClient
+@inject IExecutiveReportsApiClient _reportsClient
+@inject ISnackbar _snackbar
+@inject IJSRuntime _jsRuntime
+
+<PageTitle>Reportes</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
+
+
+
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudText Typo="Typo.h4" Class="mb-4 text-secondary">Reportes</MudText>
+        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="3" Wrap="Wrap.Wrap">
+            <MudSelect T="string" Label="Tipo de reporte" Value="_selectedReportType" ValueChanged="OnReportTypeChanged"
+                       Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Disabled="@_loadingReportTypes"
+                       Style="min-width:280px">
+                @foreach (var opt in _reportTypes)
+                {
+                    <MudSelectItem T="string" Value="opt.Value">@opt.Label</MudSelectItem>
+                }
+            </MudSelect>
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.FileDownload"
+                       Disabled="@(string.IsNullOrEmpty(_selectedReportType) || _downloading)" OnClick="DownloadReportAsync">
+                Exportar Excel
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudGrid Spacing="3">
+            <MudItem xs="12" sm="6">
+                <MudDateRangePicker Label="Rango de fechas" DateRange="_dateRange" DateRangeChanged="OnDateRangeChanged"
+                                    Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Culture="@MxCulture" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="long?" Label="Evento" Value="_selectedEventId" ValueChanged="OnEventSelectedAsync"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Style="width:100%">
+                    @foreach (var ev in _events)
+                    {
+                        <MudSelectItem T="long?" Value="ev.Id">@ev.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+        <MudStack Row Justify="Justify.FlexEnd" Spacing="2" Class="mt-3">
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Clear" OnClick="ClearFiltersAsync">
+                Limpiar filtros
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search"
+                       Disabled="@string.IsNullOrEmpty(_selectedReportType)" OnClick="GenerateReportAsync">
+                Generar reporte
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+
+    @if (_summaries.Count > 0)
+    {
+        <MudGrid Spacing="3" Class="mb-4">
+            @foreach (var summary in _summaries)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="pa-4" Elevation="2">
+                        <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="mb-1">
+                            <MudIcon Icon="@GetMudIcon(summary.Icon)" Color="@GetMudColor(summary.Color)" Size="Size.Medium" />
+                            <MudText Typo="Typo.subtitle2">@summary.Label</MudText>
+                        </MudStack>
+                        <MudText Typo="Typo.h5" Color="@GetMudColor(summary.Color)">@summary.FormattedValue</MudText>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+    <MudPaper Elevation="1">
+        <MudDataGrid T="ReportRow" @ref="_dataGrid" ServerData="LoadServerDataAsync" Dense Hover
+                     SortMode="SortMode.None">
+            <Columns>
+                @foreach (var col in _visibleColumns)
+                {
+                    var c = col;
+                    <TemplateColumn @key="c.Key" T="ReportRow" Sortable="false"
+                                    HeaderStyle="@GetAlignStyle(c.Align)" CellStyle="@GetAlignStyle(c.Align)">
+                        <HeaderTemplate>
+                            @if (c.Sortable)
+                            {
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="0"
+                                          Style="cursor:pointer;user-select:none"
+                                          @onclick="() => OnColumnSortClickAsync(c.Key)">
+                                    <span>@c.Label</span>
+                                    @if (string.Equals(_filter.SortBy, c.Key, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <MudIcon Icon="@(_filter.SortDirection == "Descending"
+                                                     ? Icons.Material.Filled.ArrowDownward
+                                                     : Icons.Material.Filled.ArrowUpward)"
+                                                 Size="Size.Small" Style="margin-left:2px" />
+                                    }
+                                </MudStack>
+                            }
+                            else
+                            {
+                                <span>@c.Label</span>
+                            }
+                        </HeaderTemplate>
+                        <CellTemplate>
+                            @RenderCell(context.Item, c)
+                        </CellTemplate>
+                    </TemplateColumn>
+                }
+            </Columns>
+            <NoRecordsContent>
+                @if (string.IsNullOrEmpty(_selectedReportType))
+                {
+                    <MudStack AlignItems="AlignItems.Center" Class="pa-8" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.InsertChart" Size="Size.Large" Color="Color.Tertiary" />
+                        <MudText Typo="Typo.body1" Color="Color.Tertiary">Selecciona un tipo de reporte para continuar
+                        </MudText>
+                    </MudStack>
+                }
+                else if (_filter.EventId <= 0)
+                {
+                    <MudStack AlignItems="AlignItems.Center" Class="pa-8" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.EventNote" Size="Size.Large" Color="Color.Tertiary" />
+                        <MudText Typo="Typo.body1" Color="Color.Tertiary">Selecciona un evento y haz clic en Generar reporte
+                        </MudText>
+                    </MudStack>
+                }
+                else
+                {
+                    <MudStack AlignItems="AlignItems.Center" Class="pa-4">
+                        <MudText Typo="Typo.body2">No se encontraron registros</MudText>
+                    </MudStack>
+                }
+            </NoRecordsContent>
+            <PagerContent>
+                <MudDataGridPager PageSizeOptions="new[] { 25, 50, 100 }" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudPaper>
+
+</MudContainer>
+
+@code {
+    private static readonly CultureInfo MxCulture = CultureInfo.GetCultureInfo("es-MX");
+
+    private MudDataGrid<ReportRow>? _dataGrid;
+    private bool _loadingReportTypes;
+    private bool _downloading;
+
+    private IReadOnlyList<ReportTypeOption> _reportTypes = [];
+    private string? _selectedReportType;
+
+    private List<EventSelectItem> _events = [];
+    private long? _selectedEventId;
+
+    private DateRange _dateRange = new();
+
+    private List<ReportSummaryItem> _summaries = [];
+    private List<ReportColumnDefinition> _columns = [];
+    private IEnumerable<ReportColumnDefinition> _visibleColumns => _columns.Where(c => c.Visible);
+
+    private readonly ReportFilter _filter = new() { Page = 1, PageSize = 50 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadReportTypeOptionsAsync(), LoadEventsAsync());
+    }
+
+    private async Task LoadReportTypeOptionsAsync()
+    {
+        _loadingReportTypes = true;
+        try
+        {
+            _reportTypes = await _reportsClient.GetReportTypeOptionsAsync();
+        }
+        catch
+        {
+            _snackbar.Add("Error cargando tipos de reporte", Severity.Error);
+        }
+        finally
+        {
+            _loadingReportTypes = false;
+        }
+    }
+
+    private async Task LoadEventsAsync()
+    {
+        try
+        {
+            var result = await _adminClient.GetEventsAsync(
+                venues: null, categories: null, startDate: null, endDate: null,
+                search: null, sortBy: null, descending: false,
+                page: 1, pageSize: 100, seasonId: null, status: null, upcoming: null);
+            _events = result.Items?.Select(e => new EventSelectItem(e.Id, e.Name)).ToList() ?? [];
+        }
+        catch
+        {
+            _snackbar.Add("Error cargando eventos", Severity.Error);
+        }
+    }
+
+    private async Task OnReportTypeChanged(string? value)
+    {
+        _selectedReportType = value;
+        _filter.ReportType = value ?? string.Empty;
+        _summaries = [];
+        _columns = [];
+        _filter.Page = 1;
+        if (_dataGrid != null && !string.IsNullOrEmpty(_selectedReportType) && _filter.EventId > 0)
+            await _dataGrid.ReloadServerData();
+    }
+
+    private async Task OnEventSelectedAsync(long? eventId)
+    {
+        _selectedEventId = eventId;
+        _filter.EventId = eventId ?? 0;
+        if (_dataGrid != null && !string.IsNullOrEmpty(_selectedReportType))
+            await _dataGrid.ReloadServerData();
+    }
+
+    private void OnDateRangeChanged(DateRange range)
+    {
+        _dateRange = range;
+        _filter.StartDate = range.Start;
+        _filter.EndDate = range.End;
+    }
+
+    private async Task GenerateReportAsync()
+    {
+        if (!ValidateFilters()) return;
+        _filter.Page = 1;
+        if (_dataGrid != null)
+            await _dataGrid.ReloadServerData();
+    }
+
+    private async Task ClearFiltersAsync()
+    {
+        _selectedEventId = null;
+        _filter.EventId = 0;
+        _filter.CashierId = null;
+        _dateRange = new DateRange();
+        _filter.StartDate = null;
+        _filter.EndDate = null;
+        _filter.Page = 1;
+        _summaries = [];
+        _columns = [];
+        if (_dataGrid != null)
+            await _dataGrid.ReloadServerData();
+    }
+
+    private bool ValidateFilters()
+    {
+        if (string.IsNullOrEmpty(_selectedReportType))
+        {
+            _snackbar.Add("Selecciona un tipo de reporte", Severity.Warning);
+            return false;
+        }
+        if (_filter.EventId <= 0)
+        {
+            _snackbar.Add("Selecciona un evento", Severity.Warning);
+            return false;
+        }
+        if (_filter.StartDate.HasValue && _filter.EndDate.HasValue && _filter.StartDate > _filter.EndDate)
+        {
+            _snackbar.Add("La fecha inicial no puede ser mayor a la fecha final", Severity.Error);
+            return false;
+        }
+        return true;
+    }
+
+    private async Task OnColumnSortClickAsync(string columnKey)
+    {
+        if (string.Equals(_filter.SortBy, columnKey, StringComparison.OrdinalIgnoreCase))
+            _filter.SortDirection = _filter.SortDirection == "Descending" ? "Ascending" : "Descending";
+        else
+        {
+            _filter.SortBy = columnKey;
+            _filter.SortDirection = "Ascending";
+        }
+        _filter.Page = 1;
+        if (_dataGrid != null)
+            await _dataGrid.ReloadServerData();
+    }
+
+    private async Task<GridData<ReportRow>> LoadServerDataAsync(GridState<ReportRow> state, CancellationToken token)
+    {
+        if (string.IsNullOrEmpty(_selectedReportType) || _filter.EventId <= 0)
+            return new GridData<ReportRow> { Items = [], TotalItems = 0 };
+
+        _filter.Page = state.Page + 1;
+        _filter.PageSize = state.PageSize;
+
+        try
+        {
+            var response = await _reportsClient.GetReportListAsync(_filter, token);
+            _summaries = response.Summaries;
+            _columns = response.Records.Columns;
+            await InvokeAsync(StateHasChanged);
+            return new GridData<ReportRow>
+            {
+                Items = response.Records.Items,
+                TotalItems = response.Records.TotalCount
+            };
+        }
+        catch (OperationCanceledException)
+        {
+            return new GridData<ReportRow> { Items = [], TotalItems = 0 };
+        }
+        catch
+        {
+            _snackbar.Add("Error cargando reporte", Severity.Error);
+            return new GridData<ReportRow> { Items = [], TotalItems = 0 };
+        }
+    }
+
+    private async Task DownloadReportAsync()
+    {
+        if (string.IsNullOrEmpty(_selectedReportType))
+        {
+            _snackbar.Add("Selecciona un tipo de reporte", Severity.Warning);
+            return;
+        }
+        _downloading = true;
+        try
+        {
+            var bytes = await _reportsClient.DownloadReportAsync(_filter);
+            using var stream = new MemoryStream(bytes);
+            using var streamRef = new DotNetStreamReference(stream);
+            var reportLabel = _reportTypes.FirstOrDefault(r => r.Value == _selectedReportType)?.Label ?? "Reporte";
+            await _jsRuntime.InvokeVoidAsync("downloadFileFromStream", $"{reportLabel}.xlsx", streamRef);
+        }
+        catch
+        {
+            _snackbar.Add("Error descargando reporte", Severity.Error);
+        }
+        finally
+        {
+            _downloading = false;
+        }
+    }
+
+    private RenderFragment RenderCell(ReportRow row, ReportColumnDefinition col) => builder =>
+    {
+        switch (col.Type)
+        {
+            case "badge":
+                var badgeVal = GetStringValue(row, col.Key);
+                ReportCellStyle? style = null;
+                if (badgeVal != null) col.StyleMap?.TryGetValue(badgeVal, out style);
+                if (badgeVal != null && style != null)
+                {
+                    builder.OpenComponent<MudChip<string>>(0);
+                    builder.AddAttribute(1, "Color", GetMudColor(style.Color));
+                    builder.AddAttribute(2, "Variant", GetMudVariant(style.Variant));
+                    builder.AddAttribute(3, "Size", Size.Small);
+                    builder.AddAttribute(4, "Class", "ma-0");
+                    builder.AddAttribute(5, "ChildContent", (RenderFragment)(b => b.AddContent(0, badgeVal)));
+                    builder.CloseComponent();
+                }
+                else
+                {
+                    builder.AddContent(6, badgeVal);
+                }
+                break;
+
+            case "currency":
+                var num = GetDecimalValue(row, col.Key);
+                builder.OpenElement(7, "strong");
+                builder.AddContent(8, num?.ToString("C", MxCulture));
+                builder.CloseElement();
+                break;
+
+            case "datetime":
+                var dt = GetDateTimeValue(row, col.Key);
+                builder.AddContent(9, dt?.ToString("dd/MM/yyyy HH:mm", MxCulture));
+                break;
+
+            case "number":
+                var n = GetDecimalValue(row, col.Key);
+                builder.AddContent(10, n?.ToString("N0", MxCulture));
+                break;
+
+            default:
+                builder.AddContent(10, GetStringValue(row, col.Key));
+                break;
+        }
+    };
+
+    private static string? GetStringValue(ReportRow row, string key)
+    {
+        if (!row.TryGetValue(key, out var el)) return null;
+        return el.ValueKind switch
+        {
+            JsonValueKind.String => el.GetString(),
+            JsonValueKind.Null or JsonValueKind.Undefined => null,
+            _ => el.ToString()
+        };
+    }
+
+    private static decimal? GetDecimalValue(ReportRow row, string key)
+    {
+        if (!row.TryGetValue(key, out var el)) return null;
+        if (el.ValueKind == JsonValueKind.Number && el.TryGetDecimal(out var d)) return d;
+        return null;
+    }
+
+    private static DateTime? GetDateTimeValue(ReportRow row, string key)
+    {
+        if (!row.TryGetValue(key, out var el) || el.ValueKind != JsonValueKind.String) return null;
+        var s = el.GetString();
+        return DateTime.TryParse(s, null, DateTimeStyles.RoundtripKind, out var dt) ? dt : null;
+    }
+
+    private static string? GetAlignStyle(string? align) => align switch
+    {
+        "right" => "text-align:right",
+        "center" => "text-align:center",
+        _ => null
+    };
+
+    private static Color GetMudColor(string? color) => color switch
+    {
+        "success" => Color.Success,
+        "error" => Color.Error,
+        "warning" => Color.Warning,
+        "info" => Color.Info,
+        "primary" => Color.Primary,
+        "secondary" => Color.Secondary,
+        _ => Color.Default
+    };
+
+    private static Variant GetMudVariant(string? variant) => variant switch
+    {
+        "filled" => Variant.Filled,
+        "outlined" => Variant.Outlined,
+        _ => Variant.Text
+    };
+
+    private static string GetMudIcon(string? key) => key switch
+    {
+        "AttachMoney" => Icons.Material.Filled.AttachMoney,
+        "ConfirmationNumber" => Icons.Material.Filled.ConfirmationNumber,
+        "TrendingUp" => Icons.Material.Filled.TrendingUp,
+        _ => Icons.Material.Filled.Analytics
+    };
+
+    private record EventSelectItem(long Id, string Name);
+}

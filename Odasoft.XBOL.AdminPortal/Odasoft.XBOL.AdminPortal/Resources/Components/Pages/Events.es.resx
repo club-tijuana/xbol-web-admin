@@ -216,4 +216,19 @@
   <data name="ColumnSales" xml:space="preserve">
     <value>Ventas</value>
   </data>
+  <data name="RenewalNotPendingWarning" xml:space="preserve">
+    <value>Esta orden ya no puede renovarse.</value>
+  </data>
+  <data name="RenewalLoadError" xml:space="preserve">
+    <value>No se pudo cargar la información de renovación.</value>
+  </data>
+  <data name="Seats_UnavailableRenewalSeats_Title" xml:space="preserve">
+    <value>Algunos asientos no están disponibles para renovación</value>
+  </data>
+  <data name="Seats_UnavailableRenewalSeats_Subtitle" xml:space="preserve">
+    <value>Los siguientes asientos ya fueron asignados a otro cliente. Selecciona asientos alternativos para continuar.</value>
+  </data>
+  <data name="Seats_ConflictedSeats" xml:space="preserve">
+    <value>Los siguientes asientos ya no están disponibles: {0}.</value>
+  </data>
 </root>
