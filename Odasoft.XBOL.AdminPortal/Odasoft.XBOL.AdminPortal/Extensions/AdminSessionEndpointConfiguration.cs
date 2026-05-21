@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 using Odasoft.XBOL.Common.Options;
+using System.Net;
 using System.Net.Http.Headers;
 
 namespace Odasoft.XBOL.AdminPortal.Extensions;
@@ -62,9 +63,12 @@ public static class AdminSessionEndpointConfiguration
         var profileValidationResult = await ValidateAdminProfileAsync(httpClientFactory, logger, idToken, cancellationToken);
         if (profileValidationResult is not AdminProfileValidationResult.Valid)
         {
-            var error = profileValidationResult is AdminProfileValidationResult.Unavailable
-                ? "admin_api_unavailable"
-                : "admin_profile";
+            var error = profileValidationResult switch
+            {
+                AdminProfileValidationResult.ProfileRejected => "admin_profile",
+                AdminProfileValidationResult.ServiceError => "admin_api_error",
+                _ => "admin_api_unavailable"
+            };
             return LoginRedirect(context, error);
         }
 
@@ -99,12 +103,23 @@ public static class AdminSessionEndpointConfiguration
                 return AdminProfileValidationResult.Valid;
             }
 
+            var responseBody = profileResponse.Content is null
+                ? null
+                : await profileResponse.Content.ReadAsStringAsync(cancellationToken);
             logger.LogWarning(
-                "Admin profile check failed with status {StatusCode}.",
-                (int)profileResponse.StatusCode);
-            return profileResponse.StatusCode is System.Net.HttpStatusCode.Unauthorized
-                ? AdminProfileValidationResult.ProfileRejected
-                : AdminProfileValidationResult.Unavailable;
+                "Admin profile check failed with status {StatusCode}. Response body: {ResponseBody}",
+                (int)profileResponse.StatusCode,
+                TruncateForLog(responseBody));
+
+            return profileResponse.StatusCode switch
+            {
+                HttpStatusCode.BadRequest
+                    or HttpStatusCode.Unauthorized
+                    or HttpStatusCode.Forbidden
+                    or HttpStatusCode.NotFound
+                    or HttpStatusCode.Conflict => AdminProfileValidationResult.ProfileRejected,
+                _ => AdminProfileValidationResult.ServiceError
+            };
         }
         catch (HttpRequestException ex)
         {
@@ -122,7 +137,19 @@ public static class AdminSessionEndpointConfiguration
     {
         Valid,
         ProfileRejected,
+        ServiceError,
         Unavailable
+    }
+
+    private static string? TruncateForLog(string? value)
+    {
+        const int maxLength = 1024;
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        return value.Length <= maxLength
+            ? value
+            : value[..maxLength];
     }
 
     private static IResult DeleteSession(IOptions<AdminSessionCookieOptions> sessionOptions, HttpContext context)
