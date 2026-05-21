@@ -22,6 +22,7 @@
 @inject ClientsService _clientsService
 @inject CatalogsService _catalogsService
 @inject SettingsService _settingsService
+@inject ExchangeRateService _exchangeRateService
 @inject ILogger<CheckoutPanel> Logger
 @inject PersistentDialogState _persistentDialogState
 
@@ -204,7 +205,8 @@
                                          Placeholder="0.00"
                                          HideSpinButtons="true"
                                          Disabled="@CreditAmountIsDisable()"
-                                         Immediate="false" />
+                                         Immediate="false"
+                                         Max="@Math.Max(0, RemainingWithoutCredit)"/>
                         <MudButton Variant="Variant.Outlined" @onclick="SetAllCreditAsync" Disabled="@CreditAmountIsDisable()">TODO</MudButton>
                     </MudItem>
                     <MudItem xs="12" class="d-flex gap-4 align-center">
@@ -224,6 +226,15 @@
                     </MudItem>
                     <MudItem xs="12">
                         <div class="order-summary">
+                            <div class="d-flex justify-space-between summary-item">
+                                <MudText Typo="Typo.caption">
+                                    Tipo de cambio
+                                </MudText>
+                                <MudText Typo="Typo.caption">
+                                    @((exchangeRate.Rate ?? 0).ToString("N2")) MXN/USD
+                                </MudText>
+                            </div>
+
                             <div class="d-flex justify-space-between summary-item summary-received">
                                 <MudText Typo="Typo.body2">Recibido</MudText>
                                 <MudText Typo="Typo.subtitle2">@TotalPay.ToString(FormatConstants.CURRENCY)</MudText>
@@ -235,6 +246,53 @@
                             </div>
                         </div>
                     </MudItem>
+
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudText Typo="Typo.h6">
+                            Cambio
+                        </MudText>
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.MXNAmount"
+                                         For="@(() => _request.MXNAmount)"
+                                         Format="N2"
+                                         Label="MXN"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0.00"
+                                         HideSpinButtons="true"
+                                         Disabled="IsFreeTicket"
+                                         Immediate="true" />
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllMXNChangeAsync" Disabled="IsFreeTicket">TODO</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.USDAmount"
+                                         For="@(() => _request.USDAmount)"
+                                         Format="N2"
+                                         Label="USD"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0.00"
+                                         HideSpinButtons="true"
+                                         Disabled="IsFreeTicket"
+                                         Immediate="true" />
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllUSDChangeAsync" Disabled="IsFreeTicket">TODO</MudButton>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <div class="order-summary">
+                            <div class="d-flex justify-space-between summary-item summary-received">
+                                <MudText Typo="Typo.body2" class="me-1">Saldo</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="RemainingBalanceColor">
+                                    @RemainingBalance.ToString(FormatConstants.CURRENCY)
+                                </MudText>
+                            </div>
+                        </div>
+                    </MudItem>
+
                     <MudItem xs="12">
                         <MudRadioGroup @bind-Value="_request.DeliveryType" For="@(() => _request.DeliveryType)">
                             <MudGrid Justify="Justify.SpaceBetween">
@@ -360,6 +418,8 @@
 
     private BookingFormFluentValidator orderValidator = new();
 
+    private ExchangeRateResponse exchangeRate = new();
+
     private bool SubmitDisabled =>
         _cartState.IsHoldCallsInProgress
         || _cartState.SelectedSeats.Count == 0
@@ -367,18 +427,46 @@
         || !_isValid
         || !_isTouched
         || _isSubmitting
-        || (TicketType != "Cortesía" && PendingPay != 0);
+        || (TicketType != "Cortesía" && RemainingBalance != 0);
+
+    private decimal DollarAmountInMXN =>
+        (_request.DolarAmount ?? 0) * (exchangeRate?.Rate ?? 0);
 
     private decimal TotalPay =>
         (_request.CardAmount ?? 0) +
         (_request.CashAmount ?? 0) +
-        (_request.DolarAmount ?? 0) +
+        DollarAmountInMXN +
         (_request.CreditAmount ?? 0) +
         (_request.OtherAmount ?? 0);
+
+    private decimal TotalReceived =>
+        (_request.CardAmount ?? 0) +
+        (_request.CashAmount ?? 0) +
+        DollarAmountInMXN +
+        (_request.OtherAmount ?? 0);
+
+    private decimal TotalChangeMx =>
+        (_request.MXNAmount ?? 0)
+        + ((_request.USDAmount ?? 0) * (exchangeRate.Rate ?? 0));
+
+    private decimal RemainingBalance =>
+        TicketType == "Cortesía"
+            ? 0
+            : TotalPay - _cartState.TotalPrice - TotalChangeMx;
+
+    private decimal RemainingWithoutCredit =>
+        _cartState.TotalPrice
+        - (
+            (_request.CardAmount ?? 0)
+            + (_request.CashAmount ?? 0)
+            + DollarAmountInMXN
+            + (_request.OtherAmount ?? 0)
+        );
 
     private decimal PendingPay => IsFreeTicket ? _cartState.TotalPrice : _cartState.TotalPrice - TotalPay;
     private string FormattedPendingPay => Math.Abs(PendingPay).ToString(FormatConstants.CURRENCY);
     private Color PendingPayColor => IsFreeTicket ? Color.Secondary : PendingPay > 0 ? Color.Error : PendingPay < 0 ? Color.Tertiary : Color.Secondary;
+    private Color RemainingBalanceColor => RemainingBalance > 0 ? Color.Error : RemainingBalance < 0 ? Color.Warning : Color.Success;
     private bool IsFreeTicket => TicketType == "Cortesía";
     private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
     private bool _validateClientHasCredit = false;
@@ -401,12 +489,15 @@
         {
             var phoneTask = _catalogsService.GetPhoneRegionCodesAsync();
             var creditSettingsTask = _settingsService.GetClientCreditSettingsAsync();
+
             await Task.WhenAll(phoneTask, creditSettingsTask);
 
             _phoneRegionCodes = await phoneTask;
             var creditSettings = await creditSettingsTask;
 
             _validateClientHasCredit = creditSettings?.ValidateClientHasCredit ?? false;
+
+            exchangeRate = await _exchangeRateService.GetExchangeRateByEventAsync(EventId);
         }
         catch (Exception ex)
         {
@@ -563,11 +654,41 @@
         _request.CardAmount = _cartState.TotalPrice;
     }
 
+    private void SetAllMXNChangeAsync()
+    {
+        _request.MXNAmount = Math.Abs(PendingPay);
+        _request.USDAmount = 0;
+    }
+
+    private void SetAllUSDChangeAsync()
+    {
+        if (exchangeRate?.Rate is null || exchangeRate.Rate <= 0)
+        {
+            return;
+        }
+
+        _request.MXNAmount = 0;
+
+        _request.USDAmount = Math.Round(
+            Math.Abs(PendingPay) / exchangeRate.Rate.Value,
+            2,
+            MidpointRounding.AwayFromZero);
+    }
+
     private void SetAllDolar()
     {
-        // TODO: Do currency conversions
         ClearAmountsAsync();
-        _request.DolarAmount = _cartState.TotalPrice;
+
+        if (exchangeRate == null || exchangeRate.Rate == null)
+        {
+            _snackbar.Add("No hay tipo de cambio configurado.");
+            return;
+        }
+
+        _request.DolarAmount = Math.Round(
+            _cartState.TotalPrice / exchangeRate.Rate.Value,
+            2
+        );
     }
 
     private void SetAllCreditAsync()
@@ -599,6 +720,10 @@
         {
             _request.CreditAmount = 0;
         }
+
+        _request.PendingPay = PendingPay;
+        _request.ExchangeRate = exchangeRate.Rate ?? 0;
+        _request.TotalPrice = _cartState.TotalPrice;
 
         await _form.ValidateAsync();
 
@@ -636,6 +761,11 @@
                 DolarAmount = _request.DolarAmount,
                 CreditAmount = _request.CreditAmount,
                 OtherAmount = _request.OtherAmount
+            },
+            ChangeInfoRequest = new ChangeInfoRequest
+            {
+                AmountMXN = _request.MXNAmount,
+                AmountUSD = _request.USDAmount
             }
         };
 
@@ -779,6 +909,54 @@
 
             RuleFor(x => x.AcceptTermsAndConditions)
                 .Equal(true).WithMessage("Debes aceptar los términos y condiciones.");
+
+            RuleFor(x => x)
+                .Custom((model, context) =>
+                {
+                    var totalPaidMx =
+                        (model.CardAmount ?? 0)
+                        + (model.CashAmount ?? 0)
+                        + ((model.DolarAmount ?? 0) * model.ExchangeRate)
+                        + (model.CreditAmount ?? 0)
+                        + (model.OtherAmount ?? 0);
+
+                    var totalChangeMx =
+                        (model.MXNAmount ?? 0)
+                        + ((model.USDAmount ?? 0) * model.ExchangeRate);
+
+                    var overpayment =
+                        totalPaidMx - model.TotalPrice;
+
+                    if (overpayment <= 0)
+                    {
+                        return;
+                    }
+
+                    var remaining =
+                        overpayment - totalChangeMx;
+
+                    if (remaining > 0.01m)
+                    {
+                        context.AddFailure(
+                            nameof(model.MXNAmount),
+                            $"Falta devolver {remaining:C2} de cambio.");
+
+                        context.AddFailure(
+                            nameof(model.USDAmount),
+                            $"Falta devolver {remaining:C2} de cambio.");
+                    }
+
+                    if (remaining < -0.01m)
+                    {
+                        context.AddFailure(
+                            nameof(model.MXNAmount),
+                            $"El cambio excede por {Math.Abs(remaining ?? 0):C2}.");
+
+                        context.AddFailure(
+                            nameof(model.USDAmount),
+                            $"El cambio excede por {Math.Abs(remaining ?? 0):C2}.");
+                    }
+                });
         }
 
         public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

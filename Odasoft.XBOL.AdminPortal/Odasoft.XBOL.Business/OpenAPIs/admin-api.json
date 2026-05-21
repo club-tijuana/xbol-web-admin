@@ -3492,6 +3492,49 @@
         }
       }
     },
+    "/api/exchange-rates/{eventId}": {
+      "get": {
+        "tags": [
+          "ExchangeRate"
+        ],
+        "summary": "Retrieves the exchange rate associated with the organizer of the specified event.\r\nIf the organizer does not have a configured exchange rate, the default exchange rate is returned.",
+        "operationId": "GetExchangeRateByEventAsync",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "description": "Unique identifier of the event used to determine the applicable exchange rate.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/hold-seats": {
       "post": {
         "tags": [
@@ -11338,6 +11381,7 @@
       },
       "BookSeatsBody": {
         "required": [
+          "changeInfoRequest",
           "clientContact",
           "paymentInfoRequest",
           "seats",
@@ -11379,6 +11423,13 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/PaymentInfoRequest"
+              }
+            ]
+          },
+          "changeInfoRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeInfoRequest"
               }
             ]
           },
@@ -11478,6 +11529,22 @@
           },
           "accessible": {
             "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChangeInfoRequest": {
+        "type": "object",
+        "properties": {
+          "amountMXN": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "amountUSD": {
+            "type": "number",
+            "format": "decimal",
             "nullable": true
           }
         },
@@ -12800,6 +12867,7 @@
       },
       "EventBookingRequest": {
         "required": [
+          "changeInfoRequest",
           "clientContact",
           "eventKey",
           "paymentInfoRequest",
@@ -12845,6 +12913,13 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/PaymentInfoRequest"
+              }
+            ]
+          },
+          "changeInfoRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeInfoRequest"
               }
             ]
           },
@@ -13341,6 +13416,20 @@
           "Cancelled"
         ],
         "type": "string"
+      },
+      "ExchangeRateResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "rate": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
       },
       "ForSaleConfig": {
         "type": "object",
@@ -14790,6 +14879,7 @@
       },
       "SeasonBookingRequest": {
         "required": [
+          "changeInfoRequest",
           "clientContact",
           "paymentInfoRequest",
           "ticketType"
@@ -14840,6 +14930,13 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/PaymentInfoRequest"
+              }
+            ]
+          },
+          "changeInfoRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeInfoRequest"
               }
             ]
           },
@@ -16455,6 +16552,9 @@
     },
     {
       "name": "EventSection"
+    },
+    {
+      "name": "ExchangeRate"
     },
     {
       "name": "Hold"

@@ -21,4 +21,9 @@ public class BookingForm
     public decimal? DolarAmount { get; set; }
     public decimal? CreditAmount { get; set; }
     public decimal? OtherAmount { get; set; }
+    public decimal? MXNAmount { get; set; }
+    public decimal? USDAmount { get; set; }
+    public decimal? PendingPay { get; set; }
+    public decimal? ExchangeRate { get; set; }
+    public decimal? TotalPrice { get; set; }
 }
