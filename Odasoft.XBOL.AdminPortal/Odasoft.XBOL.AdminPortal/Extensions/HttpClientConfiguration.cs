@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.Business;
 using Odasoft.XBOL.Common.Options;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace Odasoft.XBOL.AdminPortal.Extensions;
 
@@ -10,6 +11,7 @@ public static class HttpClientConfiguration
     public static IServiceCollection ConfigureHttpClients(this IServiceCollection services)
     {
         services.AddHttpContextAccessor();
+        services.AddHttpForwarder();
         services.AddTransient<AdminSessionCookieHandler>();
 
         services.AddHttpClient("AdminApiSession", (provider, client) =>
