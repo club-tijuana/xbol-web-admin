@@ -16,7 +16,7 @@ if (args.Contains("--generate-schema"))
 var builder = WebApplication.CreateBuilder(args);
 
 // Infrastructure
-builder.Services.ConfigureOptions(builder.Configuration);
+builder.Services.ConfigureOptions(builder.Configuration, builder.Environment);
 builder.Services.ConfigureHosting(builder.Configuration);
 
 // Blazor framework
@@ -24,6 +24,7 @@ builder.Services.ConfigureBlazor();
 builder.Services.AddHealthChecks();
 
 // Security
+builder.Services.ConfigureDataProtection(builder.Configuration, builder.Environment);
 builder.Services.ConfigureAuthentication();
 
 // Localization
@@ -71,11 +72,13 @@ app.UseRequestLocalization();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseAnonymousPageAuthRedirects();
 app.UseAuthorization();
 
 app.UseAntiforgery();
 
 app.MapAdminSessionEndpoints();
+app.MapWorkerDashboardProxyEndpoints();
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
