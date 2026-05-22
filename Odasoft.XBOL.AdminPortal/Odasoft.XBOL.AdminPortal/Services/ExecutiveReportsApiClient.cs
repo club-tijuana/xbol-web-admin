@@ -2,18 +2,20 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.AdminPortal.ViewModels.Reports;
+using Odasoft.XBOL.Business;
+using System.Text.Json;
+using ReportFilter = Odasoft.XBOL.AdminPortal.ViewModels.Reports.ReportFilter;
 
 namespace Odasoft.XBOL.AdminPortal.Services;
 
-public class ExecutiveReportsApiClient(HttpClient httpClient) : IExecutiveReportsApiClient
+public class ExecutiveReportsApiClient(IAdminClient adminClient, HttpClient httpClient) : IExecutiveReportsApiClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public async Task<IReadOnlyList<ReportTypeOption>> GetReportTypeOptionsAsync(CancellationToken token = default)
     {
-        var response = await httpClient.GetAsync("api/executive-reports/report-types", token);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<List<ReportTypeOption>>(JsonOptions, token) ?? [];
+        var result = await adminClient.GetReportTypeOptionsAsync(token);
+        return result.Select(o => new ReportTypeOption { Value = o.Value!, Label = o.Label! }).ToList();
     }
 
     public async Task<ReportListResponse<Dictionary<string, JsonElement>>> GetReportListAsync(ReportFilter filter, CancellationToken token = default)

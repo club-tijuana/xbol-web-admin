@@ -4,6 +4,7 @@
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using System.Globalization
 @using System.Text.Json
+@using ReportFilter = Odasoft.XBOL.AdminPortal.ViewModels.Reports.ReportFilter
 
 @inject Odasoft.XBOL.Business.IAdminClient _adminClient
 @inject IExecutiveReportsApiClient _reportsClient
@@ -275,7 +276,7 @@
     private async Task OnColumnSortClickAsync(string columnKey)
     {
         if (string.Equals(_filter.SortBy, columnKey, StringComparison.OrdinalIgnoreCase))
-            _filter.SortDirection = _filter.SortDirection == "Descending" ? "Ascending" : "Descending";
+            _filter.SortDirection = _filter.SortDirection == "Ascending" ? "Descending" : "Ascending";
         else
         {
             _filter.SortBy = columnKey;
