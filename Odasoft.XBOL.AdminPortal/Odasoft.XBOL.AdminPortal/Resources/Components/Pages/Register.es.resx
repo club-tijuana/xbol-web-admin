@@ -76,6 +76,24 @@
   <data name="InvalidInvitation" xml:space="preserve">
     <value>Este enlace de invitación no es válido o está incompleto.</value>
   </data>
+  <data name="InvitationEmailMismatch" xml:space="preserve">
+    <value>Esta invitación no coincide con el correo electrónico del enlace.</value>
+  </data>
+  <data name="InvitationTokenAccepted" xml:space="preserve">
+    <value>Esta invitación ya fue utilizada. Inicia sesión o pide ayuda a un administrador.</value>
+  </data>
+  <data name="InvitationTokenExpired" xml:space="preserve">
+    <value>Esta invitación expiró. Pide a un administrador que envíe una nueva invitación.</value>
+  </data>
+  <data name="InvitationTokenInvalid" xml:space="preserve">
+    <value>Este enlace de invitación no es válido. Pide a un administrador que envíe una nueva invitación.</value>
+  </data>
+  <data name="InvitationTokenMissing" xml:space="preserve">
+    <value>A este enlace de invitación le falta información obligatoria.</value>
+  </data>
+  <data name="InvitationTokenRevoked" xml:space="preserve">
+    <value>Esta invitación fue revocada. Pide a un administrador que envíe una nueva invitación.</value>
+  </data>
   <data name="LoginFailed" xml:space="preserve">
     <value>El registro se completó, pero no se pudo iniciar sesión. Intenta iniciar sesión desde la pantalla de acceso.</value>
   </data>

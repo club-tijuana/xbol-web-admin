@@ -76,6 +76,24 @@
   <data name="InvalidInvitation" xml:space="preserve">
     <value>This invitation link is invalid or incomplete.</value>
   </data>
+  <data name="InvitationEmailMismatch" xml:space="preserve">
+    <value>This invitation does not match the email address in the link.</value>
+  </data>
+  <data name="InvitationTokenAccepted" xml:space="preserve">
+    <value>This invitation has already been used. Sign in or ask an administrator for help.</value>
+  </data>
+  <data name="InvitationTokenExpired" xml:space="preserve">
+    <value>This invitation has expired. Ask an administrator to send a new invitation.</value>
+  </data>
+  <data name="InvitationTokenInvalid" xml:space="preserve">
+    <value>This invitation link is invalid. Ask an administrator to send a new invitation.</value>
+  </data>
+  <data name="InvitationTokenMissing" xml:space="preserve">
+    <value>This invitation link is missing required information.</value>
+  </data>
+  <data name="InvitationTokenRevoked" xml:space="preserve">
+    <value>This invitation has been revoked. Ask an administrator to send a new invitation.</value>
+  </data>
   <data name="LoginFailed" xml:space="preserve">
     <value>Registration completed, but sign-in failed. Try signing in from the login page.</value>
   </data>

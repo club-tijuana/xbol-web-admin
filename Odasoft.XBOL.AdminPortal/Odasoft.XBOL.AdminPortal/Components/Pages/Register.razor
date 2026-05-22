@@ -170,7 +170,7 @@
         catch (ApiException<ProblemDetails> ex)
         {
             _formContext.HandleApiException(ex);
-            errorMessage = ex.Result.Detail ?? ex.Result.Title ?? L["RegistrationFailed"];
+            errorMessage = GetApiErrorMessage(ex.Result);
             isSubmitting = false;
             return;
         }
@@ -222,6 +222,15 @@
             AuthErrorCodes.RegistrationFailed => L["RegistrationFailed"],
             _ => L["RegistrationFailed"]
         };
+    }
+
+    private string GetApiErrorMessage(ProblemDetails problem)
+    {
+        var invitationMessageKey = RegisterInvitationErrorMessages.GetResourceKey(problem.Type);
+        if (invitationMessageKey is not null)
+            return L[invitationMessageKey];
+
+        return problem.Detail ?? problem.Title ?? L["RegistrationFailed"];
     }
 
     private void TogglePasswordVisibility()
