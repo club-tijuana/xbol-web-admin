@@ -107,7 +107,7 @@
             </ToolBarContent>
             <Columns>
                 <SelectColumn T="SuiteAgreementViewModel" />
-                <PropertyColumn Title="Nivel" Property="x => x.SuiteLevel" Sortable="true" Filterable="false" InitialDirection="SortDirection.Ascending">
+                <PropertyColumn Title="Nivel" Property="x => x.SuiteLevel" Sortable="true" Filterable="false" InitialDirection="MudBlazor.SortDirection.Ascending">
                     <CellTemplate>
                         <MudText Typo="Typo.body2">@context.Item.SuiteLevel</MudText>
                     </CellTemplate>

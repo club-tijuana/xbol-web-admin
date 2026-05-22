@@ -95,7 +95,7 @@
                 </MudGrid>
             </ToolBarContent>
             <Columns>
-                <PropertyColumn Title="@_localizer["Venue"]" Property="x => x.Name" Sortable="true" Filterable="false" InitialDirection="SortDirection.Ascending">
+                <PropertyColumn Title="@_localizer["Venue"]" Property="x => x.Name" Sortable="true" Filterable="false" InitialDirection="MudBlazor.SortDirection.Ascending">
                     <CellTemplate>
                         <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.Name</MudText>
                     </CellTemplate>

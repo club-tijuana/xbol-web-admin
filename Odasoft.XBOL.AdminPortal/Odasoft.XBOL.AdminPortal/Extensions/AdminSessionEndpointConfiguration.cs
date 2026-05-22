@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 using Odasoft.XBOL.Common.Options;
+using System.Net;
 using System.Net.Http.Headers;
 
 namespace Odasoft.XBOL.AdminPortal.Extensions;
@@ -27,6 +28,7 @@ public static class AdminSessionEndpointConfiguration
         FirebaseAuth firebaseAuth,
         TenantAwareFirebaseAuth tenantAuth,
         IHttpClientFactory httpClientFactory,
+        ILoggerFactory loggerFactory,
         IOptions<AdminSessionCookieOptions> sessionOptions,
         HttpContext context,
         CancellationToken cancellationToken)
@@ -59,13 +61,17 @@ public static class AdminSessionEndpointConfiguration
             return LoginRedirect(context, "session");
         }
 
-        var client = httpClientFactory.CreateClient("AdminApiSession");
-        using var profileRequest = new HttpRequestMessage(HttpMethod.Get, "auth/me");
-        profileRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
-        using var profileResponse = await client.SendAsync(profileRequest, cancellationToken);
-        if (!profileResponse.IsSuccessStatusCode)
+        var logger = loggerFactory.CreateLogger("Odasoft.XBOL.AdminPortal.AdminSession");
+        var profileValidationResult = await ValidateAdminProfileAsync(httpClientFactory, logger, idToken, cancellationToken);
+        if (profileValidationResult is not AdminProfileValidationResult.Valid)
         {
-            return LoginRedirect(context, "admin_profile");
+            var error = profileValidationResult switch
+            {
+                AdminProfileValidationResult.ProfileRejected => "admin_profile",
+                AdminProfileValidationResult.ServiceError => "admin_api_error",
+                _ => "admin_api_unavailable"
+            };
+            return LoginRedirect(context, error);
         }
 
         var sessionCookie = await firebaseAuth.CreateSessionCookieAsync(
@@ -79,6 +85,75 @@ public static class AdminSessionEndpointConfiguration
             BuildSessionCookieOptions(options, DateTimeOffset.UtcNow.Add(options.Lifetime)));
 
         return Results.LocalRedirect(returnUrl);
+    }
+
+    private static async Task<AdminProfileValidationResult> ValidateAdminProfileAsync(
+        IHttpClientFactory httpClientFactory,
+        ILogger logger,
+        string idToken,
+        CancellationToken cancellationToken)
+    {
+        var client = httpClientFactory.CreateClient("AdminApiSession");
+        using var profileRequest = new HttpRequestMessage(HttpMethod.Get, "auth/me");
+        profileRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
+
+        try
+        {
+            using var profileResponse = await client.SendAsync(profileRequest, cancellationToken);
+            if (profileResponse.IsSuccessStatusCode)
+            {
+                return AdminProfileValidationResult.Valid;
+            }
+
+            var responseBody = profileResponse.Content is null
+                ? null
+                : await profileResponse.Content.ReadAsStringAsync(cancellationToken);
+            logger.LogWarning(
+                "Admin profile check failed with status {StatusCode}. Response body: {ResponseBody}",
+                (int)profileResponse.StatusCode,
+                TruncateForLog(responseBody));
+
+            return profileResponse.StatusCode switch
+            {
+                HttpStatusCode.BadRequest
+                    or HttpStatusCode.Unauthorized
+                    or HttpStatusCode.Forbidden
+                    or HttpStatusCode.NotFound
+                    or HttpStatusCode.Conflict => AdminProfileValidationResult.ProfileRejected,
+                _ => AdminProfileValidationResult.ServiceError
+            };
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "Admin profile check failed while contacting Admin API.");
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "Admin profile check timed out while contacting Admin API.");
+        }
+
+        return AdminProfileValidationResult.Unavailable;
+    }
+
+    private enum AdminProfileValidationResult
+    {
+        Valid,
+        ProfileRejected,
+        ServiceError,
+        Unavailable
+    }
+
+    private static string? TruncateForLog(string? value)
+    {
+        const int maxLength = 1024;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return value.Length <= maxLength
+            ? value
+            : value[..maxLength];
     }
 
     private static IResult DeleteSession(IOptions<AdminSessionCookieOptions> sessionOptions, HttpContext context)

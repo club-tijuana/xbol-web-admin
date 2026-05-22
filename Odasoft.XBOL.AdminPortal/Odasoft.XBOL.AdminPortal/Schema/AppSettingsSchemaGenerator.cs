@@ -86,6 +86,12 @@ public static class AppSettingsSchemaGenerator
         [Description("Firebase Admin SDK authentication settings")]
         public GcipAuthOptions? GcipAuth { get; set; }
 
+        [Description("Google Cloud Storage settings for shared portal infrastructure")]
+        public CloudStorageOptions? CloudStorage { get; set; }
+
+        [Description("ASP.NET Core DataProtection key-ring persistence settings")]
+        public DataProtectionKeyRingOptions? DataProtection { get; set; }
+
         [Description("Admin API Firebase session cookie settings")]
         public AdminSessionCookieOptions? AdminSession { get; set; }
 

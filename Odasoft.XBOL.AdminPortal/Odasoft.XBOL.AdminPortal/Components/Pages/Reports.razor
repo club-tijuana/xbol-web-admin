@@ -2,11 +2,10 @@
 
 @using Odasoft.XBOL.AdminPortal.ViewModels.Reports
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
-@using Odasoft.XBOL.Business
 @using System.Globalization
 @using System.Text.Json
 
-@inject IAdminClient _adminClient
+@inject Odasoft.XBOL.Business.IAdminClient _adminClient
 @inject IExecutiveReportsApiClient _reportsClient
 @inject ISnackbar _snackbar
 @inject IJSRuntime _jsRuntime
@@ -14,8 +13,6 @@
 <PageTitle>Reportes</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
-
-
 
     <MudPaper Class="pa-4 mb-4" Elevation="1">
         <MudText Typo="Typo.h4" Class="mb-4 text-secondary">Reportes</MudText>
@@ -145,7 +142,6 @@
             </PagerContent>
         </MudDataGrid>
     </MudPaper>
-
 </MudContainer>
 
 @code {

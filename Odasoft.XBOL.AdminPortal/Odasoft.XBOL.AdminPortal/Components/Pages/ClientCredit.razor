@@ -447,9 +447,11 @@
         PaymentType? paymentType = model.PaymentMethod switch
         {
             "Cash" => PaymentType.Cash,
-            "CreditCard" => PaymentType.CreditCard,
-            "DebitCard" => PaymentType.DebitCard,
-            "Spei" => PaymentType.Spei,
+            "Card" => PaymentType.Card,
+            "ClientCredit" => PaymentType.ClientCredit,
+            "Courtesy" => PaymentType.Courtesy,
+            "Other" => PaymentType.Other,
+            "WireTransfer" => PaymentType.WireTransfer,
             _ => null
         };
 
