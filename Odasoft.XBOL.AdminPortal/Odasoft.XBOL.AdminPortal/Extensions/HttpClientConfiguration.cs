@@ -35,7 +35,13 @@ public static class HttpClientConfiguration
         services.AddScoped<IAdminClient>(provider =>
             new AdminClient(provider.GetRequiredService<HttpClient>()));
 
-        services.AddScoped<IExecutiveReportsApiClient, ExecutiveReportsApiClient>();
+        services.AddHttpClient<IExecutiveReportsApiClient, ExecutiveReportsApiClient>(
+            (provider, client) =>
+            {
+                var config = provider.GetRequiredService<IOptions<AdminApiClientOptions>>().Value;
+                client.BaseAddress = new Uri(config.BaseAddress);
+                client.DefaultRequestHeaders.Add("Accept-Language", "es");
+            });
 
         return services;
     }

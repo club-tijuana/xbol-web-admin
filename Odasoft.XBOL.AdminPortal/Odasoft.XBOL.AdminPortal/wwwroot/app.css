@@ -166,6 +166,14 @@ h1:focus {
     color: var(--shadow-grey);
 }
 
+.reset-password-input.show .mud-input-adornment button {
+    color: var(--mud-palette-primary);
+}
+
+.reset-password-input .mud-input-adornment button {
+    color: var(--shadow-grey);
+}
+
 .text-right {
     text-align: right !important;
 }
