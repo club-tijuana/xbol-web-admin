@@ -1,0 +1,58 @@
+@inject ISnackbar Snackbar
+@inject ILogger<ReviewEventDialog> Logger
+@inject IEventService EventService;
+@inject AppLocalizer<ReviewEventDialog> L
+
+<BaseDialog Class="py-4" ActionsClass="mt-2 px-6" TitleClass="py-2">
+    <TitleContent>
+        <MudText Typo="Typo.subtitle2">@L["FinishReview"]</MudText>
+    </TitleContent>
+    <ChildContent>
+        <MudText Typo="Typo.body2">@L["ReviewDescription"]</MudText>
+    </ChildContent>
+    <Actions>
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.TaskAlt"
+                   OnClick="ApproveAsync">@L["Approve"]</MudButton>
+        <MudSpacer />
+        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Edit"
+                   OnClick="RejectAsync">@L["RequireChanges"]</MudButton>        
+    </Actions>
+</BaseDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public long EventId { get; set; }
+
+    public async Task ApproveAsync()
+    {
+        try
+        {
+            await EventService.ApproveEventAsync(EventId);
+            Snackbar.Add(L["EventApproved"], Severity.Success);
+            MudDialog.Close();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to approve event");
+            Snackbar.Add(L["ErrorReviewingEvent"], Severity.Error);
+        }
+    }
+
+    public async Task RejectAsync()
+    {
+        try
+        {
+            await EventService.RejectEventAsync(EventId);
+            Snackbar.Add(L["EventRejected"], Severity.Success);
+            MudDialog.Close();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to reject event");
+            Snackbar.Add(L["ErrorReviewingEvent"], Severity.Error);
+        }
+    }
+}

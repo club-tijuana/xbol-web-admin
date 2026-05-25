@@ -1,22 +1,30 @@
-let loadingPromise = null;
+/**
+ * SeatingChart JS interop module.
+ * Renders a seats.io EventManager for the customer ordering flow
+ * (mode "createOrder" with hold-token session management + pricing).
+ *
+ * @typedef {import('seatsio').EventManager} SeatsioChart
+ */
+import {
+  ensureSeatsioLoaded,
+  destroyChart,
+  focusSeat,
+  unfocusSeat,
+  deselectSeat,
+  clearSelection,
+  changeConfig,
+  focusFilteredCategories,
+} from "../js/seatsioBase.js";
 
-async function ensureSeatsioLoaded() {
-  if (typeof seatsio !== 'undefined') {
-    return;
-  }
-
-  if (!loadingPromise) {
-    loadingPromise = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn-na.seatsio.net/chart.js';
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-  }
-
-  await loadingPromise;
-}
+export {
+  destroyChart,
+  focusSeat,
+  unfocusSeat,
+  deselectSeat,
+  clearSelection,
+  changeConfig,
+  focusFilteredCategories,
+};
 
 export async function renderChart(containerId, config, dotNetHelper) {
   await ensureSeatsioLoaded();
@@ -75,35 +83,9 @@ export function getSelectedSeats(chart) {
   return chart?.selectedObjects ?? [];
 }
 
-export function destroyChart(chart) {
-  chart?.destroy();
-}
-
-export function focusSeat(chart, seatId) {
-  chart?.zoomToSelectedObjects([seatId]);
-  chart?.pulse([seatId]);
-}
-
-export function focusFilteredCategories(chart) {
-  chart?.zoomToFilteredCategories();
-}
-
-export function unfocusSeat(chart, seatId) {
-  chart?.unpulse([seatId]);
-}
-
-export function deselectSeat(chart, seatId) {
-  chart?.unpulse([seatId]);
-  chart?.deselectObjects([seatId]);
-}
-
 export function deselectSeats(chart, seats) {
   chart?.unpulse(seats);
   chart?.deselectObjects(seats);
-}
-
-export function clearSelection(chart) {
-  chart?.clearSelection();
 }
 
 export async function trySelectObjects(chart, seats, dotNetHelper) {
@@ -112,21 +94,17 @@ export async function trySelectObjects(chart, seats, dotNetHelper) {
   } catch (e) {
     // TODO: Marcar ticket como vendido o eliminarlo de la lista
     dotNetHelper.invokeMethodAsync('NotifyError', "No se pudo seleccionar uno o mas asientos.");
-  }  
+  }
 }
 
 export async function doSelectObjects(chart, seats, dotNetHelper) {
   try {
     await chart?.doSelectObjects(seats);
   } catch (e) {
-    dotNetHelper.invokeMethodAsync('NotifyError', "No se pudo seleccionar uno o mas asientos."); 
+    dotNetHelper.invokeMethodAsync('NotifyError', "No se pudo seleccionar uno o mas asientos.");
   }
 }
 
 export function clearSession() {
   sessionStorage.removeItem('seatsio');
-}
-
-export function changeConfig(chart, config) {
-  chart?.changeConfig(config);
 }

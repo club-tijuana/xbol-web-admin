@@ -1,10 +1,9 @@
 @page "/suite-agreements/{_suiteAgreementId:long}/update"
+@attribute [Authorize]
 
-@using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
-@using Odasoft.XBOL.Common.Constants
-@using Odasoft.XBOL.Common.Helpers
+@using Odasoft.XBOL.Common.Constants;
 
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;

@@ -1,0 +1,251 @@
+@page "/register"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+
+@using Microsoft.AspNetCore.Components.Forms
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.AdminPortal.Services.Contracts
+@inject IAuthService AuthService
+@inject AntiforgeryStateProvider Antiforgery
+@inject BrowserFormPostJsInterop FormPost
+@inject NavigationManager Navigation
+@inject AppLocalizer<Register> L
+
+<div class="register-page">
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="11" sm="8" md="6" lg="4" xl="3">
+            <MudPaper Elevation="6" Class="pa-18 align-center">
+                <MudText Typo="Typo.h5" Class="mb-6">@L["Title"]</MudText>
+
+                <form @onsubmit="RegisterAsync" @onsubmit:preventDefault="true">
+                    <MudForm @ref="_form" @bind-IsValid="_formValid">
+                        <MudTextField @bind-Value="_request.Email" Class="pb-6"
+                                      Label="@L["Email"]" Variant="Variant.Outlined"
+                                      Required="true" Margin="Margin.Dense"
+                                      Immediate="true" InputType="InputType.Email"
+                                      Validation="@(_formContext.Field(nameof(RegisterRequest.Email)).ValidationFor<string>())"
+                                      ReadOnly="true"
+                                      autocomplete="username" />
+
+                        <MudTextField @bind-Value="_request.DisplayName" Class="pb-6"
+                                      Label="@L["DisplayName"]" Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Immediate="true"
+                                      Validation="@(_formContext.Field(nameof(RegisterRequest.DisplayName)).ValidationFor<string>())"
+                                      autocomplete="name" />
+
+                        <MudTextField @bind-Value="_request.Password" Class="@PasswordInputClass"
+                                      Label="@L["Password"]" Variant="Variant.Outlined" InputType="@passwordInput"
+                                      Adornment="Adornment.End" AdornmentIcon="@passwordInputIcon"
+                                      OnAdornmentClick="TogglePasswordVisibility" AdornmentAriaLabel="@L["TogglePasswordVisibility"]"
+                                      Required="true" Margin="Margin.Dense"
+                                      Immediate="true" RequiredError="@L["PasswordRequired"]"
+                                      Validation="@(_formContext.Field(nameof(RegisterRequest.Password)).ValidationFor<string>())"
+                                      autocomplete="new-password" />
+
+                        <MudTextField @bind-Value="_confirmPassword" Class="@PasswordInputClass"
+                                      Label="@L["ConfirmPassword"]" Variant="Variant.Outlined" InputType="@passwordInput"
+                                      Required="true" Margin="Margin.Dense"
+                                      Immediate="true" RequiredError="@L["ConfirmPasswordRequired"]"
+                                      Validation="@(new Func<string, IEnumerable<string>>(ValidateConfirmPassword))"
+                                      autocomplete="new-password" />
+                    </MudForm>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Class="mt-4 text-uppercase"
+                               FullWidth="true"
+                               ButtonType="ButtonType.Submit"
+                               Disabled="@(!CanSubmit)">
+                        @if (isSubmitting)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
+                        }
+                        @L["CompleteRegistration"]
+                    </MudButton>
+                </form>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mt-4">
+                        @errorMessage
+                    </MudAlert>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</div>
+
+@code {
+    private MudForm _form = default!;
+    private FormContext _formContext = default!;
+    private RegisterRequest _request = new();
+    private string _confirmPassword = string.Empty;
+    private string errorMessage = string.Empty;
+    private string passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+    private bool isSubmitting;
+    private bool _formValid;
+    private bool isCheckingAuthentication = true;
+    private bool isShow;
+    private InputType passwordInput = InputType.Password;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    [SupplyParameterFromQuery(Name = "email")]
+    private string? EmailQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "token")]
+    private string? TokenQuery { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private bool HasInvitation => !string.IsNullOrWhiteSpace(_request.Email) && !string.IsNullOrWhiteSpace(_request.Token);
+    private bool CanSubmit => HasInvitation && !isSubmitting && !isCheckingAuthentication;
+    private string PasswordInputClass => isShow ? "pb-6 register-password-input show" : "pb-6 register-password-input";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _formContext = new FormContext(StateHasChanged);
+
+        if (AuthenticationStateTask is not null)
+        {
+            var authState = await AuthenticationStateTask;
+            if (authState.User.Identity?.IsAuthenticated is true)
+            {
+                Navigation.NavigateTo("/", replace: true);
+                return;
+            }
+        }
+
+        isCheckingAuthentication = false;
+    }
+
+    protected override void OnParametersSet()
+    {
+        _request.Email = EmailQuery?.Trim() ?? string.Empty;
+        _request.Token = TokenQuery ?? string.Empty;
+
+        if (!HasInvitation)
+            errorMessage = L["InvalidInvitation"];
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            _formContext.SetForm(_form);
+    }
+
+    private async Task RegisterAsync()
+    {
+        if (isSubmitting)
+            return;
+
+        if (!HasInvitation)
+        {
+            errorMessage = L["InvalidInvitation"];
+            return;
+        }
+
+        if (!await _formContext.ValidateAsync())
+            return;
+
+        isSubmitting = true;
+        errorMessage = string.Empty;
+
+        var email = _request.Email ?? string.Empty;
+        var password = _request.Password ?? string.Empty;
+        var token = _request.Token ?? string.Empty;
+
+        AuthResult result;
+        try
+        {
+            result = await AuthService.RegisterAsync(
+                email,
+                password,
+                token,
+                _request.DisplayName);
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _formContext.HandleApiException(ex);
+            errorMessage = GetApiErrorMessage(ex.Result);
+            isSubmitting = false;
+            return;
+        }
+
+        if (!result.Succeeded)
+        {
+            errorMessage = GetErrorMessage(result);
+            isSubmitting = false;
+            return;
+        }
+
+        var antiforgery = Antiforgery.GetAntiforgeryToken();
+        if (antiforgery is null)
+        {
+            errorMessage = L["LoginFailed"];
+            isSubmitting = false;
+            return;
+        }
+
+        await FormPost.PostAsync("auth/login", new Dictionary<string, string?>
+        {
+            [antiforgery.FormFieldName] = antiforgery.Value,
+            ["idToken"] = result.IdToken,
+            ["returnUrl"] = ReturnUrl
+        });
+    }
+
+    private IEnumerable<string> ValidateConfirmPassword(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            yield return L["ConfirmPasswordRequired"];
+            yield break;
+        }
+
+        if (!string.Equals(value, _request.Password, StringComparison.Ordinal))
+            yield return L["PasswordMismatch"];
+    }
+
+    private string GetErrorMessage(AuthResult result)
+    {
+        if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
+            return result.ErrorMessage;
+
+        return result.ErrorCode switch
+        {
+            AuthErrorCodes.MissingRegistrationFields => L["MissingRegistrationFields"],
+            AuthErrorCodes.LoginFailed => L["LoginFailed"],
+            AuthErrorCodes.RegistrationFailed => L["RegistrationFailed"],
+            _ => L["RegistrationFailed"]
+        };
+    }
+
+    private string GetApiErrorMessage(ProblemDetails problem)
+    {
+        var invitationMessageKey = RegisterInvitationErrorMessages.GetResourceKey(problem.Type);
+        if (invitationMessageKey is not null)
+            return L[invitationMessageKey];
+
+        return problem.Detail ?? problem.Title ?? L["RegistrationFailed"];
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        if (isShow)
+        {
+            isShow = false;
+            passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            passwordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            passwordInputIcon = Icons.Material.Filled.Visibility;
+            passwordInput = InputType.Text;
+        }
+    }
+}

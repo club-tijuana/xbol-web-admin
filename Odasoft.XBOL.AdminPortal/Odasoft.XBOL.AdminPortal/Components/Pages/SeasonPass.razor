@@ -1,23 +1,27 @@
-@page "/xolopass"
-@using System.Globalization
-@using Odasoft.XBOL.AdminPortal.Extensions
-@using Odasoft.XBOL.AdminPortal.Services.Contracts
-@using Odasoft.XBOL.AdminPortal.ViewModels.Order
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Common.Constants
-@inject AppLocalizer<SeasonPass> L
-@inject ISeasonPassService SeasonPassService
-@inject IDialogService DialogService
-@inject ISnackbar Snackbar
-@inject NavigationManager NavigationManager
-@inject ISeasonService SeasonService
+@page "/season-pass"
+
+@attribute [Authorize]
+
+@using System.Globalization;
+@using Odasoft.XBOL.AdminPortal.Services.Contracts;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Common.Constants;
+
+@inject AppLocalizer<SeasonPass> L;
+@inject ISeasonPassService SeasonPassService;
+@inject IDialogService DialogService;
+@inject ISnackbar Snackbar;
+@inject NavigationManager NavigationManager;
+@inject ISeasonService SeasonService;
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
         <RightContent>
-            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => GoToCheckoutSeasonpass())" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase">Comprar Xolopass</MudButton>
+            <MudTooltip Text="@L["ActionDisabledNotOnSale"]" Placement="Placement.Bottom" Disabled="@_isSelectedSeasonSellable">
+                <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => GoToCheckoutSeasonpass())" Color="Color.Primary" Variant="Variant.Filled" Class="text-uppercase" Disabled="@(!_isSelectedSeasonSellable)">Comprar Xolopass</MudButton>
+            </MudTooltip>
         </RightContent>
     </PageActionBar>
 </SectionContent>
@@ -45,9 +49,14 @@
                                 </MudSelectItem>
                             }
                         </MudSelect>
-                        <MudSwitch Color="@Color.Primary" UncheckedColor="@Color.Info"
-                                   @bind-Value="_orderListFilters.RenovationMode" @bind-Value:after="OnRenovationModeChanged"
-                                   Label="Ver modo renovación" />
+                        <MudTooltip Text="@L["RenovationModeDisabledNoDestination"]" Placement="Placement.Bottom" Disabled="@(DestinationSeasonDetails is not null)">
+                            <MudSwitch Color="@Color.Primary" UncheckedColor="@Color.Default"
+                                       ThumbIcon="@(_orderListFilters.RenovationMode ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                                       ThumbIconColor="@Color.Default"
+                                       @bind-Value="_orderListFilters.RenovationMode" @bind-Value:after="OnRenovationModeChanged"
+                                       Disabled="@(DestinationSeasonDetails is null)"
+                                       Label="Ver modo renovación" />
+                        </MudTooltip>
                     </MudStack>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="12" lg="4">
@@ -174,7 +183,7 @@
                         <CellTemplate>
                             <MudStack Row Spacing="2">
                                 <MudTooltip Text="@GetTooltipText(context.Item)" Placement="Placement.Top">
-                                    <MudIconButton Disabled="context.Item.SeasonPeriod == SeasonPeriod.PastSeason" Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium" OnClick="@(() => OnRenewClick(context.Item))" />
+                                    <MudIconButton Disabled="@(context.Item.SeasonPeriod == SeasonPeriod.PastSeason || !_isDestinationRenewable)" Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium" OnClick="@(() => OnRenewClick(context.Item))" />
                                 </MudTooltip>
                             </MudStack>
                         </CellTemplate>
@@ -303,6 +312,31 @@
     private List<EnumItemDto> _seasonPassSuspendedReasonList = new();
     private List<EnumItemDto> _seasonPassRenewalTypeList = new();
     private SeasonListItem _selectedSeason = new();
+    private Dictionary<long, SeasonResult> _seasonDetailsById = new();
+    private SeasonResult? SelectedSeasonDetails =>
+        _selectedSeason?.Id is long id && _seasonDetailsById.TryGetValue(id, out var s) ? s : null;
+    private SeasonResult? DestinationSeasonDetails
+    {
+        get
+        {
+            if (SelectedSeasonDetails is not { } selected) return null;
+            return _seasonDetailsById.Values
+                .Where(s => s.Id != selected.Id && s.StartDate > selected.StartDate)
+                .OrderBy(s => s.StartDate)
+                .FirstOrDefault();
+        }
+    }
+    private bool _isSelectedSeasonSellable => IsSeasonSellingNow(SelectedSeasonDetails);
+    private bool _isDestinationRenewable => IsSeasonSellingNow(DestinationSeasonDetails);
+
+    private static bool IsSeasonSellingNow(SeasonResult? season)
+    {
+        if (season is null) return false;
+        var now = DateTimeOffset.UtcNow;
+        var saleStart = season.PreSaleDate ?? season.OnSaleDate;
+        if (saleStart is null) return false;
+        return saleStart <= now && (season.OffSaleDate is null || now < season.OffSaleDate);
+    }
     private SeasonPassStatusRequest _seasonPassStatusRequest = new();
 
     private HashSet<SeasonPassRenewalType?> _selectedRenewalTypes = new();
@@ -406,10 +440,38 @@
 
     private async Task OnSeasonChanged()
     {
+        if (_orderListFilters.SeasonId is long id)
+        {
+            _selectedSeason = _seasonSelectorItems.FirstOrDefault(s => s.Id == id) ?? _selectedSeason;
+        }
+        await EnsureSeasonDetailsLoaded();
+        if (DestinationSeasonDetails is null && _orderListFilters.RenovationMode)
+        {
+            _orderListFilters.RenovationMode = false;
+        }
         if (_dataGrid is not null)
         {
             await _dataGrid.ReloadServerData();
             StateHasChanged();
+        }
+    }
+
+    private async Task EnsureSeasonDetailsLoaded()
+    {
+        foreach (var item in _seasonSelectorItems)
+        {
+            if (item.Id is not long id || _seasonDetailsById.ContainsKey(id))
+                continue;
+            try
+            {
+                var details = await SeasonService.GetSeasonByIdAsync(id);
+                if (details is not null)
+                    _seasonDetailsById[id] = details;
+            }
+            catch
+            {
+                // gates fail safe when details are unavailable
+            }
         }
     }
     private async Task OnRenovationModeChanged()
@@ -422,9 +484,11 @@
 
     private string GetTooltipText(OrderListItem item)
     {
-        return item.SeasonPeriod == SeasonPeriod.PastSeason
-            ? L["ActionBoletosDisabled"]
-            : L["ActionBoletos"];
+        if (!_isDestinationRenewable)
+            return L["ActionDisabledNotOnSale"];
+        if (item.SeasonPeriod == SeasonPeriod.PastSeason)
+            return L["ActionBoletosDisabled"];
+        return L["ActionBoletos"];
     }
 
     private async Task<GridData<OrderListItem>> FetchFromServer(GridState<OrderListItem> state)
@@ -511,12 +575,17 @@
     {
         if (_orderListFilters.SeasonId is null || _selectedSeason.ExternalSeasonKey is null)
             return;
+        if (!_isSelectedSeasonSellable)
+            return;
 
-        NavigationManager.NavigateTo($"./xolopass/{_selectedSeason.Id}/key/{_selectedSeason.ExternalSeasonKey}/booking");
+        NavigationManager.NavigateTo($"./season-pass/{_selectedSeason.Id}/key/{_selectedSeason.ExternalSeasonKey}/booking");
     }
 
     private void OnRenewClick(OrderListItem item)
     {
-        NavigationManager.NavigateTo($"./xolopass/checkout/renovate/{item.Order}");
+        if (_selectedSeason?.Id is null || _selectedSeason.ExternalSeasonKey is null)
+            return;
+
+        NavigationManager.NavigateTo($"./season-pass/{_selectedSeason.Id}/key/{_selectedSeason.ExternalSeasonKey}/checkout?renewal={item.Order}");
     }
 }

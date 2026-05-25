@@ -5,22 +5,20 @@
     "version": "v1"
   },
   "paths": {
-    "/api/accounts": {
+    "/auth/invitations": {
       "post": {
         "tags": [
-          "Accounts"
+          "Auth"
         ],
-        "summary": "Registers a new user account using the specified registration details.",
-        "description": "This method creates a new user account with the provided credentials. The\r\n            registration may fail if the user name or email address is already in use, or if the password does not meet\r\n            the required criteria. The response does not include detailed error information; for more granular feedback,\r\n            consider extending the response model.",
-        "operationId": "CreateUserAsync",
+        "summary": "Create an admin registration invitation.",
+        "description": "Creates or replaces a pending invitation for the supplied email, stores only a token hash, and enqueues an invitation email.\r\nRequires an authenticated admin-tenant Firebase token.",
         "requestBody": {
-          "description": "An object containing the user registration information, including user name, email address, and password.\r\n            Cannot be null.",
           "content": {
             "application/json-patch+json": {
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateUserRequest"
+                    "$ref": "#/components/schemas/CreateInvitationRequest"
                   }
                 ]
               }
@@ -29,7 +27,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateUserRequest"
+                    "$ref": "#/components/schemas/CreateInvitationRequest"
                   }
                 ]
               }
@@ -38,7 +36,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateUserRequest"
+                    "$ref": "#/components/schemas/CreateInvitationRequest"
                   }
                 ]
               }
@@ -47,7 +45,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateUserRequest"
+                    "$ref": "#/components/schemas/CreateInvitationRequest"
                   }
                 ]
               }
@@ -56,21 +54,366 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Invitation was created and the one-time token was sent by email.",
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/CreateInvitationResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/CreateInvitationResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/CreateInvitationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request is missing a valid admin-tenant Firebase bearer token, or the token is not linked to an active local admin.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Complete admin registration from an invitation.",
+        "description": "Validates the invitation token, creates or updates the tenant-scoped Firebase user, links the local User row, and marks the invitation accepted.\r\nPossession of the one-time invitation token delivered to the mailbox is treated as email ownership confirmation.\r\nArbitrary self-registration without an invitation token is rejected.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RegisterRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RegisterRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RegisterRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RegisterRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registration completed and the linked local admin profile is returned.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The invitation is missing, invalid, expired, revoked, already accepted, or does not match the email.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Request a password reset email.",
+        "description": "Generates a tenant-scoped Firebase password reset link when possible and enqueues the recovery email.\r\nThe response is intentionally the same whether or not the email exists.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ForgotPasswordRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ForgotPasswordRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ForgotPasswordRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ForgotPasswordRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The reset request was accepted."
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Get the current admin profile.",
+        "description": "Resolves the authenticated Firebase UID to an active linked local User row and returns the local admin profile.",
+        "responses": {
+          "200": {
+            "description": "The linked local admin profile was found.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The token is valid but no active local admin User is linked to it, or the token is missing/invalid.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Update the current admin profile.",
+        "description": "Updates editable local profile fields and synchronizes supported fields to the tenant-scoped Firebase user.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateMeRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateMeRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateMeRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateMeRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The profile was updated and the current local admin profile is returned.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The profile update failed backend validation.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The token is valid but no active local admin User is linked to it, or the token is missing/invalid.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The requested email or phone number is already linked to another Firebase user.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -583,6 +926,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -591,6 +935,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -863,8 +1208,45 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "No Content"
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDeleteAcceptedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDeleteAcceptedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDeleteAcceptedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
           },
           "404": {
             "description": "Not Found",
@@ -886,8 +1268,25 @@
               }
             }
           },
-          "500": {
-            "description": "Internal Server Error"
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -1394,6 +1793,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1402,6 +1802,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1499,6 +1900,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1507,6 +1909,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1806,357 +2209,6 @@
         }
       }
     },
-    "/api/event-images/{eventId}": {
-      "get": {
-        "tags": [
-          "EventImage"
-        ],
-        "summary": "Retrieves a list of the event's images.",
-        "operationId": "GetEventImagesAsync",
-        "parameters": [
-          {
-            "name": "eventId",
-            "in": "path",
-            "description": "The unique Id of the event.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventImageResponse"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventImageResponse"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventImageResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "EventImage"
-        ],
-        "summary": "Creates a new event image with the specified info in each request.",
-        "operationId": "UploadEventImageAsync",
-        "parameters": [
-          {
-            "name": "eventId",
-            "in": "path",
-            "description": "The unique Id of the Event.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "imageType": {
-                    "allOf": [
-                      {
-                        "$ref": "#/components/schemas/ImageType"
-                      }
-                    ],
-                    "description": "The type of the image."
-                  },
-                  "order": {
-                    "type": "integer",
-                    "description": "Order of the image when display.",
-                    "format": "int32"
-                  },
-                  "imageFile": {
-                    "type": "string",
-                    "description": "Image content.",
-                    "format": "binary"
-                  }
-                }
-              },
-              "encoding": {
-                "imageType": {
-                  "style": "form"
-                },
-                "order": {
-                  "style": "form"
-                },
-                "imageFile": {
-                  "style": "form"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "integer",
-                  "format": "int64"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/event-images/{eventId}/image-type/{imageType}": {
-      "get": {
-        "tags": [
-          "EventImage"
-        ],
-        "summary": "Retrieves a list of the event`s images filtered by image type.",
-        "operationId": "GetEventImagesByImageTypeAsync",
-        "parameters": [
-          {
-            "name": "eventId",
-            "in": "path",
-            "description": "The unique Id of the event.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "name": "imageType",
-            "in": "path",
-            "description": "The ImageType of the images wanted.",
-            "required": true,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ImageType"
-                }
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventImageResponse"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventImageResponse"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventImageResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/event-images/{eventImageId}": {
-      "put": {
-        "tags": [
-          "EventImage"
-        ],
-        "summary": "Updates an exisiting event image with the specified details.",
-        "operationId": "UpdateEventImageByIdAsync",
-        "parameters": [
-          {
-            "name": "eventImageId",
-            "in": "path",
-            "description": "The unique Id of the Event.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "imageType": {
-                    "allOf": [
-                      {
-                        "$ref": "#/components/schemas/ImageType"
-                      }
-                    ],
-                    "description": "The type of the image."
-                  },
-                  "order": {
-                    "type": "integer",
-                    "description": "Order of the image when display.",
-                    "format": "int32"
-                  },
-                  "imageFile": {
-                    "type": "string",
-                    "description": "Image content.",
-                    "format": "binary"
-                  }
-                }
-              },
-              "encoding": {
-                "imageType": {
-                  "style": "form"
-                },
-                "order": {
-                  "style": "form"
-                },
-                "imageFile": {
-                  "style": "form"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "EventImage"
-        ],
-        "summary": "Deletes and existing event image with the specified Id.",
-        "operationId": "DeleteEventImageByIdAsync",
-        "parameters": [
-          {
-            "name": "eventImageId",
-            "in": "path",
-            "description": "The unique Event Image Id.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/events": {
       "get": {
         "tags": [
@@ -2308,7 +2360,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateEventRequest"
+                    "$ref": "#/components/schemas/EventRequest"
                   }
                 ]
               }
@@ -2317,7 +2369,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateEventRequest"
+                    "$ref": "#/components/schemas/EventRequest"
                   }
                 ]
               }
@@ -2326,7 +2378,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateEventRequest"
+                    "$ref": "#/components/schemas/EventRequest"
                   }
                 ]
               }
@@ -2335,7 +2387,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateEventRequest"
+                    "$ref": "#/components/schemas/EventRequest"
                   }
                 ]
               }
@@ -2646,7 +2698,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateEventRequest"
+                    "$ref": "#/components/schemas/EventRequest"
                   }
                 ]
               }
@@ -2655,7 +2707,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateEventRequest"
+                    "$ref": "#/components/schemas/EventRequest"
                   }
                 ]
               }
@@ -2664,7 +2716,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateEventRequest"
+                    "$ref": "#/components/schemas/EventRequest"
                   }
                 ]
               }
@@ -2673,7 +2725,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateEventRequest"
+                    "$ref": "#/components/schemas/EventRequest"
                   }
                 ]
               }
@@ -2775,16 +2827,250 @@
         }
       }
     },
+    "/api/events/{id}/approve": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "ApproveEventAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events/{id}/reject": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "RejectEventAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events/{id}/publish": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "PublishEventAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/event-schedules/{scheduleId}": {
       "get": {
         "tags": [
           "EventSchedule"
         ],
+        "summary": "Retrieves the event schedule with the specified identifier.",
         "operationId": "GetScheduleByIdAsync",
         "parameters": [
           {
             "name": "scheduleId",
             "in": "path",
+            "description": "The unique identifier of the event schedule to retrieve.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -2851,7 +3137,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateEventScheduleRequest"
+                    "$ref": "#/components/schemas/EventScheduleRequest"
                   }
                 ]
               }
@@ -2860,7 +3146,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateEventScheduleRequest"
+                    "$ref": "#/components/schemas/EventScheduleRequest"
                   }
                 ]
               }
@@ -2869,7 +3155,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateEventScheduleRequest"
+                    "$ref": "#/components/schemas/EventScheduleRequest"
                   }
                 ]
               }
@@ -2878,7 +3164,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/CreateEventScheduleRequest"
+                    "$ref": "#/components/schemas/EventScheduleRequest"
                   }
                 ]
               }
@@ -2976,7 +3262,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateEventScheduleRequest"
+                    "$ref": "#/components/schemas/EventScheduleRequest"
                   }
                 ]
               }
@@ -2985,7 +3271,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateEventScheduleRequest"
+                    "$ref": "#/components/schemas/EventScheduleRequest"
                   }
                 ]
               }
@@ -2994,7 +3280,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateEventScheduleRequest"
+                    "$ref": "#/components/schemas/EventScheduleRequest"
                   }
                 ]
               }
@@ -3003,7 +3289,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UpdateEventScheduleRequest"
+                    "$ref": "#/components/schemas/EventScheduleRequest"
                   }
                 ]
               }
@@ -3199,6 +3485,49 @@
                   "items": {
                     "$ref": "#/components/schemas/ZonePriceDTO"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/exchange-rates/{eventId}": {
+      "get": {
+        "tags": [
+          "ExchangeRate"
+        ],
+        "summary": "Retrieves the exchange rate associated with the organizer of the specified event.\r\nIf the organizer does not have a configured exchange rate, the default exchange rate is returned.",
+        "operationId": "GetExchangeRateByEventAsync",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "description": "Unique identifier of the event used to determine the applicable exchange rate.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
                 }
               }
             }
@@ -3668,6 +3997,398 @@
         }
       }
     },
+    "/api/media/{referenceId}/reference-type/{referenceType}": {
+      "get": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Retrieves a list of the reference's media.",
+        "operationId": "GetProductMediaAsync",
+        "parameters": [
+          {
+            "name": "referenceId",
+            "in": "path",
+            "description": "The unique Id of the reference.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "referenceType",
+            "in": "path",
+            "description": "The AdminSaleType of the reference.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{referenceId}/reference-type/{referenceType}/media-type/{mediaType}": {
+      "get": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Retrieves a list of the reference`s media filtered by media type.",
+        "operationId": "GetReferenceMediaByMediaTypeAsync",
+        "parameters": [
+          {
+            "name": "referenceId",
+            "in": "path",
+            "description": "The unique Id of the reference.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "referenceType",
+            "in": "path",
+            "description": "The AdminSaleType of the reference.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "mediaType",
+            "in": "path",
+            "description": "The MediaType of the media wanted.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/MediaType"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Creates a new media with the specified info in each request.",
+        "operationId": "UploadMediaAsync",
+        "parameters": [
+          {
+            "name": "referenceId",
+            "in": "path",
+            "description": "The unique Id of the reference.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "referenceType",
+            "in": "path",
+            "description": "The AdminSaleType of the reference.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "mediaType",
+            "in": "path",
+            "description": "The type of the media.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/MediaType"
+                }
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order": {
+                    "type": "integer",
+                    "description": "Order of the media when display.",
+                    "format": "int32"
+                  },
+                  "mediaFile": {
+                    "type": "string",
+                    "description": "Media content.",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "order": {
+                  "style": "form"
+                },
+                "mediaFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{mediaId}": {
+      "put": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Updates an exisiting media with the specified details.",
+        "operationId": "UpdateMediaByIdAsync",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "description": "The unique Id of the media.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mediaType": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/MediaType"
+                      }
+                    ],
+                    "description": "The type of the media."
+                  },
+                  "order": {
+                    "type": "integer",
+                    "description": "Order of the media when display.",
+                    "format": "int32"
+                  },
+                  "mediaFile": {
+                    "type": "string",
+                    "description": "Media content.",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "mediaType": {
+                  "style": "form"
+                },
+                "order": {
+                  "style": "form"
+                },
+                "mediaFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Deletes an existing media with the specified Id.",
+        "operationId": "DeleteMediaByIdAsync",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "description": "The unique Media Id.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/order-actions/{orderId}/action": {
       "post": {
         "tags": [
@@ -4129,6 +4850,46 @@
         }
       }
     },
+    "/api/organizers/catalog": {
+      "get": {
+        "tags": [
+          "Organizer"
+        ],
+        "summary": "Retrieves the organizer catalog as a collection of list items.",
+        "operationId": "GetOrganizerCatalogAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/phone-region-codes": {
       "get": {
         "tags": [
@@ -4467,6 +5228,212 @@
         }
       }
     },
+    "/api/prices/download": {
+      "post": {
+        "tags": [
+          "Prices"
+        ],
+        "summary": "Generates and returns a CSV file containing prices information for the specified schedule and venue map.",
+        "description": "Use this endpoint to export prices records as a CSV file for the provided schedule and venue map IDs.\r\n            The response includes a UTF-8 encoded CSV file named 'prices.csv'. Ensure that the schedule and venue map IDs correspond to\r\n            existing records to receive data.",
+        "operationId": "DownloadPricesCsvAsync",
+        "requestBody": {
+          "description": "An object containing the IDs of the schedule and venue map for which to retrieve and export prices data. Must be a valid PricesCsvRequest object.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesCsvRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesCsvRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesCsvRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PricesCsvRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/venue/{venueMapId}/validateFile": {
+      "post": {
+        "tags": [
+          "Prices"
+        ],
+        "operationId": "ValidatePricesCsvAsync",
+        "parameters": [
+          {
+            "name": "venueMapId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PriceResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PriceResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PriceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CsvRowError"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CsvRowError"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CsvRowError"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/reports/{key}/summary/by-section": {
       "get": {
         "tags": [
@@ -4663,6 +5630,183 @@
                   "type": "object",
                   "additionalProperties": {
                     "$ref": "#/components/schemas/AvailabilityReasonSummaryResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sales": {
+      "get": {
+        "tags": [
+          "Sales"
+        ],
+        "summary": "Retrieves a paginated list of sales based on the provided filtering, sorting, and pagination parameters.",
+        "operationId": "GetSalesAsync",
+        "parameters": [
+          {
+            "name": "AdminSaleType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ReferenceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PaymentTypes",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            }
+          },
+          {
+            "name": "SaleChannel",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/SaleChannel"
+              }
+            }
+          },
+          {
+            "name": "OrderStatus",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponsePagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponsePagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponsePagedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -4942,11 +6086,10 @@
             "name": "Period",
             "in": "query",
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/SeasonPeriod"
-                }
-              ]
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/SeasonPeriod"
+              }
             }
           },
           {
@@ -4973,6 +6116,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -4981,6 +6125,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -6195,6 +7340,37 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/client-credit": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Retrieves the client credit settings.",
+        "operationId": "GetClientCreditSettings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientCreditSettings"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientCreditSettings"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientCreditSettings"
                 }
               }
             }
@@ -8317,11 +9493,13 @@
         "tags": [
           "VenueAmenities"
         ],
+        "summary": "Retrieves the list of amenities available for the specified venue.",
         "operationId": "GetAmenitiesByVenueAsync",
         "parameters": [
           {
             "name": "venueId",
             "in": "path",
+            "description": "The unique identifier of the venue for which to retrieve amenities.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -8481,6 +9659,7 @@
         "tags": [
           "VenueAmenities"
         ],
+        "summary": "Retrieves a list of amenities for use in selection lists or dropdowns.",
         "operationId": "GetVenueAmenitiesCatalogAsync",
         "responses": {
           "200": {
@@ -9496,6 +10675,7 @@
           {
             "name": "Page",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -9504,6 +10684,7 @@
           {
             "name": "PageSize",
             "in": "query",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -10006,7 +11187,7 @@
         "enum": [
           "Event",
           "SeasonPass",
-          "EventGroup"
+          "Bundle"
         ],
         "type": "string"
       },
@@ -10200,6 +11381,7 @@
       },
       "BookSeatsBody": {
         "required": [
+          "changeInfoRequest",
           "clientContact",
           "paymentInfoRequest",
           "seats",
@@ -10241,6 +11423,13 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/PaymentInfoRequest"
+              }
+            ]
+          },
+          "changeInfoRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeInfoRequest"
               }
             ]
           },
@@ -10340,6 +11529,22 @@
           },
           "accessible": {
             "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChangeInfoRequest": {
+        "type": "object",
+        "properties": {
+          "amountMXN": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "amountUSD": {
+            "type": "number",
+            "format": "decimal",
             "nullable": true
           }
         },
@@ -10507,6 +11712,9 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "hasCredit": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -10555,6 +11763,9 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "hasCredit": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -10628,6 +11839,18 @@
         },
         "additionalProperties": false
       },
+      "ClientCreditSettings": {
+        "type": "object",
+        "properties": {
+          "validateClientHasCredit": {
+            "type": "boolean"
+          },
+          "validateClientCreditLimit": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "ClientCreditTransactionRequest": {
         "type": "object",
         "properties": {
@@ -10657,6 +11880,19 @@
             "type": "string"
           },
           "description": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientDeleteAcceptedResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
             "type": "string"
           }
         },
@@ -11102,116 +12338,30 @@
         },
         "additionalProperties": false
       },
-      "CreateEventRequest": {
+      "CreateInvitationRequest": {
         "type": "object",
         "properties": {
-          "venueMapId": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "name": {
-            "type": "string"
-          },
-          "subtitle": {
+          "email": {
             "type": "string",
             "nullable": true
-          },
-          "shortDescription": {
-            "type": "string",
-            "nullable": true
-          },
-          "longDescription": {
-            "type": "string",
-            "nullable": true
-          },
-          "ageRestriction": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AgeRestriction"
-              }
-            ],
-            "nullable": true
-          },
-          "securityPolicies": {
-            "type": "string",
-            "nullable": true
-          },
-          "additionalComments": {
-            "type": "string",
-            "nullable": true
-          },
-          "categoryIds": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int64"
-            }
           }
         },
         "additionalProperties": false
       },
-      "CreateEventScheduleRequest": {
+      "CreateInvitationResponse": {
         "type": "object",
         "properties": {
-          "eventId": {
-            "type": "integer",
-            "format": "int64"
+          "id": {
+            "type": "string",
+            "format": "uuid"
           },
-          "startDateTime": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
             "type": "string",
             "format": "date-time"
-          },
-          "endDateTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "publishedDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "preSaleDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "preSaleEndDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "onSaleDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "offSaleDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "gateOpenDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "ageRestriction": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AgeRestriction"
-              }
-            ],
-            "nullable": true
-          },
-          "externalEventKey": {
-            "type": "string"
-          },
-          "securityPolicies": {
-            "type": "string",
-            "nullable": true
-          },
-          "additionalComments": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -11328,21 +12478,6 @@
             "format": "int64"
           },
           "name": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "CreateUserRequest": {
-        "type": "object",
-        "properties": {
-          "userName": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "password": {
             "type": "string"
           }
         },
@@ -11570,6 +12705,22 @@
         },
         "additionalProperties": false
       },
+      "CsvRowError": {
+        "type": "object",
+        "properties": {
+          "rowNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "EnumItemDto": {
         "required": [
           "value"
@@ -11716,6 +12867,7 @@
       },
       "EventBookingRequest": {
         "required": [
+          "changeInfoRequest",
           "clientContact",
           "eventKey",
           "paymentInfoRequest",
@@ -11764,6 +12916,13 @@
               }
             ]
           },
+          "changeInfoRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeInfoRequest"
+              }
+            ]
+          },
           "localizer": {
             "type": "string",
             "nullable": true
@@ -11786,29 +12945,6 @@
           },
           "isActive": {
             "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "EventImageResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "eventId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "title": {
-            "type": "string"
-          },
-          "imageBase64": {
-            "type": "string"
-          },
-          "contentType": {
-            "type": "string"
           }
         },
         "additionalProperties": false
@@ -11859,6 +12995,15 @@
             "type": "string",
             "nullable": true
           },
+          "organizerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizerName": {
+            "type": "string",
+            "nullable": true
+          },
           "ageRestriction": {
             "allOf": [
               {
@@ -11875,18 +13020,17 @@
             "type": "string",
             "nullable": true
           },
+          "holdExpirationInMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "status": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/EventStatus"
               }
             ]
-          },
-          "prices": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SeatsIoPriceDTO"
-            }
           },
           "schedules": {
             "type": "array",
@@ -11955,6 +13099,13 @@
           },
           "isSeason": {
             "type": "boolean"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventStatus"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -11988,6 +13139,60 @@
         },
         "additionalProperties": false
       },
+      "EventRequest": {
+        "type": "object",
+        "properties": {
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "longDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "ageRestriction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgeRestriction"
+              }
+            ],
+            "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "EventResult": {
         "type": "object",
         "properties": {
@@ -11996,6 +13201,11 @@
             "format": "int64"
           },
           "venueMapId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizerId": {
             "type": "integer",
             "format": "int64",
             "nullable": true
@@ -12035,7 +13245,6 @@
         "required": [
           "availableSeats",
           "endDateTime",
-          "externalEventKey",
           "id",
           "startDateTime",
           "status",
@@ -12084,7 +13293,8 @@
             "nullable": true
           },
           "externalEventKey": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "totalSeats": {
             "type": "integer",
@@ -12100,6 +13310,88 @@
                 "$ref": "#/components/schemas/ScheduleStatus"
               }
             ]
+          },
+          "holdExpirationInMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeatsIoPriceDTO"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventScheduleRequest": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "startDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gateOpenDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ageRestriction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgeRestriction"
+              }
+            ],
+            "nullable": true
+          },
+          "externalEventKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "holdExpirationInMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -12117,10 +13409,27 @@
       "EventStatus": {
         "enum": [
           "Draft",
+          "PendingReview",
+          "Approved",
+          "ChangesRequested",
           "Published",
           "Cancelled"
         ],
         "type": "string"
+      },
+      "ExchangeRateResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "rate": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
       },
       "ForSaleConfig": {
         "type": "object",
@@ -12149,6 +13458,16 @@
             "items": {
               "type": "string"
             },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -12234,8 +13553,7 @@
           "Logo",
           "GeneralView",
           "Facade",
-          "VerticalPoster",
-          "HorizontalPoster"
+          "Sponsor"
         ],
         "type": "string"
       },
@@ -12407,6 +13725,59 @@
           }
         },
         "additionalProperties": false
+      },
+      "MediaResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "referenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "referenceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminSaleType"
+              }
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "mediaType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MediaType"
+              }
+            ]
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MediaType": {
+        "enum": [
+          "Banner",
+          "Gallery",
+          "Logo",
+          "GeneralView",
+          "Facade",
+          "Sponsor"
+        ],
+        "type": "string"
       },
       "ModelError": {
         "type": "object",
@@ -12582,7 +13953,7 @@
           "channel": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/PayformType"
+                "$ref": "#/components/schemas/SaleChannel"
               }
             ]
           },
@@ -12795,10 +14166,9 @@
       },
       "OrderListItemPagedResponse": {
         "required": [
-          "currentPage",
+          "page",
           "pageSize",
-          "totalItems",
-          "totalPages"
+          "totalCount"
         ],
         "type": "object",
         "properties": {
@@ -12808,19 +14178,15 @@
               "$ref": "#/components/schemas/OrderListItem"
             }
           },
-          "currentPage": {
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
             "type": "integer",
             "format": "int32"
           },
           "pageSize": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalItems": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
             "type": "integer",
             "format": "int32"
           }
@@ -12968,17 +14334,21 @@
         ],
         "type": "string"
       },
-      "OrderType": {
+      "OrderTag": {
         "enum": [
-          "Ticket",
-          "SeasonPass"
+          "SecondaryMarket",
+          "App",
+          "Website",
+          "PaymentLink",
+          "OxxoPay"
         ],
         "type": "string"
       },
-      "PayformType": {
+      "OrderType": {
         "enum": [
-          "Online",
-          "BoxOffice"
+          "Ticket",
+          "SeasonPass",
+          "Bundle"
         ],
         "type": "string"
       },
@@ -13112,9 +14482,17 @@
             "type": "integer",
             "format": "int64"
           },
+          "baseZoneLabel": {
+            "type": "string",
+            "nullable": true
+          },
           "baseSectionId": {
             "type": "integer",
             "format": "int64",
+            "nullable": true
+          },
+          "baseSectionLabel": {
+            "type": "string",
             "nullable": true
           },
           "baseRowId": {
@@ -13122,9 +14500,17 @@
             "format": "int64",
             "nullable": true
           },
+          "baseRowLabel": {
+            "type": "string",
+            "nullable": true
+          },
           "baseSeatId": {
             "type": "integer",
             "format": "int64",
+            "nullable": true
+          },
+          "baseSeatLabel": {
+            "type": "string",
             "nullable": true
           },
           "itemPrice": {
@@ -13197,6 +14583,21 @@
           "price": {
             "type": "number",
             "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PricesCsvRequest": {
+        "type": "object",
+        "properties": {
+          "scheduleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -13288,6 +14689,28 @@
         },
         "additionalProperties": { }
       },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          },
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ReleaseSeatsBody": {
         "required": [
           "seats"
@@ -13303,6 +14726,136 @@
           "holdToken": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SaleChannel": {
+        "enum": [
+          "Online",
+          "BoxOffice"
+        ],
+        "type": "string"
+      },
+      "SaleDetailResponse": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zone": {
+            "type": "string"
+          },
+          "section": {
+            "type": "string"
+          },
+          "row": {
+            "type": "string"
+          },
+          "seat": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderTag"
+            }
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SaleResponse": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "orderReference": {
+            "type": "string"
+          },
+          "purchaseEmail": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paymentType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            ]
+          },
+          "saleChannel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SaleChannel"
+              }
+            ]
+          },
+          "orderStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            ]
+          },
+          "expirationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaleDetailResponse"
+            }
+          },
+          "showDetails": {
+            "type": "boolean"
+          },
+          "purchaseDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SaleResponsePagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaleResponse"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -13326,6 +14879,7 @@
       },
       "SeasonBookingRequest": {
         "required": [
+          "changeInfoRequest",
           "clientContact",
           "paymentInfoRequest",
           "ticketType"
@@ -13376,6 +14930,13 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/PaymentInfoRequest"
+              }
+            ]
+          },
+          "changeInfoRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeInfoRequest"
               }
             ]
           },
@@ -13563,7 +15124,8 @@
       "SeasonPeriod": {
         "enum": [
           "CurrentSeason",
-          "PastSeason"
+          "PastSeason",
+          "FutureSeason"
         ],
         "type": "string"
       },
@@ -13996,12 +15558,6 @@
           },
           "additionalComments": {
             "type": "string"
-          },
-          "externalMapKey": {
-            "type": "string"
-          },
-          "thumbnailUrl": {
-            "type": "string"
           }
         },
         "additionalProperties": false
@@ -14059,12 +15615,6 @@
             "type": "string"
           },
           "additionalComments": {
-            "type": "string"
-          },
-          "externalMapKey": {
-            "type": "string"
-          },
-          "thumbnailUrl": {
             "type": "string"
           }
         },
@@ -14286,129 +15836,18 @@
         },
         "additionalProperties": false
       },
-      "UpdateEventRequest": {
+      "UpdateMeRequest": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "venueMapId": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "name": {
-            "type": "string"
-          },
-          "subtitle": {
+          "email": {
             "type": "string",
             "nullable": true
           },
-          "shortDescription": {
+          "displayName": {
             "type": "string",
             "nullable": true
           },
-          "longDescription": {
-            "type": "string",
-            "nullable": true
-          },
-          "ageRestriction": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AgeRestriction"
-              }
-            ],
-            "nullable": true
-          },
-          "securityPolicies": {
-            "type": "string",
-            "nullable": true
-          },
-          "additionalComments": {
-            "type": "string",
-            "nullable": true
-          },
-          "categoryIds": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/EventStatus"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateEventScheduleRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "eventId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "startDateTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endDateTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "publishedDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "preSaleDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "preSaleEndDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "onSaleDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "offSaleDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "gateOpenDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "ageRestriction": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AgeRestriction"
-              }
-            ],
-            "nullable": true
-          },
-          "externalEventKey": {
-            "type": "string"
-          },
-          "securityPolicies": {
-            "type": "string",
-            "nullable": true
-          },
-          "additionalComments": {
+          "phoneNumber": {
             "type": "string",
             "nullable": true
           }
@@ -14541,6 +15980,79 @@
           }
         },
         "additionalProperties": false
+      },
+      "UserProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firebaseUid": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailConfirmed": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
       },
       "VenueAmenityResponse": {
         "required": [
@@ -14995,11 +16507,24 @@
         },
         "additionalProperties": false
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Firebase ID token",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     }
   },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ],
   "tags": [
     {
-      "name": "Accounts"
+      "name": "Auth"
     },
     {
       "name": "Bookings"
@@ -15017,9 +16542,6 @@
       "name": "CreditTransactions"
     },
     {
-      "name": "EventImage"
-    },
-    {
       "name": "Events"
     },
     {
@@ -15032,16 +16554,25 @@
       "name": "EventSection"
     },
     {
+      "name": "ExchangeRate"
+    },
+    {
       "name": "Hold"
     },
     {
       "name": "LegalRepresentatives"
     },
     {
+      "name": "Media"
+    },
+    {
       "name": "OrderActions"
     },
     {
       "name": "Orders"
+    },
+    {
+      "name": "Organizer"
     },
     {
       "name": "PhoneNumbers"
@@ -15051,6 +16582,9 @@
     },
     {
       "name": "Reports"
+    },
+    {
+      "name": "Sales"
     },
     {
       "name": "SeasonPass"
@@ -15066,6 +16600,9 @@
     },
     {
       "name": "SeatManagement"
+    },
+    {
+      "name": "Settings"
     },
     {
       "name": "SuiteAgreements"

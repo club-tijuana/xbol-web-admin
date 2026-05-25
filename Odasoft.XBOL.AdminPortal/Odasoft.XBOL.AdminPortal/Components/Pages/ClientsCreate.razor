@@ -1,4 +1,5 @@
 @page "/clients/create"
+@attribute [Authorize]
 
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.AdminPortal.States;
@@ -6,8 +7,6 @@
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
 @using Odasoft.XBOL.Common.Helpers
-@using Odasoft.XBOL.Models.ViewModels;
-@using System.ComponentModel.DataAnnotations:
 
 @inject ClientsService _clientService;
 @inject CatalogsService _catalogsService;

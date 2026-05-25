@@ -1,14 +1,15 @@
 @page "/box-office"
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Business.Services
-@using Odasoft.XBOL.Common.Constants
+@attribute [Authorize]
 
-@inject AppLocalizer<BoxOffice> L
-@inject NavigationManager Navigation
-@inject ISnackbar Snackbar
+@using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
+
+@inject AppLocalizer<BoxOffice> L;
+@inject NavigationManager Navigation;
+@inject ISnackbar Snackbar;
 @inject IDialogService DialogService;
-@inject IEventService EventService
+@inject IEventService EventService;
 @inject OrdersService OrdersService;
 @inject LoadingState LoadingState;
 @inject PersistentDialogState PersistentDialogState;
@@ -25,8 +26,8 @@
             <MudStack Row AlignItems="AlignItems.Center">
                 <MudText Typo="Typo.subtitle1" Color="Color.Tertiary"><b>@L["TrackingInputLabel"]</b></MudText>
                 <MudTextField @bind-Value="Search"
-                              Variant="Variant.Outlined" 
-                              Margin="Margin.Dense" 
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               Placeholder="@L["TrackingInputPlaceholder"]"
                               Adornment="Adornment.End"
                               AdornmentIcon="@Icons.Material.Filled.Search"
@@ -49,7 +50,7 @@
             {
 
                 <MudItem xs="12" md="6" lg="3">
-                    <EventCard Event="eventItem" OnClick="@(() => GoToSeats(eventItem))"></EventCard>                    
+                    <EventCard Event="eventItem" OnClick="@(() => GoToSeats(eventItem))"></EventCard>
                 </MudItem>
             }
         }
@@ -154,7 +155,7 @@
             }
         }
         catch (Exception ex)
-        {            
+        {
             Console.WriteLine($"Error searching for order: {ex.Message}");
             Snackbar.Add(L["OrderNotFound", Search], Severity.Warning);
         }

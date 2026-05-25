@@ -1,14 +1,13 @@
 @page "/events"
 @page "/events/{Tab}"
+@attribute [Authorize]
 
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.AdminPortal.Extensions;
-@using Odasoft.XBOL.AdminPortal.Services.Contracts;
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
+@using Odasoft.XBOL.AdminPortal.States;
 @using Odasoft.XBOL.Business;
-@using Odasoft.XBOL.Business.Services
-@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.Common.Constants;
 
 @inject AppLocalizer<Events> L;
 @inject IEventService _eventService;
@@ -35,9 +34,10 @@
     </MudButton>
 </MudStack>
 
+<LoadingContainer IsLoading="_loading">
 @if (_selectedTab == TabUpcoming)
 {
-    <MudGrid Spacing="4">
+    <MudGrid Spacing="8">
         @if (EventsList.Any())
         {
             @foreach (var eventItem in EventsList)
@@ -46,7 +46,7 @@
                 <MudItem xs="12" md="6" lg="3">
                     <EventCard Event="eventItem"
                                ShowActions
-                               OnClick="@(() => _navigationManager.NavigateTo($"./events/{eventItem.Id}"))"></EventCard>
+                               OnClick="@(() => _navigationManager.NavigateTo($"./events/{eventItem.Id}{(eventItem.Status != EventStatus.Published ? "/review" : string.Empty)}"))"></EventCard>
                 </MudItem>
             }
         }
@@ -195,10 +195,11 @@ else if(_selectedTab == TabPast)
         </MudCardContent>
     </MudCard>
 }
-@code {
+</LoadingContainer>
+    @code {
     [Parameter] public string? Tab { get; set; }
 
-    private bool _loading;
+    private bool _loading = true;
     private string searchString = "";
     private MudDataGrid<EventViewModel> _dataGrid = default!;
 
@@ -215,7 +216,7 @@ else if(_selectedTab == TabPast)
     private const string TabUpcoming = "upcoming";
     private const string TabPast = "past";
 
-    private string _selectedTab = TabUpcoming;
+    private string _selectedTab = string.Empty;
 
     private int _page = QueryParamsConstants.DEFAULT_PAGE;
     private int _pageSize = QueryParamsConstants.DEFAULT_PAGE_SIZE;
@@ -227,34 +228,57 @@ else if(_selectedTab == TabPast)
 
     protected override async Task OnParametersSetAsync()
     {
+        var currentTab = _selectedTab;
+
         _selectedTab = Tab?.ToLowerInvariant() switch
         {
             TabPast => TabPast,
             _ => TabUpcoming
         };
 
-        await UpdateItemsAsync();
+        if (currentTab != _selectedTab)
+        {
+            await UpdateItemsAsync();
+        }
     }
 
     private void OnTabChanged(string tab)
     {
-        _selectedTab = tab;
         _navigationManager.NavigateTo($"./events/{tab}", replace: true);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _venues = await _catalogsService.GetVenuesAsync();
+                _availableCategories = (await _eventService.GetCategoriesAsync())
+                    .Where(c => c.IsActive == true).ToList();
+
+                await UpdateItemsAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to load event filters");
+                _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
+            }
+            finally
+            {
+                _loading = false;
+                StateHasChanged();
+            }
+        }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        _selectedTab = Tab?.ToLowerInvariant() switch
         {
-            _venues = await _catalogsService.GetVenuesAsync();
-            _availableCategories = (await _eventService.GetCategoriesAsync())
-                .Where(c => c.IsActive == true).ToList();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to load event filters");
-            _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
-        }
+            TabPast => TabPast,
+            _ => TabUpcoming
+        };
     }
 
     private async Task UpdateItemsAsync()

@@ -201,6 +201,12 @@
   <data name="ActionBoletosDisabled" xml:space="preserve">
     <value>Este cliente ya renovó</value>
   </data>
+  <data name="ActionDisabledNotOnSale" xml:space="preserve">
+    <value>Temporada no disponible para venta</value>
+  </data>
+  <data name="RenovationModeDisabledNoDestination" xml:space="preserve">
+    <value>No hay temporada disponible para renovar</value>
+  </data>
   <data name="SelectorSeasonPassStatus" xml:space="preserve">
     <value>Estado</value>
   </data>

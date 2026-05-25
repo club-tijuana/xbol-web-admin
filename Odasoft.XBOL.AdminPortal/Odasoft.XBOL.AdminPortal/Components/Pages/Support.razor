@@ -1,4 +1,5 @@
 @page "/support/"
+@attribute [Authorize]
 
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
@@ -62,9 +63,9 @@
 
         @* Tabs and Selection Actions *@
         <div class="d-flex justify-space-between align-center mb-2">
-            <MudTabs @bind-ActivePanelIndex="_activeTabIndex" Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-0">
-                <MudTabPanel Text="ORDEN" />
-                <MudTabPanel Text="BITÁCORA" />
+            <MudTabs @bind-ActivePanelIndex="_activeTabIndex" Elevation="0" Rounded="true" ApplyEffectsToContainer="true">
+                <MudTabPanel Text="ORDEN" PanelClass="pa-0" />
+                <MudTabPanel Text="BITÁCORA" PanelClass="pa-0" />
             </MudTabs>
 
             @if (_activeTabIndex == 0)

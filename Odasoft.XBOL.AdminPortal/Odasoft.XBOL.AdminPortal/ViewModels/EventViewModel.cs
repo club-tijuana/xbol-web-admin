@@ -1,3 +1,5 @@
+using Odasoft.XBOL.Business;
+
 namespace Odasoft.XBOL.AdminPortal.ViewModels;
 
 // TODO: Move to Model project
@@ -10,6 +12,7 @@ public record EventViewModel(
     string Venue,
     int Available,
     int Total,
+    EventStatus? Status,
     string? ExternalEventKey,
     string? PosterImageUrl = null,
     string? BannerImageUrl = null,

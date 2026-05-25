@@ -35,6 +35,41 @@ Configure secrets using .NET Secret Manager:
 dotnet user-secrets set "SeatsIo:SecretKey" "YOUR_KEY" --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
 ```
 
+#### Firebase Service Account (local development)
+
+The portal uses Firebase Admin SDK (GCIP) to issue and verify its HttpOnly session cookie. A Google Cloud service account key is required. Do not commit the key to the repo; use .NET user secrets instead.
+
+1. Download the service account JSON key from the GCP Console (`IAM & Admin -> Service Accounts -> Keys`).
+2. Set the key as a user secret:
+
+```bash
+dotnet user-secrets set "GcipAuth:ServiceAccountJson" "$(cat path/to/service-account-key.json)" \
+  --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
+```
+
+The app reads `GcipAuth:ServiceAccountJson` at startup and creates a `GoogleCredential` from it. The `TenantId` and `ProjectId` are already set in `appsettings.json` and do not need to be overridden.
+
+#### Cloud Storage DataProtection Keys
+
+Local development uses ASP.NET Core's local DataProtection key storage. Google Cloud Storage key-ring persistence is only used outside `ASPNETCORE_ENVIRONMENT=Development`.
+
+For deployed GKE targets, configure the service account JSON and environment-specific key-ring object through runtime secrets:
+
+```bash
+# Cloud storage has its own Service Account
+CloudStorage__ServiceAccountJson=<service account json>
+
+# Make sure to change <env> to the desired namespace
+DataProtection__KeyRingObjectName=data-protection/<env>/xbol-web-admin-key-ring.xml
+```
+
+`CloudStorage:ServiceAccountJsonPath` can be used instead of inline JSON when running a deployed-environment configuration locally:
+
+```bash
+dotnet user-secrets set "CloudStorage:ServiceAccountJsonPath" "path/to/cloud-storage-service-account-key.json" \
+  --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPortal
+```
+
 List configured secrets:
 
 ```bash
@@ -43,7 +78,7 @@ dotnet user-secrets list --project Odasoft.XBOL.AdminPortal/Odasoft.XBOL.AdminPo
 
 ### Configuration
 
-Edit `appsettings.Development.json` for local settings (API base address, authentication, etc.). Settings cascade: `appsettings.json` -> `appsettings.{Environment}.json` -> environment variables. All settings are validated at startup.
+Edit `appsettings.Development.json` for local settings (API base address, Firebase admin tenant, etc.). Settings cascade: `appsettings.json` -> `appsettings.{Environment}.json` -> environment variables. Required settings are validated at startup.
 
 IDE autocomplete is provided by `appsettings.schema.json`, which regenerates automatically on Debug builds.
 
@@ -88,9 +123,15 @@ The app secret stores environment variables using ASP.NET's `__` (double undersc
 ```json
 {
     "AdminApiClient__BaseAddress": "https://dev-api.admin.pwrticket.mx",
+    "CloudStorage__BucketName": "<cloud storage bucket name>",
+    "CloudStorage__ServiceAccountJson": "<cloud storage service account json>",
+    "DataProtection__KeyRingObjectName": "data-protection/dev/xbol-web-admin-key-ring.xml",
     "SeatsIo__SecretKey": "<seats.io secret key>",
-    "Authentication__AllowedUsers__0__Email": "admin@xbol.com",
-    "Authentication__AllowedUsers__0__Password": "P@ssw0rd1234"
+    "FirebaseAuth__ApiKey": "<firebase web api key>",
+    "FirebaseAuth__AuthDomain": "<firebase auth domain>",
+    "FirebaseAuth__ProjectId": "boletera-qa",
+    "FirebaseAuth__AppId": "<firebase web app id>",
+    "FirebaseAuth__TenantId": "admin-jgh5r"
 }
 ```
 
