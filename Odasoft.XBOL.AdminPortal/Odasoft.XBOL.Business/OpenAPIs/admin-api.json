@@ -2631,6 +2631,230 @@
         }
       }
     },
+    "/api/events/{eventId}/media": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "GetEventMediaAsync",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventMediaSetResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventMediaSetResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventMediaSetResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "ReconcileEventMediaAsync",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "Items"
+                ],
+                "type": "object",
+                "properties": {
+                  "Items": {
+                    "type": "string",
+                    "description": "JSON array string of EventMediaDesiredItem values. Each item either retains an existing media row with existingMediaId or references an uploaded Files entry by zero-based fileIndex."
+                  },
+                  "Files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Repeated binary file form field. Each item fileIndex references this list by zero-based position. Omit this field or pass an empty collection when all items retain existing media."
+                  }
+                }
+              },
+              "examples": {
+                "retainReplaceRemoveReorder": {
+                  "summary": "Retain, replace, remove, and reorder event media",
+                  "description": "Assuming the current event media set has banner media id 100, sponsor media id 101, and gallery media ids 102, 103, and 104, this request replaces the banner with Files[0], retain existing sponsor media id 101, remove gallery media id 103 by omission, and reorder the remaining gallery media.",
+                  "value": {
+                    "Items": "[{\"mediaType\":\"Banner\",\"order\":0,\"fileIndex\":0},{\"mediaType\":\"Sponsor\",\"order\":0,\"existingMediaId\":101},{\"mediaType\":\"Gallery\",\"order\":0,\"existingMediaId\":104},{\"mediaType\":\"Gallery\",\"order\":1,\"existingMediaId\":102}]",
+                    "Files": [
+                      "new-banner.png"
+                    ]
+                  }
+                }
+              },
+              "encoding": {
+                "Items": {
+                  "contentType": "application/json"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventMediaSetResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventMediaSetResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventMediaSetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/events/catalog": {
       "get": {
         "tags": [
@@ -3535,6 +3759,191 @@
         }
       }
     },
+    "/api/executive-reports/report": {
+      "post": {
+        "tags": [
+          "ExecutiveReports"
+        ],
+        "operationId": "GenerateExecutiveReport",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/executive-reports/list": {
+      "post": {
+        "tags": [
+          "ExecutiveReports"
+        ],
+        "operationId": "GetExecutiveReportList",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/executive-reports/report-types": {
+      "get": {
+        "tags": [
+          "ExecutiveReports"
+        ],
+        "operationId": "GetReportTypeOptions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/hold-seats": {
       "post": {
         "tags": [
@@ -4189,23 +4598,21 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "order": {
+                  "Order": {
                     "type": "integer",
-                    "description": "Order of the media when display.",
                     "format": "int32"
                   },
-                  "mediaFile": {
+                  "MediaFile": {
                     "type": "string",
-                    "description": "Media content.",
                     "format": "binary"
                   }
                 }
               },
               "encoding": {
-                "order": {
+                "Order": {
                   "style": "form"
                 },
-                "mediaFile": {
+                "MediaFile": {
                   "style": "form"
                 }
               }
@@ -4218,20 +4625,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "integer",
-                  "format": "int64"
+                  "$ref": "#/components/schemas/MediaResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "integer",
-                  "format": "int64"
+                  "$ref": "#/components/schemas/MediaResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "integer",
-                  "format": "int64"
+                  "$ref": "#/components/schemas/MediaResponse"
                 }
               }
             }
@@ -4241,17 +4645,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -4284,34 +4688,31 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "mediaType": {
+                  "MediaType": {
                     "allOf": [
                       {
                         "$ref": "#/components/schemas/MediaType"
                       }
-                    ],
-                    "description": "The type of the media."
+                    ]
                   },
-                  "order": {
+                  "Order": {
                     "type": "integer",
-                    "description": "Order of the media when display.",
                     "format": "int32"
                   },
-                  "mediaFile": {
+                  "MediaFile": {
                     "type": "string",
-                    "description": "Media content.",
                     "format": "binary"
                   }
                 }
               },
               "encoding": {
-                "mediaType": {
+                "MediaType": {
                   "style": "form"
                 },
-                "order": {
+                "Order": {
                   "style": "form"
                 },
-                "mediaFile": {
+                "MediaFile": {
                   "style": "form"
                 }
               }
@@ -4322,22 +4723,42 @@
           "204": {
             "description": "No Content"
           },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Unprocessable Content",
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -4366,22 +4787,42 @@
           "204": {
             "description": "No Content"
           },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Unprocessable Content",
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -12973,7 +13414,22 @@
           },
           "bannerImageUrl": {
             "type": "string",
-            "nullable": true
+            "description": "Deprecated. Use media.banner.url. No separate Poster media type exists.",
+            "nullable": true,
+            "deprecated": true
+          },
+          "posterImageUrl": {
+            "type": "string",
+            "description": "Deprecated. Use media.banner.url. No separate Poster media type exists.",
+            "nullable": true,
+            "deprecated": true
+          },
+          "media": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventMediaSetResponse"
+              }
+            ]
           },
           "categories": {
             "type": "array",
@@ -13018,11 +13474,6 @@
           },
           "additionalComments": {
             "type": "string",
-            "nullable": true
-          },
-          "holdExpirationInMinutes": {
-            "type": "integer",
-            "format": "int32",
             "nullable": true
           },
           "status": {
@@ -13135,6 +13586,59 @@
           "pageSize": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventMediaDesiredItem": {
+        "type": "object",
+        "properties": {
+          "mediaType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MediaType"
+              }
+            ]
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "existingMediaId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "fileIndex": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventMediaSetResponse": {
+        "type": "object",
+        "properties": {
+          "banner": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MediaResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "sponsors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaResponse"
+            }
+          },
+          "gallery": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaResponse"
+            }
           }
         },
         "additionalProperties": false
@@ -13745,6 +14249,9 @@
             ]
           },
           "title": {
+            "type": "string"
+          },
+          "fileName": {
             "type": "string"
           },
           "contentType": {
@@ -14404,9 +14911,11 @@
       "PaymentType": {
         "enum": [
           "Cash",
-          "CreditCard",
-          "DebitCard",
-          "Spei"
+          "Card",
+          "WireTransfer",
+          "ClientCredit",
+          "Other",
+          "Courtesy"
         ],
         "type": "string"
       },
@@ -14729,6 +15238,74 @@
           }
         },
         "additionalProperties": false
+      },
+      "ReportFilter": {
+        "type": "object",
+        "properties": {
+          "reportType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportType"
+              }
+            ]
+          },
+          "eventId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cashierId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sortBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortDirection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortDirection"
+              }
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReportType": {
+        "enum": [
+          "GlobalReport",
+          "CashierDailyCut",
+          "Transactions",
+          "Cancellations",
+          "Reissues",
+          "Complimentaries",
+          "CreditByClient",
+          "AccountsReceivable",
+          "DetailedOrders",
+          "XolosReport",
+          "XolosDailySales",
+          "XolosRevenue"
+        ],
+        "type": "string"
       },
       "SaleChannel": {
         "enum": [
@@ -15414,6 +15991,25 @@
           }
         },
         "additionalProperties": false
+      },
+      "SelectOption": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SortDirection": {
+        "enum": [
+          "Ascending",
+          "Descending"
+        ],
+        "type": "string"
       },
       "SuiteAgreementResult": {
         "required": [
@@ -16555,6 +17151,9 @@
     },
     {
       "name": "ExchangeRate"
+    },
+    {
+      "name": "ExecutiveReports"
     },
     {
       "name": "Hold"

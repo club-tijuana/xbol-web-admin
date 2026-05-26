@@ -167,7 +167,7 @@
     private List<ReportColumnDefinition> _columns = [];
     private IEnumerable<ReportColumnDefinition> _visibleColumns => _columns.Where(c => c.Visible);
 
-    private readonly ReportFilter _filter = new() { Page = 1, PageSize = 50 };
+    private readonly AdminReportFilter _filter = new() { Page = 1, PageSize = 50 };
 
     protected override async Task OnInitializedAsync()
     {
