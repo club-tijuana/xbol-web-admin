@@ -10,6 +10,9 @@ namespace Odasoft.XBOL.AdminPortal.ViewModels.Shared
         public string? Venue { get; set; }
         public DateTime? StartDateTime { get; set; }
         public DateTime? EndDateTime { get; set; }
+        public int? AvailableSeats { get; set; }
+        public int? TotalSeats { get; set; }
+        public string? ExternalKey { get; set; }
         public string? DateRangeText => EventDisplayDateHelper.GetDateRange(StartDateTime, EndDateTime);
         public string? ShortDate => EventDisplayDateHelper.GetShortDate(StartDateTime);
         public string? LongDate => EventDisplayDateHelper.GetLongDate(StartDateTime);

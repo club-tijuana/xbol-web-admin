@@ -20,25 +20,11 @@ namespace Odasoft.XBOL.Business.Services
             return await _adminClient.GetSuiteAgreementByIdAsync(agreementId);
         }
 
-        public async Task<long> CreateSuiteAgreementAsync(
-            long suiteId,
-            string ownerName,
-            string ownerEmail,
-            string ownerPhone,
-            DateTimeOffset startDate,
-            DateTimeOffset endDate)
+        public async Task<long> CreateSuiteAgreementAsync(CreateSuiteAgreementRequest request)
         {
             try
             {
-                var agreementId = await _adminClient.CreateSuiteAgreementAsync(new CreateSuiteAgreementRequest
-                {
-                    EndDate = endDate.ToUniversalTime(),
-                    OwnerEmail = ownerEmail,
-                    OwnerPhone = ownerPhone,
-                    OwnerName = ownerName,
-                    StartDate = startDate.ToUniversalTime(),
-                    SuiteId = suiteId
-                });
+                var agreementId = await _adminClient.CreateSuiteAgreementAsync(request);
 
                 return agreementId;
             }

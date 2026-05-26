@@ -1,0 +1,318 @@
+@page "/events/{Id:long}/key/{ExternalKey}/booking"
+@page "/season-pass/{Id:long}/key/{ExternalKey}/booking"
+@page "/events/{Id:long}/key/{ExternalKey}/checkout"
+@page "/season-pass/{Id:long}/key/{ExternalKey}/checkout"
+@attribute [Authorize]
+@using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared
+@using Odasoft.XBOL.Business
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject ILogger<Booking> Logger
+@inject IAdminClient AdminClient
+@inject NavigationManager Navigation
+@inject CartState CartState
+@inject IJSRuntime JS
+@inject ISnackbar _snackbar
+@inject AppLocalizer<Events> L
+
+<PageTitle>@_eventName</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoBack"
+                       Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">@L["GoBack"]</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<LoadingContainer
+    IsLoading="_loading"
+    HasError="_error"
+    ErrorMessage="@L["ErrorLoadingEvent"]"
+    OnRetry="LoadData">
+    <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
+
+    @if (_conflictedSeats.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4" Variant="Variant.Outlined">
+            @if (_renewalPrefill is not null)
+            {
+                <MudText Typo="Typo.subtitle2">@L["Seats_UnavailableRenewalSeats_Title"]</MudText>
+                <MudText Typo="Typo.body2" Class="mb-2">@L["Seats_UnavailableRenewalSeats_Subtitle"]</MudText>
+                <ul class="pl-4">
+                    @foreach (var seat in _conflictedSeats)
+                    {
+                        <li><MudText Typo="Typo.body2">@seat.DisplayLabel</MudText></li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2">
+                    @string.Format(L["Seats_ConflictedSeats"], string.Join(", ", _conflictedSeats.Select(c => c.SeatId)))
+                </MudText>
+            }
+        </MudAlert>
+    }
+
+    @if (_keepBookingMounted || _step == 1)
+    {
+        <div class="@(_step == 1 ? "" : "d-none")">
+            <BookingPanel EventId="@Id"
+                          ExternalKey="@ExternalKey"
+                          Prices="@_detail?.Prices"
+                          PreselectedSeats="@_preselectedSeats"
+                          IsRenewal="@(_renewalPrefill is not null)"
+                          OnSeatsHeld="GoToCheckoutStep" />
+        </div>
+    }
+    @if (_hasReachedCheckoutStep)
+    {
+        <div class="@(_step == 2 ? "" : "d-none")">
+            <CheckoutPanel EventId="@Id"
+                           ExternalKey="@ExternalKey"
+                           ItemType="@_itemType"
+                           ReferenceOrderId="@_renewalPrefill?.RelatedOrderId"
+                           Prefill="@_renewalPrefill?.ClientContact"
+                           IsRenewal="@(_renewalPrefill is not null)"
+                           ReleaseDate="@_releaseDate"
+                           OnRequiresSeats="GoToBookingStep"
+                           OnReturnToChart="GoToBookingStep"
+                           OnBookingSucceeded="HandleSucceeded"
+                           OnBookingFailed="HandleFailed"
+                           OnSeatsConflicted="HandleSeatsConflicted" />
+        </div>
+    }
+</LoadingContainer>
+
+@code {
+    [Parameter]
+    public long Id { get; set; }
+
+    [Parameter]
+    public string ExternalKey { get; set; } = default!;
+
+    private ImageHeroBannerViewModel _banner = new();
+    private string _eventName = string.Empty;
+    private bool _loading = true;
+    private bool _error = false;
+
+    private SeatManagementDetailDTO? _detail;
+    private List<string> _preselectedSeats = [];
+    private ItemType _itemType = ItemType.Ticket;
+
+    private string _successUrl = "./events";
+    private int _step = 1;
+    private bool _hasReachedCheckoutStep;
+    private bool _keepBookingMounted;
+
+    private SeasonRenewalPrefill? _renewalPrefill;
+    private DateTimeOffset? _releaseDate;
+    private List<ConflictedSeat> _conflictedSeats = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _successUrl = Navigation.Uri.Contains("/season-pass/") ? "./season-pass" : "./events";
+
+        var uri = new Uri(Navigation.Uri);
+        var path = uri.AbsolutePath.TrimEnd('/');
+        var queryDict = QueryHelpers.ParseQuery(uri.Query);
+
+        // Renewal entry: load prefill once for both /booking and /checkout
+        // landings. Populates CartState so the /checkout deep-link branch
+        // below promotes to step 2; populates _preselectedSeats so the
+        // /booking landing pre-selects prior seats on the chart.
+        if (queryDict.TryGetValue("renewal", out var renewalRef) && !string.IsNullOrWhiteSpace(renewalRef))
+        {
+            await LoadRenewalPrefillAsync(renewalRef!);
+        }
+
+        // In-circuit /checkout deep-link: when CartState already carries
+        // selected seats from a fresh BookingPanel hold (or the renewal
+        // prefill above), start at step 2. A cold tab landing on /checkout
+        // with no prefill and no held seats falls back to step 1.
+        if (path.EndsWith("/checkout") && CartState.SelectedSeats.Count > 0)
+        {
+            _step = 2;
+            _hasReachedCheckoutStep = true;
+        }
+
+        if (_preselectedSeats.Count == 0)
+        {
+            _preselectedSeats = ParseSeatsFromQuery(uri);
+        }
+
+        await LoadData();
+    }
+
+    private async Task LoadRenewalPrefillAsync(string orderReference)
+    {
+        try
+        {
+            var info = await AdminClient.GetOrderRenawalInfoByReferenceAsync(orderReference);
+            _renewalPrefill = ProjectRenewalPrefill(info);
+
+            if (!_renewalPrefill.PendingRenewal)
+            {
+                _snackbar.Add(L["RenewalNotPendingWarning"], Severity.Warning);
+                Navigation.NavigateTo("./season-pass");
+                return;
+            }
+
+            CartState.SetEvent(Id);
+            CartState.SelectedSeats = [.. _renewalPrefill.Seats];
+
+            _preselectedSeats = _renewalPrefill.Seats
+                .Select(s => s.SeatId)
+                .ToList();
+
+            if (info.CurrentSeasonId is long seasonId)
+            {
+                try
+                {
+                    var season = await AdminClient.GetSeasonByIdAsync(seasonId);
+                    _releaseDate = season.OnSaleDate;
+                }
+                catch (Exception seasonEx)
+                {
+                    Logger.LogWarning(seasonEx, "Failed to load season {SeasonId} for release date", seasonId);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load renewal prefill for {Reference}", orderReference);
+            _snackbar.Add(L["RenewalLoadError"], Severity.Error);
+            Navigation.NavigateTo("./season-pass");
+        }
+    }
+
+    private static SeasonRenewalPrefill ProjectRenewalPrefill(OrderRenewalInfoResponse info)
+    {
+        var contact = new CheckoutPrefill(
+            ClientId: info.ClientId,
+            PhoneRegionCodeId: info.PhoneRegionCodeId,
+            PhoneNumber: info.PhoneNumber,
+            Email: info.Email,
+            FullName: info.ClientName,
+            City: info.City,
+            Neighborhood: info.Neighbourhood,
+            Gender: ConvertGender(info.Gender),
+            Birthday: info.Dob?.DateTime);
+
+        var seats = (info.Items ?? [])
+            .Where(item => item.IsCancelled != true && !string.IsNullOrWhiteSpace(item.SeatObjectKey))
+            .Select(item => new SeatInfo
+            {
+                SeatId = item.SeatObjectKey!,
+                Price = item.RenewalPrice ?? item.Price ?? 0,
+                Category = item.Zone,
+                IsSelected = true,
+                IsSold = item.IsSold ?? false,
+                SourceOrderItemId = item.Id,
+            })
+            .ToList();
+
+        return new SeasonRenewalPrefill(
+            RelatedOrderId: info.OrderId,
+            PendingRenewal: info.PendingRenewal ?? false,
+            ClientContact: contact,
+            Seats: seats);
+    }
+
+    private static ClientGender? ConvertGender(Gender? gender) => gender switch
+    {
+        Business.Gender.Male => ClientGender.Male,
+        Business.Gender.Female => ClientGender.Female,
+        _ => null,
+    };
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        _error = false;
+        StateHasChanged();
+
+        try
+        {
+            _detail = await AdminClient.GetSeatManagementDetailAsync(ExternalKey);
+            _eventName = _detail.Name;
+            _itemType = _detail.Type == BookableUnitType.Season ? ItemType.SeasonPass : ItemType.Ticket;
+
+            _banner = new()
+            {
+                Title = _detail.Name,
+                Subtitle = _detail.Subtitle,
+                StartDateTime = _detail.StartDate.UtcDateTime,
+                EndDateTime = _detail.EndDate?.UtcDateTime,
+                ImageUrl = _detail.BannerImageUrl,
+                Venue = _detail.VenueName,
+                ExternalKey = ExternalKey,
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading seat management data");
+            _error = true;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void GoToCheckoutStep(HoldToken _)
+    {
+        _step = 2;
+        _hasReachedCheckoutStep = true;
+    }
+
+    private void GoToBookingStep()
+    {
+        _step = 1;
+        // Once we re-mount the chart in session="manual" with an active hold,
+        // keep BookingPanel alive across subsequent step toggles so the chart
+        // and hold-expiration timer don't re-init each round-trip. Stays
+        // unmount-on-step-2 only for the first transition (session="none"),
+        // where unmount is required to avoid the WebSocket-vs-own-hold race.
+        if (!string.IsNullOrEmpty(CartState.HoldToken))
+        {
+            _keepBookingMounted = true;
+        }
+    }
+
+    private void HandleSucceeded(BookingResult _) => Navigation.NavigateTo(_successUrl);
+
+    private void HandleFailed(Exception _) => _step = 1;
+
+    private void HandleSeatsConflicted(List<ConflictedSeat> conflicts)
+    {
+        _conflictedSeats = conflicts ?? [];
+    }
+
+    private static List<string> ParseSeatsFromQuery(Uri uri)
+    {
+        var queryDict = QueryHelpers.ParseQuery(uri.Query);
+        if (queryDict.TryGetValue("seats", out var seatsValue) && !string.IsNullOrWhiteSpace(seatsValue))
+        {
+            return seatsValue.ToString()
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+        }
+        return [];
+    }
+
+    private async Task GoBack()
+    {
+        if (_step == 2)
+        {
+            GoToBookingStep();
+            return;
+        }
+        await JS.InvokeVoidAsync("history.back");
+    }
+}

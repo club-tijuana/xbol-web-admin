@@ -1,20 +1,22 @@
-@using Microsoft.JSInterop
-@using Odasoft.XBOL.AdminPortal.Components.Pages
-@using Odasoft.XBOL.AdminPortal.Components.Shared
-@using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.Business
-@using Odasoft.XBOL.Models.DTO
-@using System.Text.Json
-@using System.Text.Json.Serialization
-@implements IAsyncDisposable
-@inject IJSRuntime JSRuntime
+@using Microsoft.JSInterop;
+@using Odasoft.XBOL.AdminPortal.Components.Pages;
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Models.DTO;
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+
+@inherits SeatsioChartBase
+
 @inject CartState CartState
-@inject IAdminClient AdminClient
-@inject ISnackbar Snackbar
-@inject IStringLocalizer<Events> Localizer
+@inject IAdminClient AdminClient;
+@inject ISnackbar Snackbar;
+@inject ILogger<SeatingChart> Logger;
+@inject AppLocalizer<Events> L;
 
 <LoadingContainer HasError="_error" ErrorMessage="@_errorMessage" IsLoading="_loading">
-    <PriceFilter Chart="this" Categories="Prices.Where(x => x.Category is not null)" />
+    <PriceFilter Chart="this" Prices="Prices" />
 </LoadingContainer>
 <div id="@ChartId" style="height: 700px"></div>
 
@@ -22,19 +24,7 @@
     [Parameter]
     public IEnumerable<SeatsIoPriceDTO> Prices { get; set; } = [];
 
-    [Parameter]
-    [EditorRequired]
-    public string SecretKey { get; set; }
-
-    [Parameter]
-    [EditorRequired]
-    public string EventKey { get; set; }
-
     [Parameter] public string[]? Channels { get; set; }
-
-    [Parameter]
-    [EditorRequired]
-    public long EventId { get; set; }
 
     [Parameter]
     public List<string> SelectedSeats { get; set; } = [];
@@ -42,15 +32,19 @@
     [Parameter]
     public EventCallback OnChartRendered { get; set; }
 
+    [Parameter]
+    public string Session { get; set; } = SESSION_NONE;
+
+    [Parameter]
+    public string? HoldToken { get; set; }
+
     private const string SESSION_CONTINUE = "continue";
     private const string SESSION_NONE = "none";
     private const string SESSION_MANUAL = "manual";
 
-    private string ChartId = "event-manager";
+    protected override string ChartId => "event-manager";
 
     private DotNetObjectReference<SeatingChart>? _objRef;
-    private IJSObjectReference? _module;
-    private IJSObjectReference? _chart;
     private bool _loading = true;
     private bool _error;
     private string? _errorMessage;
@@ -100,26 +94,32 @@
                 {
                     secretKey = SecretKey,
                     @event = EventKey,
-                    session = SESSION_NONE,
+                    session = Session,
+                    holdToken = HoldToken,
                     pricing = jsonElement,
                     channels = Channels,
                     categoryFilter = categoryFilter,
-                    language = "es",
+                    language = Language,
                     mode = "createOrder"
                 };
 
                 _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
 
-                var selectedSeats = SelectedSeats;
-                CartState.ClearCart();
-
-                await TrySelectObjectsAsync(selectedSeats.ToArray());
+                // Only re-select programmatically when starting from a clean
+                // session. With session="manual" the chart already renders the
+                // seats held by the token; calling trySelectObjects on them
+                // raises "object not in selectable status" from seats.io.
+                if (Session == SESSION_NONE)
+                {
+                    await TrySelectObjectsAsync(SelectedSeats.ToArray());
+                }
             }
             catch (Exception ex)
             {
                 _error = true;
                 _errorMessage = "Error al cargar el mapa de asientos";
-                Console.WriteLine($"SeatingChart error: {ex.Message}");
+
+                Logger.LogError(ex, "SeatingChart error");
                 StateHasChanged();
             }
             finally
@@ -137,13 +137,15 @@
     }
 
     [JSInvokable]
-    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null)
+    public async Task HandleSeatSelected(string seatId, decimal price, string? category = null, string? selectedTicketType = null)
     {
         SeatInfo seat = new SeatInfo
         {
             SeatId = seatId,
             Price = price,
-            Category = category
+            Category = category,
+            SelectedTicketType = selectedTicketType,
+            IsSelected = true
         };
 
         CartState.AddSelectedSeat(seat);
@@ -168,14 +170,14 @@
     public void HandleHoldFailed(List<string> objects, object ticketTypes)
     {
         CartState.SetHoldBusyState(false);
-        InvokeAsync(() => Snackbar.Add(Localizer["Seats_HoldFailed"], Severity.Error));
+        InvokeAsync(() => Snackbar.Add(L["Seats_HoldFailed"], Severity.Error));
     }
 
     [JSInvokable]
     public void HandleSessionExpired()
     {
         CartState.ClearCart();
-        CartState.ClearToken();
+        CartState.ClearTokenAsync();
     }
 
     [JSInvokable]
@@ -228,30 +230,6 @@
         await _module.InvokeAsync<string[]>("doSelectObjects", _chart, seats, _objRef);
     }
 
-    public async ValueTask FocusSeatAsync(string seatId)
-    {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeVoidAsync("focusSeat", _chart, seatId);
-    }
-
-    public async ValueTask UnfocusSeatAsync(string seatId)
-    {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeVoidAsync("unfocusSeat", _chart, seatId);
-    }
-
-    public async ValueTask DeselectSeatAsync(string seatId)
-    {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeVoidAsync("deselectSeat", _chart, seatId);
-    }
-
     public async ValueTask DeselectSeatsAsync(IEnumerable<string> seats)
     {
         if (_module is null || _chart is null)
@@ -260,56 +238,9 @@
         await _module.InvokeVoidAsync("deselectSeats", _chart, seats);
     }
 
-    public async ValueTask ClearSelection()
+    public override async ValueTask DisposeAsync()
     {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeVoidAsync("clearSelection", _chart);
-    }
-
-    public async ValueTask ChangeConfig(object config)
-    {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeVoidAsync("changeConfig", _chart, config);
-    }
-
-    public async ValueTask FocusFilteredCategories()
-    {
-        if (_module is null || _chart is null)
-            return;
-
-        await _module.InvokeVoidAsync("focusFilteredCategories", _chart);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_module is not null && _chart is not null)
-        {
-            try
-            {
-                await _module.InvokeVoidAsync("destroyChart", _chart);
-            }
-            catch (JSDisconnectedException)
-            {
-                // Ignore - circuit is already disconnected
-            }
-        }
-
-        if (_module is not null)
-        {
-            try
-            {
-                await _module.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-                // Ignore - circuit is already disconnected
-            }
-        }
-
+        await base.DisposeAsync();
         _objRef?.Dispose();
         CartState.OnChange -= StateHasChanged;
     }

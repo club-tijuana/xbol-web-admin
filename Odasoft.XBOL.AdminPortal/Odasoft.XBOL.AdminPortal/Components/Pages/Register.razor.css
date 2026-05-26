@@ -1,0 +1,11 @@
+.register-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('/images/backgrounds/login-bg.png');
+    background-color: var(--mud-palette-secondary);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}

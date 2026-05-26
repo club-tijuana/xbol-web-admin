@@ -1,0 +1,301 @@
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services;
+
+@inject AppLocalizer<EventScheduleSales> _localizer;
+@inject SalesService _salesService;
+
+@inject ISnackbar _snackbar;
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <RightContent>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<MudCard Elevation="3">
+    <MudCardContent Class="pa-0">
+        <MudDataGrid T="SaleResponse" @ref="_dataGrid" ServerData="ServerReloadAsync" Loading="_loading"
+                     Filterable="false" Hover="true" Elevation="0"
+                     RowClassFunc="@SelectedRowClassFunc">
+
+            <ToolBarContent>
+                <MudGrid Class="align-center pa-4">
+                    <MudItem xs="12" sm="6" lg="8">
+                        <MudText Typo="Typo.h5" Style="color: #455A64; font-weight: 400;">Ventas</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" lg="4">
+                        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
+
+                            <MudTextField @bind-Value="_searchTerm"
+                                          @bind-Value:after="@(() => _dataGrid.ReloadServerData())"
+                                          Placeholder="Buscar"
+                                          Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
+                                          AdornmentIcon="@Icons.Material.Filled.Search"
+                                          IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1 bg-white"
+                                          DebounceInterval="500"
+                                          ShrinkLabel />
+
+                            <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                                <ActivatorContent>
+                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="Color.Secondary" OnClick="@context.ToggleAsync" />
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudStack Spacing="3" Class="pa-4" Style="width:340px">
+
+                                        <MudDateRangePicker @bind-DateRange="_dateRange" Label="Rango de fecha" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                            PlaceholderStart="DD/MM/AAAA" PlaceholderEnd="DD/MM/AAAA" />
+
+                                        <MudSelect T="PaymentType?" Label="Método de pago" @bind-SelectedValues="_selectedPaymentTypes" Variant="Variant.Outlined"
+                                                   Margin="Margin.Dense" MultiSelection="true" ShrinkLabel
+                                                   ToStringFunc="@(pt => pt.HasValue ? _localizer[pt.Value.ToString()] : "")">
+                                            @foreach (var payment in _paymentTypes)
+                                            {
+                                                <MudSelectItem T="PaymentType?" Value="@payment">
+                                                    <MudText Typo="Typo.body2">@_localizer[payment.ToString()]</MudText>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+
+                                        <MudSelect T="SaleChannel?" Label="Canal" @bind-SelectedValues="_selectedSaleChannels" Variant="Variant.Outlined"
+                                                   Margin="Margin.Dense" MultiSelection="true" ShrinkLabel
+                                                   ToStringFunc="@(sc => sc.HasValue ? _localizer[sc.Value.ToString()] : "")">
+                                            @foreach (var channel in _saleChannels)
+                                            {
+                                                <MudSelectItem T="SaleChannel?" Value="@channel">
+                                                    <MudText Typo="Typo.body2">@_localizer[channel.ToString()]</MudText>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+
+                                        <MudSelect T="OrderStatus?" Label="Estatus" @bind-SelectedValues="_selectedOrderStatuses" Variant="Variant.Outlined"
+                                                   Margin="Margin.Dense" MultiSelection="true" ShrinkLabel
+                                                   ToStringFunc="@(os => os.HasValue ? _localizer[os.Value.ToString()] : "")">
+                                            @foreach (var status in _orderStatuses)
+                                            {
+                                                <MudSelectItem T="OrderStatus?" Value="@status">
+                                                    <MudText Typo="Typo.body2">@_localizer[status.ToString()]</MudText>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+
+                                        <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
+                                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ClearAll"
+                                                       Class="mud-no-activator" OnClick="ClearFiltersAsync" Style="width: 50%;">
+                                                Limpiar
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                                       StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyFiltersAsync" Style="width: 50%;">
+                                                Buscar
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudStack>
+                                </ChildContent>
+                            </MudMenu>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </ToolBarContent>
+
+            <Columns>
+                <TemplateColumn Title="Orden" Sortable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Style="color: #D48806; font-weight: 600;">@context.Item.OrderReference</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <PropertyColumn Property="x => x.PurchaseDate" Title="Fecha de compra" Sortable="true">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">
+                            @(context.Item.PurchaseDate.HasValue ? context.Item.PurchaseDate.Value.ToString("dd/MM/yyyy hh:mm tt") : "")
+                        </MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <PropertyColumn Property="x => x.PurchaseEmail" Title="Correo electrónico" Sortable="false" />
+
+                <PropertyColumn Property="x => x.Quantity" Title="Cantidad" Sortable="false" />
+
+                <TemplateColumn Title="Método de pago" Sortable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Style="color: #607D8B;">@(context.Item.PaymentType != null ? context.Item.PaymentType.ToString() : "")</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <PropertyColumn Property="x => x.SaleChannel" Title="Canal" Sortable="false" />
+
+                <TemplateColumn Title="Estatus" Sortable="false">
+                    <CellTemplate>
+                        @if (context.Item.OrderStatus.ToString() == "Pending")
+                        {
+                            <div class="d-flex flex-column align-start">
+                                <MudChip Size="Size.Small" Style="background-color: #FFF3E0; color: #E65100; font-weight: 500; border-radius: 12px;">Pendiente</MudChip>
+                                @if (context.Item.ExpirationDate.HasValue)
+                                {
+                                    <MudText Typo="Typo.caption" Style="color: #9E9E9E; font-size: 0.7rem; margin-top: 2px;">Exp. @context.Item.ExpirationDate.Value.ToString("dd/MM/yyyy")</MudText>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <MudChip Size="Size.Small" Style="background-color: #00BFA5; color: white; font-weight: 500; border-radius: 12px;">Pagado</MudChip>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <PropertyColumn Property="x => x.Total" Title="Importe total" Sortable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Style="color: #607D8B;">
+                            @(context.Item.Total.HasValue ? context.Item.Total.Value.ToString("C") : "")
+                        </MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                <TemplateColumn Sortable="false">
+                    <CellTemplate>
+                        <MudStack Row Spacing="0" Justify="Justify.FlexEnd" @onclick:stopPropagation="true">
+                            @if (context.Item.OrderStatus.ToString() == "Pending")
+                            {
+                                <MudIconButton Icon="@Icons.Material.Outlined.Block" Size="Size.Small" Style="color: #757575;" />
+                            }
+                            <MudIconButton Icon="@Icons.Material.Outlined.ContentCopy" Size="Size.Small" Style="color: #757575;" />
+                            <MudIconButton Icon="@(context.Item.ShowDetails.HasValue && context.Item.ShowDetails.Value ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                           Size="Size.Small"
+                                           OnClick="@(() => ToggleDetails(context.Item))" />
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+
+            <ChildRowContent>
+                @if (context.Item.ShowDetails.HasValue && context.Item.ShowDetails.Value)
+                {
+                    <div style="background-color: #F8F9FA; padding: 16px 24px; width: 100%;">
+                        <MudDataGrid Items="@context.Item.Items" Elevation="0" Dense="true" Style="background-color: transparent;">
+                            <Columns>
+                                <PropertyColumn Property="x => x.Zone" Title="Zona" />
+                                <PropertyColumn Property="x => x.Section" Title="Sección" />
+                                <PropertyColumn Property="x => x.Row" Title="Fila" />
+                                <PropertyColumn Property="x => x.Seat" Title="Asiento" />
+                                <PropertyColumn Property="x => x.Price" Title="Subtotal">
+                                    <CellTemplate Context="DetailContext">
+                                        @(DetailContext.Item.Price.HasValue ? DetailContext.Item.Price.Value.ToString("C") : "0.00")
+                                    </CellTemplate>
+                                </PropertyColumn>
+                            </Columns>
+                        </MudDataGrid>
+                    </div>
+                }
+            </ChildRowContent>
+
+            <PagerContent>
+                <MudDataGridPager T="SaleResponse" RowsPerPageString="Mostrar:" InfoFormat="{first_item}-{last_item} de {all_items}" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudCardContent>
+</MudCard>
+
+<style>
+    .selected-row {
+        background-color: #FFFDE7 !important;
+    }
+
+    .mud-table-row.selected-row > td {
+        border-bottom: none !important;
+    }
+</style>
+
+@code {
+    [Parameter] public AdminSaleType SaleType { get; set; }
+    [Parameter] public long ReferenceId { get; set; }
+
+    private bool _loading = false;
+    private string _searchTerm = "";
+
+    private DateRange? _dateRange;
+
+    private IReadOnlyCollection<PaymentType?> _selectedPaymentTypes = [];
+    private List<PaymentType> _paymentTypes = Enum.GetValues<PaymentType>().ToList();
+
+    private IReadOnlyCollection<SaleChannel?> _selectedSaleChannels = [];
+    private List<SaleChannel> _saleChannels = Enum.GetValues<SaleChannel>().ToList();
+
+    private IReadOnlyCollection<OrderStatus?> _selectedOrderStatuses = [];
+    private List<OrderStatus> _orderStatuses = Enum.GetValues<OrderStatus>().ToList();
+
+    private MudDataGrid<SaleResponse> _dataGrid = default!;
+
+    private async Task<GridData<SaleResponse>> ServerReloadAsync(GridState<SaleResponse> state, CancellationToken token)
+    {
+        _loading = true;
+        try
+        {
+            var sortDefinition = state.SortDefinitions.FirstOrDefault();
+
+            var result = await _salesService.GetSalesAsync(
+                SaleType,
+                ReferenceId,
+                _dateRange?.Start,
+                _dateRange?.End,
+                _selectedPaymentTypes.OfType<PaymentType>(),
+                _selectedSaleChannels.OfType<SaleChannel>(),
+                _selectedOrderStatuses.OfType<OrderStatus>(),
+                _searchTerm,
+                sortDefinition?.SortBy ?? "",
+                sortDefinition?.Descending ?? false,
+                state.Page,
+                state.PageSize);
+
+            return new GridData<SaleResponse>
+            {
+                TotalItems = result.TotalCount,
+                Items = result.Items ?? []
+            };
+        }
+        catch (TaskCanceledException)
+        {
+            return new GridData<SaleResponse> { TotalItems = 0, Items = new List<SaleResponse>() };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching sales. {ex.Message}");
+            _snackbar.Add("Ocurrió un error al cargar las ventas.", Severity.Error);
+            return new GridData<SaleResponse> { TotalItems = 0, Items = new List<SaleResponse>() };
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ToggleDetails(SaleResponse item)
+    {
+        item.ShowDetails = !item.ShowDetails;
+    }
+
+    private string SelectedRowClassFunc(SaleResponse item, int rowIndex)
+    {
+        if (item.ShowDetails.HasValue && item.ShowDetails.Value)
+        {
+            return "selected-row";
+        }
+
+        return "";
+    }
+
+    private async Task ClearFiltersAsync()
+    {
+        _searchTerm = "";
+        _selectedPaymentTypes = [];
+        _selectedSaleChannels = [];
+        _selectedOrderStatuses = [];
+        _dateRange = null;
+
+        await _dataGrid.ReloadServerData();
+    }
+
+    private async Task ApplyFiltersAsync()
+    {
+        await _dataGrid.ReloadServerData();
+    }
+}

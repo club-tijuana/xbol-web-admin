@@ -17,7 +17,7 @@ namespace Odasoft.XBOL.AdminPortal.Helpers
 
             if (!end.HasValue || start.Value.Date == end.Value.Date)
             {
-                return start.Value.ToString(FormatConstants.DATE_ONLY, Culture);
+                return start.Value.ToString(FormatConstants.DATE_TIME, Culture);
             }
 
             return $"{start:dd MMM yyyy} - {end:dd MMM yyyy}";

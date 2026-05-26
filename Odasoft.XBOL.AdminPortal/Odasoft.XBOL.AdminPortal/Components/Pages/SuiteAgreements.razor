@@ -1,4 +1,5 @@
 @page "/suites/agreements"
+@attribute [Authorize]
 
 @using Microsoft.Net.Http.Headers;
 @using Odasoft.XBOL.AdminPortal.Extensions
@@ -10,9 +11,11 @@
 @inject IDialogService _dialogService;
 @inject IJSRuntime JS;
 @inject ISnackbar _snackbar;
+
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
 @inject SuiteAgreementsService _suiteAgreementsService;
+@inject VenuesService _venuesService;
 
 <PageTitle>Contratos de palcos</PageTitle>
 
@@ -50,13 +53,14 @@
                             <!-- Level multi-select -->
                             <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                                 <ActivatorContent>
-                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" />
+                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" OnClick="@context.ToggleAsync" />
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudStack Spacing="3" Class="pa-4" Style="width:375px">
                                         <MudSelect T="string" Label="Nivel" MultiSelection="true"
                                                    Margin="Margin.Dense" Variant="Variant.Outlined"
-                                                   ShrinkLabel @bind-SelectedValues="_selectedSuiteLevels">
+                                                   ShrinkLabel @bind-SelectedValues="_selectedSuiteLevels"
+                                                   ValueChanged="@LoadSuitesCatalogAsync">
                                             @foreach (var level in _suiteLevels)
                                             {
                                                 <MudSelectItem T="string" Value="@level.Name">
@@ -78,11 +82,11 @@
 
                                         <MudDatePicker @bind-Date="_startDate" Label="Fecha inicio acuerdo"
                                                        Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel
-                                                       PlaceholderStart="DD/MM/AAAA" PlaceholderEnd="DD/MM/AAAA" />
+                                                       Placeholder="DD/MM/AAAA" />
 
                                         <MudDatePicker @bind-Date="_endDate" Label="Vigencia"
                                                        Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel
-                                                       PlaceholderStart="DD/MM/AAAA" PlaceholderEnd="DD/MM/AAAA" />
+                                                       Placeholder="DD/MM/AAAA" />
 
                                         <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
                                             <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
@@ -119,9 +123,9 @@
                     <CellTemplate>
                         <MudText Typo="Typo.body2">@context.Item.OwnerName</MudText>
                         <MudFlexBreak />
-                        <MudText Typo="Typo.caption">@context.Item.OwnerEmail</MudText>
+                        <MudText Typo="Typo.caption">@context.Item.Email</MudText>
                         <MudFlexBreak />
-                        <MudText Typo="Typo.caption">@context.Item.OwnerPhone</MudText>
+                        <MudText Typo="Typo.caption">@($"+{context.Item.DialCode} {context.Item.PhoneNumber}")</MudText>
                     </CellTemplate>
                 </PropertyColumn>
 
@@ -159,7 +163,7 @@
                 </TemplateColumn>
             </Columns>
             <PagerContent>
-                <CustomMudDataGridPager T="SuiteAgreementViewModel" />
+                <MudDataGridPager T="SuiteAgreementViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
@@ -170,24 +174,27 @@
     private string _searchTerm = "";
     private bool _disableMultipleDownloads => _selectedAgreements.Count == 0;
 
-    private IEnumerable<SuiteAgreementViewModel> _suiteAgreements = [];
+    private IReadOnlyCollection<SuiteAgreementViewModel> _suiteAgreements = [];
     private HashSet<SuiteAgreementViewModel> _selectedAgreements = new();
 
     private List<ListItem> _suiteLevels = [];
-    private IEnumerable<string> _selectedSuiteLevels = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedSuiteLevels = [];
 
     private List<ListItem> _suites = [];
-    private IEnumerable<string> _selectedSuites = new HashSet<string>();
+    private IReadOnlyCollection<string> _selectedSuites = [];
 
     private DateTime? _startDate;
     private DateTime? _endDate;
+
+    private long venueId = 1;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
         await LoadSuitesCatalogAsync();
+
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync(null);
 
         await ServerReloadAsync();
     }
@@ -197,6 +204,13 @@
         try
         {
             FileResponse? file = await _suiteAgreementsService.DownloadSuiteAgreementFileAsync(agreementId);
+
+            if (file == null)
+            {
+                Console.WriteLine("Error trying to get file: null response.");
+                _snackbar.Add("Error al tratar de descargar el archivo", Severity.Error);
+                return;
+            }
 
             await DownloadFileAsync(file);
         }
@@ -218,6 +232,7 @@
             if (file != null)
             {
                 await DownloadFileAsync(file);
+                return;
             }
 
             Console.WriteLine("Error trying to get file: null response.");
@@ -258,12 +273,12 @@
 
     private void CreateSuiteAgreement()
     {
-        _navigationManager.NavigateTo(SitePages.SUITE_AGREEMENTS_CREATE);
+        _navigationManager.NavigateTo($"./suite-agreements/{venueId}/update");
     }
 
     private void UpdateSuiteAgreement(long suiteAgreementId)
     {
-        _navigationManager.NavigateTo($"/suite-agreements/{suiteAgreementId}/update");
+        _navigationManager.NavigateTo($"./suite-agreements/{suiteAgreementId}/update");
     }
 
     private async Task DeleteSuiteAgreementAsync(long suiteAgreementId)
@@ -282,7 +297,7 @@
                 {
                     _snackbar.Add("Contrato de palco eliminado exitosamente.", Severity.Success);
 
-                    _suiteAgreements = _suiteAgreements.Where(x => x.Id != suiteAgreementId);
+                    await ServerReloadAsync();
                 }
                 else
                 {
@@ -320,14 +335,16 @@
             {
                 Id = sa.Id,
                 SuiteId = sa.SuiteId,
-                SuiteLevel = sa.SuiteLevel,
-                SuiteName = sa.SuiteName,
-                OwnerName = sa.OwnerName,
-                OwnerEmail = sa.OwnerEmail,
-                OwnerPhone = sa.OwnerPhone,
+                SuiteLevel = sa.SuiteLevel ?? "",
+                SuiteName = sa.SuiteName ?? "",
+                OwnerName = sa.OwnerName ?? "",
+                Email = sa.Email ?? "",
+                PhoneRegionCodeId = sa.PhoneRegionCodeId,
+                DialCode = sa.DialCode ?? "",
+                PhoneNumber = sa.PhoneNumber ?? "",
                 StartDate = sa.StartDate.ToString(FormatConstants.DATE_ONLY),
                 EndDate = sa.EndDate.ToString(FormatConstants.DATE_ONLY),
-                FileName = sa.FileName
+                FileName = sa.FileName ?? ""
 
             }).ToArray() ?? [];
         }
@@ -385,6 +402,7 @@
 
     private async Task LoadSuitesCatalogAsync()
     {
+        _selectedSuites = [];
         _suites = [];
 
         List<long> suiteLevelIds = _suiteLevels
@@ -407,7 +425,7 @@
             return true;
         }
 
-        if (x.OwnerEmail.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+        if (x.Email.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -417,7 +435,7 @@
             return true;
         }
 
-        if (x.OwnerPhone.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+        if (x.PhoneNumber.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }

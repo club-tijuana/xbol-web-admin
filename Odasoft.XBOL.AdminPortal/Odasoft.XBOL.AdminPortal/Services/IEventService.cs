@@ -15,10 +15,25 @@ public interface IEventService
         bool sortDescending,
         string? search = null,
         EventFilterParameters? filters = null,
-        int? seasonId = null
+        int? seasonId = null,
+        bool? upcoming = null
     );
 
-    Task<List<VenueListItemDTO>> GetVenuesAsync();
+    Task<GridData<EventViewModel>> GetEventsOnSaleAsync(
+        int page,
+        int pageSize,
+        string? sortColumn,
+        bool sortDescending,
+        string? search = null,
+        EventFilterParameters? filters = null
+    );
 
-    Task<List<string>> GetCategoriesAsync();
+    Task<List<EventCategoryResult>> GetCategoriesAsync();
+    Task<EventResult> CreateEventAsync(EventRequest request);
+    Task UpdateEventAsync(long id, EventRequest request);
+    Task DeleteEventAsync(long id);
+    Task<EventInfoDTO> GetEventByIdAsync(long id);
+    Task ApproveEventAsync(long id);
+    Task RejectEventAsync(long id);
+    Task PublishEventAsync(long id);
 }

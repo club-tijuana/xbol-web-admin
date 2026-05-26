@@ -67,6 +67,9 @@ nunit-*.xml
 # User secrets
 secrets.json
 
+# Docker / env secrets (use .env.example as plantilla)
+.env
+
 # Logs
 *.log
 logs/
@@ -78,3 +81,7 @@ logs/
 
 # Git worktrees
 .worktrees
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

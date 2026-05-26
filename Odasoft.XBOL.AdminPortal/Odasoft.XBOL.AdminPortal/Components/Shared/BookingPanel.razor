@@ -1,0 +1,149 @@
+@using Microsoft.Extensions.Options
+@using Odasoft.XBOL.AdminPortal.Components.Pages
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.Business
+
+@implements IDisposable
+@inject ILogger<BookingPanel> Logger
+@inject CartState CartState
+@inject ISnackbar Snackbar
+@inject IAdminClient AdminClient
+@inject IOptions<SeatsIoOptions> SeatsOptions
+@inject AppLocalizer<Events> L
+
+<MudPaper Class="pa-6" Elevation="3">
+    <MudGrid Justify="Justify.SpaceBetween">
+        <MudItem xs="12" Class="d-flex justify-space-between">
+            <MudText Typo="Typo.h5">@L["Seats"]</MudText>
+            <MudButton Variant="Variant.Filled"
+                       DropShadow="false"
+                       EndIcon="@Icons.Material.Filled.NavigateNext"
+                       Color="Color.Primary"
+                       Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
+                       @onclick="HoldSeatsAsync">
+                @if (CartState.IsHoldCallsInProgress)
+                {
+                    <MudProgressCircular Class="me-2" Size="Size.Small" Indeterminate="true" />
+                }
+                @L["PaymentMethod"]
+            </MudButton>
+        </MudItem>
+        <MudItem xs="7">
+            <SeatingChart @ref="_seatingChart"
+                          SecretKey="@_secretKey"
+                          EventKey="@ExternalKey"
+                          EventId="EventId"
+                          Prices="Prices ?? []"
+                          Session="@(_hasActiveHold ? "manual" : "none")"
+                          HoldToken="@(_hasActiveHold ? CartState.HoldToken : null)"
+                          SelectedSeats="@GetInitialSelectedSeats()" />
+        </MudItem>
+        <MudItem xs="4" Class="mt-8">
+            <OrderSummary Chart="_seatingChart" AllowPartialUpdate="@IsRenewal" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired]
+    public long EventId { get; set; }
+
+    [Parameter, EditorRequired]
+    public string ExternalKey { get; set; } = default!;
+
+    [Parameter]
+    public List<string>? PreselectedSeats { get; set; }
+
+    [Parameter]
+    public IEnumerable<SeatsIoPriceDTO>? Prices { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<HoldToken> OnSeatsHeld { get; set; }
+
+    [Parameter]
+    public EventCallback<Exception> OnHoldFailed { get; set; }
+
+    [Parameter]
+    public bool ClearCartOnInit { get; set; } = true;
+
+    [Parameter]
+    public bool IsRenewal { get; set; }
+
+    private SeatingChart? _seatingChart;
+    private string _secretKey = string.Empty;
+    private bool _hasActiveHold;
+
+    protected override void OnInitialized()
+    {
+        CartState.OnChange += StateHasChanged;
+
+        // Snapshot at mount time: if a hold is already committed (e.g. user
+        // returned to the chart from the checkout step without releasing it),
+        // start the chart in session=manual mode with the existing token so
+        // seats.io recognizes our own holds and doesn't deselect them when
+        // the WebSocket broadcasts the hold back to the chart. Otherwise
+        // fresh-start with session=none.
+        _hasActiveHold = !string.IsNullOrEmpty(CartState.HoldToken);
+
+        if (ClearCartOnInit && !_hasActiveHold)
+        {
+            CartState.ClearCart();
+            CartState.ClearTokenAsync();
+        }
+
+        CartState.SetEvent(EventId);
+        _secretKey = SeatsOptions.Value.SecretKey;
+    }
+
+    private async Task HoldSeatsAsync()
+    {
+        // If a hold is already in flight (operator returned to the chart in
+        // session="manual" and adjusted seats; the chart's session keeps the
+        // hold in sync via seats.io directly), skip the server-side hold call.
+        // Re-issuing would attempt to mint a new token for already-held seats
+        // and seats.io rejects with ILLEGAL_STATUS_CHANGE.
+        if (!string.IsNullOrEmpty(CartState.HoldToken))
+        {
+            await OnSeatsHeld.InvokeAsync(new HoldToken { Token = CartState.HoldToken });
+            return;
+        }
+
+        try
+        {
+            var holdToken = await AdminClient.HoldSeatsByKeyAsync(ExternalKey, new HoldSeatsBody
+            {
+                Seats = CartState.SelectedSeats.Select(x => x.SeatId).ToList()
+            });
+
+            if (string.IsNullOrWhiteSpace(holdToken.Token))
+            {
+                throw new InvalidOperationException("HoldSeatsByKeyAsync returned a response with no token.");
+            }
+
+            CartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
+
+            await OnSeatsHeld.InvokeAsync(holdToken);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to hold seats");
+
+            if (OnHoldFailed.HasDelegate)
+            {
+                await OnHoldFailed.InvokeAsync(ex);
+            }
+            else
+            {
+                Snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private List<string> GetInitialSelectedSeats() =>
+        PreselectedSeats is { Count: > 0 } ? PreselectedSeats : CartState.SelectedSeatsKeys;
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+}

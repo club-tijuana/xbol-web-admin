@@ -1,0 +1,22 @@
+@inject AppLocalizer<PriceTypeForm> L
+<MudForm @ref="_form">
+    <MudStack Spacing="4">
+        <AdminTextField Value="@Name" 
+            ValueChanged="NameChanged" 
+            Label="@L["Description"].Value"
+            Placeholder="@L["Description"].Value" 
+            Field="@FormContext?.Field("Name")" 
+            Required />
+    </MudStack>
+</MudForm>
+
+@code {
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public EventCallback<string?> NameChanged { get; set; }
+
+    [Parameter] public FormContext? FormContext { get; set; }
+
+    private MudForm _form = default!;
+
+    public MudForm InnerForm => _form;
+}

@@ -1,3 +1,5 @@
+using Odasoft.XBOL.Business;
+
 namespace Odasoft.XBOL.AdminPortal.ViewModels;
 
 // TODO: Move to Model project
@@ -6,10 +8,15 @@ public record EventViewModel(
     long Id,
     DateTime DateTime,
     string EventName,
-    string Category,
+    string Categories,
     string Venue,
     int Available,
-    int Total
+    int Total,
+    EventStatus? Status,
+    string? ExternalEventKey,
+    string? PosterImageUrl = null,
+    string? BannerImageUrl = null,
+    bool? IsSeason = null
 )
 {
     public string Availability => $"{Available:D3}/{Total:D3}";

@@ -1,4 +1,5 @@
 @page "/clients"
+@attribute [Authorize]
 
 @using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.AdminPortal.Extensions
@@ -50,7 +51,7 @@
                             <!-- Level multi-select -->
                             <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                                 <ActivatorContent>
-                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" />
+                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt" Color="@Color.Secondary" OnClick="@context.ToggleAsync" />
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudStack Spacing="3" Class="pa-4" Style="width:375px">
@@ -156,7 +157,7 @@
                 </TemplateColumn>
             </Columns>
             <PagerContent>
-                <CustomMudDataGridPager T="EnterpriseViewModel" />
+                <MudDataGridPager T="EnterpriseViewModel" />
             </PagerContent>
         </MudDataGrid>
     </MudCardContent>
@@ -178,11 +179,11 @@
 
     private ClientFilterParameters _filters = new();
 
-    private IEnumerable<EnterpriseViewModel> _clients = [];
+    private IReadOnlyCollection<EnterpriseViewModel> _clients = [];
     private HashSet<EnterpriseViewModel> _selectedClients = [];
 
     private List<EnumItemDto> _creditStatus = [];
-    private IEnumerable<CreditStatus> _selectedCreditStatus = [];
+    private IReadOnlyCollection<CreditStatus> _selectedCreditStatus = [];
 
     private bool? _onlyCredits = null;
 
@@ -260,7 +261,7 @@
         _navigationManager.NavigateTo(SitePages.CLIENTS_CREATE);
     }
 
-    private async Task<GridData<EnterpriseViewModel>> ServerReloadAsync(GridState<EnterpriseViewModel> state)
+    private async Task<GridData<EnterpriseViewModel>> ServerReloadAsync(GridState<EnterpriseViewModel> state, CancellationToken token)
     {
         _loading = true;
 
@@ -296,6 +297,10 @@
                 }) ?? []
             };
         }
+        catch (TaskCanceledException)
+        {
+            return new GridData<EnterpriseViewModel> { TotalItems = 0, Items = [] };
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading clients: {ex.Message}");
@@ -328,7 +333,7 @@
 
     private void RowClicked(DataGridRowClickEventArgs<EnterpriseViewModel> args)
     {
-        _navigationManager.NavigateTo($"/clients/{args.Item.Id}/credit");
+        _navigationManager.NavigateTo($"./clients/{args.Item.Id}/credit");
     }
 
     private async Task ClearFilters()
@@ -347,7 +352,7 @@
 
     private void UpdateClient(long clientId)
     {
-        _navigationManager.NavigateTo($"/clients/{clientId}/edit");
+        _navigationManager.NavigateTo($"./clients/{clientId}/edit");
     }
 
     private async Task DeleteClient(long clientId)
@@ -365,7 +370,7 @@
                 _snackbar.Add("Empresa eliminada correctamente", Severity.Success);
                 await _dataGrid.ReloadServerData();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _snackbar.Add("Error al eliminar la empresa. Intente de nuevo más tarde.", Severity.Error);
             }
@@ -392,7 +397,7 @@
             ContactEmail = clientDetails.Email,
             Id = clientDetails.Id,
             Name = clientDetails.ClientName,
-            Phone = $"({clientDetails.CountryPhoneCode}) {clientDetails.PhoneNumber}"
+            Phone = $"({clientDetails.DialCode}) {clientDetails.PhoneNumber}"
         };
 
         var credit = clientDetails.ClientCredit is not null ? new ClientCreditViewModel

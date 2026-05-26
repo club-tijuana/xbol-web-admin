@@ -1,9 +1,9 @@
 @page "/suite-agreements/create"
+@attribute [Authorize]
 
-@using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
-@using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.Common.Constants;
 
 @inject CatalogsService _catalogsService;
 @inject NavigationManager _navigationManager;
@@ -17,7 +17,7 @@
     <PageActionBar>
         <LeftContent>
             <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToSuiteAgreementsAsync())"
-                    Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
+                       Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">Regresar</MudButton>
         </LeftContent>
     </PageActionBar>
 </SectionContent>
@@ -56,21 +56,31 @@
                 <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerName" Label="Propietario" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerEmail" Label="Correo electrónico" InputType="InputType.Email" Margin="Margin.Dense" ShrinkLabel Required />
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_email" Label="Correo electrónico" InputType="InputType.Email" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_ownerPhone" Label="Teléfono" InputType="InputType.Telephone" Margin="Margin.Dense" ShrinkLabel Required />
+                <MudSelect Class="d-flex" Variant="Variant.Outlined" @bind-Value="_phoneRegionCodeId" Label="Lada" Margin="Margin.Dense" ShrinkLabel Required Clearable>
+                    @foreach (var regionCode in _phoneRegionCodes)
+                    {
+                        <MudSelectItem T="long?" Value="regionCode.Id">
+                            @($"+{regionCode.DialCode} {regionCode.RegionCode}")
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="6" lg="3">
+                <MudTextField Class="d-flex" Variant="Variant.Outlined" @bind-Value="_phoneNumber" Label="Teléfono" InputType="InputType.Telephone" Margin="Margin.Dense" ShrinkLabel Required />
             </MudItem>
         </MudGrid>
         <MudGrid Class="mud-width-full">
             <MudItem xs="12" sm="12" md="6" lg="3">
                 <MudFileUpload T="IBrowserFile" FilesChanged="OnInputFileChanged" Required>
-                    <ActivatorContent>
+                    <CustomContent>
                         <MudButton StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Secondary"
                                    Variant="Variant.Filled" Class="text-uppercase">
                             Subir contrato
                         </MudButton>
-                    </ActivatorContent>
+                    </CustomContent>
                 </MudFileUpload>
             </MudItem>
             <MudItem xs="12" sm="12" md="6" lg="3">
@@ -100,19 +110,22 @@
     private DateTime? _endDate;
 
     private string _ownerName = "";
-    private string _ownerEmail = "";
-    private string _ownerPhone = "";
+    private string _email = "";
+    private long? _phoneRegionCodeId;
+    private string _phoneNumber = "";
 
     private IBrowserFile? _agreementFile;
 
-    private ICollection<ListItem> _suiteLevels = [];
-    private ICollection<ListItem> _suites = [];
+    private List<ListItem> _suiteLevels = [];
+    private List<ListItem> _suites = [];
+    private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync();
+        _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+        _suiteLevels = await _catalogsService.GetSuiteLevelsAsync(null);
         _suiteLevelId = _suiteLevels.Any() ? _suiteLevels.First().Id : default;
 
         if (_suiteLevelId > 0)
@@ -166,13 +179,16 @@
 
             using var stream = _agreementFile!.OpenReadStream(_maxFileSize);
 
-            var agreementId = await _suiteAgreementsService.CreateSuiteAgreementAsync(
-                                _suiteId,
-                                _ownerName,
-                                _ownerEmail,
-                                _ownerPhone,
-                                _startDate.HasValue ? _startDate.Value.ToUniversalTime() : default,
-                                _endDate.HasValue ? _endDate.Value.ToUniversalTime() : default);
+            var agreementId = await _suiteAgreementsService.CreateSuiteAgreementAsync(new CreateSuiteAgreementRequest
+            {
+                SuiteId = _suiteId,
+                OwnerName = _ownerName,
+                Email = _email,
+                PhoneRegionCodeId = _phoneRegionCodeId,
+                PhoneNumber = _phoneNumber,
+                StartDate = _startDate.HasValue ? _startDate.Value.ToUniversalTime() : default,
+                EndDate = _endDate.HasValue ? _endDate.Value.ToUniversalTime() : default
+            });
 
             if (agreementId > 0)
             {

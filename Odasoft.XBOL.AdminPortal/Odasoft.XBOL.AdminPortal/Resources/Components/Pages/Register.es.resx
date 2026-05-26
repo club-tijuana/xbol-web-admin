@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CompleteRegistration" xml:space="preserve">
+    <value>Completar registro</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirmar contraseña</value>
+  </data>
+  <data name="ConfirmPasswordRequired" xml:space="preserve">
+    <value>Confirma tu contraseña.</value>
+  </data>
+  <data name="DisplayName" xml:space="preserve">
+    <value>Nombre para mostrar</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Correo electrónico</value>
+  </data>
+  <data name="InvalidInvitation" xml:space="preserve">
+    <value>Este enlace de invitación no es válido o está incompleto.</value>
+  </data>
+  <data name="InvitationEmailMismatch" xml:space="preserve">
+    <value>Esta invitación no coincide con el correo electrónico del enlace.</value>
+  </data>
+  <data name="InvitationTokenAccepted" xml:space="preserve">
+    <value>Esta invitación ya fue utilizada. Inicia sesión o pide ayuda a un administrador.</value>
+  </data>
+  <data name="InvitationTokenExpired" xml:space="preserve">
+    <value>Esta invitación expiró. Pide a un administrador que envíe una nueva invitación.</value>
+  </data>
+  <data name="InvitationTokenInvalid" xml:space="preserve">
+    <value>Este enlace de invitación no es válido. Pide a un administrador que envíe una nueva invitación.</value>
+  </data>
+  <data name="InvitationTokenMissing" xml:space="preserve">
+    <value>A este enlace de invitación le falta información obligatoria.</value>
+  </data>
+  <data name="InvitationTokenRevoked" xml:space="preserve">
+    <value>Esta invitación fue revocada. Pide a un administrador que envíe una nueva invitación.</value>
+  </data>
+  <data name="LoginFailed" xml:space="preserve">
+    <value>El registro se completó, pero no se pudo iniciar sesión. Intenta iniciar sesión desde la pantalla de acceso.</value>
+  </data>
+  <data name="MissingRegistrationFields" xml:space="preserve">
+    <value>Correo, contraseña y token de invitación son obligatorios.</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Contraseña</value>
+  </data>
+  <data name="PasswordMismatch" xml:space="preserve">
+    <value>Las contraseñas no coinciden.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Ingresa una contraseña.</value>
+  </data>
+  <data name="RegistrationFailed" xml:space="preserve">
+    <value>No se pudo completar el registro.</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Completar registro de administrador</value>
+  </data>
+  <data name="TogglePasswordVisibility" xml:space="preserve">
+    <value>Mostrar u ocultar contraseña</value>
+  </data>
+</root>

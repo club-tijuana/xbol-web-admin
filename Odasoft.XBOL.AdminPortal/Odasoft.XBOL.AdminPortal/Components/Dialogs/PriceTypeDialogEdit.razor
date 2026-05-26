@@ -1,0 +1,79 @@
+@using Odasoft.XBOL.AdminPortal.Extensions
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject AppLocalizer<PriceTypeDialogEdit> L
+
+<BaseDialog Class="py-4" ActionsClass="mt-2 px-6">
+    <TitleContent>
+        <MudText Typo="Typo.h5">@L["AlternativePrice"]</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Error">*</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["RequiredFieldsNote"]</MudText>
+    </TitleContent>
+    <ChildContent>
+        <PriceTypeForm @ref="_priceTypeForm" FormContext="_formContext"
+                       @bind-Name="_name" />
+    </ChildContent>
+    <Actions>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete"
+                   Disabled="_formContext.IsSaving" OnClick="DeleteAsync">@L["Delete"]</MudButton>
+        <MudSpacer />
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Save"
+                   Disabled="_formContext.IsSaving" OnClick="SubmitAsync">@L["Save"]</MudButton>
+    </Actions>
+</BaseDialog>   
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    [Parameter] public string? Name { get; set; }
+
+    private PriceTypeForm _priceTypeForm = default!;
+    private FormContext _formContext = default!;
+    private string? _name;
+
+    protected override void OnInitialized()
+    {
+        _name = Name;
+        _formContext = new FormContext(StateHasChanged);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) _formContext.SetForm(_priceTypeForm.InnerForm);
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (!await _formContext.ValidateAsync()) return;
+
+        _formContext.SetSaving(true);
+
+        MudDialog.Close(DialogResult.Ok(_name));
+
+        _formContext.SetSaving(false);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.ShowConfirmDeleteAsync(
+        L["DeleteDialogTitle", _name ?? string.Empty],
+        L["DeleteDialogMessage"]);
+
+        if (!confirmed) return;
+
+        try
+        {
+            await OnDelete.InvokeAsync();
+            MudDialog.Close(DialogResult.Ok(_name));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting price type: {ex.Message}");
+            Snackbar.Add(L["DeleteError"], Severity.Error);
+        }
+    }
+}

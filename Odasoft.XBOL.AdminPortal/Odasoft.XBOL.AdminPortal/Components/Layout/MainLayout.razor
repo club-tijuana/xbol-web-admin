@@ -1,14 +1,19 @@
 @using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.Business
 @using Odasoft.XBOL.AdminPortal.Services
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using Odasoft.XBOL.AdminPortal.States
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Claims
 @inherits LayoutComponentBase
 @layout ThemeLayout
 @inject IAuthService AuthService
 @inject LoadingState LoadingState
 @inject NavigationManager Navigation
-@inject AuthStateProvider AuthStateProvider
-@inject IStringLocalizer<MainLayout> L
+@inject AntiforgeryStateProvider Antiforgery
+@inject BrowserFormPostJsInterop FormPost
+@inject AppLocalizer<MainLayout> L
+@inject PersistentDialogState PersistentDialogState
 
 @implements IDisposable
 
@@ -16,27 +21,37 @@
 
 <MudLayout>
     <!-- TOP BAR -->
-        <MudAppBar Elevation="1" Class="bg-secondary-darken">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                           Color="Color.Inherit"
-                           Edge="Edge.Start"
-                           OnClick="ToggleDrawer" />
-            <MudSpacer />
-            <!-- Notifications -->
-            <MudIconButton Icon="@Icons.Material.Filled.Notifications"
-                           Color="Color.Inherit" />
-            <!-- User / Logout -->
-            <MudMenu AnchorOrigin="Origin.BottomRight"
-                     TransformOrigin="Origin.TopRight">
-                <ActivatorContent>
-                    <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
-                                   Color="Color.Inherit" />
-                </ActivatorContent>
-                <ChildContent>
-                    <MudMenuItem Label="@L["Logout"]" OnClick="Logout" />
-                </ChildContent>
-            </MudMenu>
-        </MudAppBar>
+    <MudAppBar Elevation="1" Class="bg-secondary-darken">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       OnClick="ToggleDrawer" />
+        <MudSpacer />
+        <!-- Notifications -->
+        <MudIconButton Icon="@Icons.Material.Filled.Notifications"
+                       Color="Color.Inherit" />
+        <!-- User / Logout -->
+        <MudMenu AnchorOrigin="Origin.BottomRight"
+                 TransformOrigin="Origin.TopRight">
+            <ActivatorContent>
+                <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
+                               Color="Color.Inherit"
+                               OnClick="@context.ToggleAsync" />
+            </ActivatorContent>
+            <ChildContent>
+                <AuthorizeView>
+                    <Authorized Context="auth">
+                        <MudStack Spacing="0" Class="px-4 py-3 profile-menu-header">
+                            <MudText Typo="Typo.subtitle2">@GetDisplayName(auth.User)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@GetEmail(auth.User)</MudText>
+                        </MudStack>
+                        <MudDivider />
+                    </Authorized>
+                </AuthorizeView>
+                <MudMenuItem Icon="@Icons.Material.Filled.Logout" Label="@L["Logout"]" OnClick="Logout" />
+            </ChildContent>
+        </MudMenu>
+    </MudAppBar>
 
     <!-- LEFT NAV DRAWER -->
     <MudDrawer Open="@_drawerOpen"
@@ -55,12 +70,112 @@
     </MudMainContent>
 </MudLayout>
 
+<!-- Order success notification -->
+<MudDialog @bind-Visible="_showNotification"
+           Options="_notificationOptions">
+    <TitleContent>
+        <MudStack Row AlignItems="AlignItems.Center">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" />
+            <MudText Typo="Typo.body2">@L["SuccessfulPurchase"]</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        @if (_currentBooking is not null)
+        {
+            <MudGrid Spacing="6" Class="px-8 pb-6">
+                <MudItem xs="12">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="text-uppercase">@L["TrackingNumber"]</MudText>
+                        <MudText Typo="Typo.h5">@_currentBooking.Localizer</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="text-uppercase">@L["Phone"]</MudText>
+                        <MudText Typo="Typo.body1">@(_currentBooking.ClientPhone ?? "-")</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="text-uppercase">@L["Email"]</MudText>
+                        <MudText Typo="Typo.body1">@(_currentBooking.ClientEmail ?? "-")</MudText>
+                    </MudStack>
+                </MudItem>
+                @if (_currentConfirmation is { SecuredSeats.Count: > 0 } cSecured)
+                {
+                    <MudItem xs="12">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption" Color="Color.Success" Class="text-uppercase">@L["SecuredSeats_Title"]</MudText>
+                            <MudText Typo="Typo.body2">@string.Format(L["SecuredSeats_Body"], FormatSeats(cSecured.SecuredSeats))</MudText>
+                        </MudStack>
+                    </MudItem>
+                }
+                @if (_currentConfirmation is { PendingSeats.Count: > 0 } cPending)
+                {
+                    <MudItem xs="12">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption" Color="Color.Warning" Class="text-uppercase">@L["PendingSeats_Title"]</MudText>
+                            <MudText Typo="Typo.body2">
+                                @(cPending.ReleaseDate is { } rd
+                                    ? string.Format(L["PendingSeats_BodyWithDate"], FormatSeats(cPending.PendingSeats), rd.LocalDateTime.ToString("d 'de' MMMM, HH:mm"))
+                                    : string.Format(L["PendingSeats_BodyNoDate"], FormatSeats(cPending.PendingSeats)))
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    </DialogContent>
+</MudDialog>
+
 @code {
-    private bool _drawerOpen = true; // En desktop inicia abierto
+    private bool _drawerOpen = true;
+    private bool _showNotification;
+    private BookingResult? _currentBooking;
+    private RenewalConfirmation? _currentConfirmation;
+
+    private readonly DialogOptions _notificationOptions = new()
+    {
+        CloseButton = true,
+        Position = DialogPosition.TopRight,
+        BackdropClick = true
+    };
 
     protected override void OnInitialized()
     {
-        Navigation.LocationChanged += (s, e) => LoadingState.Reset();
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        try
+        {
+            LoadingState.Reset();
+
+            if (PersistentDialogState.BookingResult is null)
+                return;
+
+            _currentBooking = PersistentDialogState.BookingResult;
+            _currentConfirmation = PersistentDialogState.RenewalConfirmation;
+            PersistentDialogState.ClearBookingResult();
+
+            await InvokeAsync(async () =>
+            {
+                _showNotification = true;
+                StateHasChanged();
+
+                await Task.Delay(5000);
+
+                _showNotification = false;
+                _currentBooking = null;
+                _currentConfirmation = null;
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error showing booking notification: {ex.Message}");
+        }
     }
 
     private void ToggleDrawer()
@@ -71,11 +186,34 @@
     private async Task Logout()
     {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo("/login");
+        var antiforgery = Antiforgery.GetAntiforgeryToken();
+        if (antiforgery is null)
+        {
+            Navigation.NavigateTo("login", forceLoad: true);
+            return;
+        }
+
+        await FormPost.PostAsync("auth/logout", new Dictionary<string, string?>
+        {
+            [antiforgery.FormFieldName] = antiforgery.Value
+        });
     }
 
     public void Dispose()
     {
-        Navigation.LocationChanged -= (s, e) => LoadingState.Reset();
+        Navigation.LocationChanged -= OnLocationChanged;
     }
+
+    private static string FormatSeats(IReadOnlyList<RenewalSeatLine> seats) =>
+        string.Join(", ", seats.Select(s =>
+            string.IsNullOrWhiteSpace(s.Category) ? s.SeatId : $"{s.Category} - {s.SeatId}"));
+
+    private static string GetDisplayName(ClaimsPrincipal user) =>
+        user.FindFirst("name")?.Value
+        ?? user.Identity?.Name
+        ?? user.FindFirst(ClaimTypes.Email)?.Value
+        ?? string.Empty;
+
+    private static string GetEmail(ClaimsPrincipal user) =>
+        user.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
 }

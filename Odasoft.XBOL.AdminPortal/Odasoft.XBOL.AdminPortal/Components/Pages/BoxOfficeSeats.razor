@@ -1,0 +1,146 @@
+@page "/box-office/{Id:long}/seats"
+@attribute [Authorize]
+@using Microsoft.Extensions.Options
+@using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.Business
+
+@implements IDisposable
+@inject CartState CartState
+@inject ISnackbar Snackbar
+@inject IAdminClient AdminClient
+@inject NavigationManager Navigation
+@inject IOptions<SeatsIoOptions> SeatsOptions
+@inject AppLocalizer<BoxOfficeSeats> L
+
+<PageTitle>@_eventName</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => GoToEvents())"
+                       Color="Color.Secondary" Variant="Variant.Outlined" Class="text-uppercase">@L["AllEvents"]</MudButton>
+        </LeftContent>
+    </PageActionBar>
+</SectionContent>
+
+<LoadingContainer
+    IsLoading="_loading"
+    HasError="_error"
+    ErrorMessage="@L["ErrorLoadingEvent"]"
+    OnRetry="LoadEventData">
+    <MudPaper Class="pa-6" Elevation="3">
+        @if (_currentStep == 1)
+        {
+            <MudGrid Justify="Justify.SpaceBetween">
+                <MudItem xs="12" Class="d-flex justify-space-between align-start">
+                    <MudStack>
+                        <MudText Typo="Typo.h5"><b>@_eventName</b></MudText>
+                        <MudStack Row>
+                            <MudText  Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600;">@_eventInfo?.VenueName</MudText>
+                            <MudText Typo="Typo.body1">@_eventScheduleInfo.StartDateTime.ToString("dd/MM/yyyy h:mm tt")</MudText>
+                        </MudStack>
+                    </MudStack>
+                    <MudButton Variant="Variant.Filled"
+                               Class="text-uppercase"
+                               DropShadow="false"
+                               EndIcon="@Icons.Material.Filled.NavigateNext"
+                               Color="Color.Primary"
+                               Disabled="@(CartState.IsHoldCallsInProgress || CartState.SelectedSeats.Count == 0)"
+                               @onclick="NextStep">
+                        @(_holdProcessing? L["Seats_HoldProcessing"] : L["PaymentMethod"])
+                    </MudButton>
+                </MudItem>
+                <MudItem xs="7">
+                    <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@_eventKey" EventId="Id" Prices="_eventScheduleInfo?.Prices" SelectedSeats="@CartState.SelectedSeatsKeys" />
+                </MudItem>
+                <MudItem xs="4" Class="mt-8">
+                    <BoxOfficeOrderSummary Chart="_seatingChart" />
+                </MudItem>
+            </MudGrid>
+        }
+        else
+        {
+            <BoxOfficeCheckout OnReturn="PreviousStep" EventKey="@_eventKey" _eventInfo="_eventInfo"></BoxOfficeCheckout>
+        }
+    </MudPaper>
+</LoadingContainer>
+
+@code {
+    [Parameter]
+    public long Id { get; set; }
+
+    private SeatingChart? _seatingChart;
+    private string _secretKey = string.Empty;
+    private string _eventKey = string.Empty;
+    private string _eventName = string.Empty;
+    private bool _loading = true;
+    private bool _holdProcessing => CartState.IsHoldCallsInProgress;
+    private bool _error = false;
+
+    private int _currentStep = 1;
+
+    private EventInfoDTO? _eventInfo;
+    private EventScheduleDTO _eventScheduleInfo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartState.OnChange += StateHasChanged;
+        CartState.ClearCart();
+        await LoadEventData();
+    }
+
+    private async Task LoadEventData()
+    {
+        _loading = true;
+        _error = false;
+        StateHasChanged();
+
+        try
+        {
+            _eventInfo = await AdminClient.GetEventByIdAsync(Id);
+            _eventScheduleInfo = _eventInfo?.Schedules?.First();
+            _eventName = _eventInfo?.Name ?? string.Empty;
+            _eventKey = _eventScheduleInfo?.ExternalEventKey ?? string.Empty;
+            _secretKey = SeatsOptions.Value.SecretKey;
+
+            CartState.SetEvent(Id);
+            CartState.ClearTokenAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading event data: {ex.Message}");
+            _error = true;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void NextStep()
+    {
+        if (_currentStep < 2)
+        {
+            _currentStep++;
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (_currentStep > 1)
+        {
+            _currentStep--;
+        }
+    }
+
+    private void GoToEvents()
+    {
+        Navigation.NavigateTo("./box-office");
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+}

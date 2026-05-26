@@ -1,0 +1,88 @@
+@using Odasoft.XBOL.Business;
+@using Odasoft.XBOL.Business.Services.Contracts;
+@using Odasoft.XBOL.Models.DTO;
+
+@inject ISuitesService _suitesService;
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="6" Class="px-6 pb-6">
+            <MudItem xs="12" md="6">
+
+                @if (_galleryImages != null && _galleryImages.Any())
+                {
+                    <MudCarousel Class="rounded-lg shadow-sm mud-width-full rounded-lg" Style="height: 310px;" ShowArrows="false" ShowBullets="true" AutoCycle="true" TData="string">
+                        @foreach (var image in _galleryImages)
+                        {
+                            <MudCarouselItem>
+                                <MudImage Src="@($"data:image/jpeg;base64,{image.ImageBase64}")" ObjectFit="ObjectFit.Fill" Fluid="true" Style="width: 100%; height: 100%;" />
+                            </MudCarouselItem>
+                        }
+                    </MudCarousel>
+                }
+                else
+                {
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300px" Class="rounded-lg mud-width-full" />
+                }
+
+                <MudText Typo="Typo.subtitle1" Class="mt-6 mb-3 font-weight-bold">Amenidades</MudText>
+                <MudChipSet T="Amenity" ReadOnly="true" Class="d-flex flex-wrap gap-2">
+                    @foreach (var amenity in _amenities)
+                    {
+                        <MudChip Value="@amenity"
+                                 Variant="Variant.Text"
+                                 Color="MudBlazor.Color.Dark"
+                                 CheckedIcon="@string.Empty">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@IconHelper.GetIconFromIdentifier(amenity.IconIdentifier)" Size="@MudBlazor.Size.Small" Class="mr-2" />
+                                <MudText Typo="Typo.body2" Color="@MudBlazor.Color.Dark">@amenity.Name</MudText>
+                            </div>
+                        </MudChip>
+                    }
+                </MudChipSet>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+
+                <MudText Typo="Typo.subtitle2" Class="mb-2 font-weight-bold">Políticas del palco</MudText>
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4 mb-6 rounded-lg border-solid border mud-border-lines-default" Style="min-height: 290px; width: 100%;">
+                    @((MarkupString)(_suite?.Policies ?? ""))
+                </MudPaper>
+
+                <MudText Typo="Typo.subtitle2" Class="mb-2 font-weight-bold">Comentarios adicionales</MudText>
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4 mb-6 rounded-lg border-solid border mud-border-lines-default" Style="min-height: 290px; width: 100%">
+                    @((MarkupString)(_suite?.AdditionalComments ?? ""))
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public long SuiteId { get; set; }
+
+    private SuiteResponse? _suite { get; set; }
+
+    private List<Amenity> _amenities = [];
+
+    private ICollection<SuiteImageResponse> _galleryImages = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        _suite = await _suitesService.GetSuiteByIdAsync(SuiteId);
+
+        var suiteAmenities = await _suitesService.GetAmenitiesBySuiteAsync(SuiteId);
+        _amenities = suiteAmenities.OrderBy(a => a.Name).ToList();
+
+        _galleryImages = await _suitesService.GetSuiteImageByTypeAsync(SuiteId, ImageType.Gallery);
+
+        StateHasChanged();
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+}
