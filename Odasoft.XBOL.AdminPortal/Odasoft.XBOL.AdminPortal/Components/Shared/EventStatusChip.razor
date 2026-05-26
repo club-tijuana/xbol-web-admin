@@ -1,0 +1,50 @@
+@using Odasoft.XBOL.Business
+@inject AppLocalizer<EventStatusChip> L
+
+@if (Status.HasValue && StatusColor != Color.Default)
+{
+    <MudChip T="string" Color="@StatusColor" Class="@ChipClass" Size="Size.Small" Variant="ChipVariant">
+        <MudText Typo="Typo.body2" Class="@TextClass">@L[Status.ToString()]</MudText>
+    </MudChip>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public EventStatus? Status { get; set; }
+
+    private string ChipClass => Status switch
+    {
+        EventStatus.PendingReview => "bg-primary-lighten",
+        _ => string.Empty
+    };
+
+    private Variant ChipVariant => Status switch
+    {
+        EventStatus.Draft => Variant.Filled,
+        EventStatus.PendingReview => Variant.Text,
+        EventStatus.Approved => Variant.Filled,
+        EventStatus.ChangesRequested => Variant.Filled,
+        EventStatus.Cancelled => Variant.Filled,
+        _ => Variant.Text
+    };
+
+    private Color StatusColor => Status switch
+    {
+        EventStatus.Draft => Color.Secondary,
+        EventStatus.PendingReview => Color.Warning,
+        EventStatus.Approved => Color.Tertiary,
+        EventStatus.ChangesRequested => Color.Error,
+        EventStatus.Cancelled => Color.Error,
+        _ => Color.Default
+    };
+
+    private string TextClass => Status switch
+    {
+        EventStatus.PendingReview => "text-warning",
+        EventStatus.Draft => "text-white",
+        EventStatus.Approved => "text-white",
+        EventStatus.ChangesRequested => "text-white",
+        EventStatus.Cancelled => "text-white",
+        _ => string.Empty
+    };
+}

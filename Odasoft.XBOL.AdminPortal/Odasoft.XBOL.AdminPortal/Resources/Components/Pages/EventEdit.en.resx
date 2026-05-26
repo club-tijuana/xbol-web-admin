@@ -258,4 +258,58 @@
   <data name="NoSectionsInZone" xml:space="preserve">
     <value>No sections in the zone</value>
   </data>
+  <data name="DownloadTemplate" xml:space="preserve">
+    <value>Download template</value>
+  </data>
+  <data name="ImportPrices" xml:space="preserve">
+    <value>Import prices</value>
+  </data>
+  <data name="ErrorDownloadingPricesTemplate" xml:space="preserve">
+    <value>There was an error downloading prices template</value>
+  </data>
+  <data name="SuccesfulFileDownload" xml:space="preserve">
+    <value>Succesful file download</value>
+  </data>
+  <data name="Images" xml:space="preserve">
+    <value>Images</value>
+  </data>
+  <data name="EventBanner" xml:space="preserve">
+    <value>Event banner</value>
+  </data>
+  <data name="EventBannerDimensions" xml:space="preserve">
+    <value />
+  </data>
+  <data name="EventBannerDescription" xml:space="preserve">
+    <value />
+  </data>
+  <data name="HorizontalImagePreview" xml:space="preserve">
+    <value>16:9 Preview</value>
+  </data>
+  <data name="SquareImagePreview" xml:space="preserve">
+    <value>1:1 Preview</value>
+  </data>
+  <data name="Sponsors" xml:space="preserve">
+    <value>Sponsors</value>
+  </data>
+  <data name="SponsorsDescription" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Sponsor" xml:space="preserve">
+    <value>Sponsor</value>
+  </data>
+  <data name="GalleryPreview" xml:space="preserve">
+    <value>Gallery preview</value>
+  </data>
+  <data name="FinishReview" xml:space="preserve">
+    <value>Finish review</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publish</value>
+  </data>
+  <data name="TimeToPurchaseInMinutes" xml:space="preserve">
+    <value>Time to purchase (minutes)</value>
+  </data>
+  <data name="Organizer" xml:space="preserve">
+    <value>Organizer</value>
+  </data>
 </root>

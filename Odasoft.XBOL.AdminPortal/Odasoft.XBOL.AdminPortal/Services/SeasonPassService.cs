@@ -6,24 +6,6 @@ namespace Odasoft.XBOL.AdminPortal.Services
 {
     public class SeasonPassService(IAdminClient apiClient) : ISeasonPassService
     {
-        public async Task<BookingResult> BookSeasonAsync(SeasonBookingRequest request)
-        {
-            var result = await apiClient.BookSeasonSeatsAsync(request);
-            return result;
-        }
-
-        public async Task<ClientSeasonEvent> GetClientSeasonEventByOrderReference(string orderReference)
-        {
-            var result = await apiClient.GetClientSeasonEventByOrderReferenceAsync(orderReference);
-            return result;
-        }
-
-        public async Task<ClientSeasonEvent> GetClientSeasonEventInfo(ClientFilter filter)
-        {
-            var result = await apiClient.GetClientSeasonEventInfoAsync(filter);
-            return result;
-        }
-
         public async Task<List<EnumItemDto>> GetSeasonPassRenewalTypeList()
         {
             var result = await apiClient.GetSeasonPassRenewalTypeListAsync();
@@ -36,7 +18,7 @@ namespace Odasoft.XBOL.AdminPortal.Services
 
             return new GridData<OrderListItem>
             {
-                TotalItems = response.TotalItems,
+                TotalItems = response.TotalCount,
                 Items = response.Items ?? [],
             };
         }
@@ -57,5 +39,14 @@ namespace Odasoft.XBOL.AdminPortal.Services
         {
             await apiClient.UpdateSeasonPassStatusAsync(id, request);
         }
+
+        public Task<ClientSeasonEvent> GetClientSeasonEventInfo(ClientFilter filter)
+            => apiClient.GetClientSeasonEventInfoAsync(filter);
+
+        public Task<ClientSeasonEvent> GetClientSeasonEventByOrderReference(string orderReference)
+            => apiClient.GetClientSeasonEventByOrderReferenceAsync(orderReference);
+
+        public Task<BookingResult> BookSeasonAsync(SeasonBookingRequest request)
+            => apiClient.BookSeasonSeatsAsync(request);
     }
 }

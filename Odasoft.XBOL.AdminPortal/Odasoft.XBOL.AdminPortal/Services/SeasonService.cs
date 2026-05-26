@@ -12,12 +12,15 @@ namespace Odasoft.XBOL.AdminPortal.Services
                 startDate: null,
                 endDate: null,
                 status: status,
-                period: period,
+                // TODO: Do a proper fix
+                period: period is not null
+                    ? new[] { period.Value }
+                    : null,
                 searchTerm: null,
                 sortBy: sortBy,
                 descending: descending,
-                page: null,
-                pageSize: null);
+                page: 1,
+                pageSize: 1000);
         }
 
         public async Task<SeasonResult> GetSeasonByIdAsync(long id)

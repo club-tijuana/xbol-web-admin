@@ -1,9 +1,8 @@
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.Routing
-@using Microsoft.Extensions.Options
-@using Odasoft.XBOL.AdminPortal.Components.Shared
-@using Odasoft.XBOL.Common.Options
-@inject IOptions<HostingOptions> HostingOptionsAccessor
+@using Microsoft.AspNetCore.Components.Authorization;
+@using Microsoft.Extensions.Options;
+@using Odasoft.XBOL.Common.Options;
+
+@inject IOptions<HostingOptions> HostingOptionsAccessor;
 
 @{
     var pathBase = HostingOptionsAccessor.Value.PathBase;

@@ -20,17 +20,19 @@
                                 <MudText>@map.Name</MudText>
 
                                 <MudStack Row="true" Spacing="0" @onclick:stopPropagation="true">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Size="Size.Small"
-                                                   Color="Color.Primary"
-                                                   OnClick="@(() => EditMapAsync(map.Id))"
-                                                   Title="Editar" />
+                                    <MudTooltip Text="Editar">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Size="Size.Small"
+                                                       Color="Color.Primary"
+                                                       OnClick="@(() => EditMapAsync(map.Id))" />
+                                    </MudTooltip>
 
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Size="Size.Small"
-                                                   Color="Color.Error"
-                                                   OnClick="@(() => DeleteMapAsync(map.Id))"
-                                                   Title="Eliminar" />
+                                    <MudTooltip Text="Eliminar">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => DeleteMapAsync(map.Id))" />
+                                    </MudTooltip>
                                 </MudStack>
                             </MudStack>
                         </TabContent>
