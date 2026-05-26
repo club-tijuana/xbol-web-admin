@@ -929,25 +929,25 @@
                                                 @L["GalleryUploadHintDetails", _minWidth, _minHeight, _maxFileSize / 1024 / 1024]
                                             </MudText>
 
-                                            @if (_galleryImages != null && _galleryImages.Count() > 0 && !(_isReview || _eventStatus == EventStatus.Published))
+                                            @if (_galleryImages.Count > 0 && !(_isReview || _eventStatus == EventStatus.Published))
                                             {
                                                 <div class="mt-4 d-flex flex-wrap gap-2" style="z-index: 10;">
-                                                    @foreach (var fileName in _galleryImages.Keys)
+                                                    @foreach (var image in _galleryImages)
                                                     {
                                                         <MudChip T="string"
                                                                  Variant="Variant.Filled"
                                                                  Class="bg-secondary-darken"
                                                                  Color="MudBlazor.Color.Dark"
-                                                                 OnClose="@(() => RemoveGalleryImageAsync(fileName))"
+                                                                 OnClose="@(() => RemoveGalleryImageAsync(image))"
                                                                  CloseIcon="@Icons.Material.Filled.Close"
                                                                  @onclick:preventDefault="true">
-                                                            @fileName
+                                                            @image.Name
                                                         </MudChip>
                                                     }
                                                 </div>
                                             }
 
-                                            @if (_galleryImages != null && _galleryImages.Any() && !(_isReview || _eventStatus == EventStatus.Published))
+                                            @if (_galleryImages.Any() && !(_isReview || _eventStatus == EventStatus.Published))
                                             {
                                                 <div style="position: absolute; bottom: 16px; right: 16px; z-index: 20;">
                                                     <MudButton Variant="Variant.Outlined"
@@ -966,7 +966,7 @@
                             <MudItem xs="12">
                                 <MudStack>
                                     <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["GalleryPreview"]</MudText>
-                                    @if (_galleryImages == null || !_galleryImages.Any())
+                                    @if (!_galleryImages.Any())
                                     {
                                         <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
                                     }
@@ -979,7 +979,7 @@
                                         ShowArrows 
                                         ShowBullets>
                                             <ItemTemplate>
-                                                <MudImage Src="@context.Value.Src"
+                                                <MudImage Src="@context.Src"
                                                 Class="rounded-lg"
                                                 ObjectFit="ObjectFit.Cover"
                                                 ObjectPosition="ObjectPosition.Center"
@@ -1058,8 +1058,8 @@
     private MudFileUpload<IBrowserFile>[] _sponsorUploads = new MudFileUpload<IBrowserFile>[2];
     private ImageModel?[] _sponsorImages = new ImageModel?[2];
     private MudFileUpload<IReadOnlyList<IBrowserFile>> _galleryUpload = null!;
-    private Dictionary<string, ImageModel> _galleryImages = [];
-    private MudCarousel<KeyValuePair<string, ImageModel>> _carousel;
+    private List<ImageModel> _galleryImages = [];
+    private MudCarousel<ImageModel> _carousel = null!;
 
     private readonly long _maxFileSize = 10 * 1024 * 1024; // 10 MB
     private readonly int _minWidth = 1920;
@@ -1247,57 +1247,7 @@
             _layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(_selectedVenueMap.Id);
 
             await LoadPrices();
-
-            ICollection<MediaResponse> bannerImages = await MediaService.GetReferenceMediaByMediaTypeAsync(EventId.Value, AdminSaleType.Event, MediaType.Banner);
-            var banner = bannerImages.FirstOrDefault();
-
-            if (banner != null && banner.Id.HasValue)
-            {
-                _bannerImage = new ImageModel
-                {
-                    Id = banner.Id,
-                    Name = banner.Title,
-                    Src = banner.Url ?? string.Empty,
-                    MediaType = MediaType.Banner                    
-                };
-            }
-
-            ICollection<MediaResponse> sponsorImages = await MediaService.GetReferenceMediaByMediaTypeAsync(EventId.Value, AdminSaleType.Event, MediaType.Sponsor);
-
-            foreach (var sponsor in sponsorImages)
-            {
-                if (sponsor != null && sponsor.Id.HasValue)
-                {
-                    _sponsorImages[sponsor.Order.Value] = new ImageModel
-                    {
-                        Id = sponsor.Id,
-                        Name = sponsor.Title,
-                        Src = sponsor.Url ?? string.Empty,
-                        Order = sponsor.Order ?? 0,
-                        MediaType = MediaType.Sponsor
-                    };
-                }
-            }
-
-            ICollection<MediaResponse> galleryImages = await MediaService.GetReferenceMediaByMediaTypeAsync(EventId.Value, AdminSaleType.Event, MediaType.Gallery);
-
-            foreach (var image in galleryImages)
-            {
-
-                if (string.IsNullOrWhiteSpace(image.Title))
-                {
-                    continue;
-                }
-
-                _galleryImages.Add(image.Title, new ImageModel
-                {
-                    Id = image.Id,
-                    Name = image.Title,
-                    Src = image.Url ?? string.Empty,
-                    Order = image.Order ?? 0,
-                    MediaType = MediaType.Gallery
-                });
-            }
+            await LoadEventMediaAsync();
         }
         catch (Exception ex)
         {
@@ -1310,6 +1260,64 @@
             StateHasChanged();
         }
     }
+
+    private async Task LoadEventMediaAsync()
+    {
+        if (EventId is null || EventId <= 0)
+        {
+            return;
+        }
+
+        var media = await MediaService.GetEventMediaAsync(EventId.Value);
+
+        _bannerImage = ToImageModel(media.Banner, MediaType.Banner);
+        _sponsorImages = new ImageModel?[2];
+        _galleryImages = [];
+
+        foreach (var sponsor in (media.Sponsors ?? []).OrderBy(s => s.Order ?? int.MaxValue))
+        {
+            var order = sponsor.Order ?? 0;
+            if (order < 0 || order >= _sponsorImages.Length)
+            {
+                continue;
+            }
+
+            _sponsorImages[order] = ToImageModel(sponsor, MediaType.Sponsor, order);
+        }
+
+        foreach (var (index, image) in (media.Gallery ?? []).OrderBy(g => g.Order ?? int.MaxValue).Index())
+        {
+            var imageModel = ToImageModel(image, MediaType.Gallery, index);
+            if (imageModel is not null)
+            {
+                imageModel.Order = index;
+                _galleryImages.Add(imageModel);
+            }
+        }
+    }
+
+    private static ImageModel? ToImageModel(MediaResponse? media, MediaType mediaType, int order = 0)
+    {
+        if (media is null || !media.Id.HasValue)
+        {
+            return null;
+        }
+
+        return new ImageModel
+        {
+            Id = media.Id,
+            Name = GetMediaName(media),
+            ContentType = media.ContentType ?? string.Empty,
+            Src = media.Url ?? string.Empty,
+            Order = media.Order ?? order,
+            MediaType = mediaType
+        };
+    }
+
+    private static string GetMediaName(MediaResponse media)
+        => !string.IsNullOrWhiteSpace(media.FileName)
+            ? media.FileName
+            : media.Title ?? string.Empty;
 
     private async Task OnVenueSelected(VenueResponse? venueSelected)
     {
@@ -1498,13 +1506,14 @@
 
             await SavePricesAsync(priceRequest);
 
-            await SaveImageAsync(_bannerImage);
-            await SaveImageAsync(_sponsorImages[0]);
-            await SaveImageAsync(_sponsorImages[1]);
-            await SaveGalleryImagesAsync();
+            await SaveEventMediaAsync();
 
             Snackbar.Add(L["UpdateSuccess", L["Event"]], Severity.Success);
             Navigation.NavigateTo("./events");
+        }
+        catch (ApiException<ValidationProblemDetails> ex)
+        {
+            Snackbar.Add(ex.Result.Title ?? L["ErrorSavingEvent"], Severity.Error);
         }
         catch (ApiException<ProblemDetails> ex)
         {
@@ -1660,11 +1669,6 @@
             case MediaType.Banner:
                 if (_bannerImage != null)
                 {
-                    if (_bannerImage.Id.HasValue)
-                    {
-                        await MediaService.DeleteMediaAsync(_bannerImage.Id.Value);
-                    }
-
                     _bannerImage = null;
                     await _bannerImageUpload.ClearAsync();
                 }
@@ -1673,11 +1677,6 @@
                 var image = _sponsorImages[order];
                 if(image != null)
                 {
-                    if (image.Id.HasValue)
-                    {
-                        await MediaService.DeleteMediaAsync(image.Id.Value);
-                    }
-
                     _sponsorImages[order] = null;
                     await _sponsorUploads[order].ClearAsync();
                 }
@@ -1729,23 +1728,14 @@
 
                 src = $"data:{file.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
 
-                if (_galleryImages.ContainsKey(file.Name))
+                _galleryImages.Add(new ImageModel
                 {
-                    _galleryImages[file.Name].FileBytes = fileBytes;
-                    _galleryImages[file.Name].Src = src;
-                    _galleryImages[file.Name].ContentType = file.ContentType;
-                }
-                else
-                {
-                    _galleryImages.Add(file.Name, new ImageModel
-                    {
-                        Name = file.Name,
-                        FileBytes = fileBytes,
-                        ContentType = file.ContentType,
-                        Src = src,
-                        MediaType = MediaType.Gallery
-                    });
-                }
+                    Name = file.Name,
+                    FileBytes = fileBytes,
+                    ContentType = file.ContentType,
+                    Src = src,
+                    MediaType = MediaType.Gallery
+                });
             }
             catch (Exception ex)
             {
@@ -1760,45 +1750,41 @@
             await _galleryUpload.ClearAsync();
         }
 
-        _carousel.MoveTo(_galleryImages.Count - 1);
+        if (_carousel is not null)
+        {
+            _carousel.MoveTo(_galleryImages.Count - 1);
+        }
     }
 
-    private async Task RemoveGalleryImageAsync(string fileName)
+    private async Task RemoveGalleryImageAsync(ImageModel image)
     {
-        ImageModel? file = _galleryImages.GetValueOrDefault(fileName);
-
         try
         {
-            if (file is not null && file.Id.HasValue)
-            {
-                await MediaService.DeleteMediaAsync(file.Id.Value);
-            }
-
-            _galleryImages.Remove(fileName);
+            _galleryImages.Remove(image);
             await Task.Delay(1);
-            _carousel.MoveTo(Math.Max(_galleryImages.Count - 1, 0));
+
+            if (_carousel is not null && _galleryImages.Count > 0)
+            {
+                _carousel.MoveTo(Math.Max(_galleryImages.Count - 1, 0));
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"An error ocurred while trying to remove a gallery image. Error: {ex.Message}");
-            Snackbar.Add($"Ocurrio un error al tratar de eliminar la imgen '{fileName}'.", Severity.Error);
+            Snackbar.Add($"Ocurrio un error al tratar de eliminar la imgen '{image.Name}'.", Severity.Error);
         }
 
     }
 
     private async Task CleanGalleryImagesAsync()
     {
-        foreach (ImageModel galleryImage in _galleryImages.Values)
-        {
-            if (galleryImage.Id.HasValue)
-            {
-                await MediaService.DeleteMediaAsync(galleryImage.Id.Value);
-            }
-        }
-
         _galleryImages.Clear();
         await Task.Delay(1);
-        _carousel.MoveTo(0);
+
+        if (_carousel is not null)
+        {
+            _carousel.MoveTo(0);
+        }
     }
 
     private void SetDragClass()
@@ -1815,48 +1801,82 @@
         }
     }
 
-    private async Task SaveImageAsync(ImageModel? image)
+    private async Task SaveEventMediaAsync()
     {
+        if (EventId is null || EventId <= 0)
+        {
+            return;
+        }
+
+        var items = new List<EventMediaDesiredItem>();
+        var files = new List<FileParameter>();
+        var streams = new List<MemoryStream>();
+
         try
         {
-            if (image == null || image.FileBytes == null || !image.FileBytes.Any())
+            AddDesiredMediaItem(items, files, streams, _bannerImage, MediaType.Banner, 0);
+
+            foreach (var (image, order) in EventMediaOrderer.CompactSponsors(_sponsorImages))
             {
-                return;
+                AddDesiredMediaItem(items, files, streams, image, MediaType.Sponsor, order);
             }
 
-            using var uploadStream = new MemoryStream(image.FileBytes);
+            foreach (var (index, image) in _galleryImages.Index())
+            {
+                AddDesiredMediaItem(items, files, streams, image, MediaType.Gallery, index);
+            }
 
-            if (image.Id.HasValue)
-            {
-                await MediaService.UpdateMediaAsync(image.Id.Value, new FileParameter(
-                uploadStream,
-                image.Name,
-                image.ContentType), image.MediaType, image.Order);
-            }
-            else
-            {
-                image.Id = await MediaService.UploadMediaAsync(EventId.Value, AdminSaleType.Event, image.MediaType, image.Order, new FileParameter(
-                    uploadStream,
-                    image.Name,
-                    image.ContentType));
-            }
+            await MediaService.ReconcileEventMediaAsync(EventId.Value, items, files);
         }
-        catch (ApiException apiEx)
+        finally
         {
-            if (apiEx.StatusCode != StatusCodes.Status201Created
-                && apiEx.StatusCode != StatusCodes.Status204NoContent)
+            foreach (var stream in streams)
             {
-                throw;
+                stream.Dispose();
             }
         }
     }
 
-    private async Task SaveGalleryImagesAsync()
+    private static void AddDesiredMediaItem(
+        List<EventMediaDesiredItem> items,
+        List<FileParameter> files,
+        List<MemoryStream> streams,
+        ImageModel? image,
+        MediaType mediaType,
+        int order)
     {
-        foreach (var (index, image) in _galleryImages.Values.Index())
+        if (image is null)
         {
-            image.Order = index;
-            await SaveImageAsync(image);
+            return;
+        }
+
+        image.Order = order;
+
+        if (image.FileBytes is { Length: > 0 })
+        {
+            var stream = new MemoryStream(image.FileBytes);
+            var fileIndex = files.Count;
+
+            streams.Add(stream);
+            files.Add(new FileParameter(stream, image.Name, image.ContentType));
+            items.Add(new EventMediaDesiredItem
+            {
+                MediaType = mediaType,
+                Order = order,
+                FileIndex = fileIndex
+            });
+
+            return;
+        }
+
+        if (image.Id.HasValue)
+        {
+            items.Add(new EventMediaDesiredItem
+            {
+                MediaType = mediaType,
+                Order = order,
+                ExistingMediaId = image.Id.Value
+            });
         }
     }
 

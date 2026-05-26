@@ -9,11 +9,9 @@
 @using Odasoft.XBOL.AdminPortal.Extensions;
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
 @using Odasoft.XBOL.Business;
-@using Odasoft.XBOL.Business.Services;
 
 @inject AppLocalizer<EventDetail> L;
 @inject IEventService _eventService;
-@inject MediaService _mediaService;
 @inject NavigationManager _navigationManager;
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
@@ -167,9 +165,6 @@
             _event = await _eventService.GetEventByIdAsync(EventId);
             _eventSchedule = _event?.Schedules?.First(x => ScheduleId is null || x.Id == ScheduleId);
             OnScheduleChanged(_eventSchedule?.Id ?? 0);
-            var banners = await _mediaService.GetReferenceMediaByMediaTypeAsync(EventId, AdminSaleType.Event, MediaType.Banner);
-
-            var banner = banners.FirstOrDefault();
 
             _banner = new()
             {
@@ -177,7 +172,7 @@
                 Subtitle = _event.Subtitle,
                 StartDateTime = _eventSchedule?.StartDateTime.UtcDateTime,
                 EndDateTime = _eventSchedule?.EndDateTime.UtcDateTime,
-                ImageUrl = banner is not null && banner.Url is not null ? banner.Url : _event.BannerImageUrl,
+                ImageUrl = _event.Media?.Banner?.Url ?? _event.BannerImageUrl,
                 Venue = _event.VenueName,
                 ExternalKey = _eventSchedule?.ExternalEventKey,
             };

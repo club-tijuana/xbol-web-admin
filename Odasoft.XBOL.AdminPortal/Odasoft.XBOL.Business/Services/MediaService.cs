@@ -2,7 +2,7 @@ namespace Odasoft.XBOL.Business.Services
 {
     public class MediaService(IAdminClient adminClient)
     {
-        public async Task<long> UploadMediaAsync(long referenceId, AdminSaleType referenceType, MediaType mediaType, int order, FileParameter file)
+        public async Task<MediaResponse> UploadMediaAsync(long referenceId, AdminSaleType referenceType, MediaType mediaType, int order, FileParameter file)
         {
             return await adminClient.UploadMediaAsync(referenceId, referenceType, mediaType, order, file);
         }
@@ -25,6 +25,20 @@ namespace Odasoft.XBOL.Business.Services
         public async Task<ICollection<MediaResponse>> GetReferenceMediaAsync(long referenceId, AdminSaleType referenceType)
         {
             return await adminClient.GetProductMediaAsync(referenceId, referenceType);
+        }
+
+        public async Task<EventMediaSetResponse> GetEventMediaAsync(long eventId)
+        {
+            return await adminClient.GetEventMediaAsync(eventId);
+        }
+
+        public async Task<EventMediaSetResponse> ReconcileEventMediaAsync(
+            long eventId,
+            IEnumerable<EventMediaDesiredItem> items,
+            IEnumerable<FileParameter>? files = null)
+        {
+            var serializedItems = Newtonsoft.Json.JsonConvert.SerializeObject(items);
+            return await adminClient.ReconcileEventMediaAsync(eventId, serializedItems, files ?? []);
         }
     }
 }
