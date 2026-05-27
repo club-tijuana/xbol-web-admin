@@ -120,7 +120,7 @@
                         <MudItem xs="12">
                             <MudText Typo="Typo.subtitle1" Class="mb-3 fw-bold">Amenidades y seguridad</MudText>
 
-                            <MudChipSet T="Amenity" SelectionMode="SelectionMode.MultiSelection" @bind-SelectedValues="_selectedAmenities">
+                            <MudChipSet T="AmenityDTO" SelectionMode="SelectionMode.MultiSelection" @bind-SelectedValues="_selectedAmenities">
                                 @foreach (var amenity in _amenities)
                                 {
                                     bool isSelected = _selectedAmenities != null && _selectedAmenities.Any(a => a.Id == amenity.Id);
@@ -364,8 +364,8 @@
     private List<VenueCategory> _venueCategories = Enum.GetValues<VenueCategory>().ToList();
     private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
-    private List<Amenity> _amenities = [];
-    private IReadOnlyCollection<Amenity> _selectedAmenities = [];
+    private List<AmenityDTO> _amenities = [];
+    private IReadOnlyCollection<AmenityDTO> _selectedAmenities = [];
 
     private MudFileUpload<IBrowserFile> _facadeImageUpload = null!;
     private ImageModel? _facadeImage;

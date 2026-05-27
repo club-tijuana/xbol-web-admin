@@ -182,5 +182,6 @@ namespace Odasoft.XBOL.AdminPortal.States
         public string? Reason { get; set; }
         public string? Color { get; set; }
         public long? SourceOrderItemId { get; set; }
+        public long? PriceListItemId { get; set; }
     }
 }

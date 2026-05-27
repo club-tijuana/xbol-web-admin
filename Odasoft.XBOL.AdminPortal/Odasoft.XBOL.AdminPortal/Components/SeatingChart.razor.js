@@ -38,15 +38,38 @@ export async function renderChart(containerId, config, dotNetHelper) {
     holdToken: config.holdToken,
     pricing: {
       prices: config.pricing,
-      priceFormatter: price => '$' + price
+      priceFormatter: price => '$' + price,
+      allFeesIncluded: true
     },
     channels: config.channels,
     selectedObjects: config.selectedObjects,
     language: config.language,
     categoryFilter: config.categoryFilter,
     onObjectSelected: obj => {
-      let price = obj.pricing?.price ?? obj.pricing?.ticketTypes?.find((seat) => seat.ticketType == obj.selectedTicketType)?.price ?? 0;
-      dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, price, obj.category?.label, obj.selectedTicketType);
+      let price = 0;
+      let priceListItemId = 0;
+      let pricingRule = config.pricing.find(p => p.objects && p.objects.includes(obj.id));
+
+      if (!pricingRule) {
+        pricingRule = config.pricing.find(p => p.category === obj.category?.key);
+      }
+
+      if (pricingRule) {
+        if (obj.selectedTicketType && pricingRule.ticketTypes) {
+          const ticket = pricingRule.ticketTypes.find(t => t.ticketType === obj.selectedTicketType);
+          if (ticket) {
+            price = ticket.price;
+            priceListItemId = ticket.priceListItemId;
+          }
+        } else {
+          price = pricingRule.price;
+          priceListItemId = pricingRule.priceListItemId;
+        }
+      } else {
+        price = obj.pricing?.price ?? 0;
+      }
+
+      dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, price, priceListItemId, obj.category?.label, obj.selectedTicketType);
     },
     onObjectDeselected: obj => {
       dotNetHelper.invokeMethodAsync('HandleSeatDeselected', obj.id);
@@ -92,7 +115,6 @@ export async function trySelectObjects(chart, seats, dotNetHelper) {
   try {
     await chart?.trySelectObjects(seats);
   } catch (e) {
-    // TODO: Marcar ticket como vendido o eliminarlo de la lista
     dotNetHelper.invokeMethodAsync('NotifyError', "No se pudo seleccionar uno o mas asientos.");
   }
 }

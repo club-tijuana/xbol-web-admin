@@ -5,6 +5,348 @@
     "version": "v1"
   },
   "paths": {
+    "/api/additional-charges": {
+      "get": {
+        "tags": [
+          "AdditionalCharges"
+        ],
+        "summary": "Retrieves all additional charges.",
+        "operationId": "GetAllAdditionalChargesAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdditionalChargeResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdditionalChargeResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdditionalChargeResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "AdditionalCharges"
+        ],
+        "summary": "Creates a new additional charge.",
+        "operationId": "CreateAdditionalChargeAsync",
+        "requestBody": {
+          "description": "The details of the additional charge to create.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdditionalChargeRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdditionalChargeRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdditionalChargeRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdditionalChargeRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalChargeResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalChargeResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalChargeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/additional-charges/{id}": {
+      "get": {
+        "tags": [
+          "AdditionalCharges"
+        ],
+        "summary": "Retrieves a specific additional charge by its ID.",
+        "operationId": "GetAdditionalChargeByIdAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the additional charge.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalChargeResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalChargeResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalChargeResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "AdditionalCharges"
+        ],
+        "summary": "Updates an existing additional charge.",
+        "operationId": "UpdateAdditionalChargeAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the additional charge to update.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The updated details of the additional charge.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdditionalChargeRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdditionalChargeRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdditionalChargeRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdditionalChargeRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "AdditionalCharges"
+        ],
+        "summary": "Deletes an additional charge by ID.",
+        "operationId": "DeleteAdditionalChargeAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the additional charge to delete.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/invitations": {
       "post": {
         "tags": [
@@ -2209,6 +2551,538 @@
         }
       }
     },
+    "/api/dynamic-price-rules": {
+      "get": {
+        "tags": [
+          "DynamicPriceRules"
+        ],
+        "summary": "Retrieves dynamic price rules based on the active filter.",
+        "operationId": "GetDynamicPriceRulesAsync",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "ActiveOnly (0), InactiveOnly (1), or Both (2). Defaults to ActiveOnly.",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ActiveFilter"
+                }
+              ],
+              "default": "Active"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "DynamicPriceRules"
+        ],
+        "summary": "Creates a new dynamic price rule.",
+        "operationId": "CreateDynamicPriceRuleAsync",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DynamicPriceRuleRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DynamicPriceRuleRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DynamicPriceRuleRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DynamicPriceRuleRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dynamic-price-rules/{id}": {
+      "get": {
+        "tags": [
+          "DynamicPriceRules"
+        ],
+        "summary": "Retrieves a specific dynamic price rule by ID.",
+        "operationId": "GetDynamicPriceRuleByIdAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DynamicPriceRules"
+        ],
+        "summary": "Updates an existing dynamic price rule.",
+        "operationId": "UpdateDynamicPriceRuleAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DynamicPriceRuleRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DynamicPriceRuleRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DynamicPriceRuleRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DynamicPriceRuleRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dynamic-price-rules/{id}/status": {
+      "patch": {
+        "tags": [
+          "DynamicPriceRules"
+        ],
+        "summary": "Toggles the active status of a dynamic price rule (Acts as Logical Delete/Restore).",
+        "operationId": "SetDynamicPriceRuleStatusAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the rule.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "description": "The desired state (true for active, false for inactive/deleted).",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dynamic-price-rule-sets/{referenceType}/{referenceId}": {
+      "get": {
+        "tags": [
+          "DynamicPriceRuleSets"
+        ],
+        "summary": "Retrieves the currently active Dynamic Price Rule Set for a specific reference.",
+        "operationId": "GetActiveDynamicPriceRuleSetAsync",
+        "parameters": [
+          {
+            "name": "referenceType",
+            "in": "path",
+            "description": "The Admin Sale Type.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "referenceId",
+            "in": "path",
+            "description": "The ID of the reference.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleSet"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleSet"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPriceRuleSet"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dynamic-price-rule-sets/{referenceType}/{referenceId}/generate": {
+      "post": {
+        "tags": [
+          "DynamicPriceRuleSets"
+        ],
+        "summary": "Triggers the generation of a new Dynamic Price Rule Set.\r\nGenerates a new version only if rule expressions changed or rules were activated/deactivated.",
+        "operationId": "GenerateDynamicPriceRuleSetAsync",
+        "parameters": [
+          {
+            "name": "referenceType",
+            "in": "path",
+            "description": "The Admin Sale Type.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "referenceId",
+            "in": "path",
+            "description": "The ID of the reference.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateDynamicPriceRuleSetResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateDynamicPriceRuleSetResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateDynamicPriceRuleSetResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/events": {
       "get": {
         "tags": [
@@ -3612,110 +4486,6 @@
         }
       }
     },
-    "/api/event-seats/{eventId}/seat-prices": {
-      "get": {
-        "tags": [
-          "EventSeats"
-        ],
-        "summary": "Retrieves the list of seat prices for the specified event.",
-        "operationId": "GetSeatPricesByEventIdAsync",
-        "parameters": [
-          {
-            "name": "eventId",
-            "in": "path",
-            "description": "The unique identifier of the event for which to retrieve seat prices.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeatPriceDTO"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeatPriceDTO"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeatPriceDTO"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/event-sections/{eventId}/zone-prices": {
-      "get": {
-        "tags": [
-          "EventSection"
-        ],
-        "summary": "Retrieves the list of zone prices for the specified event.",
-        "operationId": "GetZonePricesByEventIdAsync",
-        "parameters": [
-          {
-            "name": "eventId",
-            "in": "path",
-            "description": "The unique identifier of the event for which to retrieve zone prices.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ZonePriceDTO"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ZonePriceDTO"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ZonePriceDTO"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/exchange-rates/{eventId}": {
       "get": {
         "tags": [
@@ -5059,7 +5829,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/orders/{orderReference}": {
@@ -5371,29 +6142,31 @@
         }
       }
     },
-    "/api/prices/{scheduleId}/venues/{venueMapId}": {
+    "/api/price-lists/{referenceType}/{referenceId}": {
       "get": {
         "tags": [
-          "Prices"
+          "PriceList"
         ],
-        "summary": "Retrieves the prices for the specified schedule identifier.",
-        "description": "This method performs an asynchronous lookup for the schedule prices. If no schedule prices are\r\n            found for the given identifier, the response will be 404 Not Found.",
-        "operationId": "GetPricesByScheduleAndVenue",
+        "summary": "Retrieves the currently active Price List for a specific reference.",
+        "operationId": "GetActivePriceListAsync",
         "parameters": [
           {
-            "name": "scheduleId",
+            "name": "referenceType",
             "in": "path",
-            "description": "The unique identifier of the schedule prices to retrieve. Must be a positive long value.",
+            "description": "The Admin Sale Type.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
             }
           },
           {
-            "name": "venueMapId",
+            "name": "referenceId",
             "in": "path",
-            "description": "The unique identifier of the venue map to retrieve. Must be a positive long value.",
+            "description": "The ID of the reference.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -5407,17 +6180,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/PricesResponse"
+                  "$ref": "#/components/schemas/PriceList"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PricesResponse"
+                  "$ref": "#/components/schemas/PriceList"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PricesResponse"
+                  "$ref": "#/components/schemas/PriceList"
                 }
               }
             }
@@ -5445,132 +6218,31 @@
         }
       }
     },
-    "/api/prices": {
+    "/api/price-lists/{referenceType}/{referenceId}/generate": {
       "post": {
         "tags": [
-          "Prices"
+          "PriceList"
         ],
-        "summary": "Creates prices for an entity using the specified request data and returns the result of the operation.",
-        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\r\n            successful creation, a 201 Created response is returned with the location of the newly created prices. If\r\n            the creation fails, a 422 Unprocessable Entity response is returned.",
-        "operationId": "CreatePricesAsync",
-        "requestBody": {
-          "description": "The request object containing the details required to create new prices. Must not be null and must satisfy\r\n            model validation requirements.",
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesRequest"
-                  }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesRequest"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesRequest"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesRequest"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/PricesResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PricesResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PricesResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/prices/{id}": {
-      "put": {
-        "tags": [
-          "Prices"
-        ],
-        "summary": "Updates the existing prices of an entity identified by their unique identifier.",
-        "description": "The method validates the input model state before attempting to update the prices. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
-        "operationId": "UpdatePricesAsync",
+        "summary": "Triggers the generation of a new Price List. Generates a new version only if data has changed.",
+        "operationId": "GeneratePriceListAsync",
         "parameters": [
           {
-            "name": "id",
+            "name": "referenceType",
             "in": "path",
-            "description": "The unique identifier of the prices to update. Must be a positive long value.",
+            "description": "The Admin Sale Type.",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "referenceId",
+            "in": "path",
+            "description": "The ID of the reference.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -5578,164 +6250,23 @@
             }
           }
         ],
-        "requestBody": {
-          "description": "An object containing the updated prices details. This parameter is required and cannot be null.",
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesRequest"
-                  }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesRequest"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesRequest"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesRequest"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/prices/download": {
-      "post": {
-        "tags": [
-          "Prices"
-        ],
-        "summary": "Generates and returns a CSV file containing prices information for the specified schedule and venue map.",
-        "description": "Use this endpoint to export prices records as a CSV file for the provided schedule and venue map IDs.\r\n            The response includes a UTF-8 encoded CSV file named 'prices.csv'. Ensure that the schedule and venue map IDs correspond to\r\n            existing records to receive data.",
-        "operationId": "DownloadPricesCsvAsync",
-        "requestBody": {
-          "description": "An object containing the IDs of the schedule and venue map for which to retrieve and export prices data. Must be a valid PricesCsvRequest object.",
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesCsvRequest"
-                  }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesCsvRequest"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesCsvRequest"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PricesCsvRequest"
-                  }
-                ]
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
-              "text/csv": {
+              "text/plain": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary"
+                  "$ref": "#/components/schemas/GeneratePriceListResponse"
                 }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/csv": {
+              },
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/GeneratePriceListResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneratePriceListResponse"
                 }
               }
             }
@@ -5743,7 +6274,17 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/csv": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -5753,13 +6294,35 @@
         }
       }
     },
-    "/venue/{venueMapId}/validateFile": {
-      "post": {
+    "/api/price-references/{referenceType}/{referenceId}/venue/{venueMapId}": {
+      "get": {
         "tags": [
-          "Prices"
+          "PriceReferences"
         ],
-        "operationId": "ValidatePricesCsvAsync",
+        "summary": "Retrieves a Price Reference. If it doesn't exist, returns a mocked structure based on the Venue's BaseZones.",
+        "operationId": "GetPriceReferenceAsync",
         "parameters": [
+          {
+            "name": "referenceType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminSaleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "referenceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
           {
             "name": "venueMapId",
             "in": "path",
@@ -5770,22 +6333,93 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceReferenceResponse"
                 }
               },
-              "encoding": {
-                "file": {
-                  "style": "form"
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceReferenceResponse"
                 }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceReferenceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/price-references": {
+      "post": {
+        "tags": [
+          "PriceReferences"
+        ],
+        "summary": "Saves or updates a Price Reference and its hierarchical components.",
+        "operationId": "SavePriceReferenceAsync",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PriceReferenceRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PriceReferenceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PriceReferenceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PriceReferenceRequest"
+                  }
+                ]
               }
             }
           }
@@ -5796,26 +6430,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PriceResponse"
-                  }
+                  "$ref": "#/components/schemas/PriceReferenceResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PriceResponse"
-                  }
+                  "$ref": "#/components/schemas/PriceReferenceResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PriceResponse"
-                  }
+                  "$ref": "#/components/schemas/PriceReferenceResponse"
                 }
               }
             }
@@ -5825,26 +6450,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CsvRowError"
-                  }
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CsvRowError"
-                  }
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CsvRowError"
-                  }
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -11005,17 +11621,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/Chart"
+                  "$ref": "#/components/schemas/ChartResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Chart"
+                  "$ref": "#/components/schemas/ChartResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Chart"
+                  "$ref": "#/components/schemas/ChartResponse"
                 }
               }
             }
@@ -11045,17 +11661,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/Chart"
+                  "$ref": "#/components/schemas/ChartResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Chart"
+                  "$ref": "#/components/schemas/ChartResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Chart"
+                  "$ref": "#/components/schemas/ChartResponse"
                 }
               }
             }
@@ -11226,6 +11842,26 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Unprocessable Content",
             "content": {
@@ -11373,6 +12009,26 @@
         "responses": {
           "204": {
             "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
           },
           "404": {
             "description": "Not Found",
@@ -11624,6 +12280,155 @@
   },
   "components": {
     "schemas": {
+      "ActiveFilter": {
+        "enum": [
+          "Active",
+          "Inactive",
+          "Both"
+        ],
+        "type": "string"
+      },
+      "AdditionalCharge": {
+        "type": "object",
+        "properties": {
+          "priceReferenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceReference": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceReference"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "feeType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FeeType"
+              }
+            ]
+          },
+          "value": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "appliesToTotal": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deletedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdditionalChargeRequest": {
+        "required": [
+          "feeType",
+          "name",
+          "priceReferenceId",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "priceReferenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "feeType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FeeType"
+              }
+            ]
+          },
+          "value": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdditionalChargeResponse": {
+        "required": [
+          "feeType",
+          "id",
+          "name",
+          "referenceId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "referenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "feeType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FeeType"
+              }
+            ]
+          },
+          "value": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdminItemType": {
+        "enum": [
+          "Ticket",
+          "SeasonPass"
+        ],
+        "type": "string"
+      },
       "AdminSaleType": {
         "enum": [
           "Event",
@@ -11639,6 +12444,93 @@
           "None"
         ],
         "type": "string"
+      },
+      "Amenity": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "iconIdentifier": {
+            "type": "string"
+          },
+          "appliesToVenue": {
+            "type": "boolean"
+          },
+          "appliesToSuite": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AuthInvitation": {
+        "required": [
+          "email",
+          "normalizedEmail",
+          "tokenHash"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "normalizedEmail": {
+            "type": "string"
+          },
+          "tokenHash": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "revokedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
       },
       "AvailabilityReasonSummaryResult": {
         "type": "object",
@@ -11730,6 +12622,40 @@
         },
         "additionalProperties": false
       },
+      "BaseRow": {
+        "type": "object",
+        "properties": {
+          "baseSectionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSection"
+              }
+            ]
+          },
+          "rowLabel": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseSeats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseSeat"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "BaseRowResponse": {
         "type": "object",
         "properties": {
@@ -11741,6 +12667,47 @@
             "type": "string"
           },
           "sectionId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BaseSeat": {
+        "type": "object",
+        "properties": {
+          "baseRowId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseRow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseRow"
+              }
+            ]
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "seatNumber": {
+            "type": "string"
+          },
+          "seatType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeatType"
+              }
+            ]
+          },
+          "eventSeats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventSeat"
+            }
+          },
+          "id": {
             "type": "integer",
             "format": "int64"
           }
@@ -11764,6 +12731,47 @@
         },
         "additionalProperties": false
       },
+      "BaseSection": {
+        "type": "object",
+        "properties": {
+          "baseZoneId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseZone": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseZone"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "sectionType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SectionType"
+              }
+            ]
+          },
+          "baseRows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseRow"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "BaseSectionResponse": {
         "type": "object",
         "properties": {
@@ -11775,6 +12783,41 @@
             "type": "string"
           },
           "zoneId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BaseZone": {
+        "type": "object",
+        "properties": {
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venueMap": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueMap"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "externalZoneKey": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseSections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseSection"
+            }
+          },
+          "id": {
             "type": "integer",
             "format": "int64"
           }
@@ -11831,10 +12874,9 @@
         "type": "object",
         "properties": {
           "seats": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "number",
-              "format": "decimal"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookingSeatRequest"
             }
           },
           "holdToken": {
@@ -11931,6 +12973,26 @@
         },
         "additionalProperties": false
       },
+      "BookingSeatRequest": {
+        "required": [
+          "seatKey"
+        ],
+        "type": "object",
+        "properties": {
+          "seatKey": {
+            "type": "string"
+          },
+          "seatPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "priceListItemId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "CanRenewOrderResponse": {
         "type": "object",
         "properties": {
@@ -11954,27 +13016,6 @@
         },
         "additionalProperties": false
       },
-      "Category": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "nullable": true
-          },
-          "label": {
-            "type": "string",
-            "nullable": true
-          },
-          "color": {
-            "type": "string",
-            "nullable": true
-          },
-          "accessible": {
-            "type": "boolean",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ChangeInfoRequest": {
         "type": "object",
         "properties": {
@@ -11991,37 +13032,7 @@
         },
         "additionalProperties": false
       },
-      "Channel": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "color": {
-            "type": "string",
-            "nullable": true
-          },
-          "index": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "objects": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Chart": {
+      "ChartResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -12041,13 +13052,6 @@
             "type": "string",
             "nullable": true
           },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
           "archived": {
             "type": "boolean",
             "nullable": true
@@ -12060,36 +13064,22 @@
             "type": "string",
             "nullable": true
           },
-          "events": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Event"
-            },
+          "venueType": {
+            "type": "string",
             "nullable": true
           },
           "validation": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChartValidationResult"
+                "$ref": "#/components/schemas/ChartValidationResponse"
               }
             ],
-            "nullable": true
-          },
-          "venueType": {
-            "type": "string",
-            "nullable": true
-          },
-          "zones": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Zone"
-            },
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "ChartValidationResult": {
+      "ChartValidationResponse": {
         "type": "object",
         "properties": {
           "errors": {
@@ -12105,6 +13095,157 @@
               "type": "string"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Client": {
+        "type": "object",
+        "properties": {
+          "clientType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientType"
+              }
+            ]
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "gender": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ],
+            "nullable": true
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "phoneRegionCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PhoneRegionCode"
+              }
+            ],
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "taxId": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "streetAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "extNum": {
+            "type": "string",
+            "nullable": true
+          },
+          "intNum": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "firebaseUid": {
+            "type": "string",
+            "nullable": true
+          },
+          "refreshTokensRevokedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "clientCreditAccount": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientCreditAccount"
+              }
+            ],
+            "nullable": true
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ticket"
+            }
+          },
+          "legalRepresentative": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalRepresentative"
+              }
+            ],
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -12211,6 +13352,91 @@
         },
         "additionalProperties": false
       },
+      "ClientCreditAccount": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "client": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Client"
+              }
+            ]
+          },
+          "creditLimit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "appliesInterestRate": {
+            "type": "boolean"
+          },
+          "paymentFrequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentFrequency"
+              }
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "currentBalance": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "availableAmount": {
+            "type": "number",
+            "format": "decimal",
+            "readOnly": true
+          },
+          "creditStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditStatus"
+              }
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clientCreditTransactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientCreditTransaction"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "ClientCreditDTO": {
         "required": [
           "clientId",
@@ -12288,6 +13514,71 @@
           },
           "validateClientCreditLimit": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientCreditTransaction": {
+        "type": "object",
+        "properties": {
+          "clientCreditAccountId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientCreditAccount": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientCreditAccount"
+              }
+            ]
+          },
+          "transactionType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditTransactionType"
+              }
+            ]
+          },
+          "paymentType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string"
+          },
+          "referenceId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -13146,18 +14437,179 @@
         },
         "additionalProperties": false
       },
-      "CsvRowError": {
+      "CurrencyType": {
+        "enum": [
+          "MXN",
+          "USD"
+        ],
+        "type": "string"
+      },
+      "DynamicPriceRule": {
         "type": "object",
         "properties": {
-          "rowNumber": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "expression": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DynamicPriceRuleRequest": {
+        "required": [
+          "code",
+          "expression",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "expression": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DynamicPriceRuleResponse": {
+        "required": [
+          "code",
+          "expression",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "expression": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DynamicPriceRuleSet": {
+        "type": "object",
+        "properties": {
+          "priceReferenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceReference": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceReference"
+              }
+            ]
+          },
+          "versionNumber": {
             "type": "integer",
             "format": "int32"
           },
-          "errors": {
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VersionStatus"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/DynamicPriceRuleSetItem"
             }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DynamicPriceRuleSetItem": {
+        "type": "object",
+        "properties": {
+          "dynamicPriceRuleSetId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dynamicPriceRuleSet": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DynamicPriceRuleSet"
+              }
+            ]
+          },
+          "dynamicPriceRuleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dynamicPriceRule": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DynamicPriceRule"
+              }
+            ]
+          },
+          "expression": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -13181,127 +14633,144 @@
       "Event": {
         "type": "object",
         "properties": {
-          "id": {
+          "venueMapId": {
             "type": "integer",
             "format": "int64",
             "nullable": true
           },
-          "key": {
-            "type": "string",
+          "venueMap": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueMap"
+              }
+            ],
             "nullable": true
           },
-          "chartKey": {
-            "type": "string",
+          "organizerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Organizer"
+              }
+            ],
+            "nullable": true
+          },
+          "seasonId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "season": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Season"
+              }
+            ],
             "nullable": true
           },
           "name": {
+            "type": "string"
+          },
+          "subtitle": {
             "type": "string",
             "nullable": true
           },
-          "date": {
+          "shortDescription": {
             "type": "string",
-            "format": "date-time",
             "nullable": true
           },
-          "tableBookingConfig": {
+          "longDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "posterImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "landingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "ageRestriction": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/TableBookingConfig"
+                "$ref": "#/components/schemas/AgeRestriction"
               }
             ],
             "nullable": true
           },
-          "supportsBestAvailable": {
-            "type": "boolean",
+          "securityPolicies": {
+            "type": "string",
             "nullable": true
           },
-          "forSaleConfig": {
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/ForSaleConfig"
+                "$ref": "#/components/schemas/EventStatus"
               }
-            ],
-            "nullable": true
+            ]
           },
-          "createdOn": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedOn": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "channels": {
+          "schedules": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Channel"
-            },
+              "$ref": "#/components/schemas/EventSchedule"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
-          "objectCategories": {
-            "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            },
-            "nullable": true
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
           },
           "categories": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Category"
-            },
+              "$ref": "#/components/schemas/EventCategory"
+            }
+          },
+          "performerId": {
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           },
-          "partialSeasonKeys": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
+          "performer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Performer"
+              }
+            ],
             "nullable": true
           },
-          "events": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Event"
-            },
-            "nullable": true
-          },
-          "isSeason": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "isTopLevelSeason": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "isPartialSeason": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "isEventInSeason": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "topLevelSeasonKey": {
-            "type": "string",
-            "nullable": true
-          },
-          "isInThePast": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "partialSeasonKeysForEvent": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "forSalePropagated": {
-            "type": "boolean",
-            "nullable": true
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -13320,10 +14789,9 @@
             "type": "string"
           },
           "seats": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "number",
-              "format": "decimal"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookingSeatRequest"
             },
             "nullable": true
           },
@@ -13367,6 +14835,31 @@
           "localizer": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventCategory": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -13745,6 +15238,120 @@
         },
         "additionalProperties": false
       },
+      "EventSchedule": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "event": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Event"
+              }
+            ]
+          },
+          "startDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gateOpenDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "gameCategory": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GameCategory"
+              }
+            ],
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScheduleStatus"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "externalEventKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "holdExpirationInMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventSection"
+            }
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ticket"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "EventScheduleDTO": {
         "required": [
           "availableSeats",
@@ -13823,7 +15430,7 @@
           "prices": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SeatsIoPriceDTO"
+              "$ref": "#/components/schemas/SeatsIoPriceResponse"
             }
           }
         },
@@ -13910,6 +15517,105 @@
         },
         "additionalProperties": false
       },
+      "EventSeat": {
+        "type": "object",
+        "properties": {
+          "eventSectionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventSection"
+              }
+            ]
+          },
+          "baseSeatId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseSeat": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSeat"
+              }
+            ]
+          },
+          "forSale": {
+            "type": "boolean"
+          },
+          "externalSeatObjectKey": {
+            "type": "string"
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ticket"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventSection": {
+        "type": "object",
+        "properties": {
+          "eventScheduleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventSchedule": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventSchedule"
+              }
+            ]
+          },
+          "baseSectionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSection"
+              }
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "totalSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ticket"
+            }
+          },
+          "eventSeats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventSeat"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "EventStatus": {
         "enum": [
           "Draft",
@@ -13920,6 +15626,53 @@
           "Cancelled"
         ],
         "type": "string"
+      },
+      "ExchangeRate": {
+        "type": "object",
+        "properties": {
+          "organizerId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "organizer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Organizer"
+              }
+            ]
+          },
+          "rate": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "disabledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "disabledBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
       },
       "ExchangeRateResponse": {
         "type": "object",
@@ -13935,37 +15688,12 @@
         },
         "additionalProperties": false
       },
-      "ForSaleConfig": {
-        "type": "object",
-        "properties": {
-          "forSale": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "objects": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "areaPlaces": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
-          "categories": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
+      "FeeType": {
+        "enum": [
+          "Fixed",
+          "Percentage"
+        ],
+        "type": "string"
       },
       "ForgotPasswordRequest": {
         "type": "object",
@@ -13977,12 +15705,43 @@
         },
         "additionalProperties": false
       },
+      "GameCategory": {
+        "enum": [
+          "Regular",
+          "Playoff"
+        ],
+        "type": "string"
+      },
       "Gender": {
         "enum": [
           "Female",
           "Male"
         ],
         "type": "string"
+      },
+      "GenerateDynamicPriceRuleSetResponse": {
+        "type": "object",
+        "properties": {
+          "wasGenerated": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GeneratePriceListResponse": {
+        "type": "object",
+        "properties": {
+          "wasGenerated": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       },
       "HoldSeatsBody": {
         "required": [
@@ -14061,6 +15820,55 @@
         ],
         "type": "string"
       },
+      "InventoryBatch": {
+        "type": "object",
+        "properties": {
+          "eventScheduleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventSchedule": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventSchedule"
+              }
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cutoffDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryBatchStatus"
+              }
+            ]
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ticket"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InventoryBatchStatus": {
+        "enum": [
+          "Active",
+          "Closed"
+        ],
+        "type": "string"
+      },
       "ItemType": {
         "enum": [
           "Ticket",
@@ -14115,6 +15923,44 @@
           "curp": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LegalRepresentative": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "client": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Client"
+              }
+            ]
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dob": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "taxId": {
+            "type": "string",
+            "nullable": true
+          },
+          "curp": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -14346,6 +16192,173 @@
         ],
         "type": "string"
       },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "client": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Client"
+              }
+            ],
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "nullable": true
+          },
+          "reference": {
+            "type": "string"
+          },
+          "subTotal": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalFees": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalTaxes": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "discount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            ]
+          },
+          "orderType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderType"
+              }
+            ]
+          },
+          "saleChannel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SaleChannel"
+              }
+            ]
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "relatedOrderId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "relatedOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ],
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "fees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderFee"
+            }
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderTax"
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Payment"
+            }
+          },
+          "paymentChangeDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentChangeDetail"
+            }
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ticket"
+            }
+          },
+          "promoRedemptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PromoCodeRedemption"
+            }
+          },
+          "actionLogs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderActionLog"
+            }
+          },
+          "orderTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderTag"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "OrderAction": {
         "enum": [
           "OrderCreated",
@@ -14361,6 +16374,51 @@
           "CancelTickets"
         ],
         "type": "string"
+      },
+      "OrderActionLog": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ]
+          },
+          "seats": {
+            "type": "string"
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderAction"
+              }
+            ]
+          },
+          "actionName": {
+            "type": "string"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
       },
       "OrderActionRequest": {
         "required": [
@@ -14439,6 +16497,34 @@
           },
           "createdBy": {
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderFee": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ]
+          },
+          "feeType": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -14524,6 +16610,49 @@
         },
         "additionalProperties": false
       },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ]
+          },
+          "itemType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminItemType"
+              }
+            ]
+          },
+          "itemReferenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "isCourtesy": {
+            "type": "boolean"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "priceListItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "OrderItemResponse": {
         "type": "object",
         "properties": {
@@ -14568,6 +16697,10 @@
           "renewalPrice": {
             "type": "number",
             "format": "decimal"
+          },
+          "priceListItemId": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -14851,6 +16984,34 @@
         ],
         "type": "string"
       },
+      "OrderTax": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ]
+          },
+          "taxType": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "OrderType": {
         "enum": [
           "Ticket",
@@ -14858,6 +17019,248 @@
           "Bundle"
         ],
         "type": "string"
+      },
+      "Organizer": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "phoneRegionCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PhoneRegionCode"
+              }
+            ],
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "websiteUrl": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "bannerUrl": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "organizerMembers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganizerMember"
+            }
+          },
+          "exchangeRates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExchangeRate"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrganizerMember": {
+        "type": "object",
+        "properties": {
+          "organizerId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "organizer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Organizer"
+              }
+            ]
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ]
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrencyType"
+              }
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "amountMXN": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "receivedAmount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "receivedAmountMXN": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "exchangeRateId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "exchangeRate": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "paymentType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            ]
+          },
+          "provider": {
+            "type": "string"
+          },
+          "providerReference": {
+            "type": "string"
+          },
+          "transactionReference": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appliedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentChangeDetail": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ]
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrencyType"
+              }
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "amountMXN": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "exchangeRate": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
       },
       "PaymentFrequency": {
         "enum": [
@@ -14919,6 +17322,96 @@
         ],
         "type": "string"
       },
+      "Performer": {
+        "type": "object",
+        "properties": {
+          "performerType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PerformerType"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "seasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Season"
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PerformerType": {
+        "enum": [
+          "Artist",
+          "Team",
+          "Show",
+          "Organization"
+        ],
+        "type": "string"
+      },
+      "PhoneRegionCode": {
+        "type": "object",
+        "properties": {
+          "regionCode": {
+            "type": "string"
+          },
+          "dialCode": {
+            "type": "string"
+          },
+          "flagEmoji": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "PhoneRegionCodeResponse": {
         "type": "object",
         "properties": {
@@ -14940,12 +17433,450 @@
         },
         "additionalProperties": false
       },
-      "PriceRequest": {
+      "Price": {
+        "type": "object",
+        "properties": {
+          "priceSegmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceSegment": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceSegment"
+              }
+            ]
+          },
+          "priceTypeId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceType"
+              }
+            ]
+          },
+          "priceValue": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "applyDynamicPricing": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceItemType": {
+        "enum": [
+          "Zone",
+          "Section",
+          "Row",
+          "Seat"
+        ],
+        "type": "string"
+      },
+      "PriceList": {
+        "type": "object",
+        "properties": {
+          "priceReferenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceReference": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceReference"
+              }
+            ]
+          },
+          "versionNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publishBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VersionStatus"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceListItem"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceListItem": {
+        "type": "object",
+        "properties": {
+          "priceListId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceList": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceList"
+              }
+            ]
+          },
+          "baseZoneId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseZone": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseZone"
+              }
+            ],
+            "nullable": true
+          },
+          "baseSectionId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSection"
+              }
+            ],
+            "nullable": true
+          },
+          "baseRowId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseRow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseRow"
+              }
+            ],
+            "nullable": true
+          },
+          "baseSeatId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseSeat": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSeat"
+              }
+            ],
+            "nullable": true
+          },
+          "priceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "price": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Price"
+              }
+            ]
+          },
+          "priceTypeId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceType"
+              }
+            ]
+          },
+          "basePrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "finalPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "feeList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceListItemFee"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceListItemFee": {
+        "type": "object",
+        "properties": {
+          "priceListItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceListItem": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceListItem"
+              }
+            ]
+          },
+          "additionalChargeId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "additionalCharge": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdditionalCharge"
+              }
+            ]
+          },
+          "feeName": {
+            "type": "string"
+          },
+          "feeType": {
+            "type": "string"
+          },
+          "feeValue": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "feeAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceReference": {
+        "type": "object",
+        "properties": {
+          "referenceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminSaleType"
+              }
+            ]
+          },
+          "referenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "priceSegments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceSegment"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceReferenceRequest": {
+        "type": "object",
+        "properties": {
+          "referenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "referenceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminSaleType"
+              }
+            ]
+          },
+          "priceSegments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceSegmentRequest"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceReferenceResponse": {
         "type": "object",
         "properties": {
           "id": {
             "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "referenceId": {
+            "type": "integer",
             "format": "int64"
+          },
+          "referenceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminSaleType"
+              }
+            ]
+          },
+          "priceSegments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceSegmentResponse"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceSegment": {
+        "type": "object",
+        "properties": {
+          "priceReferenceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceReference": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceReference"
+              }
+            ]
+          },
+          "baseZoneId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseZone": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseZone"
+              }
+            ]
+          },
+          "baseSectionId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSection"
+              }
+            ],
+            "nullable": true
+          },
+          "baseRowId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseRow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseRow"
+              }
+            ],
+            "nullable": true
+          },
+          "baseSeatId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "baseSeat": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSeat"
+              }
+            ],
+            "nullable": true
+          },
+          "priceItemType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceItemType"
+              }
+            ]
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venueMap": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueMap"
+              }
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Price"
+            }
+          },
+          "priceTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceType"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceSegmentRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           },
           "baseZoneId": {
             "type": "integer",
@@ -14966,24 +17897,34 @@
             "format": "int64",
             "nullable": true
           },
-          "itemPrice": {
-            "type": "number",
-            "format": "decimal"
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "prices": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "decimal"
+            }
           },
           "priceTypes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PriceTypeRequest"
-            },
-            "nullable": true
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
           }
         },
         "additionalProperties": false
       },
-      "PriceResponse": {
+      "PriceSegmentResponse": {
         "type": "object",
         "properties": {
           "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceReferenceId": {
             "type": "integer",
             "format": "int64"
           },
@@ -15022,33 +17963,39 @@
             "type": "string",
             "nullable": true
           },
-          "itemPrice": {
-            "type": "number",
-            "format": "decimal"
-          },
           "venueMapId": {
             "type": "integer",
             "format": "int64"
           },
           "priceTypes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PriceTypeResponse"
-            },
-            "nullable": true
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "prices": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "decimal"
+            }
           }
         },
         "additionalProperties": false
       },
-      "PriceTypeRequest": {
-        "required": [
-          "name"
-        ],
+      "PriceType": {
         "type": "object",
         "properties": {
-          "id": {
+          "priceSegmentId": {
             "type": "integer",
             "format": "int64"
+          },
+          "priceSegment": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceSegment"
+              }
+            ]
           },
           "name": {
             "type": "string"
@@ -15061,110 +18008,16 @@
             "type": "string",
             "nullable": true
           },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          }
-        },
-        "additionalProperties": false
-      },
-      "PriceTypeResponse": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
+          "isBasePrice": {
+            "type": "boolean"
+          },
+          "primary": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
           "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "label": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          }
-        },
-        "additionalProperties": false
-      },
-      "PricesCsvRequest": {
-        "type": "object",
-        "properties": {
-          "scheduleId": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "venueMapId": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "additionalProperties": false
-      },
-      "PricesRequest": {
-        "type": "object",
-        "properties": {
-          "referenceId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "referenceType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AdminSaleType"
-              }
-            ]
-          },
-          "prices": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PriceRequest"
-            }
-          },
-          "venueMapId": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "additionalProperties": false
-      },
-      "PricesResponse": {
-        "type": "object",
-        "properties": {
-          "referenceId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "referenceType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AdminSaleType"
-              }
-            ]
-          },
-          "prices": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PriceResponse"
-            }
-          },
-          "priceTypes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PriceTypeResponse"
-            }
-          },
-          "venueMapId": {
             "type": "integer",
             "format": "int64"
           }
@@ -15197,6 +18050,113 @@
           }
         },
         "additionalProperties": { }
+      },
+      "PromoCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "discountType": {
+            "type": "string"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "maxUses": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "perUserLimit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "validTo": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "promoCodeRedemptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PromoCodeRedemption"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PromoCodeRedemption": {
+        "type": "object",
+        "properties": {
+          "promoCodeId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "promoCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PromoCode"
+              }
+            ]
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "nullable": true
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ]
+          },
+          "redeemedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
       },
       "RegisterRequest": {
         "type": "object",
@@ -15441,7 +18401,7 @@
         "enum": [
           "Event",
           "SeasonPass",
-          "EventGroup"
+          "Bundle"
         ],
         "type": "string"
       },
@@ -15453,6 +18413,135 @@
           "Completed"
         ],
         "type": "string"
+      },
+      "Season": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "posterImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "landingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonStatus"
+              }
+            ]
+          },
+          "previousSeasonId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "previousSeason": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Season"
+              }
+            ],
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "seasonPasses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonPass"
+            }
+          },
+          "seasonSections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonSection"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "externalSeasonKey": {
+            "type": "string"
+          },
+          "performerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "performer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Performer"
+              }
+            ],
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
       },
       "SeasonBookingRequest": {
         "required": [
@@ -15473,10 +18562,9 @@
             "nullable": true
           },
           "seats": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "number",
-              "format": "decimal"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookingSeatRequest"
             },
             "nullable": true
           },
@@ -15585,6 +18673,163 @@
           "pageSize": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SeasonPass": {
+        "type": "object",
+        "properties": {
+          "seasonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "season": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Season"
+              }
+            ]
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "client": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Client"
+              }
+            ],
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "nullable": true
+          },
+          "seasonSeatId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "seasonSeat": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonSeat"
+              }
+            ],
+            "nullable": true
+          },
+          "trackingCode": {
+            "type": "string"
+          },
+          "privateToken": {
+            "type": "string"
+          },
+          "seasonPassType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPassType"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPassStatus"
+              }
+            ]
+          },
+          "suspendedReason": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPassSuspendedReason"
+              }
+            ],
+            "nullable": true
+          },
+          "suspendedOtherReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDigital": {
+            "type": "boolean"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "purchasedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "seasonPassEventTickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonPassEventTicket"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SeasonPassEventTicket": {
+        "type": "object",
+        "properties": {
+          "seasonPassId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "seasonPass": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPass"
+              }
+            ]
+          },
+          "ticketId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ticket": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Ticket"
+              }
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -15698,6 +18943,13 @@
         ],
         "type": "string"
       },
+      "SeasonPassType": {
+        "enum": [
+          "Full",
+          "Partial"
+        ],
+        "type": "string"
+      },
       "SeasonPeriod": {
         "enum": [
           "CurrentSeason",
@@ -15780,8 +19032,105 @@
           "prices": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SeatsIoPriceDTO"
+              "$ref": "#/components/schemas/SeatsIoPriceResponse"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "SeasonSeat": {
+        "type": "object",
+        "properties": {
+          "seasonSectionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "seasonSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonSection"
+              }
+            ]
+          },
+          "baseSeatId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseSeat": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSeat"
+              }
+            ]
+          },
+          "priceOverride": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "externalSeatObjectKey": {
+            "type": "string"
+          },
+          "forSale": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SeasonSection": {
+        "type": "object",
+        "properties": {
+          "seasonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "season": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Season"
+              }
+            ]
+          },
+          "baseSectionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSection"
+              }
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "totalSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "seasonSeats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonSeat"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -15817,6 +19166,10 @@
           "category": {
             "type": "string",
             "nullable": true
+          },
+          "priceListItemId": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -15877,7 +19230,7 @@
           "prices": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SeatsIoPriceDTO"
+              "$ref": "#/components/schemas/SeatsIoPriceResponse"
             }
           }
         },
@@ -15907,9 +19260,14 @@
         ],
         "type": "string"
       },
-      "SeatsIoPriceDTO": {
+      "SeatsIoPriceResponse": {
         "type": "object",
         "properties": {
+          "priceListItemId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
           "price": {
             "type": "number",
             "format": "decimal",
@@ -15940,8 +19298,46 @@
           "ticketTypes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TicketTypePriceDTO"
+              "$ref": "#/components/schemas/SeatsIoTicketTypeResponse"
             },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SeatsIoTicketTypeResponse": {
+        "type": "object",
+        "properties": {
+          "priceListItemId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "ticketType": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "primary": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "unavailable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "unavailableReason": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -15991,6 +19387,14 @@
           }
         },
         "additionalProperties": false
+      },
+      "SectionType": {
+        "enum": [
+          "General",
+          "Vip",
+          "Box"
+        ],
+        "type": "string"
       },
       "SelectOption": {
         "type": "object",
@@ -16225,23 +19629,176 @@
         ],
         "type": "string"
       },
-      "TableBookingConfig": {
+      "Ticket": {
         "type": "object",
         "properties": {
-          "mode": {
+          "eventScheduleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventSchedule": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventSchedule"
+              }
+            ]
+          },
+          "eventSectionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventSection"
+              }
+            ]
+          },
+          "seasonPassEventTicketId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "seasonPassEventTicket": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeasonPassEventTicket"
+              }
+            ],
+            "nullable": true
+          },
+          "eventSeatId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventSeat": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventSeat"
+              }
+            ]
+          },
+          "inventoryBatchId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "inventoryBatch": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryBatch"
+              }
+            ],
+            "nullable": true
+          },
+          "originalClientId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "originalClient": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Client"
+              }
+            ],
+            "nullable": true
+          },
+          "currentClientId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "currentClient": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Client"
+              }
+            ],
+            "nullable": true
+          },
+          "originalOrderId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "originalOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ],
+            "nullable": true
+          },
+          "ticketCode": {
+            "type": "string"
+          },
+          "ticketType": {
+            "type": "string"
+          },
+          "privateToken": {
+            "type": "string"
+          },
+          "sectionLabelSnapshot": {
+            "type": "string"
+          },
+          "seatLabelSnapshot": {
+            "type": "string"
+          },
+          "isDigital": {
+            "type": "boolean"
+          },
+          "pricePaid": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketStatus"
+              }
+            ]
+          },
+          "lastScanAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastScanResult": {
             "type": "string",
             "nullable": true
           },
-          "tables": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string",
-              "nullable": true
-            },
-            "nullable": true
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
+      },
+      "TicketStatus": {
+        "enum": [
+          "Issued",
+          "Used",
+          "Cancelled",
+          "Transferred"
+        ],
+        "type": "string"
       },
       "TicketTypePriceDTO": {
         "type": "object",
@@ -16577,6 +20134,169 @@
         },
         "additionalProperties": false
       },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedUserName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailConfirmed": {
+            "type": "boolean"
+          },
+          "passwordHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "securityStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrencyStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumberConfirmed": {
+            "type": "boolean"
+          },
+          "twoFactorEnabled": {
+            "type": "boolean"
+          },
+          "lockoutEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lockoutEnabled": {
+            "type": "boolean"
+          },
+          "accessFailedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "organizerMemberId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizerMember": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrganizerMember"
+              }
+            ],
+            "nullable": true
+          },
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "phoneRegionCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PhoneRegionCode"
+              }
+            ],
+            "nullable": true
+          },
+          "emailVerifiedTimeStamp": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "phoneVerifiedTimeStamp": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isMfaEnabled": {
+            "type": "boolean"
+          },
+          "mfaMethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firebaseUid": {
+            "type": "string",
+            "nullable": true
+          },
+          "refreshTokensRevokedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "promoCodeRedemptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PromoCodeRedemption"
+            }
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ticket"
+            }
+          },
+          "authInvitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthInvitation"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "UserProfileResponse": {
         "type": "object",
         "properties": {
@@ -16650,6 +20370,167 @@
         },
         "additionalProperties": { }
       },
+      "Venue": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueCategory"
+              }
+            ]
+          },
+          "country": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "string"
+          },
+          "streetAddress": {
+            "type": "string"
+          },
+          "extNum": {
+            "type": "string"
+          },
+          "intNum": {
+            "type": "string"
+          },
+          "zipCode": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "shortDescription": {
+            "type": "string"
+          },
+          "longDescription": {
+            "type": "string"
+          },
+          "landingUrl": {
+            "type": "string"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": "string"
+          },
+          "phoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "phoneRegionCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PhoneRegionCode"
+              }
+            ],
+            "nullable": true
+          },
+          "contactPhoneNumber": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueStatus"
+              }
+            ]
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "policies": {
+            "type": "string"
+          },
+          "additionalComments": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "venueMaps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VenueMap"
+            }
+          },
+          "venueImages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VenueImage"
+            }
+          },
+          "venueAmenities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VenueAmenity"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueAmenity": {
+        "type": "object",
+        "properties": {
+          "venueId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venue": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Venue"
+              }
+            ]
+          },
+          "amenityId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "amenity": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Amenity"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
       "VenueAmenityResponse": {
         "required": [
           "iconIdentifier",
@@ -16683,6 +20564,64 @@
         ],
         "type": "string"
       },
+      "VenueImage": {
+        "type": "object",
+        "properties": {
+          "venueId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venue": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Venue"
+              }
+            ]
+          },
+          "imageType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageType"
+              }
+            ]
+          },
+          "content": {
+            "type": "string",
+            "format": "byte"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "VenueImageResponse": {
         "type": "object",
         "properties": {
@@ -16702,6 +20641,71 @@
           },
           "contentType": {
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueMap": {
+        "type": "object",
+        "properties": {
+          "venueId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venue": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Venue"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "externalMapKey": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "baseZones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseZone"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -17022,19 +21026,12 @@
         ],
         "type": "string"
       },
-      "Zone": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "nullable": true
-          },
-          "label": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
+      "VersionStatus": {
+        "enum": [
+          "Active",
+          "Archived"
+        ],
+        "type": "string"
       },
       "ZonePriceDTO": {
         "type": "object",
@@ -17120,6 +21117,9 @@
   ],
   "tags": [
     {
+      "name": "AdditionalCharges"
+    },
+    {
       "name": "Auth"
     },
     {
@@ -17138,16 +21138,16 @@
       "name": "CreditTransactions"
     },
     {
+      "name": "DynamicPriceRules"
+    },
+    {
+      "name": "DynamicPriceRuleSets"
+    },
+    {
       "name": "Events"
     },
     {
       "name": "EventSchedule"
-    },
-    {
-      "name": "EventSeats"
-    },
-    {
-      "name": "EventSection"
     },
     {
       "name": "ExchangeRate"
@@ -17177,7 +21177,10 @@
       "name": "PhoneNumbers"
     },
     {
-      "name": "Prices"
+      "name": "PriceList"
+    },
+    {
+      "name": "PriceReferences"
     },
     {
       "name": "Reports"

@@ -130,7 +130,8 @@
                         Category = i.Zone,
                         Price = i.RenewalPrice ?? i.Price ?? 0,
                         SourceOrderItemId = OrderInfo.OrderId,
-                        IsSold = i.IsSold
+                        IsSold = i.IsSold,
+                        PriceListItemId = i.PriceListItemId ?? 0
                     }).ToList();
 
                 CartState.LoadOrder(OrderInfo.CurrentSeasonId ?? 0, orderSeats);

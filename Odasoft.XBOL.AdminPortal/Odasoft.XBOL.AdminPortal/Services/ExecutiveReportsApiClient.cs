@@ -1,7 +1,6 @@
-using System.Net.Http.Json;
-using System.Text.Json;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.AdminPortal.ViewModels.Reports;
+using System.Text.Json;
 
 namespace Odasoft.XBOL.AdminPortal.Services;
 

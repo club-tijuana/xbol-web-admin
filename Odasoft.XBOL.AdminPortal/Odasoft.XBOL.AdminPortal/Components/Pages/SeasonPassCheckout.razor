@@ -162,7 +162,7 @@
 
     private string _secretKey = string.Empty;
     private string? _seasonKey = string.Empty;
-    private List<SeatsIoPriceDTO> _prices = new();
+    private List<SeatsIoPriceResponse> _prices = new();
     private bool _loading = true;
     private bool _error = false;
     private ClientFilter clientFilter = new();
@@ -273,7 +273,8 @@
                     {
                         SeatId = x.SeatId ?? "",
                         Price = (decimal)x.Price,
-                        Category = x.Category
+                        Category = x.Category,
+                        PriceListItemId = 0 // This is a renewal?, if so we should get the PriceListItemId from the current season
                     }).ToList();
 
                     if (_clientSeasonEvent.SeasonId is null)
@@ -349,7 +350,12 @@
                 return;
             }
 
-            _request.Seats = _cartState.SelectedSeats.ToDictionary(x => x.SeatId, x => x.Price);
+            _request.Seats = _cartState.SelectedSeats.Select(s => new BookingSeatRequest
+            {
+                SeatKey = s.SeatId,
+                SeatPrice = s.Price,
+                PriceListItemId = s.PriceListItemId
+            }).ToList();
             _request.SeasonKey = _seasonKey ?? "";
             _request.HoldToken = _cartState.HoldToken ?? "";
 

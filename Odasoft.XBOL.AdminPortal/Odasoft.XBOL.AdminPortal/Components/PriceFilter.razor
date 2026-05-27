@@ -15,7 +15,7 @@
     public SeatingChart? Chart { get; set; }
 
     [Parameter]
-    public IEnumerable<SeatsIoPriceDTO> Prices { get; set; } = [];
+    public IEnumerable<SeatsIoPriceResponse> Prices { get; set; } = [];
 
     private int _interval = 500;
 

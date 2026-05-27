@@ -213,6 +213,7 @@
                 IsSelected = true,
                 IsSold = item.IsSold ?? false,
                 SourceOrderItemId = item.Id,
+                PriceListItemId = item.PriceListItemId ?? 0
             })
             .ToList();
 

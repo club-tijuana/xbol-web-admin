@@ -79,12 +79,12 @@ namespace Odasoft.XBOL.Business.Services
             await _adminClient.UpdateVenueStatusAsync(venueId, status);
         }
 
-        public async Task<List<Amenity>> GetAmenitiesByVenueAsync(long venueId)
+        public async Task<List<AmenityDTO>> GetAmenitiesByVenueAsync(long venueId)
         {
             ICollection<VenueAmenityResponse> venueAmenities = await _adminClient.GetAmenitiesByVenueAsync(venueId);
 
             return venueAmenities
-                    .Select(x => new Amenity
+                    .Select(x => new AmenityDTO
                     {
                         Id = x.Id,
                         Name = x.Name,
