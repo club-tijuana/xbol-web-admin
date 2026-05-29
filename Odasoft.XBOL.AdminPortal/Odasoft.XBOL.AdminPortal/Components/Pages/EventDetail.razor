@@ -1,7 +1,7 @@
 @page "/events/{EventId:long}"
 @page "/events/{EventId:long}/{Tab}"
-@page "/events/{EventId:long}/schedule/{ScheduleId:long}"
-@page "/events/{EventId:long}/schedule/{ScheduleId:long}/{Tab}"
+@page "/events/{EventId:long}/schedules/{ScheduleId:long}"
+@page "/events/{EventId:long}/schedules/{ScheduleId:long}/{Tab}"
 @using Odasoft.XBOL.Auth
 @attribute [RequireAnyPermission(AdminPermissions.Events.Read, AdminPermissions.Events.ReadCurrent)]
 
@@ -145,7 +145,7 @@
     private void OnScheduleChanged(long scheduleId)
     {
         _selectedSchedule = scheduleId;
-        _navigationManager.NavigateTo($"./events/{EventId}/schedule/{_selectedSchedule}/{_selectedTab}", replace: true);
+        _navigationManager.NavigateTo($"./events/{EventId}/schedules/{_selectedSchedule}/{_selectedTab}", replace: true);
     }
 
     private void OnTabChanged(string tab)

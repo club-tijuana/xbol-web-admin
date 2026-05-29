@@ -1,3 +1,4 @@
+@using System.Linq.Expressions
 @using Odasoft.XBOL.AdminPortal.Helpers
 @typeparam T
 @inject IStringLocalizer<AdminForm> FormL
@@ -6,8 +7,8 @@
            Variant="Variant.Outlined"
            Margin="Margin.Dense"
            Required="@Required" RequiredError="@FormL["RequiredField"]"
-           Validation="@(Field?.ValidationFor<T>())"
-           @attributes="AdditionalAttributes">
+           For="@For"
+           @attributes="GetCombinedAttributes()">
     @ChildContent
 </MudSelect>
 
@@ -17,6 +18,7 @@
     [Parameter] public FieldBinding? Field { get; set; }
     [Parameter] public bool Required { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public Expression<Func<T>>? For { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -26,5 +28,25 @@
         Value = value;
         await ValueChanged.InvokeAsync(value);
         Field?.OnChanged();
+    }
+
+    private Dictionary<string, object> GetCombinedAttributes()
+    {
+        var attributes = new Dictionary<string, object>();
+
+        if (AdditionalAttributes != null)
+        {
+            foreach (var attr in AdditionalAttributes)
+            {
+                attributes[attr.Key] = attr.Value;
+            }
+        }
+
+        if (Field != null)
+        {
+            attributes["Validation"] = Field.ValidationFor<T>();
+        }
+
+        return attributes;
     }
 }
