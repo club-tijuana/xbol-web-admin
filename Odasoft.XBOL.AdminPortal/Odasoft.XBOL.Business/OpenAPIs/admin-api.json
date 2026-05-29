@@ -1044,7 +1044,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/EventCategoryResult"
+                    "$ref": "#/components/schemas/AdminEventCategoryResult"
                   }
                 }
               },
@@ -1052,7 +1052,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/EventCategoryResult"
+                    "$ref": "#/components/schemas/AdminEventCategoryResult"
                   }
                 }
               },
@@ -1060,7 +1060,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/EventCategoryResult"
+                    "$ref": "#/components/schemas/AdminEventCategoryResult"
                   }
                 }
               }
@@ -3203,7 +3203,7 @@
             "schema": {
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/EventStatus"
+                  "$ref": "#/components/schemas/AdminEventStatus"
                 }
               ]
             }
@@ -5300,7 +5300,7 @@
             "schema": {
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/MediaType"
+                  "$ref": "#/components/schemas/AdminMediaType"
                 }
               ]
             }
@@ -5376,7 +5376,7 @@
             "schema": {
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/MediaType"
+                  "$ref": "#/components/schemas/AdminMediaType"
                 }
               ]
             }
@@ -5481,7 +5481,7 @@
                   "MediaType": {
                     "allOf": [
                       {
-                        "$ref": "#/components/schemas/MediaType"
+                        "$ref": "#/components/schemas/AdminMediaType"
                       }
                     ]
                   },
@@ -13592,10 +13592,51 @@
         },
         "additionalProperties": false
       },
+      "AdminEventCategoryResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdminEventStatus": {
+        "enum": [
+          "Draft",
+          "PendingReview",
+          "Approved",
+          "ChangesRequested",
+          "Published",
+          "Cancelled"
+        ],
+        "type": "string"
+      },
       "AdminItemType": {
         "enum": [
           "Ticket",
           "SeasonPass"
+        ],
+        "type": "string"
+      },
+      "AdminMediaType": {
+        "enum": [
+          "Banner",
+          "Gallery",
+          "Logo",
+          "GeneralView",
+          "Facade",
+          "Sponsor"
         ],
         "type": "string"
       },
@@ -15943,7 +15984,7 @@
           "status": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/EventStatus"
+                "$ref": "#/components/schemas/AdminEventStatus"
               }
             ]
           },
@@ -16089,25 +16130,6 @@
         },
         "additionalProperties": false
       },
-      "EventCategoryResult": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "isActive": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
       "EventInfoDTO": {
         "type": "object",
         "properties": {
@@ -16152,7 +16174,7 @@
           "categories": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EventCategoryResult"
+              "$ref": "#/components/schemas/AdminEventCategoryResult"
             }
           },
           "venueId": {
@@ -16197,7 +16219,7 @@
           "status": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/EventStatus"
+                "$ref": "#/components/schemas/AdminEventStatus"
               }
             ]
           },
@@ -16234,7 +16256,7 @@
           "categories": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EventCategoryResult"
+              "$ref": "#/components/schemas/AdminEventCategoryResult"
             }
           },
           "venueMapId": {
@@ -16272,7 +16294,7 @@
           "status": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/EventStatus"
+                "$ref": "#/components/schemas/AdminEventStatus"
               }
             ]
           }
@@ -16314,7 +16336,7 @@
           "mediaType": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/MediaType"
+                "$ref": "#/components/schemas/AdminMediaType"
               }
             ]
           },
@@ -16450,13 +16472,13 @@
           "categories": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EventCategoryResult"
+              "$ref": "#/components/schemas/AdminEventCategoryResult"
             }
           },
           "status": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/EventStatus"
+                "$ref": "#/components/schemas/AdminEventStatus"
               }
             ]
           }
@@ -16841,17 +16863,6 @@
         },
         "additionalProperties": false
       },
-      "EventStatus": {
-        "enum": [
-          "Draft",
-          "PendingReview",
-          "Approved",
-          "ChangesRequested",
-          "Published",
-          "Cancelled"
-        ],
-        "type": "string"
-      },
       "ExchangeRate": {
         "type": "object",
         "properties": {
@@ -17097,7 +17108,8 @@
       "ItemType": {
         "enum": [
           "Ticket",
-          "SeasonPass"
+          "SeasonPass",
+          "BundlePass"
         ],
         "type": "string"
       },
@@ -17335,7 +17347,7 @@
           "mediaType": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/MediaType"
+                "$ref": "#/components/schemas/AdminMediaType"
               }
             ]
           },
@@ -17345,17 +17357,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "MediaType": {
-        "enum": [
-          "Banner",
-          "Gallery",
-          "Logo",
-          "GeneralView",
-          "Facade",
-          "Sponsor"
-        ],
-        "type": "string"
       },
       "ModelError": {
         "type": "object",

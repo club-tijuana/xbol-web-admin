@@ -47,7 +47,7 @@
                 <MudItem xs="12" md="6" lg="3">
                     <EventCard Event="eventItem"
                                ShowActions
-                               OnClick="@(() => _navigationManager.NavigateTo($"./events/{eventItem.Id}{(eventItem.Status != EventStatus.Published ? "/review" : string.Empty)}"))"></EventCard>
+                               OnClick="@(() => _navigationManager.NavigateTo($"./events/{eventItem.Id}{(eventItem.Status != AdminEventStatus.Published ? "/review" : string.Empty)}"))"></EventCard>
                 </MudItem>
             }
         }
@@ -209,7 +209,7 @@ else if(_selectedTab == TabPast)
     private List<VenueResponse> _venues = [];
     private IReadOnlyCollection<string> _selectedVenues = [];
 
-    private List<EventCategoryResult> _availableCategories = [];
+    private List<AdminEventCategoryResult> _availableCategories = [];
     private IReadOnlyCollection<string> _selectedCategories = [];
 
     private DateRange? _dateRange = null;

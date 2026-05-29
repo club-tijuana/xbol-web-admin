@@ -28,12 +28,19 @@ public interface IEventService
         EventFilterParameters? filters = null
     );
 
-    Task<List<EventCategoryResult>> GetCategoriesAsync();
+    Task<List<AdminEventCategoryResult>> GetCategoriesAsync();
+
     Task<EventResult> CreateEventAsync(EventRequest request);
+
     Task UpdateEventAsync(long id, EventRequest request);
+
     Task DeleteEventAsync(long id);
+
     Task<EventInfoDTO> GetEventByIdAsync(long id);
+
     Task ApproveEventAsync(long id);
+
     Task RejectEventAsync(long id);
+
     Task PublishEventAsync(long id);
 }

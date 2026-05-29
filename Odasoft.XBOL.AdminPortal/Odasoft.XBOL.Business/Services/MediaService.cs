@@ -2,7 +2,7 @@ namespace Odasoft.XBOL.Business.Services
 {
     public class MediaService(IAdminClient adminClient)
     {
-        public async Task<MediaResponse> UploadMediaAsync(long referenceId, AdminSaleType referenceType, MediaType mediaType, int order, FileParameter file)
+        public async Task<MediaResponse> UploadMediaAsync(long referenceId, AdminSaleType referenceType, AdminMediaType mediaType, int order, FileParameter file)
         {
             return await adminClient.UploadMediaAsync(referenceId, referenceType, mediaType, order, file);
         }
@@ -12,12 +12,12 @@ namespace Odasoft.XBOL.Business.Services
             await adminClient.DeleteMediaByIdAsync(mediaId);
         }
 
-        public async Task UpdateMediaAsync(long mediaId, FileParameter file, MediaType? mediaType = null, int? order = null)
+        public async Task UpdateMediaAsync(long mediaId, FileParameter file, AdminMediaType? mediaType = null, int? order = null)
         {
             await adminClient.UpdateMediaByIdAsync(mediaId, mediaType, order, file);
         }
 
-        public async Task<ICollection<MediaResponse>> GetReferenceMediaByMediaTypeAsync(long referenceId, AdminSaleType referenceType, MediaType mediaType)
+        public async Task<ICollection<MediaResponse>> GetReferenceMediaByMediaTypeAsync(long referenceId, AdminSaleType referenceType, AdminMediaType mediaType)
         {
             return await adminClient.GetReferenceMediaByMediaTypeAsync(referenceId, referenceType, mediaType);
         }

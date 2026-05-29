@@ -98,7 +98,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
         };
     }
 
-    public async Task<List<EventCategoryResult>> GetCategoriesAsync()
+    public async Task<List<AdminEventCategoryResult>> GetCategoriesAsync()
     {
         var result = await adminClient.GetCategoriesAsync();
         return result.ToList();
@@ -111,7 +111,7 @@ public class ApiEventService(IAdminClient adminClient) : IEventService
     public async Task DeleteEventAsync(long id)
             => await adminClient.DeleteEventAsync(id);
 
-    private static string FormatCategories(ICollection<EventCategoryResult>? categories)
+    private static string FormatCategories(ICollection<AdminEventCategoryResult>? categories)
         => categories is { Count: > 0 }
             ? string.Join(", ", categories.Select(c => c.DisplayName))
             : "";

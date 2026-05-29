@@ -2,7 +2,7 @@
 @inject AppLocalizer<EventCard> L
 @inject NavigationManager _navigationManager;
 
-<MudCard Elevation="3" Style="cursor: pointer;" Class="rounded-lg" >
+<MudCard Elevation="3" Style="cursor: pointer;" Class="rounded-lg">
     @if (string.IsNullOrEmpty(Event.BannerImageUrl))
     {
         <ImagePlaceholder OnClick="HandleOnClick" Ratio="16/9" Class="rounded-t-lg" />
@@ -22,7 +22,7 @@
                 </MudStack>
             </MudItem>
             <MudItem xs="6" Class="d-flex justify-end align-end">
-                @if (Event.Status == EventStatus.Published)
+                @if (Event.Status == AdminEventStatus.Published)
                 {
                     <MudStack Spacing="1">
                         <MudText Typo="Typo.caption">@L["Availability"]</MudText>
@@ -57,7 +57,7 @@
                             Icon="@Icons.Material.Outlined.ShoppingCart"
                             Size="Size.Medium"
                             Color="Color.Secondary"
-                            Disabled="@(Event.Status != EventStatus.Published || Event.ExternalEventKey is null)"
+                            Disabled="@(Event.Status != AdminEventStatus.Published || Event.ExternalEventKey is null)"
                             OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/key/{Event.ExternalEventKey}/booking"))" />
                     </MudTooltip>
                 </MudItem>
@@ -77,7 +77,7 @@
                             Size="Size.Medium"
                             Color="Color.Secondary"
                             OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/key/{Event.ExternalEventKey}/availability"))"
-                            Disabled="@(Event.Status != EventStatus.Published || Event.ExternalEventKey is null)" />
+                            Disabled="@(Event.Status != AdminEventStatus.Published || Event.ExternalEventKey is null)" />
                     </MudTooltip>
                 </MudItem>
             </MudGrid>

@@ -12,7 +12,7 @@ public record EventViewModel(
     string Venue,
     int Available,
     int Total,
-    EventStatus? Status,
+    AdminEventStatus? Status,
     string? ExternalEventKey,
     string? PosterImageUrl = null,
     string? BannerImageUrl = null,

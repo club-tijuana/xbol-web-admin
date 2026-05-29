@@ -1,10 +1,10 @@
 namespace Odasoft.XBOL.Business
 {
-    public partial class EventCategoryResult : IEquatable<EventCategoryResult>
+    public partial class AdminEventCategoryResult : IEquatable<AdminEventCategoryResult>
     {
-        public bool Equals(EventCategoryResult? obj)
+        public bool Equals(AdminEventCategoryResult? obj)
         {
-            if (obj is EventCategoryResult other)
+            if (obj is AdminEventCategoryResult other)
             {
                 return Id == other.Id;
             }
@@ -14,7 +14,7 @@ namespace Odasoft.XBOL.Business
             }
         }
 
-        public override bool Equals(object? obj) => Equals(obj as EventCategoryResult);
+        public override bool Equals(object? obj) => Equals(obj as AdminEventCategoryResult);
 
         public override int GetHashCode()
         {
