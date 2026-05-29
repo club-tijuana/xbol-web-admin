@@ -1,5 +1,6 @@
 @page "/clients/{_id:long}/credit"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.CreditAccounts.Read)]
 
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.AdminPortal.Extensions

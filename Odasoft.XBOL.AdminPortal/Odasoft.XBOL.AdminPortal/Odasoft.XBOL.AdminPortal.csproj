@@ -40,6 +40,7 @@
         <ContainerEnvironmentVariable Include="ASPNETCORE_URLS" Value="http://+:8080" />
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\Odasoft.XBOL.Auth\Odasoft.XBOL.Auth.csproj" />
         <ProjectReference Include="..\Odasoft.XBOL.Business\Odasoft.XBOL.Business.csproj" />
         <ProjectReference Include="..\Odasoft.XBOL.Common\Odasoft.XBOL.Common.csproj" />
         <ProjectReference Include="..\Odasoft.XBOL.Models\Odasoft.XBOL.Models.csproj" />

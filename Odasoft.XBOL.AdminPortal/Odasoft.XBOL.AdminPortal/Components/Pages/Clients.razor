@@ -1,5 +1,6 @@
 @page "/clients"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Clients.Read)]
 
 @using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.AdminPortal.Extensions

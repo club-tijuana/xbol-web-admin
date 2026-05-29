@@ -1,6 +1,8 @@
 @page "/reports"
 
+@using Odasoft.XBOL.Auth
 @using Odasoft.XBOL.AdminPortal.ViewModels.Reports
+@attribute [RequireAnyPermission(AdminPermissions.Reports.Sales.SelfRead, AdminPermissions.Reports.Sales.CashiersRead, AdminPermissions.Reports.Sales.WebRead)]
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using Odasoft.XBOL.Business
 @using System.Globalization

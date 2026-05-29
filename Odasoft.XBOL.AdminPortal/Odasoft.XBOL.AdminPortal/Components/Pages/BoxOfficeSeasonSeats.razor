@@ -1,6 +1,7 @@
 @page "/box-office/seasons/{SeasonId:long}/seats"
 @page "/box-office/seasons/renovate/{SeasonId:long}/{OrderReference}"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Orders.Create)]
 @using Microsoft.Extensions.Options
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.Business

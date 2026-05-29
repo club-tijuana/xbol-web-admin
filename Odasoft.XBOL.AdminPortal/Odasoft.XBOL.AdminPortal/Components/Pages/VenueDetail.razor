@@ -1,6 +1,7 @@
 @page "/venues/{VenueId:long}";
 @page "/venues/{VenueId:long}/{Tab}";
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Venues.Read)]
 
 @using Odasoft.XBOL.AdminPortal.Components.Pages.VenueDetails;
 @using Odasoft.XBOL.AdminPortal.Components.Shared;

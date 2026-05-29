@@ -1,5 +1,6 @@
 @page "/venues"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Venues.Read)]
 
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.Business;

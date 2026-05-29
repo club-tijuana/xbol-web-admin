@@ -1,5 +1,6 @@
 @page "/seasons/{SeasonId:int}/events"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Seasons.Read)]
 
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.AdminPortal.Extensions;

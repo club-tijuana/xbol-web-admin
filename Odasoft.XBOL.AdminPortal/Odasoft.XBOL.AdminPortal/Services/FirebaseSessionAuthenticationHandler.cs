@@ -18,6 +18,8 @@ public sealed class FirebaseSessionAuthenticationHandler : AuthenticationHandler
     private readonly FirebaseAuth _firebaseAuth;
     private readonly GcipAuthOptions _gcipOptions;
     private readonly AdminSessionCookieOptions _sessionOptions;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<FirebaseSessionAuthenticationHandler> _log;
 
     public FirebaseSessionAuthenticationHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
@@ -25,12 +27,15 @@ public sealed class FirebaseSessionAuthenticationHandler : AuthenticationHandler
         UrlEncoder encoder,
         FirebaseAuth firebaseAuth,
         IOptions<GcipAuthOptions> gcipOptions,
-        IOptions<AdminSessionCookieOptions> sessionOptions)
+        IOptions<AdminSessionCookieOptions> sessionOptions,
+        IHttpClientFactory httpClientFactory)
         : base(options, logger, encoder)
     {
         _firebaseAuth = firebaseAuth;
         _gcipOptions = gcipOptions.Value;
         _sessionOptions = sessionOptions.Value;
+        _httpClientFactory = httpClientFactory;
+        _log = logger.CreateLogger<FirebaseSessionAuthenticationHandler>();
     }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -59,12 +64,29 @@ public sealed class FirebaseSessionAuthenticationHandler : AuthenticationHandler
             return AuthenticateResult.Fail($"Session cookie tenant does not match expected tenant '{_gcipOptions.TenantId}'.");
         }
 
-        var principal = new ClaimsPrincipal(new ClaimsIdentity(BuildClaims(decoded), Scheme.Name));
+        var baseClaims = BuildFirebaseClaims(decoded);
+
+        var profile = await AdminClaimsBuilder.FetchProfileAsync(
+            _httpClientFactory.CreateClient("AdminApiSession"),
+            sessionCookie,
+            _sessionOptions.CookieName,
+            Context.RequestAborted);
+
+        if (profile is null)
+        {
+            _log.LogWarning("Admin profile enrichment failed for user {Uid} — treating as authentication failure", decoded.Uid);
+            return AuthenticateResult.Fail("Admin profile could not be loaded.");
+        }
+
+        var allClaims = new List<Claim>(baseClaims);
+        allClaims.AddRange(AdminClaimsBuilder.BuildClaims(profile));
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(allClaims, Scheme.Name));
         var ticket = new AuthenticationTicket(principal, Scheme.Name);
         return AuthenticateResult.Success(ticket);
     }
 
-    private static List<Claim> BuildClaims(FirebaseToken token)
+    private static List<Claim> BuildFirebaseClaims(FirebaseToken token)
     {
         var claims = new List<Claim>
         {

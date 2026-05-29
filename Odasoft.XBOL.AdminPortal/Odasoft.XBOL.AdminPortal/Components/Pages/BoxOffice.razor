@@ -1,5 +1,6 @@
 @page "/box-office"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Orders.Create)]
 
 @using Odasoft.XBOL.AdminPortal.States;
 @using Odasoft.XBOL.Business.Services;

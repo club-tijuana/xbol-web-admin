@@ -1,5 +1,6 @@
 @page "/suites/agreements"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.SuiteAgreements.Read)]
 
 @using Microsoft.Net.Http.Headers;
 @using Odasoft.XBOL.AdminPortal.Extensions

@@ -1,5 +1,6 @@
 @page "/clients/{Id:long}/edit"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Clients.Update)]
 
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.AdminPortal.States;

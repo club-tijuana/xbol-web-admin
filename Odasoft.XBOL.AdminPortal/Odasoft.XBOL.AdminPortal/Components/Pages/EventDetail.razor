@@ -2,7 +2,8 @@
 @page "/events/{EventId:long}/{Tab}"
 @page "/events/{EventId:long}/schedule/{ScheduleId:long}"
 @page "/events/{EventId:long}/schedule/{ScheduleId:long}/{Tab}"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequireAnyPermission(AdminPermissions.Events.Read, AdminPermissions.Events.ReadCurrent)]
 
 @using Odasoft.XBOL.AdminPortal.Components.Pages.EventDetails;
 @using Odasoft.XBOL.AdminPortal.Components.Shared;

@@ -1,7 +1,8 @@
 @page "/venues/create";
 @page "/venues/{venueId:long}/update";
 
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequireAnyPermission(AdminPermissions.Venues.Create, AdminPermissions.Venues.Update)]
 
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.ModelValidators;

@@ -1,5 +1,6 @@
 @page "/seasons/create"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Seasons.Create)]
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
 @using Odasoft.XBOL.Business
 @inject AppLocalizer<SeasonCreate> L

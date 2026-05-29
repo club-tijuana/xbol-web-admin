@@ -4,7 +4,8 @@
 @page "/events/{EventId:long}/review"
 @page "/events/{EventId:long}/schedules/{ScheduleId:long}/review"
 
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequireAnyPermission(AdminPermissions.Events.Read, AdminPermissions.Events.ReadCurrent, AdminPermissions.Events.Create, AdminPermissions.Events.Update)]
 
 @using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.AdminPortal.Extensions
