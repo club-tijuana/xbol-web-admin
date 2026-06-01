@@ -291,8 +291,8 @@
                             Model="EventState.PricesInfo" 
                             Validation="@(_pricesValidator.ValidateValue)" 
                             @onkeydown="OnKeyDownAsync">
-                            <MudTable
-                                Items="_prices"
+                            <MudTable 
+                                Items="EventState.PricesInfo.Prices"
                                 GroupBy="_groupDefinition"
                                 Elevation="0"
                                 FixedHeader>
@@ -321,10 +321,10 @@
                                     }
                                 </ColGroup>
                                 <HeaderContent>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetZoneName(x.BaseZoneId))">@L["Zone"]</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseSectionId))">@L["Section"]</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseRowId))">@L["Row"]</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseSeatId))">@L["Seat"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceInfoModel, object>(x => GetZoneName(x.BaseZoneId))">@L["Zone"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceInfoModel, object>(x => GetSectionName(x.BaseSectionId))">@L["Section"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceInfoModel, object>(x => GetSectionName(x.BaseRowId))">@L["Row"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceInfoModel, object>(x => GetSectionName(x.BaseSeatId))">@L["Seat"]</MudTableSortLabel></MudTh>
                                     @foreach (var priceType in PriceTypes)
                                     {
                                         <MudTh>
@@ -397,6 +397,7 @@
                                             <AdminNumericField T="decimal?"
                                                                Value="@GetPriceTypeValue(context, priceType.Key)"
                                                                ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType.Key, newValue))"
+                                                               Validation="@(new Func<decimal?, Task<IEnumerable<string>>>(val => ValidateSpecificPrice(PriceTypes, priceType.Key, val)))"
                                                                Clearable="@true"
                                                                Format="N2"
                                                                Adornment="@Adornment.Start"
@@ -404,7 +405,7 @@
                                                                Placeholder="0.00"
                                                                HideSpinButtons="@true"
                                                                Immediate="@false"
-                                                               Disabled="@_isReview"/>
+                                                               Disabled="@_isReview" />
                                         </MudTd>
                                     }
                                     <MudTd></MudTd>
@@ -438,12 +439,103 @@
                             </MudTable>
                         </MudForm>
                     </MudStep>
+                    <MudStep Title="@L["AdditionalCharges"]"
+                             HasError="!_additionalChargesValid"
+                             @bind-Completed="_additionalChargesCompleted">
+                        <MudForm @ref="_additionalChargesForm"
+                                 @bind-IsValid="_additionalChargesValid"
+                                 Model="EventState.AdditionalChargesInfo"
+                                 Validation="@(_additionalChargesInfoValidator.ValidateValue)"
+                                 @onkeydown="OnKeyDownAsync">
+                            <MudGrid Spacing="6">
+                                <MudItem xs="12">
+                                    <MudDataGrid @ref="_additionalChargesGrid"
+                                        T="AdditionalChargeInfoModel"
+                                        Items="@EventState.AdditionalChargesInfo.AdditionalCharges"
+                                        CommittedItemChanges="@CommittedItemChanges"
+                                        EditMode="DataGridEditMode.Cell"
+                                        ReadOnly="false"
+                                        Validator="_additionalChargesForm"
+                                        Bordered="true" 
+                                        Dense="true"
+                                        Elevation="0">
+                                        <ToolBarContent>
+                                            <MudText Typo="Typo.h5">@L["AdditionalCharges"]</MudText>
+                                            <MudSpacer />
+                                            <MudButtonGroup Class="ma-0 pa-0" Color="MudBlazor.Color.Success" Variant="Variant.Filled">
+                                                <MudButton OnClick="NewAdditionalChargeAsync">
+                                                    Add Additional Charge
+                                                </MudButton>
+                                            </MudButtonGroup>
+                                        </ToolBarContent>
+                                        <Columns>
+                                            <PropertyColumn Property="x => x.Name" Title="Item Name">
+                                                <EditTemplate>
+                                                    @{
+                                                        var item = context.Item;
+                                                    }
+                                                    <AdminTextField @bind-Value="item.Name"
+                                                                  For="@(() => item.Name)"
+                                                                  Validation="@(new Func<string, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.Name), val)))" />
+                                                </EditTemplate>
+                                            </PropertyColumn>
+
+                                            <PropertyColumn Property="x => x.FeeType" Title="Type">
+                                                <EditTemplate>
+                                                    @{
+                                                        var item = context.Item;
+                                                    }
+                                                    <MudSelect
+                                                               T="FeeType"
+                                                               @bind-Value="item.FeeType"
+                                                               Variant="Variant.Outlined"
+                                                               Margin="Margin.Dense"
+                                                               For="@(() => item.FeeType)"
+                                                               ToStringFunc="@(feeType => L[feeType.ToString()].Value)"
+                                                               Validation="@(new Func<FeeType, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.FeeType), val)))"
+                                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+
+                                                        @foreach (var fee in _feeTypes)
+                                                        {
+                                                            <MudSelectItem T="FeeType" Value="fee">
+                                                                @L[fee.ToString()]
+                                                            </MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                </EditTemplate>
+                                            </PropertyColumn>
+
+                                            <PropertyColumn Property="x => x.Value" Title="Price">
+                                                <EditTemplate>
+                                                    @{
+                                                        var item = context.Item;
+                                                    }
+                                                    <AdminNumericField @bind-Value="item.Value"
+                                                                     For="@(() => item.Value)"
+                                                                       Validation="@(new Func<decimal, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.Value), val)))" />
+                                                </EditTemplate>
+                                            </PropertyColumn>                                           
+
+                                            <TemplateColumn>
+                                                <CellTemplate>
+                                                    <MudIconButton Color="MudBlazor.Color.Default" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteAdditionalCharge(context.Item))" />
+                                                </CellTemplate>
+                                                <EditTemplate>
+                                                    <MudIconButton Color="MudBlazor.Color.Default" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteAdditionalCharge(context.Item))" />
+                                                </EditTemplate>
+                                            </TemplateColumn>
+                                        </Columns>
+                                    </MudDataGrid>
+                                </MudItem>
+                            </MudGrid>
+                        </MudForm>
+                    </MudStep>
                     <MudStep 
                         Title="@L["DatesAndSalePolicies"]"
-                        HasError="!_datesAndSalePoliciesValid"
-                        @bind-Completed="_datesAndSalePoliciesCompleted">
-                        <MudForm @ref="_datesAndSalePoliciesForm"
-                            @bind-IsValid="_datesAndSalePoliciesValid" 
+                        HasError="!_scheduleValid"
+                        @bind-Completed="_scheduleCompleted">
+                        <MudForm @ref="_scheduleForm"
+                            @bind-IsValid="_scheduleValid" 
                             Model="EventState.ScheduleInfo" 
                             Validation="@(_scheduleValidator.ValidateValue)" 
                             @onkeydown="OnKeyDownAsync">
@@ -1039,6 +1131,8 @@
     [Parameter] public long? EventId { get; set; }
     [Parameter] public long? ScheduleId { get; set; }
 
+    private long? _priceReferenceId = null;
+
     private string _pageTitle = "";
     private bool _loading = true;
     private bool _error = false;
@@ -1047,15 +1141,15 @@
 
     private MudStepper _stepper = null!;
     private int _activeIndex = 0;
-    private int _maxIndex = 3;
+    private int _maxIndex = 4;
     private HashSet<int> _visitedSteps = new();
 
     private EventFormModel EventState { get; set; } = new();
 
     private EventInfoModel _originalEventInfo = new();
     private ScheduleInfoModel _originalScheduleInfo = new();
-    private PricesInfoModel _originalPricesInfo = new();
-    private ImagesInfoModel _originalImagesInfo = new();
+    private HashSet<long> _dirtyPriceIds = new();
+    private bool _imageHasChanges = false;
 
     private MudForm _descriptionForm = default!;
     private bool _descriptionFormValid = true;
@@ -1063,11 +1157,11 @@
     private EventInfoValidator _eventInfoValidator = new();
     private FormContext _descriptionFormContext = default!;
 
-    private MudForm _datesAndSalePoliciesForm = default!;
-    private bool _datesAndSalePoliciesValid = true;
-    private bool _datesAndSalePoliciesCompleted = false;
+    private MudForm _scheduleForm = default!;
+    private bool _scheduleValid = true;
+    private bool _scheduleCompleted = false;
     private ScheduleInfoValidator _scheduleValidator = new();
-    private FormContext _datesAndSalePoliciesFormContext = default!;
+    private FormContext _scheduleFormContext = default!;
 
     private MudForm _pricesForm = default!;
     private bool _pricesValid = true;
@@ -1075,16 +1169,25 @@
     private PricesInfoValidator _pricesValidator = new();
     private FormContext _pricesFormContext = default!;
 
+    private MudForm _additionalChargesForm = default!;
+    private bool _additionalChargesValid = true;
+    private bool _additionalChargesCompleted = false;
+    private AdditionalChargesInfoValidator _additionalChargesInfoValidator = new();
+    private AdditionalChargeInfoValidator _additionalChargeInfoValidator = new();
+    private FormContext _additionalChargesFormContext = default!;
+    private MudDataGrid<AdditionalChargeInfoModel> _additionalChargesGrid = default!;
+
     private MudForm _imagesForm = default!;
     private bool _imagesValid = true;
     private bool _imagesCompleted = false;
     private ImagesInfoValidator _imagesValidator = new();
     private FormContext _imagesFormContext = default!;
 
-    private bool IsFormReadyToSubmit => _descriptionFormValid && _datesAndSalePoliciesValid && _pricesValid && _imagesValid;
+    private bool IsFormReadyToSubmit => _descriptionFormValid && _scheduleValid && _pricesValid && _imagesValid && _additionalChargesValid;
 
     private List<AdminEventCategoryResult> _eventCategories = [];
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
+    private List<FeeType> _feeTypes = Enum.GetValues<FeeType>().ToList();
     private List<VenueResponse> _venues = [];
     private List<VenueMapResponse> _venueMaps = [];
     private List<ListItem> _organizers = [];
@@ -1104,10 +1207,9 @@
 
     private AdminEventStatus? _eventStatus;
 
-    private List<PriceForm> _prices = [];
     private long? _currentPricesMapId;
     private string _searchPrices = string.Empty;
-    private TableGroupDefinition<PriceForm> _groupDefinition = new()
+    private TableGroupDefinition<PriceInfoModel> _groupDefinition = new()
     {
         GroupName = "Zone",
         Indentation = true,
@@ -1138,8 +1240,9 @@
     protected override async Task OnInitializedAsync()
     {
         _descriptionFormContext = new FormContext(StateHasChanged);
-        _datesAndSalePoliciesFormContext = new FormContext(StateHasChanged);
+        _scheduleFormContext = new FormContext(StateHasChanged);
         _pricesFormContext = new FormContext(StateHasChanged);
+        _additionalChargesFormContext = new FormContext(StateHasChanged);
         _imagesFormContext = new FormContext(StateHasChanged);
 
         // TODO: Change to use user permissions instead of URL to determine read-only mode
@@ -1253,6 +1356,9 @@
 
             await LoadPrices();
             await LoadEventMediaAsync();
+
+            _originalEventInfo = EventState.EventInfo with { };
+            _originalScheduleInfo = EventState.ScheduleInfo with { };
         }
         catch (Exception ex)
         {
@@ -1380,12 +1486,18 @@
                 _pricesCompleted = isCurrentStepValid;
                 break;
             case 2:
-                _datesAndSalePoliciesFormContext.SetForm(_datesAndSalePoliciesForm);
-                isCurrentStepValid = await _datesAndSalePoliciesFormContext.ValidateAsync();
-                _datesAndSalePoliciesValid = isCurrentStepValid;
-                _datesAndSalePoliciesCompleted = isCurrentStepValid;
+                _additionalChargesFormContext.SetForm(_additionalChargesForm);
+                isCurrentStepValid = await _additionalChargesFormContext.ValidateAsync();
+                _additionalChargesValid = isCurrentStepValid;
+                _additionalChargesCompleted = isCurrentStepValid;
                 break;
             case 3:
+                _scheduleFormContext.SetForm(_scheduleForm);
+                isCurrentStepValid = await _scheduleFormContext.ValidateAsync();
+                _scheduleValid = isCurrentStepValid;
+                _scheduleCompleted = isCurrentStepValid;
+                break;
+            case 4:
                 _imagesFormContext.SetForm(_imagesForm);
                 isCurrentStepValid = await _imagesFormContext.ValidateAsync();
                 _imagesValid = isCurrentStepValid;
@@ -1427,10 +1539,14 @@
                     await _pricesFormContext.ValidateAsync();
                     break;
                 case 2:
-                    _datesAndSalePoliciesFormContext.SetForm(_datesAndSalePoliciesForm);
-                    await _datesAndSalePoliciesFormContext.ValidateAsync();
+                    _additionalChargesFormContext.SetForm(_additionalChargesForm);
+                    await _additionalChargesFormContext.ValidateAsync();
                     break;
                 case 3:
+                    _scheduleFormContext.SetForm(_scheduleForm);
+                    await _scheduleFormContext.ValidateAsync();
+                    break;
+                case 4:
                     _imagesFormContext.SetForm(_imagesForm);
                     await _imagesFormContext.ValidateAsync();
                     break;
@@ -1440,9 +1556,14 @@
 
     private async Task GoBackAsync()
     {
-        if ((_descriptionForm is not null && _descriptionForm.IsTouched)
-            || (_datesAndSalePoliciesForm is not null && _datesAndSalePoliciesForm.IsTouched)
-            || (_pricesForm is not null && _pricesForm.IsTouched))
+        bool eventChanged = _originalEventInfo != EventState.EventInfo;
+        bool scheduleChanged = _originalScheduleInfo != EventState.ScheduleInfo;
+        bool pricesChanged = _dirtyPriceIds.Any();
+        bool imagesChanged = _imageHasChanges;
+
+        bool changed = eventChanged || scheduleChanged || pricesChanged || imagesChanged;
+
+        if (changed)
         {
             var result = await DialogService.ShowMessageBoxAsync(
                 L["UnsavedChangesTitle"],
@@ -1486,9 +1607,13 @@
         _pricesValid = pricesResult.IsValid;
         _pricesCompleted = _pricesValid;
 
+        var additionalChargesResult = await _additionalChargesInfoValidator.ValidateAsync(EventState.AdditionalChargesInfo);
+        _additionalChargesValid = additionalChargesResult.IsValid;
+        _additionalChargesCompleted = _additionalChargesValid;
+
         var scheduleResult = await _scheduleValidator.ValidateAsync(EventState.ScheduleInfo);
-        _datesAndSalePoliciesValid = scheduleResult.IsValid;
-        _datesAndSalePoliciesCompleted = _datesAndSalePoliciesValid;
+        _scheduleValid = scheduleResult.IsValid;
+        _scheduleCompleted = _scheduleValid;
 
         var imagesResult = await _imagesValidator.ValidateAsync(EventState.ImagesInfo);
         _imagesValid = imagesResult.IsValid;
@@ -1514,47 +1639,21 @@
         {
             await SaveEventAsync();
 
-
-            var scheduleRequest = new EventScheduleRequest
+            if (_originalScheduleInfo != EventState.ScheduleInfo)
             {
-                EventId = EventId,
-                StartDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.StartDate, EventState.ScheduleInfo.StartTime),
-                EndDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.EndDate, EventState.ScheduleInfo.EndTime),
-                PreSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleDate, EventState.ScheduleInfo.PreSaleTime),
-                PreSaleEndDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleEndDate, EventState.ScheduleInfo.PreSaleEndTime),
-                OnSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OnSaleDate, EventState.ScheduleInfo.OnSaleTime),
-                OffSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OffSaleDate, EventState.ScheduleInfo.OffSaleTime),
-                PublishedDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PublishedDate, EventState.ScheduleInfo.PublishedTime),
-                GateOpenDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.GateOpenDate, EventState.ScheduleInfo.GateOpenTime),
-                ExternalEventKey = EventState.ScheduleInfo.ExternalEventKey,
-                AgeRestriction = EventState.EventInfo.AgeRestriction,
-                SecurityPolicies = EventState.EventInfo.SecurityPolicies,
-                AdditionalComments = EventState.EventInfo.AdditionalComments,
-                HoldExpirationInMinutes = EventState.ScheduleInfo.HoldExpirationInMinutes
-            };
-
-            await SaveEventScheduleAsync(scheduleRequest);
-
-            var priceRequest = new PriceReferenceRequest
+                await SaveEventScheduleAsync();
+            }
+            if (_dirtyPriceIds.Any())
             {
-                ReferenceId = EventId.Value,
-                ReferenceType = AdminSaleType.Event,
-                PriceSegments = _prices.Select(p => new PriceSegmentRequest
-                {
-                    VenueMapId = EventState.EventInfo.SelectedVenueMap?.Id,
-                    BaseRowId = p.BaseRowId,
-                    BaseSeatId = p.BaseSeatId,
-                    BaseSectionId = p.BaseSectionId,
-                    BaseZoneId = p.BaseZoneId,
-                    Id = p.Id,
-                    PriceTypes = p.PriceTypes,
-                    Prices = p.Prices
-                }).ToList()
-            };
+                await SavePricesAsync();
+            }
 
-            await SavePricesAsync(priceRequest);
+            await SaveAdditionalChargesAsync();
 
-            await SaveEventMediaAsync();
+            if (_imageHasChanges)
+            {
+                await SaveEventMediaAsync();
+            }
 
             Snackbar.Add(L["UpdateSuccess", L["Event"]], MudBlazor.Severity.Success);
             Navigation.NavigateTo("./events");
@@ -1565,19 +1664,19 @@
         }
         catch (ApiException<ProblemDetails> ex)
         {
-            _datesAndSalePoliciesFormContext.HandleApiException(ex);
-            _scheduleValidator.LoadServerErrors(ex);
-            await _datesAndSalePoliciesFormContext.ValidateAsync();
+            _imagesFormContext.HandleApiException(ex);
+            _imagesValidator.LoadServerErrors(ex);
+            await _imagesFormContext.ValidateAsync();
             Snackbar.Add(ex.Result.Title ?? L["ErrorSavingEvent"], MudBlazor.Severity.Error);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to edit event");
+            Logger.LogError(ex, "Failed to save event");
             Snackbar.Add(L["ErrorSavingEvent"], MudBlazor.Severity.Error);
         }
         finally
         {
-            _datesAndSalePoliciesFormContext.SetSaving(false);
+            _imagesFormContext.SetSaving(false);
             LoadingState.Hide();
         }
     }
@@ -1599,7 +1698,7 @@
         };
         try
         {
-            if (_isEdit)
+            if (_isEdit || EventId.HasValue)
             {
                 await EventService.UpdateEventAsync(EventId.Value, request);
             }
@@ -1621,6 +1720,51 @@
 
             var validationResult = await _eventInfoValidator.ValidateAsync(EventState.EventInfo);
             _descriptionFormValid = validationResult.IsValid && !_eventInfoValidator.ServerErrors.Any();
+            StateHasChanged();
+            throw;
+        }
+    }
+
+    private async Task SaveEventScheduleAsync()
+    {
+        var request = new EventScheduleRequest
+        {
+            EventId = EventId,
+            StartDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.StartDate, EventState.ScheduleInfo.StartTime),
+            EndDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.EndDate, EventState.ScheduleInfo.EndTime),
+            PreSaleStartDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleDate, EventState.ScheduleInfo.PreSaleTime),
+            PreSaleEndDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleEndDate, EventState.ScheduleInfo.PreSaleEndTime),
+            OnSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OnSaleDate, EventState.ScheduleInfo.OnSaleTime),
+            OffSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OffSaleDate, EventState.ScheduleInfo.OffSaleTime),
+            PublishedDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PublishedDate, EventState.ScheduleInfo.PublishedTime),
+            GateOpenDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.GateOpenDate, EventState.ScheduleInfo.GateOpenTime),
+            HoldExpirationInMinutes = EventState.ScheduleInfo.HoldExpirationInMinutes
+        };
+
+        try
+        {
+            if (_isEdit || ScheduleId.HasValue)
+            {
+                await ScheduleService.UpdateScheduleAsync(ScheduleId.Value, request);
+            }
+            else
+            {
+                var result = await ScheduleService.CreateScheduleAsync(request);
+                ScheduleId = result.Id;
+            }
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _scheduleValidator.LoadServerErrors(ex);
+
+            if (_scheduleForm != null)
+            {
+                _scheduleFormContext.SetForm(_scheduleForm);
+                await _scheduleFormContext.ValidateAsync();
+            }
+
+            var validationResult = await _scheduleValidator.ValidateAsync(EventState.ScheduleInfo);
+            _scheduleValid = validationResult.IsValid && !_scheduleValidator.ServerErrors.Any();
             StateHasChanged();
             throw;
         }
@@ -1654,23 +1798,80 @@
         }
     }
 
-    private async Task SaveEventScheduleAsync(EventScheduleRequest request)
+    private async Task SavePricesAsync()
     {
-        if (_isEdit)
+        var request = new PriceReferenceRequest
         {
-            await ScheduleService.UpdateScheduleAsync(ScheduleId.Value, request);
+            ReferenceId = EventId.Value,
+            ReferenceType = AdminSaleType.Event,
+            PriceSegments = EventState.PricesInfo.Prices.Select(p => new PriceSegmentRequest
+            {
+                VenueMapId = EventState.EventInfo.SelectedVenueMap?.Id,
+                BaseRowId = p.BaseRowId,
+                BaseSeatId = p.BaseSeatId,
+                BaseSectionId = p.BaseSectionId,
+                BaseZoneId = p.BaseZoneId,
+                Id = p.Id,
+                PriceTypes = p.PriceTypes,
+                Prices = p.Prices
+            }).ToList()
+        };
+        try
+        {
+            var response = await PriceReferenceService.SavePriceReferenceAsync(request);
+            _priceReferenceId = response.Id;
+            _dirtyPriceIds.Clear();
         }
-        else
+        catch (ApiException<ProblemDetails> ex)
         {
-            var result = await ScheduleService.CreateScheduleAsync(request);
-            ScheduleId = result.Id;
+            _pricesValidator.LoadServerErrors(ex);
+            if (_pricesForm != null)
+            {
+                _pricesFormContext.SetForm(_pricesForm);
+                await _pricesFormContext.ValidateAsync();
+            }
+            var validationResult = await _pricesValidator.ValidateAsync(EventState.PricesInfo);
+            _pricesValid = validationResult.IsValid && !_pricesValidator.ServerErrors.Any();
+            StateHasChanged();
+            throw;
         }
     }
 
-    private async Task SavePricesAsync(PriceReferenceRequest request)
+    private async Task SaveAdditionalChargesAsync()
     {
-        await PriceReferenceService.SavePriceReferenceAsync(request);
-    }   
+        if(_priceReferenceId is null)
+        {
+            return;
+        }
+        foreach (var charge in EventState.AdditionalChargesInfo.AdditionalCharges)
+        {
+            var request = new AdditionalChargeRequest
+            {
+                PriceReferenceId = _priceReferenceId.Value,
+                Name = charge.Name,
+                FeeType = charge.FeeType,
+                Value = charge.Value
+            };
+
+            try
+            {
+                // var response = await AdditionalChargeService.SaveAdditionalChargeAsync(request);
+            }
+            catch (ApiException<ProblemDetails> ex)
+            {
+                _additionalChargesInfoValidator.LoadServerErrors(ex);
+                if (_additionalChargesForm != null)
+                {
+                    _additionalChargesFormContext.SetForm(_additionalChargesForm);
+                    await _additionalChargesFormContext.ValidateAsync();
+                }
+                var validationResult = await _additionalChargesInfoValidator.ValidateAsync(EventState.AdditionalChargesInfo);
+                _additionalChargesValid = validationResult.IsValid && !_additionalChargesInfoValidator.ServerErrors.Any();
+                StateHasChanged();
+                throw;
+            }
+        }
+    }
 
     private async Task AddImage(IBrowserFile file, AdminMediaType mediaType, int order = 0)
     {
@@ -1685,6 +1886,8 @@
             Snackbar.Add($"El archivo '{file.Name}' supera el límite de 10MB.", MudBlazor.Severity.Error);
             return;
         }
+
+        _imageHasChanges = true;
 
         using var stream = file.OpenReadStream(_maxFileSize);
         using var memoryStream = new MemoryStream();
@@ -1738,6 +1941,7 @@
 
     private async Task DeleteImageAsync(AdminMediaType mediaType, int order = 0)
     {
+        _imageHasChanges = true;
         switch (mediaType)
         {
             case AdminMediaType.Banner:
@@ -1766,6 +1970,8 @@
         {
             return;
         }
+
+        _imageHasChanges = true;
 
         foreach (var file in files)
         {
@@ -1836,6 +2042,7 @@
         {
             EventState.ImagesInfo.GalleryImages.Remove(image);
             await Task.Delay(1);
+            _imageHasChanges = true;
 
             if (_carousel is not null && EventState.ImagesInfo.GalleryImages.Count > 0)
             {
@@ -1852,6 +2059,7 @@
 
     private async Task CleanGalleryImagesAsync()
     {
+        _imageHasChanges = true;
         EventState.ImagesInfo.GalleryImages.Clear();
         await Task.Delay(1);
         if (_carousel is not null)
@@ -1953,7 +2161,7 @@
         }
     }
 
-    private void OnSectionChanged(PriceForm price, long? sectionId)
+    private void OnSectionChanged(PriceInfoModel price, long? sectionId)
     {
         price.BaseSectionId = sectionId;
 
@@ -1962,7 +2170,7 @@
         StateHasChanged();
     }
 
-    private void OnRowChanged(PriceForm price, long? rowId)
+    private void OnRowChanged(PriceInfoModel price, long? rowId)
     {
         price.BaseRowId = rowId;
 
@@ -1980,7 +2188,12 @@
             return;
         }
 
-        _prices.Add(new PriceForm { BaseZoneId = zoneId, BaseSectionId = sections.FirstOrDefault()?.Id });
+        EventState.PricesInfo.Prices.Add(new PriceInfoModel { BaseZoneId = zoneId, BaseSectionId = sections.FirstOrDefault()?.Id });
+    }
+
+    private void MarkPriceAsDirty(long priceId)
+    {
+        _dirtyPriceIds.Add(priceId);
     }
 
     private IEnumerable<BaseSectionResponse>GetSectionsFor(long? zoneId)
@@ -2077,7 +2290,9 @@
         {
             PriceReferenceResponse priceResponse = await PriceReferenceService.GetPriceReferenceAsync(AdminSaleType.Event, EventId.Value, EventState.EventInfo.SelectedVenueMap.Id);
 
-            _prices = priceResponse.PriceSegments.Select(x => new PriceForm
+            _priceReferenceId = priceResponse.Id;
+
+            EventState.PricesInfo.Prices = priceResponse.PriceSegments.Select(x => new PriceInfoModel
             {
                 Id = x.Id,
                 BaseZoneId = x.BaseZoneId,
@@ -2088,7 +2303,7 @@
                 Prices = x.Prices?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new()
             }).ToList();
 
-            PriceTypes = _prices.FirstOrDefault()?.PriceTypes ?? new Dictionary<string, bool> { { "General", true } };
+            PriceTypes = EventState.PricesInfo.Prices.FirstOrDefault()?.PriceTypes ?? new Dictionary<string, bool> { { "General", true } };
         }
         catch (ApiException apiEx)
         {
@@ -2101,12 +2316,14 @@
 
     private void InitializeEmptyPrices()
     {
+        EventState.PricesInfo.Prices.Clear();
+        _priceReferenceId = null;
+
         if (_layout.Zones is not null && _layout.Zones.Count > 0)
         {
-            _prices.Clear();
             foreach (var zone in _layout.Zones)
             {
-                _prices.Add(new PriceForm
+                EventState.PricesInfo.Prices.Add(new PriceInfoModel
                 {
                    BaseZoneId = zone.Id
                 });
@@ -2134,7 +2351,7 @@
             PriceTypes.Remove(oldName);
             PriceTypes[newName] = isPrimary;
 
-            foreach (var price in _prices)
+            foreach (var price in EventState.PricesInfo.Prices)
             {
                 if (price.Prices.ContainsKey(oldName))
                 {
@@ -2150,7 +2367,7 @@
     {
         PriceTypes.Remove(_priceTypeName);
 
-        foreach (var price in _prices)
+        foreach (var price in EventState.PricesInfo.Prices)
         {
             if (price.PriceTypes.ContainsKey(_priceTypeName))
             {
@@ -2159,12 +2376,12 @@
         }
     }
 
-    private decimal? GetPriceTypeValue(PriceForm row, string key)
+    private decimal? GetPriceTypeValue(PriceInfoModel row, string key)
     {
         return row.Prices.TryGetValue(key, out var value) ? value : null;
     }
 
-    private void SetPriceTypeValue(PriceForm row, string key, decimal? newValue)
+    private void SetPriceTypeValue(PriceInfoModel row, string key, decimal? newValue)
     {
         if (newValue.HasValue)
         {
@@ -2174,9 +2391,10 @@
         {
             row.Prices.Remove(key);
         }
+        MarkPriceAsDirty(row.Id ?? 0);
     }
 
-    private async Task DeletePriceAsync(PriceForm price)
+    private async Task DeletePriceAsync(PriceInfoModel price)
     {
         var confirmed = await DialogService.ShowConfirmDeleteAsync(
         L["DeleteDialogTitle", L["Price"]],
@@ -2186,7 +2404,7 @@
 
         try
         {
-            _prices.Remove(price);
+            EventState.PricesInfo.Prices.Remove(price);
         }
         catch (Exception ex)
         {
@@ -2292,7 +2510,7 @@
             Console.WriteLine(result.Data);
             IEnumerable<PriceSegmentResponse> priceResponses = (IEnumerable<PriceSegmentResponse>)result.Data;
 
-            _prices = priceResponses.Select(x => new PriceForm()
+            EventState.PricesInfo.Prices = priceResponses.Select(x => new PriceInfoModel()
             {
                 BaseZoneId = x.BaseZoneId,
                 BaseSectionId = x.BaseSectionId,
@@ -2302,7 +2520,7 @@
                 Prices = x.Prices?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new()
             }).ToList();
 
-            foreach (var priceType in _prices.SelectMany(x => x.PriceTypes))
+            foreach (var priceType in EventState.PricesInfo.Prices.SelectMany(x => x.PriceTypes))
             {
                 if (!PriceTypes.ContainsKey(priceType.Key))
                 {
@@ -2312,6 +2530,21 @@
         }
     }
 
+    private async Task NewAdditionalChargeAsync()
+    {
+        var elem = new AdditionalChargeInfoModel();
+        EventState.AdditionalChargesInfo.AdditionalCharges.Insert(0, elem);
+    }
+
+    private void DeleteAdditionalCharge(AdditionalChargeInfoModel item)
+    {
+        EventState.AdditionalChargesInfo.AdditionalCharges.Remove(item);
+    }
+
+    private Task<DataGridEditFormAction> CommittedItemChanges(AdditionalChargeInfoModel item)
+    {
+        return Task.FromResult(DataGridEditFormAction.Close);
+    }
 
     // TODO: Remove, this is a temporary solution to MudSelect expecting a single record in a Multiselection field
     private async Task<IEnumerable<string>> ValidateCategories(IEnumerable<AdminEventCategoryResult> incomingValues)
@@ -2339,11 +2572,52 @@
         return errors;
     }
 
+    private async Task<IEnumerable<string>> ValidateSpecificPrice(Dictionary<string, bool> priceTypes, string key, decimal? newValue)
+    {
+        var errors = new List<string>();
+
+        bool isBasePrice = priceTypes != null &&
+                         priceTypes.TryGetValue(key, out var basePrice) &&
+                         basePrice;
+
+        if (isBasePrice)
+        {
+            if (newValue == null || newValue <= 0)
+            {
+                errors.Add("Price must be greater than 0.");
+            }
+        }
+
+        return errors;
+    }
+
+    private async Task<IEnumerable<string>> ValidateGridCell<TValue>(AdditionalChargeInfoModel item, string propertyName, TValue newValue)
+    {
+        var propertyInfo = typeof(AdditionalChargeInfoModel).GetProperty(propertyName);
+        if (propertyInfo == null) return Array.Empty<string>();
+
+        var originalValue = propertyInfo.GetValue(item);
+        propertyInfo.SetValue(item, newValue);
+
+        var context = ValidationContext<AdditionalChargeInfoModel>.CreateWithOptions(item, x => x.IncludeProperties(propertyName));
+        var result = await _additionalChargeInfoValidator.ValidateAsync(context);
+
+        propertyInfo.SetValue(item, originalValue);
+
+        if (!result.IsValid)
+        {
+            return result.Errors.Select(x => x.ErrorMessage);
+        }
+
+        return Array.Empty<string>();
+    }
+
     public class EventFormModel()
     {
         public EventInfoModel EventInfo { get; set; } = new();
         public ScheduleInfoModel ScheduleInfo { get; set; } = new();
         public PricesInfoModel PricesInfo { get; set; } = new();
+        public AdditionalChargesInfoModel AdditionalChargesInfo { get; set; } = new();
         public ImagesInfoModel ImagesInfo { get; set; } = new();
     }
 
@@ -2390,10 +2664,35 @@
 
     public record PricesInfoModel()
     {
-        public long ReferenceId { get; set; }
-        public AdminSaleType ReferenceType { get; set; }
-        public List<PriceInfoModel> Prices { get; set; } = [];
-        public long VenueMapId { get; set; }
+        public List<PriceInfoModel> Prices { get; set; } = [];        
+    }
+
+    public record PriceInfoModel()
+    {
+        public long? Id { get; set; }
+        public long? BaseZoneId { get; set; }
+        public long? BaseSectionId { get; set; }
+        public long? BaseRowId { get; set; }
+        public long? BaseSeatId { get; set; }
+        public Dictionary<string, bool> PriceTypes { get; set; } = [];
+        public Dictionary<string, decimal> Prices { get; set; } = [];
+
+        public bool IsZonePrice => BaseSectionId is null && BaseRowId is null && BaseSeatId is null;
+    }
+
+    public record AdditionalChargesInfoModel()
+    {
+        public HashSet<long> ChargesToDelete { get; set; } = [];
+        public List<AdditionalChargeInfoModel> AdditionalCharges { get; set; } = [];
+    }
+
+    public record AdditionalChargeInfoModel()
+    {
+        public long? Id { get; set; }
+        public string Name { get; set; }
+        public FeeType FeeType { get; set; }
+        public decimal Value { get; set; }
+        public Guid UiId { get; set; } = new Guid();
     }
 
     public record ImagesInfoModel()
@@ -2403,25 +2702,15 @@
         public List<ImageModel> GalleryImages { get; set; } = [];
     }
 
-    public record PriceInfoModel()
+    public class EventFormValidator : MudServerValidatorBase<EventFormModel>
     {
-        public long Id { get; set; }
-        public long BaseZoneId { get; set; }
-        public long? BaseSectionId { get; set; }
-        public long? BaseRowId { get; set; }
-        public long? BaseSeatId { get; set; }
-        public decimal ItemPrice { get; set; }
-
-        public IEnumerable<PriceTypeInfoModel>? PriceTypes { get; set; }
-    }
-
-    public record PriceTypeInfoModel()
-    {
-        public long Id { get; set; }
-        public required string Name { get; set; }
-        public string? Label { get; set; }
-        public string? Description { get; set; }
-        public decimal Price { get; set; }
+        public EventFormValidator()
+        {
+            RuleFor(x => x.EventInfo).SetValidator(new EventInfoValidator());
+            RuleFor(x => x.PricesInfo).SetValidator(new PricesInfoValidator());
+            RuleFor(x => x.ScheduleInfo).SetValidator(new ScheduleInfoValidator());
+            RuleFor(x => x.ImagesInfo).SetValidator(new ImagesInfoValidator());
+        }
     }
 
     public class EventInfoValidator : MudServerValidatorBase<EventInfoModel>
@@ -2442,7 +2731,52 @@
     {
         public PricesInfoValidator()
         {
+            RuleForEach(x => x.Prices).SetValidator(new PriceInfoValidator());            
+        }
+    }
 
+    public class PriceInfoValidator : MudServerValidatorBase<PriceInfoModel>
+    {
+        public PriceInfoValidator()
+        {
+            RuleForEach(x => x.PriceTypes)
+            .Must((model, priceKvp) =>
+            {
+                var key = priceKvp.Key;
+
+                var isBasePrice = priceKvp.Value;
+
+                if (!isBasePrice)
+                {
+                    return true;
+                }
+
+                model.Prices.TryGetValue(key, out var currentPrice);
+
+                return currentPrice > 0;
+            })
+            .WithMessage((model, priceKvp) => $"The price for {priceKvp.Key} must be greater than 0.");
+        }
+    }
+
+    public class AdditionalChargesInfoValidator : MudServerValidatorBase<AdditionalChargesInfoModel>
+    {
+        public AdditionalChargesInfoValidator()
+        {
+            RuleForEach(x => x.AdditionalCharges).SetValidator(new AdditionalChargeInfoValidator());
+        }
+    }
+
+    public class AdditionalChargeInfoValidator : MudServerValidatorBase<AdditionalChargeInfoModel>
+    {
+        public AdditionalChargeInfoValidator()
+        {
+            RuleFor(x => x.Name).NotEmpty();
+            RuleFor(x => x.FeeType)
+                .IsInEnum()
+                .Must(type => type is FeeType.Fixed or FeeType.Percentage)
+                .WithMessage("Fee type must be Fixed or Percentage."); ;
+            RuleFor(x => x.Value).GreaterThan(0);
         }
     }
 

@@ -347,6 +347,58 @@
         }
       }
     },
+    "/api/additional-charges/prices/{id}": {
+      "get": {
+        "tags": [
+          "AdditionalCharges"
+        ],
+        "summary": "Retrieves a specific additional charge by its ID.",
+        "operationId": "GetAdditionalChargesByPriceReferenceIdAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the additional charge.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdditionalChargeResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdditionalChargeResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdditionalChargeResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/invitations": {
       "post": {
         "tags": [
@@ -4177,7 +4229,7 @@
         }
       }
     },
-    "/api/event-schedules/{scheduleId}": {
+    "/api/event-schedules/{id}": {
       "get": {
         "tags": [
           "EventSchedule"
@@ -4186,7 +4238,7 @@
         "operationId": "GetScheduleByIdAsync",
         "parameters": [
           {
-            "name": "scheduleId",
+            "name": "id",
             "in": "path",
             "description": "The unique identifier of the event schedule to retrieve.",
             "required": true,
@@ -4219,6 +4271,177 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "EventSchedule"
+        ],
+        "summary": "Updates the details of an existing event schedule identified by its unique identifier.",
+        "description": "The method validates the input model state before attempting to update the event schedule. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
+        "operationId": "UpdateScheduleAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The unique identifier of the event schedule to update. Must be a positive long value.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "An object containing the updated event schedule details. This parameter is required and cannot be null.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EventScheduleRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EventScheduleRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EventScheduleRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EventScheduleRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "EventSchedule"
+        ],
+        "summary": "Deletes the event schedule identified by the specified unique identifier.",
+        "description": "This method does not delete a event schedule if the specified identifier does not match any\r\n            existing event schedule.",
+        "operationId": "DeleteScheduleAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The unique identifier of the event schedule to delete. Must be a valid long integer corresponding to an existing\r\n            event schedule.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "422": {
+            "description": "Unprocessable Content",
             "content": {
               "text/plain": {
                 "schema": {
@@ -4329,159 +4552,6 @@
                 }
               }
             }
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/event-schedules/{id}": {
-      "put": {
-        "tags": [
-          "EventSchedule"
-        ],
-        "summary": "Updates the details of an existing event schedule identified by its unique identifier.",
-        "description": "The method validates the input model state before attempting to update the event schedule. If\r\n            the model state is invalid, a BadRequest response is returned. If the update cannot be processed, an\r\n            UnprocessableEntity response is returned.",
-        "operationId": "UpdateScheduleAsync",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The unique identifier of the event schedule to update. Must be a positive long value.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "An object containing the updated event schedule details. This parameter is required and cannot be null.",
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/EventScheduleRequest"
-                  }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/EventScheduleRequest"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/EventScheduleRequest"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/EventScheduleRequest"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "EventSchedule"
-        ],
-        "summary": "Deletes the event schedule identified by the specified unique identifier.",
-        "description": "This method does not delete a event schedule if the specified identifier does not match any\r\n            existing event schedule.",
-        "operationId": "DeleteScheduleAsync",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The unique identifier of the event schedule to delete. Must be a valid long integer corresponding to an existing\r\n            event schedule.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
           },
           "422": {
             "description": "Unprocessable Content",
@@ -11339,7 +11409,7 @@
           {
             "name": "userId",
             "in": "path",
-            "description": "The Firebase UID of the user.",
+            "description": "The local user ID (Guid).",
             "required": true,
             "schema": {
               "type": "string",
@@ -11420,7 +11490,7 @@
           {
             "name": "userId",
             "in": "path",
-            "description": "The Firebase UID of the user.",
+            "description": "The local user ID (Guid).",
             "required": true,
             "schema": {
               "type": "string",
@@ -11573,7 +11643,7 @@
           {
             "name": "userId",
             "in": "path",
-            "description": "The Firebase UID of the user.",
+            "description": "The local user ID (Guid).",
             "required": true,
             "schema": {
               "type": "string",
@@ -13619,6 +13689,13 @@
           "ChangesRequested",
           "Published",
           "Cancelled"
+        ],
+        "type": "string"
+      },
+      "AdminGameCategory": {
+        "enum": [
+          "Regular",
+          "Playoff"
         ],
         "type": "string"
       },
@@ -16538,7 +16615,7 @@
           "gameCategory": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/GameCategory"
+                "$ref": "#/components/schemas/AdminGameCategory"
               }
             ],
             "nullable": true
@@ -16688,22 +16765,25 @@
         "properties": {
           "eventId": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "nullable": true
           },
           "startDateTime": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "endDateTime": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "publishedDate": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "preSaleDate": {
+          "preSaleStartDate": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -16715,35 +16795,25 @@
           },
           "onSaleDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "offSaleDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "gateOpenDate": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "ageRestriction": {
+          "gameCategory": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/AgeRestriction"
+                "$ref": "#/components/schemas/GameCategory"
               }
             ],
-            "nullable": true
-          },
-          "externalEventKey": {
-            "type": "string",
-            "nullable": true
-          },
-          "securityPolicies": {
-            "type": "string",
-            "nullable": true
-          },
-          "additionalComments": {
-            "type": "string",
             "nullable": true
           },
           "holdExpirationInMinutes": {
@@ -18305,7 +18375,7 @@
           "organizerMembers": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OrganizerMember"
+              "$ref": "#/components/schemas/User"
             }
           },
           "exchangeRates": {
@@ -18313,38 +18383,6 @@
             "items": {
               "$ref": "#/components/schemas/ExchangeRate"
             }
-          },
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "additionalProperties": false
-      },
-      "OrganizerMember": {
-        "type": "object",
-        "properties": {
-          "organizerId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "organizer": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Organizer"
-              }
-            ]
-          },
-          "userId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "user": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/User"
-              }
-            ]
           },
           "id": {
             "type": "integer",
@@ -21628,15 +21666,15 @@
             "type": "integer",
             "format": "int32"
           },
-          "organizerMemberId": {
+          "organizerId": {
             "type": "integer",
             "format": "int64",
             "nullable": true
           },
-          "organizerMember": {
+          "organizer": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/OrganizerMember"
+                "$ref": "#/components/schemas/Organizer"
               }
             ],
             "nullable": true
