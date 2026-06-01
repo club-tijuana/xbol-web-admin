@@ -55,8 +55,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-
 app.UseHsts();
 
 // Only use HTTPS redirection when running directly (Visual Studio, dotnet run)

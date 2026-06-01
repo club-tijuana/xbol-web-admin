@@ -80,7 +80,7 @@
 
             try
             {
-                Chart chart = await _venueMapsService.GetMapChart(_request.ExternalMapKey ?? "");
+                ChartResponse chart = await _venueMapsService.GetMapChart(_request.ExternalMapKey ?? "");
                 _request.ThumbnailUrl = chart.PublishedVersionThumbnailUrl;
                 MudDialog.Close(DialogResult.Ok(_request));
                 StateHasChanged();

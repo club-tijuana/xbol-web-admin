@@ -245,7 +245,7 @@
                                StartIcon="@Icons.Material.Outlined.Save"
                                Color="Color.Tertiary"
                                Size="Size.Large"
-                               @onclick="SubmitAsync">@(_isSubmitting? L["Processing"] + "..." : L["Pay"])</MudButton>
+                               @onclick="SubmitAsync">@(_isSubmitting ? L["Processing"] + "..." : L["Pay"])</MudButton>
                 </MudItem>
             </MudGrid>
         </MudItem>
@@ -494,7 +494,12 @@
 
         var request = new SeasonBookingRequest
         {
-            Seats = _cartState.FinalSeatsSelection.ToDictionary(x => x.SeatId, x => x.Price),
+            Seats = _cartState.FinalSeatsSelection.Select(s => new BookingSeatRequest
+            {
+                SeatKey = s.SeatId,
+                SeatPrice = s.Price,
+                PriceListItemId = s.PriceListItemId
+            }).ToList(),
             HoldToken = _cartState.HoldToken ?? "",
             SeasonKey = EventKey,
             ClientContact = new ClientInfoRequest

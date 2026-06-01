@@ -1,8 +1,11 @@
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
+using Odasoft.XBOL.Auth;
 
 namespace Odasoft.XBOL.AdminPortal.Extensions;
 
@@ -15,9 +18,13 @@ public static class AuthenticationConfiguration
                 FirebaseSessionAuthenticationHandler.SchemeName,
                 options => { });
 
-        services.AddAuthorization();
         services.AddAuthorizationCore();
         services.AddCascadingAuthenticationState();
+
+        services.AddScoped<AuthenticationStateProvider, AdminAuthenticationStateProvider>();
+        services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+        services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddSingleton<IAuthorizationHandler, AnyPermissionAuthorizationHandler>();
 
         services.AddScoped<FirebaseAuthJsInterop>();
         services.AddScoped<BrowserFormPostJsInterop>();

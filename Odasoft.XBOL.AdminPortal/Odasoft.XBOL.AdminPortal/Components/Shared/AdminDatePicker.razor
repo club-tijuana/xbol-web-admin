@@ -1,3 +1,4 @@
+@using System.Linq.Expressions
 @using Odasoft.XBOL.AdminPortal.Helpers
 @inject IStringLocalizer<AdminForm> FormL
 
@@ -7,14 +8,15 @@
                DateFormat="dd/MM/yyyy"
                Mask="@(new DateMask("dd/MM/yyyy"))"
                Required="@Required" RequiredError="@FormL["RequiredField"]"
-               Validation="@(Field?.ValidationFor<DateTime?>())"
-               @attributes="AdditionalAttributes" />
+               For="@For"
+               @attributes="GetCombinedAttributes()" />
 
 @code {
     [Parameter] public DateTime? Date { get; set; }
     [Parameter] public EventCallback<DateTime?> DateChanged { get; set; }
     [Parameter] public FieldBinding? Field { get; set; }
     [Parameter] public bool Required { get; set; }
+    [Parameter] public Expression<Func<DateTime?>>? For { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -24,5 +26,25 @@
         Date = value;
         await DateChanged.InvokeAsync(value);
         Field?.OnChanged();
+    }
+
+    private Dictionary<string, object> GetCombinedAttributes()
+    {
+        var attributes = new Dictionary<string, object>();
+
+        if (AdditionalAttributes != null)
+        {
+            foreach (var attr in AdditionalAttributes)
+            {
+                attributes[attr.Key] = attr.Value;
+            }
+        }
+
+        if (Field != null)
+        {
+            attributes["Validation"] = Field.ValidationFor<DateTime?>();
+        }
+
+        return attributes;
     }
 }

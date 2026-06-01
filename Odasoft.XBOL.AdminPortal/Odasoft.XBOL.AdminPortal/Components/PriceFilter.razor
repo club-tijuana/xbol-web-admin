@@ -15,7 +15,7 @@
     public SeatingChart? Chart { get; set; }
 
     [Parameter]
-    public IEnumerable<SeatsIoPriceDTO> Prices { get; set; } = [];
+    public IEnumerable<SeatsIoPriceResponse> Prices { get; set; } = [];
 
     private int _interval = 500;
 
@@ -28,9 +28,17 @@
 
     protected override void OnInitialized()
     {
-        // TODO: Handle what to display when categories prices are not loaded or empty
-        _maxPrice = Prices.Max(x => x.Price ?? x.TicketTypes?.Max(x => x.Price) ?? 0);
-        _minPrice = Prices.Min(x => x.Price ?? x.TicketTypes?.Min(x => x.Price) ?? 0);
+        if (Prices == null || !Prices.Any())
+        {
+            _maxPrice = 0;
+            _minPrice = 0;
+        }
+        else
+        {
+            _maxPrice = Prices.Max(p => p.Price ?? p.TicketTypes?.Select(t => t.Price).DefaultIfEmpty(0).Max() ?? 0);
+            _minPrice = Prices.Min(p => p.Price ?? p.TicketTypes?.Select(t => t.Price).DefaultIfEmpty(0).Min() ?? 0);
+        }
+
         SelectedMaxPrice = (int)_maxPrice;
         SelectedMinPrice = (int)_minPrice;
     }

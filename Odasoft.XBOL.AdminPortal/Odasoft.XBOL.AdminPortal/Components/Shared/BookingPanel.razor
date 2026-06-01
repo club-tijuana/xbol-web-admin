@@ -55,7 +55,7 @@
     public List<string>? PreselectedSeats { get; set; }
 
     [Parameter]
-    public IEnumerable<SeatsIoPriceDTO>? Prices { get; set; }
+    public IEnumerable<SeatsIoPriceResponse>? Prices { get; set; }
 
     [Parameter, EditorRequired]
     public EventCallback<HoldToken> OnSeatsHeld { get; set; }

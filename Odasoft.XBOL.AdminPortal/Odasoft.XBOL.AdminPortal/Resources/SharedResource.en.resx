@@ -654,4 +654,13 @@
   <data name="Select" xml:space="preserve">
     <value>Select</value>
   </data>
+  <data name="AccessDeniedTitle" xml:space="preserve">
+    <value>Access Denied</value>
+  </data>
+  <data name="AccessDeniedMessage" xml:space="preserve">
+    <value>You don't have permission to access this page.</value>
+  </data>
+  <data name="AccessDeniedGoToDashboard" xml:space="preserve">
+    <value>Go to Dashboard</value>
+  </data>
 </root>

@@ -3,7 +3,6 @@ using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.Business;
 using Odasoft.XBOL.Common.Options;
-using Yarp.ReverseProxy.Forwarder;
 
 namespace Odasoft.XBOL.AdminPortal.Extensions;
 

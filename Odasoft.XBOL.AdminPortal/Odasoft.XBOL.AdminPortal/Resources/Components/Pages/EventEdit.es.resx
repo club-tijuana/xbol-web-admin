@@ -309,10 +309,22 @@
   <data name="TimeToPurchaseInMinutes" xml:space="preserve">
     <value>Tiempo de compra (minutos)</value>
   </data>
+  <data name="Organizer" xml:space="preserve">
+    <value>Promotor</value>
+  </data>
+  <data name="CreateEvent" xml:space="preserve">
+    <value>Nuevo evento</value>
+  </data>
+  <data name="InvalidForm" xml:space="preserve">
+    <value>Revisa el formulario y completa los campos requeridos</value>
+  </data>
+  <data name="EventPublished" xml:space="preserve">
+    <value>Evento publicado</value>
+  </data>
   <data name="ReviewDescription" xml:space="preserve">
     <value>Favor de revisar que toda la información ingresada sea correcta. Al terminar presione 'Terminar revisión' si todo está en orden presione 'Aprobar'; de lo contrario, 'Requiere cambios' para realizar las correcciones necesarias.</value>
   </data>
-  <data name="Organizer" xml:space="preserve">
-    <value>Promotor</value>
+  <data name="ErrorPublishingEvent" xml:space="preserve">
+    <value>Hubo un error al publicar el evento</value>
   </data>
 </root>

@@ -1,5 +1,6 @@
 @page "/suites/agreements"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.SuiteAgreements.Read)]
 
 @using Microsoft.Net.Http.Headers;
 @using Odasoft.XBOL.AdminPortal.Extensions
@@ -107,7 +108,7 @@
             </ToolBarContent>
             <Columns>
                 <SelectColumn T="SuiteAgreementViewModel" />
-                <PropertyColumn Title="Nivel" Property="x => x.SuiteLevel" Sortable="true" Filterable="false" InitialDirection="SortDirection.Ascending">
+                <PropertyColumn Title="Nivel" Property="x => x.SuiteLevel" Sortable="true" Filterable="false" InitialDirection="MudSortDirection.Ascending">
                     <CellTemplate>
                         <MudText Typo="Typo.body2">@context.Item.SuiteLevel</MudText>
                     </CellTemplate>

@@ -18,6 +18,8 @@
         <MudItem xs="11" sm="8" md="6" lg="4" xl="3">
             <MudPaper Elevation="6" Class="pa-18  align-center">
                 <form @onsubmit="LoginAsync" @onsubmit:preventDefault="true">
+                    <AntiforgeryToken />
+
                     <MudTextField @bind-Value="email" Class="pb-6"
                                   Label="@L["Email"]" Variant="Variant.Outlined"
                                   Required="true" Margin="Margin.Dense"
@@ -74,6 +76,7 @@
     private bool isSubmitting;
     private bool isShow = false;
     private InputType passwordInput = InputType.Password;
+    private AntiforgeryRequestToken? _currentToken;
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
@@ -95,6 +98,12 @@
         MaxWidth = MaxWidth.ExtraSmall,
         FullWidth = true
     };
+
+    protected override void OnInitialized()
+    {
+        _currentToken = Antiforgery.GetAntiforgeryToken();
+        base.OnInitialized();
+    }
 
     protected override void OnParametersSet()
     {
@@ -139,9 +148,16 @@
         var antiforgery = Antiforgery.GetAntiforgeryToken();
         if (antiforgery is null)
         {
-            errorMessage = L["LoginFailed"];
-            isSubmitting = false;
-            return;
+            if (_currentToken is null)
+            {
+                errorMessage = L["LoginFailed"];
+                isSubmitting = false;
+                return;
+            }
+            else
+            {
+                antiforgery = _currentToken;
+            }
         }
 
         await FormPost.PostAsync("auth/login", new Dictionary<string, string?>

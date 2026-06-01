@@ -10,7 +10,7 @@
         <MudItem xs="12">
             <MudText Typo="Typo.subtitle1" Class="mb-3 fw-bold">Amenidades y seguridad</MudText>
 
-            <MudChipSet T="Amenity" ReadOnly="true">
+            <MudChipSet T="AmenityDTO" ReadOnly="true">
                 @foreach (var amenity in _amenities)
                 {
                     <MudChip Value="@amenity"
@@ -45,7 +45,7 @@
 @code {
     [Parameter] public long VenueId { get; set; }
 
-    private List<Amenity> _amenities = [];
+    private List<AmenityDTO> _amenities = [];
     private string _policies { get; set; } = "";
     private string _additionalComments { get; set; } = "";
 
