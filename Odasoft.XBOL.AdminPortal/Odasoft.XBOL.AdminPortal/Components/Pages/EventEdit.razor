@@ -10,7 +10,6 @@
 @using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.AdminPortal.Extensions
 @using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.AdminPortal.ViewModels.Event
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
 @using Odasoft.XBOL.Business.ModelValidators
@@ -25,6 +24,7 @@
 @inject VenueMapsService VenueMapsService;
 @inject EventScheduleService ScheduleService;
 @inject MediaService MediaService;
+@inject AdditionalChargesService AdditionalChargesService;
 @inject AppLocalizer<EventEdit> L
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -455,38 +455,45 @@
                                         Items="@EventState.AdditionalChargesInfo.AdditionalCharges"
                                         CommittedItemChanges="@CommittedItemChanges"
                                         EditMode="DataGridEditMode.Cell"
-                                        ReadOnly="false"
+                                        ReadOnly="_isReview"
                                         Validator="_additionalChargesForm"
                                         Bordered="true" 
                                         Dense="true"
-                                        Elevation="0">
+                                        Elevation="0"
+                                        >
                                         <ToolBarContent>
                                             <MudText Typo="Typo.h5">@L["AdditionalCharges"]</MudText>
                                             <MudSpacer />
-                                            <MudButtonGroup Class="ma-0 pa-0" Color="MudBlazor.Color.Success" Variant="Variant.Filled">
-                                                <MudButton OnClick="NewAdditionalChargeAsync">
-                                                    Add Additional Charge
-                                                </MudButton>
+                                            <MudButtonGroup Class="ma-0 pa-0" Color="MudBlazor.Color.Primary" Variant="Variant.Filled">
+                                                @if (!_isReview)
+                                                {
+                                                    <MudButton OnClick="NewAdditionalChargeAsync">
+                                                        @L["AddAdditionalCharge"]
+                                                    </MudButton>
+                                                }
                                             </MudButtonGroup>
                                         </ToolBarContent>
                                         <Columns>
-                                            <PropertyColumn Property="x => x.Name" Title="Item Name">
+                                            <PropertyColumn Property="x => x.Name" Title="@L["FeeName"]">
                                                 <EditTemplate>
                                                     @{
                                                         var item = context.Item;
                                                     }
-                                                    <AdminTextField @bind-Value="item.Name"
+                                                    <AdminTextField 
+                                                        @key="item.UiId"            
+                                                        @bind-Value="item.Name"
                                                                   For="@(() => item.Name)"
-                                                                  Validation="@(new Func<string, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.Name), val)))" />
+                                                                  Validation="@(new Func<string, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.Name), val)))"
+                                                                    Disabled="@_isReview" />
                                                 </EditTemplate>
                                             </PropertyColumn>
 
-                                            <PropertyColumn Property="x => x.FeeType" Title="Type">
+                                            <PropertyColumn Property="x => x.FeeType" Title="@L["Type"]">
                                                 <EditTemplate>
                                                     @{
                                                         var item = context.Item;
                                                     }
-                                                    <MudSelect
+                                                    <MudSelect @key="item.UiId"
                                                                T="FeeType"
                                                                @bind-Value="item.FeeType"
                                                                Variant="Variant.Outlined"
@@ -494,7 +501,7 @@
                                                                For="@(() => item.FeeType)"
                                                                ToStringFunc="@(feeType => L[feeType.ToString()].Value)"
                                                                Validation="@(new Func<FeeType, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.FeeType), val)))"
-                                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                               Disabled="@(_isReview)">
 
                                                         @foreach (var fee in _feeTypes)
                                                         {
@@ -506,25 +513,31 @@
                                                 </EditTemplate>
                                             </PropertyColumn>
 
-                                            <PropertyColumn Property="x => x.Value" Title="Price">
+                                            <PropertyColumn Property="x => x.Value" Title="@L["FeeAmount"]">
                                                 <EditTemplate>
                                                     @{
                                                         var item = context.Item;
                                                     }
-                                                    <AdminNumericField @bind-Value="item.Value"
+                                                    <AdminNumericField @key="item.UiId"
+                                                                    @bind-Value="item.Value"
                                                                      For="@(() => item.Value)"
-                                                                       Validation="@(new Func<decimal, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.Value), val)))" />
+                                                                       Validation="@(new Func<decimal?, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.Value), val)))"
+                                                                       HideSpinButtons="@true"
+                                                                       Disabled="@_isReview" />
                                                 </EditTemplate>
-                                            </PropertyColumn>                                           
-
-                                            <TemplateColumn>
-                                                <CellTemplate>
-                                                    <MudIconButton Color="MudBlazor.Color.Default" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteAdditionalCharge(context.Item))" />
-                                                </CellTemplate>
-                                                <EditTemplate>
-                                                    <MudIconButton Color="MudBlazor.Color.Default" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteAdditionalCharge(context.Item))" />
-                                                </EditTemplate>
-                                            </TemplateColumn>
+                                            </PropertyColumn>     
+                                            
+                                            @if (!_isReview)
+                                            {
+                                                <TemplateColumn>
+                                                    <CellTemplate>
+                                                        <MudIconButton Color="MudBlazor.Color.Default" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteAdditionalCharge(context.Item))" />
+                                                    </CellTemplate>
+                                                    <EditTemplate>
+                                                        <MudIconButton Color="MudBlazor.Color.Default" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteAdditionalCharge(context.Item))" />
+                                                    </EditTemplate>
+                                                </TemplateColumn>
+                                            }
                                         </Columns>
                                     </MudDataGrid>
                                 </MudItem>
@@ -1155,33 +1168,33 @@
     private MudForm _descriptionForm = default!;
     private bool _descriptionFormValid = true;
     private bool _descriptionFormCompleted = false;
-    private EventInfoValidator _eventInfoValidator = new();
+    private EventInfoValidator _eventInfoValidator;
     private FormContext _descriptionFormContext = default!;
 
     private MudForm _scheduleForm = default!;
     private bool _scheduleValid = true;
     private bool _scheduleCompleted = false;
-    private ScheduleInfoValidator _scheduleValidator = new();
+    private ScheduleInfoValidator _scheduleValidator;
     private FormContext _scheduleFormContext = default!;
 
     private MudForm _pricesForm = default!;
     private bool _pricesValid = true;
     private bool _pricesCompleted = false;
-    private PricesInfoValidator _pricesValidator = new();
+    private PricesInfoValidator _pricesValidator;
     private FormContext _pricesFormContext = default!;
 
     private MudForm _additionalChargesForm = default!;
     private bool _additionalChargesValid = true;
     private bool _additionalChargesCompleted = false;
-    private AdditionalChargesInfoValidator _additionalChargesInfoValidator = new();
-    private AdditionalChargeInfoValidator _additionalChargeInfoValidator = new();
+    private AdditionalChargesInfoValidator _additionalChargesInfoValidator;
+    private AdditionalChargeInfoValidator _additionalChargeInfoValidator;
     private FormContext _additionalChargesFormContext = default!;
     private MudDataGrid<AdditionalChargeInfoModel> _additionalChargesGrid = default!;
 
     private MudForm _imagesForm = default!;
     private bool _imagesValid = true;
     private bool _imagesCompleted = false;
-    private ImagesInfoValidator _imagesValidator = new();
+    private ImagesInfoValidator _imagesValidator;
     private FormContext _imagesFormContext = default!;
 
     private bool IsFormReadyToSubmit => _descriptionFormValid && _scheduleValid && _pricesValid && _imagesValid && _additionalChargesValid;
@@ -1251,6 +1264,13 @@
         {
             _isReview = true;
         }
+
+        _eventInfoValidator = new(L);
+        _scheduleValidator = new(L);
+        _pricesValidator = new(L);
+        _additionalChargesInfoValidator = new(L);
+        _additionalChargeInfoValidator = new(L);
+        _imagesValidator = new(L);
     }
 
     private async Task InitializeForm()
@@ -1356,6 +1376,7 @@
             _layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(EventState.EventInfo.SelectedVenueMap?.Id ?? 0);
 
             await LoadPrices();
+            await LoadAdditionalCharges();
             await LoadEventMediaAsync();
 
             _originalEventInfo = EventState.EventInfo with { };
@@ -1844,33 +1865,30 @@
         {
             return;
         }
-        foreach (var charge in EventState.AdditionalChargesInfo.AdditionalCharges)
-        {
-            var request = new AdditionalChargeRequest
-            {
-                PriceReferenceId = _priceReferenceId.Value,
-                Name = charge.Name,
-                FeeType = charge.FeeType,
-                Value = charge.Value
-            };
 
-            try
+        try
+        {
+            await AdditionalChargesService.SyncChargesAsync(_priceReferenceId.Value, EventState.AdditionalChargesInfo.AdditionalCharges.Select(x => new AdditionalChargeRequest
             {
-                // var response = await AdditionalChargeService.SaveAdditionalChargeAsync(request);
-            }
-            catch (ApiException<ProblemDetails> ex)
+                Id = x.Id,
+                PriceReferenceId = _priceReferenceId.Value,
+                Name = x.Name,
+                FeeType = x.FeeType,
+                Value = x.Value.Value
+            }).ToList());
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _additionalChargesInfoValidator.LoadServerErrors(ex);
+            if (_additionalChargesForm != null)
             {
-                _additionalChargesInfoValidator.LoadServerErrors(ex);
-                if (_additionalChargesForm != null)
-                {
-                    _additionalChargesFormContext.SetForm(_additionalChargesForm);
-                    await _additionalChargesFormContext.ValidateAsync();
-                }
-                var validationResult = await _additionalChargesInfoValidator.ValidateAsync(EventState.AdditionalChargesInfo);
-                _additionalChargesValid = validationResult.IsValid && !_additionalChargesInfoValidator.ServerErrors.Any();
-                StateHasChanged();
-                throw;
+                _additionalChargesFormContext.SetForm(_additionalChargesForm);
+                await _additionalChargesFormContext.ValidateAsync();
             }
+            var validationResult = await _additionalChargesInfoValidator.ValidateAsync(EventState.AdditionalChargesInfo);
+            _additionalChargesValid = validationResult.IsValid && !_additionalChargesInfoValidator.ServerErrors.Any();
+            StateHasChanged();
+            throw;
         }
     }
 
@@ -2315,6 +2333,32 @@
         }
     }
 
+    private async Task LoadAdditionalCharges()
+    {
+        if (_priceReferenceId == null)
+        {
+            return;
+        }
+        try
+        {
+            var charges = await AdditionalChargesService.GetChargesByPriceReferenceIdAsync(_priceReferenceId.Value);
+            EventState.AdditionalChargesInfo.AdditionalCharges = charges.Select(x => new AdditionalChargeInfoModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                FeeType = x.FeeType,
+                Value = x.Value
+            }).ToList();
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode != StatusCodes.Status404NotFound)
+            {
+                EventState.AdditionalChargesInfo.AdditionalCharges = [];
+            }
+        }
+    }   
+
     private void InitializeEmptyPrices()
     {
         EventState.PricesInfo.Prices.Clear();
@@ -2535,6 +2579,7 @@
     {
         var elem = new AdditionalChargeInfoModel();
         EventState.AdditionalChargesInfo.AdditionalCharges.Insert(0, elem);
+        StateHasChanged();
     }
 
     private void DeleteAdditionalCharge(AdditionalChargeInfoModel item)
@@ -2692,8 +2737,21 @@
         public long? Id { get; set; }
         public string Name { get; set; }
         public FeeType FeeType { get; set; }
-        public decimal Value { get; set; }
+        public decimal? Value { get; set; }
         public Guid UiId { get; set; } = new Guid();
+
+        public virtual bool Equals(AdditionalChargeInfoModel? other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            return UiId == other.UiId;
+        }
+
+        public override int GetHashCode()
+        {
+            return UiId.GetHashCode();
+        }
     }
 
     public record ImagesInfoModel()
@@ -2705,40 +2763,48 @@
 
     public class EventFormValidator : MudServerValidatorBase<EventFormModel>
     {
-        public EventFormValidator()
+        public EventFormValidator(AppLocalizer<EventEdit> L)
         {
-            RuleFor(x => x.EventInfo).SetValidator(new EventInfoValidator());
-            RuleFor(x => x.PricesInfo).SetValidator(new PricesInfoValidator());
-            RuleFor(x => x.ScheduleInfo).SetValidator(new ScheduleInfoValidator());
-            RuleFor(x => x.ImagesInfo).SetValidator(new ImagesInfoValidator());
+            RuleFor(x => x.EventInfo).SetValidator(new EventInfoValidator(L));
+            RuleFor(x => x.PricesInfo).SetValidator(new PricesInfoValidator(L));
+            RuleFor(x => x.ScheduleInfo).SetValidator(new ScheduleInfoValidator(L));
+            RuleFor(x => x.ImagesInfo).SetValidator(new ImagesInfoValidator(L));
         }
     }
 
     public class EventInfoValidator : MudServerValidatorBase<EventInfoModel>
     {
-        public EventInfoValidator()
+        public EventInfoValidator(AppLocalizer<EventEdit> L)
         {
             ApiToClientMap["VenueMapId"] = "SelectedVenueMap";
             ApiToClientMap["CategoryIds"] = "SelectedCategories";
 
-            RuleFor(x => x.Name).NotEmpty();
-            RuleFor(x => x.SelectedVenue).NotEmpty();
-            RuleFor(x => x.SelectedVenueMap).NotEmpty();
-            RuleFor(x => x.SelectedCategories).NotEmpty();
+            RuleFor(x => x.Name)
+                .NotEmpty()
+                .WithName(L["Name"]);
+            RuleFor(x => x.SelectedVenue)
+                .NotEmpty()
+                .WithName(L["Venue"]);
+            RuleFor(x => x.SelectedVenueMap)
+                .NotEmpty()
+                .WithName(L["Map"]);
+            RuleFor(x => x.SelectedCategories)
+                .NotEmpty()
+                .WithName(L["EventType"]);
         }
     }
 
     public class PricesInfoValidator : MudServerValidatorBase<PricesInfoModel>
     {
-        public PricesInfoValidator()
+        public PricesInfoValidator(AppLocalizer<EventEdit> L)
         {
-            RuleForEach(x => x.Prices).SetValidator(new PriceInfoValidator());            
+            RuleForEach(x => x.Prices).SetValidator(new PriceInfoValidator(L));            
         }
     }
 
     public class PriceInfoValidator : MudServerValidatorBase<PriceInfoModel>
     {
-        public PriceInfoValidator()
+        public PriceInfoValidator(AppLocalizer<EventEdit> L)
         {
             RuleForEach(x => x.PriceTypes)
             .Must((model, priceKvp) =>
@@ -2762,43 +2828,64 @@
 
     public class AdditionalChargesInfoValidator : MudServerValidatorBase<AdditionalChargesInfoModel>
     {
-        public AdditionalChargesInfoValidator()
+        public AdditionalChargesInfoValidator(AppLocalizer<EventEdit> L)
         {
-            RuleForEach(x => x.AdditionalCharges).SetValidator(new AdditionalChargeInfoValidator());
+            RuleForEach(x => x.AdditionalCharges).SetValidator(new AdditionalChargeInfoValidator(L));
         }
     }
 
     public class AdditionalChargeInfoValidator : MudServerValidatorBase<AdditionalChargeInfoModel>
     {
-        public AdditionalChargeInfoValidator()
+        public AdditionalChargeInfoValidator(AppLocalizer<EventEdit> L)
         {
-            RuleFor(x => x.Name).NotEmpty();
+            RuleFor(x => x.Name)
+                .NotEmpty()
+                .WithName(L["FeeName"]);
             RuleFor(x => x.FeeType)
                 .IsInEnum()
                 .Must(type => type is FeeType.Fixed or FeeType.Percentage)
-                .WithMessage("Fee type must be Fixed or Percentage."); ;
-            RuleFor(x => x.Value).GreaterThan(0);
+                .WithName(L["FeeType"]);
+            RuleFor(x => x.Value)
+                .NotEmpty()
+                .GreaterThan(0)
+                .WithName(L["FeeAmount"]);
         }
     }
 
     public class ScheduleInfoValidator : MudServerValidatorBase<ScheduleInfoModel>
     {
-        public ScheduleInfoValidator()
+        public ScheduleInfoValidator(AppLocalizer<EventEdit> L)
         {
-            RuleFor(x => x.StartDate).NotEmpty();
-            RuleFor(x => x.StartTime).NotEmpty();
-            RuleFor(x => x.EndDate).NotEmpty();
-            RuleFor(x => x.EndTime).NotEmpty();
-            RuleFor(x => x.OnSaleDate).NotEmpty();
-            RuleFor(x => x.OnSaleTime).NotEmpty();
-            RuleFor(x => x.OffSaleDate).NotEmpty();
-            RuleFor(x => x.OffSaleTime).NotEmpty();
+            RuleFor(x => x.StartDate)
+                .NotEmpty()
+                .WithName(L["StartDate"]);
+            RuleFor(x => x.StartTime)
+                .NotEmpty()
+                .WithName(L["Time"]);
+            RuleFor(x => x.EndDate)
+                .NotEmpty()
+                .WithName(L["EndDate"]);
+            RuleFor(x => x.EndTime)
+                .NotEmpty()
+                .WithName(L["Time"]);
+            RuleFor(x => x.OnSaleDate)
+                .NotEmpty()
+                .WithName(L["StartDate"]);
+            RuleFor(x => x.OnSaleTime)
+                .NotEmpty()
+                .WithName(L["Time"]);
+            RuleFor(x => x.OffSaleDate)
+                .NotEmpty()
+                .WithName(L["EndDate"]);
+            RuleFor(x => x.OffSaleTime)
+                .NotEmpty()
+                .WithName(L["Time"]);
         }
     }
 
     public class ImagesInfoValidator : MudServerValidatorBase<ImagesInfoModel>
     {
-        public ImagesInfoValidator()
+        public ImagesInfoValidator(AppLocalizer<EventEdit> L)
         {
             
         }

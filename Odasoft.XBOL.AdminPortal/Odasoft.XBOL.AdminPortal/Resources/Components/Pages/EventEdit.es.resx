@@ -321,10 +321,28 @@
   <data name="EventPublished" xml:space="preserve">
     <value>Evento publicado</value>
   </data>
+  <data name="ErrorPublishingEvent" xml:space="preserve">
+    <value>Hubo un error al publicar el evento</value>
+  </data>
+  <data name="AdditionalCharges" xml:space="preserve">
+    <value>Cargos adicionales</value>
+  </data>
+  <data name="AddAdditionalCharge" xml:space="preserve">
+    <value>Añadir cargo</value>
+  </data>
+  <data name="FeeName" xml:space="preserve">
+    <value>Nombre del cargo</value>
+  </data>
+  <data name="Fixed" xml:space="preserve">
+    <value>Fijo</value>
+  </data>
+  <data name="Percentage" xml:space="preserve">
+    <value>Porcentaje</value>
+  </data>
   <data name="ReviewDescription" xml:space="preserve">
     <value>Favor de revisar que toda la información ingresada sea correcta. Al terminar presione 'Terminar revisión' si todo está en orden presione 'Aprobar'; de lo contrario, 'Requiere cambios' para realizar las correcciones necesarias.</value>
   </data>
-  <data name="ErrorPublishingEvent" xml:space="preserve">
-    <value>Hubo un error al publicar el evento</value>
+  <data name="FeeAmount" xml:space="preserve">
+    <value>Cantidad</value>
   </data>
 </root>
