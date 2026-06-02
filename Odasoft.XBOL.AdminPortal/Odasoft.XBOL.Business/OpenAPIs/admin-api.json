@@ -1081,6 +1081,916 @@
         "deprecated": true
       }
     },
+    "/api/bundles": {
+      "get": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "GetBundlesAsync",
+        "parameters": [
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminEventStatus"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BundleType",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/BundleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleListItemDTOPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleListItemDTOPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleListItemDTOPagedResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "CreateBundleAsync",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundleCreateRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundleCreateRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundleCreateRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundleCreateRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bundles/{id}": {
+      "get": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "GetBundleByIdAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "UpdateBundleAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundleUpdateRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundleUpdateRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundleUpdateRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundleUpdateRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "DeleteBundleAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bundles/{bundleId}/passes": {
+      "get": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "GetBundlePassesAsync",
+        "parameters": [
+          {
+            "name": "bundleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "BundleId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/BundlePassStatus"
+                }
+              ]
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTOPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTOPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTOPagedResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "CreateBundlePassAsync",
+        "parameters": [
+          {
+            "name": "bundleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundlePassCreateRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundlePassCreateRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundlePassCreateRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundlePassCreateRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bundles/{bundleId}/passes/{id}": {
+      "get": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "GetBundlePassByIdAsync",
+        "parameters": [
+          {
+            "name": "bundleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "UpdateBundlePassAsync",
+        "parameters": [
+          {
+            "name": "bundleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundlePassUpdateRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundlePassUpdateRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundlePassUpdateRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BundlePassUpdateRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundlePassDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Bundles"
+        ],
+        "operationId": "DeleteBundlePassAsync",
+        "parameters": [
+          {
+            "name": "bundleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/categories": {
       "get": {
         "tags": [
@@ -1444,6 +2354,88 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ClientResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/login-identifiers/clients": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "operationId": "GetClientIdsByLoginIdentifierAsync",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ClientLoginIdentifierType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "normalizedValue",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -3155,6 +4147,381 @@
         }
       }
     },
+    "/api/event-catalog": {
+      "get": {
+        "tags": [
+          "EventCatalog"
+        ],
+        "operationId": "GetEventCatalogItemsAsync",
+        "parameters": [
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ItemType",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/EventCatalogItemType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BundleType",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/BundleType"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AdminEventStatus"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Venue",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Upcoming",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventCatalogItemDTOPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventCatalogItemDTOPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventCatalogItemDTOPagedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/event-catalog/event-schedules": {
+      "get": {
+        "tags": [
+          "EventCatalog"
+        ],
+        "operationId": "GetEventScheduleItemsAsync",
+        "parameters": [
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Venue",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "VenueMapId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Upcoming",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleScheduleItemDTOPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleScheduleItemDTOPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleScheduleItemDTOPagedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/event-catalog/bundles/{bundleId}/schedules": {
+      "get": {
+        "tags": [
+          "EventCatalog"
+        ],
+        "operationId": "GetBundleScheduleItemsAsync",
+        "parameters": [
+          {
+            "name": "bundleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Venue",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "VenueMapId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Upcoming",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleScheduleItemDTOPagedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleScheduleItemDTOPagedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleScheduleItemDTOPagedResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/events": {
       "get": {
         "tags": [
@@ -4238,13 +5605,20 @@
         "operationId": "GetScheduleByIdAsync",
         "parameters": [
           {
-            "name": "id",
+            "name": "scheduleId",
             "in": "path",
-            "description": "The unique identifier of the event schedule to retrieve.",
             "required": true,
             "schema": {
               "type": "integer",
               "format": "int64"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -4254,17 +5628,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventInfoDTO"
+                  "$ref": "#/components/schemas/EventScheduleDTO"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventInfoDTO"
+                  "$ref": "#/components/schemas/EventScheduleDTO"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventInfoDTO"
+                  "$ref": "#/components/schemas/EventScheduleDTO"
                 }
               }
             }
@@ -7575,6 +8949,13 @@
             "schema": {
               "type": "integer",
               "format": "int64"
+            }
+          },
+          {
+            "name": "RenewalMode",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -13702,7 +15083,8 @@
       "AdminItemType": {
         "enum": [
           "Ticket",
-          "SeasonPass"
+          "SeasonPass",
+          "BundlePass"
         ],
         "type": "string"
       },
@@ -14204,6 +15586,11 @@
             "type": "string",
             "nullable": true
           },
+          "bundleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
           "eventScheduleId": {
             "type": "integer",
             "format": "int64",
@@ -14252,7 +15639,8 @@
       "BookableUnitType": {
         "enum": [
           "Schedule",
-          "Season"
+          "Season",
+          "Bundle"
         ],
         "type": "string"
       },
@@ -14310,6 +15698,1579 @@
           "priceListItemId": {
             "type": "integer",
             "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Bundle": {
+        "type": "object",
+        "properties": {
+          "bundleType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleType"
+              }
+            ]
+          },
+          "bundlePricingType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePricingType"
+              }
+            ]
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "previousBundleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "previousBundle": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Bundle"
+              }
+            ],
+            "nullable": true
+          },
+          "bundleEventSchedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleEventSchedule"
+            }
+          },
+          "bundleSections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleSection"
+            }
+          },
+          "bundleTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleTag"
+            }
+          },
+          "bundlePasses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundlePass"
+            }
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "venueMap": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueMap"
+              }
+            ],
+            "nullable": true
+          },
+          "organizerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Organizer"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "longDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "posterImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "landingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "ageRestriction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgeRestriction"
+              }
+            ],
+            "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminEventStatus"
+              }
+            ]
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventSchedule"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventCategory"
+            }
+          },
+          "performerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "performer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Performer"
+              }
+            ],
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleCreateRequest": {
+        "required": [
+          "bundlePricingType",
+          "bundleType",
+          "name",
+          "organizerId",
+          "venueMapId"
+        ],
+        "type": "object",
+        "properties": {
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "organizerId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "longDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "posterImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "landingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "ageRestriction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgeRestriction"
+              }
+            ],
+            "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "bundleType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleType"
+              }
+            ]
+          },
+          "bundlePricingType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePricingType"
+              }
+            ]
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "previousBundleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "eventScheduleIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceRequest"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "venueName": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "longDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "posterImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "landingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "ageRestriction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgeRestriction"
+              }
+            ],
+            "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminEventStatus"
+              }
+            ]
+          },
+          "isSeason": {
+            "type": "boolean"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminEventCategoryResult"
+            }
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventScheduleDTO"
+            }
+          },
+          "bundleSaleWindow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleSaleWindowDTO"
+              }
+            ],
+            "nullable": true
+          },
+          "bundleType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleType"
+              }
+            ]
+          },
+          "bundlePricingType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePricingType"
+              }
+            ]
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "previousBundleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaResponse"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleEventSchedule": {
+        "type": "object",
+        "properties": {
+          "bundleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "bundle": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Bundle"
+              }
+            ]
+          },
+          "eventScheduleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventSchedule": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventSchedule"
+              }
+            ]
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleListItemDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "venueName": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "organizerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "posterImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminEventStatus"
+              }
+            ]
+          },
+          "isSeason": {
+            "type": "boolean"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminEventCategoryResult"
+            }
+          },
+          "bundleType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleType"
+              }
+            ]
+          },
+          "bundlePricingType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePricingType"
+              }
+            ]
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "previousBundleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bannerMedia": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MediaResponse"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleListItemDTOPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleListItemDTO"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundlePass": {
+        "type": "object",
+        "properties": {
+          "bundleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "bundle": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Bundle"
+              }
+            ]
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "client": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Client"
+              }
+            ],
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "nullable": true
+          },
+          "bundleSeatId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bundleSeat": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleSeat"
+              }
+            ],
+            "nullable": true
+          },
+          "trackingCode": {
+            "type": "string"
+          },
+          "privateToken": {
+            "type": "string"
+          },
+          "bundlePassType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassType"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassStatus"
+              }
+            ]
+          },
+          "suspendedReason": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassSuspendedReason"
+              }
+            ],
+            "nullable": true
+          },
+          "suspendedOtherReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDigital": {
+            "type": "boolean"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "purchasedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bundlePassEventTickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundlePassEventTicket"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundlePassCreateRequest": {
+        "required": [
+          "bundleId",
+          "bundlePassType",
+          "price"
+        ],
+        "type": "object",
+        "properties": {
+          "bundleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "bundleSeatId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bundlePassType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassType"
+              }
+            ]
+          },
+          "isDigital": {
+            "type": "boolean"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundlePassDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "bundleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "bundleSeatId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "trackingCode": {
+            "type": "string"
+          },
+          "privateToken": {
+            "type": "string"
+          },
+          "bundlePassType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassType"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassStatus"
+              }
+            ]
+          },
+          "suspendedReason": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassSuspendedReason"
+              }
+            ],
+            "nullable": true
+          },
+          "suspendedOtherReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDigital": {
+            "type": "boolean"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "purchasedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundlePassDTOPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundlePassDTO"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundlePassEventTicket": {
+        "type": "object",
+        "properties": {
+          "bundlePassId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "bundlePass": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePass"
+              }
+            ]
+          },
+          "ticketId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ticket": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Ticket"
+              }
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundlePassStatus": {
+        "enum": [
+          "Active",
+          "Suspended"
+        ],
+        "type": "string"
+      },
+      "BundlePassSuspendedReason": {
+        "enum": [
+          "PaymentIssue",
+          "PolicyViolation",
+          "FraudSuspicion",
+          "AdminDecision",
+          "Other"
+        ],
+        "type": "string"
+      },
+      "BundlePassType": {
+        "enum": [
+          "Full",
+          "Partial"
+        ],
+        "type": "string"
+      },
+      "BundlePassUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassStatus"
+              }
+            ],
+            "nullable": true
+          },
+          "suspendedReason": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassSuspendedReason"
+              }
+            ],
+            "nullable": true
+          },
+          "suspendedOtherReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "bundleSeatId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "isDigital": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundlePricingType": {
+        "enum": [
+          "Single",
+          "Composite"
+        ],
+        "type": "string"
+      },
+      "BundleSaleWindowDTO": {
+        "type": "object",
+        "properties": {
+          "bundleScheduleKey": {
+            "type": "string"
+          },
+          "bundleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "externalKey": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleScheduleItemDTO": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventScheduleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "scheduledStartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminEventCategoryResult"
+            }
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "venueName": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalEventKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScheduleStatus"
+              }
+            ],
+            "nullable": true
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalSeats": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleScheduleItemDTOPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleScheduleItemDTO"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleSeat": {
+        "type": "object",
+        "properties": {
+          "bundleSectionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "bundleSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleSection"
+              }
+            ]
+          },
+          "baseSeatId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseSeat": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSeat"
+              }
+            ]
+          },
+          "priceOverride": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "externalSeatObjectKey": {
+            "type": "string"
+          },
+          "forSale": {
+            "type": "boolean"
+          },
+          "bundlePasses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundlePass"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleSection": {
+        "type": "object",
+        "properties": {
+          "bundleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "bundle": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Bundle"
+              }
+            ]
+          },
+          "baseSectionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "baseSection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseSection"
+              }
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "totalSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bundleSeats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleSeat"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleTag": {
+        "type": "object",
+        "properties": {
+          "bundleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "bundle": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Bundle"
+              }
+            ]
+          },
+          "tagId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tag": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Tag"
+              }
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BundleType": {
+        "enum": [
+          "SeasonPass",
+          "Basic",
+          "Group"
+        ],
+        "type": "string"
+      },
+      "BundleUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "subtitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "longDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "posterImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "landingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "ageRestriction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgeRestriction"
+              }
+            ],
+            "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminEventStatus"
+              }
+            ],
+            "nullable": true
+          },
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
+          },
+          "bundleType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleType"
+              }
+            ],
+            "nullable": true
+          },
+          "bundlePricingType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePricingType"
+              }
+            ],
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "publishedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "preSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "offSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "previousBundleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -14554,6 +17515,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Ticket"
+            }
+          },
+          "loginIdentifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientLoginIdentifier"
             }
           },
           "legalRepresentative": {
@@ -15150,6 +18117,65 @@
           }
         },
         "additionalProperties": false
+      },
+      "ClientLoginIdentifier": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "client": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Client"
+              }
+            ]
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClientLoginIdentifierType"
+              }
+            ]
+          },
+          "normalizedValue": {
+            "type": "string"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientLoginIdentifierType": {
+        "enum": [
+          "FirebaseUid",
+          "Email",
+          "Phone"
+        ],
+        "type": "string"
       },
       "ClientResult": {
         "required": [
@@ -16002,19 +19028,6 @@
             ],
             "nullable": true
           },
-          "seasonId": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "season": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Season"
-              }
-            ],
-            "nullable": true
-          },
           "name": {
             "type": "string"
           },
@@ -16181,6 +19194,142 @@
           }
         },
         "additionalProperties": false
+      },
+      "EventCatalogItemDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "itemType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventCatalogItemType"
+              }
+            ]
+          },
+          "bundleType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleType"
+              }
+            ],
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminEventStatus"
+              }
+            ]
+          },
+          "scheduledStartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminEventCategoryResult"
+            }
+          },
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "eventScheduleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventScheduleDTO"
+            }
+          },
+          "bundleSaleWindow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleSaleWindowDTO"
+              }
+            ],
+            "nullable": true
+          },
+          "venueName": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalEventKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "posterImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "isSeason": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventCatalogItemDTOPagedResponse": {
+        "required": [
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventCatalogItemDTO"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventCatalogItemType": {
+        "enum": [
+          "Event",
+          "Bundle"
+        ],
+        "type": "string"
       },
       "EventCategory": {
         "type": "object",
@@ -16765,25 +19914,22 @@
         "properties": {
           "eventId": {
             "type": "integer",
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           },
           "startDateTime": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "format": "date-time"
           },
           "endDateTime": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "format": "date-time"
           },
           "publishedDate": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "preSaleStartDate": {
+          "preSaleDate": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -16795,25 +19941,35 @@
           },
           "onSaleDate": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "format": "date-time"
           },
           "offSaleDate": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "format": "date-time"
           },
           "gateOpenDate": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "gameCategory": {
+          "ageRestriction": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/GameCategory"
+                "$ref": "#/components/schemas/AgeRestriction"
               }
             ],
+            "nullable": true
+          },
+          "externalEventKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "securityPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalComments": {
+            "type": "string",
             "nullable": true
           },
           "holdExpirationInMinutes": {
@@ -17010,13 +20166,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "GameCategory": {
-        "enum": [
-          "Regular",
-          "Playoff"
-        ],
-        "type": "string"
       },
       "Gender": {
         "enum": [
@@ -19086,6 +22235,33 @@
         },
         "additionalProperties": false
       },
+      "PriceRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "priceSegmentId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "priceTypeId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "priceValue": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "applyDynamicPricing": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "PriceSegment": {
         "type": "object",
         "properties": {
@@ -19740,6 +22916,14 @@
             "type": "integer",
             "format": "int64"
           },
+          "bundlePassId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "trackingCode": {
+            "type": "string"
+          },
           "zone": {
             "type": "string"
           },
@@ -19761,6 +22945,27 @@
           "price": {
             "type": "number",
             "format": "decimal"
+          },
+          "renewalPrice": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "bundlePassStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassStatus"
+              }
+            ],
+            "nullable": true
+          },
+          "isRenewed": {
+            "type": "boolean"
+          },
+          "renewalBundlePassId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -19781,6 +22986,28 @@
           "quantity": {
             "type": "integer",
             "format": "int32"
+          },
+          "clientId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "buyerName": {
+            "type": "string"
+          },
+          "buyerPhoneRegionCodeId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "buyerPhoneNumber": {
+            "type": "string"
+          },
+          "buyerCity": {
+            "type": "string"
+          },
+          "buyerNeighbourhood": {
+            "type": "string"
           },
           "paymentType": {
             "allOf": [
@@ -19823,6 +23050,93 @@
           "purchaseDate": {
             "type": "string",
             "format": "date-time"
+          },
+          "bundleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bundleName": {
+            "type": "string"
+          },
+          "bundleType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundleType"
+              }
+            ],
+            "nullable": true
+          },
+          "bundleExternalKey": {
+            "type": "string"
+          },
+          "bundleStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "bundleEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "bundleOnSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "bundleOffSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "previousBundleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "renewalBundleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "renewalBundleName": {
+            "type": "string"
+          },
+          "renewalBundleExternalKey": {
+            "type": "string"
+          },
+          "renewalStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalOnSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "renewalOffSaleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isRenewalCandidate": {
+            "type": "boolean"
+          },
+          "alreadyRenewed": {
+            "type": "boolean"
+          },
+          "canRenew": {
+            "type": "boolean"
+          },
+          "relatedOrderReference": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -21088,6 +24402,90 @@
         ],
         "type": "string"
       },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "tagTypeId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tagType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TagType"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bundleTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleTag"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TagType": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "Ticket": {
         "type": "object",
         "properties": {
@@ -21122,6 +24520,14 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/SeasonPassEventTicket"
+              }
+            ],
+            "nullable": true
+          },
+          "bundlePassEventTicket": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BundlePassEventTicket"
               }
             ],
             "nullable": true
@@ -22666,6 +26072,9 @@
       "name": "Bookings"
     },
     {
+      "name": "Bundles"
+    },
+    {
       "name": "Categories"
     },
     {
@@ -22682,6 +26091,9 @@
     },
     {
       "name": "DynamicPriceRuleSets"
+    },
+    {
+      "name": "EventCatalog"
     },
     {
       "name": "Events"

@@ -350,6 +350,9 @@
     [Parameter]
     public ItemType ItemType { get; set; } = ItemType.Ticket;
 
+    [Parameter]
+    public long? BundleId { get; set; }
+
     [Parameter, EditorRequired]
     public EventCallback<BookingResult> OnBookingSucceeded { get; set; }
 
@@ -744,6 +747,7 @@
                 PriceListItemId = s.PriceListItemId
             }).ToList(),
             HoldToken = _cartState.HoldToken ?? "",
+            BundleId = BundleId,
             TicketType = ItemType,
             ReferenceOrderId = ReferenceOrderId,
             ClientContact = new ClientInfoRequest

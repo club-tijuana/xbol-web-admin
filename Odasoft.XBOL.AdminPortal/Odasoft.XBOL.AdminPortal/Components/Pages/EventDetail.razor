@@ -16,6 +16,7 @@
 @inject NavigationManager _navigationManager;
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
+@inject AdminMediaUrlResolver MediaUrlResolver;
 
 <PageTitle>@(_event?.Name ?? "")</PageTitle>
 
@@ -173,7 +174,8 @@
                 Subtitle = _event.Subtitle,
                 StartDateTime = _eventSchedule?.StartDateTime.UtcDateTime,
                 EndDateTime = _eventSchedule?.EndDateTime.UtcDateTime,
-                ImageUrl = _event.Media?.Banner?.Url ?? _event.BannerImageUrl,
+                ImageUrl = MediaUrlResolver.Resolve(_event.Media?.Banner?.Url)
+                    ?? MediaUrlResolver.Resolve(_event.BannerImageUrl),
                 Venue = _event.VenueName,
                 ExternalKey = _eventSchedule?.ExternalEventKey,
             };

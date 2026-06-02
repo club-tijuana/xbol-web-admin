@@ -28,10 +28,42 @@ public interface IEventService
         EventFilterParameters? filters = null
     );
 
+    Task<GridData<EventViewModel>> GetEventCatalogAsync(
+        int page,
+        int pageSize,
+        string? sortColumn,
+        bool sortDescending,
+        string? search = null,
+        EventFilterParameters? filters = null,
+        EventCatalogItemType? itemType = null,
+        BundleType? bundleType = null,
+        bool? upcoming = null
+    );
+
+    Task<GridData<BundleScheduleViewModel>> GetBundleScheduleItemsAsync(
+        long bundleId,
+        int page,
+        int pageSize,
+        string? sortColumn,
+        bool sortDescending,
+        string? search = null,
+        EventFilterParameters? filters = null
+    );
+
+    Task<GridData<EventViewModel>> GetEventScheduleItemsAsync(
+        int page,
+        int pageSize,
+        string? sortColumn,
+        bool sortDescending,
+        string? search = null,
+        EventFilterParameters? filters = null,
+        long? venueMapId = null,
+        bool? upcoming = null
+    );
+
     Task<List<AdminEventCategoryResult>> GetCategoriesAsync();
-
     Task<EventResult> CreateEventAsync(EventRequest request);
-
+    Task<BundleDTO> CreateBundleAsync(BundleCreateRequest request);
     Task UpdateEventAsync(long id, EventRequest request);
 
     Task DeleteEventAsync(long id);

@@ -1,0 +1,440 @@
+@using Odasoft.XBOL.AdminPortal.Extensions
+@using Odasoft.XBOL.AdminPortal.ViewModels.Event
+@using Odasoft.XBOL.Business
+
+@inject IStringLocalizer<SharedResource> L
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudTable Items="Prices"
+          GroupBy="_groupDefinition"
+          Elevation="0"
+          FixedHeader>
+    <ToolBarContent>
+        <MudText Typo="Typo.h5">@L["Zones"]</MudText>
+    </ToolBarContent>
+    <ColGroup>
+        <col />
+        <col />
+        @if (AllowRowPrices)
+        {
+            <col />
+        }
+        @if (AllowSeatPrices)
+        {
+            <col />
+        }
+        <col />
+        @if (AllowAlternativePriceTypes)
+        {
+            @foreach (var priceType in PriceTypes)
+            {
+                <col />
+            }
+            <col />
+        }
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<PriceForm, object>(price => GetZoneName(price.BaseZoneId))">
+                @L["Zone"]
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<PriceForm, object>(price => GetSectionName(price.BaseSectionId))">
+                @L["Section"]
+            </MudTableSortLabel>
+        </MudTh>
+        @if (AllowRowPrices)
+        {
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PriceForm, object>(price => GetRowName(price.BaseRowId))">
+                    @L["Row"]
+                </MudTableSortLabel>
+            </MudTh>
+        }
+        @if (AllowSeatPrices)
+        {
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PriceForm, object>(price => GetSeatName(price.BaseSeatId))">
+                    @L["Seat"]
+                </MudTableSortLabel>
+            </MudTh>
+        }
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<PriceForm, object>(price => GetPriceTypeValue(price, DefaultPriceTypeName) ?? 0)">
+                @L["BasePrice"]
+            </MudTableSortLabel>
+        </MudTh>
+        @if (AllowAlternativePriceTypes)
+        {
+            @foreach (var priceType in PriceTypes)
+            {
+                <MudTh>
+                    @priceType
+                    <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                                   Color="Color.Secondary"
+                                   Size="Size.Small"
+                                   OnClick="@(() => OpenEditDialogAsync(priceType))" />
+                </MudTh>
+            }
+            <MudTh>
+                <MudButton Color="Color.Primary"
+                           IconColor="Color.Primary"
+                           StartIcon="@Icons.Material.Outlined.Add"
+                           OnClick="OpenAddDialogAsync">
+                    @L["AlternativePrice"]
+                </MudButton>
+            </MudTh>
+        }
+        <MudTh />
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd />
+        <MudTd>
+            <AdminSelect T="long?"
+                         Value="@context.BaseSectionId"
+                         ValueChanged="@((long? newValue) => OnSectionChanged(context, newValue))"
+                         Disabled="@context.IsZonePrice"
+                         Placeholder="@L["Select"].Value">
+                @foreach (var section in GetSectionsFor(context.BaseZoneId))
+                {
+                    <MudSelectItem T="long?" Value="section.Id">
+                        @section.Name
+                    </MudSelectItem>
+                }
+            </AdminSelect>
+        </MudTd>
+        @if (AllowRowPrices)
+        {
+            <MudTd>
+                <AdminSelect T="long?"
+                             Value="@context.BaseRowId"
+                             ValueChanged="@((long? newValue) => OnRowChanged(context, newValue))"
+                             Disabled="@context.IsZonePrice"
+                             Placeholder="@L["Select"].Value"
+                             Clearable>
+                    @foreach (var row in GetRowsFor(context.BaseSectionId))
+                    {
+                        <MudSelectItem T="long?" Value="row.Id">
+                            @row.Name
+                        </MudSelectItem>
+                    }
+                </AdminSelect>
+            </MudTd>
+        }
+        @if (AllowSeatPrices)
+        {
+            <MudTd>
+                <AdminSelect T="long?"
+                             @bind-Value="@context.BaseSeatId"
+                             Disabled="@context.IsZonePrice"
+                             Placeholder="@L["Select"].Value"
+                             Clearable>
+                    @foreach (var seat in GetSeatsFor(context.BaseRowId))
+                    {
+                        <MudSelectItem T="long?" Value="seat.Id">
+                            @seat.SeatNumber
+                        </MudSelectItem>
+                    }
+                </AdminSelect>
+            </MudTd>
+        }
+        <MudTd>
+            <AdminNumericField T="decimal?"
+                               Value="@GetPriceTypeValue(context, DefaultPriceTypeName)"
+                               ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, DefaultPriceTypeName, newValue))"
+                               Format="N2"
+                               Adornment="@Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                               Placeholder="0.00"
+                               HideSpinButtons
+                               Required />
+        </MudTd>
+        @if (AllowAlternativePriceTypes)
+        {
+            @foreach (var priceType in PriceTypes)
+            {
+                <MudTd DataLabel="@priceType">
+                    <AdminNumericField T="decimal?"
+                                       Value="@GetPriceTypeValue(context, priceType)"
+                                       ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType, newValue))"
+                                       Clearable
+                                       Format="N2"
+                                       Adornment="@Adornment.Start"
+                                       AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                       Placeholder="0.00"
+                                       HideSpinButtons />
+                </MudTd>
+            }
+            <MudTd />
+        }
+        <MudTd>
+            @if (context.BaseRowId is not null || context.BaseSectionId is not null || context.BaseSeatId is not null)
+            {
+                <MudTooltip Text="@L["Delete"]" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Delete"
+                                   Color="Color.Secondary"
+                                   Size="Size.Medium"
+                                   OnClick="@(() => DeletePriceAsync(context))" />
+                </MudTooltip>
+            }
+        </MudTd>
+    </RowTemplate>
+    <GroupHeaderTemplate>
+        <MudTh colspan="@GroupHeaderColumnSpan">
+            <MudText Class="text-primary-darken" Typo="Typo.subtitle2">
+                @GetZoneName(long.TryParse(context.Key?.ToString(), out var zoneId) ? zoneId : null)
+            </MudText>
+        </MudTh>
+        <MudTh>
+            <MudIconButton Color="Color.Primary"
+                           Icon="@Icons.Material.Outlined.Add"
+                           OnClick="@(() => AddPrice(long.TryParse(context.Key?.ToString(), out var zoneId) ? zoneId : null))">
+                @L["AddPrice"]
+            </MudIconButton>
+        </MudTh>
+    </GroupHeaderTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public VenueMapLayoutResponse? Layout { get; set; }
+    [Parameter, EditorRequired] public List<PriceForm> Prices { get; set; } = [];
+    [Parameter, EditorRequired] public List<string> PriceTypes { get; set; } = [];
+    [Parameter] public bool AllowAlternativePriceTypes { get; set; }
+    [Parameter] public bool AllowRowPrices { get; set; } = true;
+    [Parameter] public bool AllowSeatPrices { get; set; } = true;
+
+    private const string DefaultPriceTypeName = "General";
+    private string _priceTypeName = string.Empty;
+    private readonly DialogOptions _dialogOptions = new() { CloseButton = true, MaxWidth = MaxWidth.Small };
+    private readonly TableGroupDefinition<PriceForm> _groupDefinition = new()
+    {
+        GroupName = "Zone",
+        Indentation = true,
+        Expandable = false,
+        Selector = price => price.BaseZoneId ?? 0,
+        IsInitiallyExpanded = true
+    };
+
+    private int GroupHeaderColumnSpan
+    {
+        get
+        {
+            var columns = 3;
+            if (AllowRowPrices)
+            {
+                columns++;
+            }
+            if (AllowSeatPrices)
+            {
+                columns++;
+            }
+            if (AllowAlternativePriceTypes)
+            {
+                columns += PriceTypes.Count + 1;
+            }
+
+            return columns;
+        }
+    }
+
+    private void OnSectionChanged(PriceForm price, long? sectionId)
+    {
+        price.BaseSectionId = sectionId;
+        price.BaseRowId = null;
+        price.BaseSeatId = null;
+    }
+
+    private void OnRowChanged(PriceForm price, long? rowId)
+    {
+        price.BaseRowId = rowId;
+        price.BaseSeatId = null;
+    }
+
+    private void AddPrice(long? zoneId)
+    {
+        if (zoneId is null)
+        {
+            return;
+        }
+
+        var sections = GetSectionsFor(zoneId).ToList();
+        if (sections.Count == 0)
+        {
+            Snackbar.Add(L["NoSectionsInZone"], Severity.Warning);
+            return;
+        }
+
+        Prices.Add(new PriceForm { BaseZoneId = zoneId, BaseSectionId = sections[0].Id });
+    }
+
+    private IEnumerable<BaseSectionResponse> GetSectionsFor(long? zoneId)
+    {
+        return zoneId is null
+            ? []
+            : Layout?.Sections?.Where(section => section.ZoneId == zoneId) ?? [];
+    }
+
+    private IEnumerable<BaseRowResponse> GetRowsFor(long? sectionId)
+    {
+        return sectionId is null
+            ? []
+            : Layout?.Rows?.Where(row => row.SectionId == sectionId) ?? [];
+    }
+
+    private IEnumerable<BaseSeatResponse> GetSeatsFor(long? rowId)
+    {
+        return rowId is null
+            ? []
+            : Layout?.Seats?.Where(seat => seat.RowId == rowId) ?? [];
+    }
+
+    private string GetZoneName(long? zoneId)
+    {
+        if (zoneId is null)
+        {
+            return string.Empty;
+        }
+
+        return Layout?.Zones?.FirstOrDefault(zone => zone.Id == zoneId)?.Name ?? string.Empty;
+    }
+
+    private string GetSectionName(long? sectionId)
+    {
+        if (sectionId is null)
+        {
+            return string.Empty;
+        }
+
+        return Layout?.Sections?.FirstOrDefault(section => section.Id == sectionId)?.Name ?? string.Empty;
+    }
+
+    private string GetRowName(long? rowId)
+    {
+        if (rowId is null)
+        {
+            return string.Empty;
+        }
+
+        return Layout?.Rows?.FirstOrDefault(row => row.Id == rowId)?.Name ?? string.Empty;
+    }
+
+    private string GetSeatName(long? seatId)
+    {
+        if (seatId is null)
+        {
+            return string.Empty;
+        }
+
+        return Layout?.Seats?.FirstOrDefault(seat => seat.Id == seatId)?.SeatNumber ?? string.Empty;
+    }
+
+    private static decimal? GetPriceTypeValue(PriceForm row, string key)
+    {
+        return row.Prices.TryGetValue(key, out var value) ? value : null;
+    }
+
+    private static void SetPriceTypeValue(PriceForm row, string key, decimal? newValue)
+    {
+        if (newValue.HasValue)
+        {
+            row.Prices[key] = newValue.Value;
+            row.PriceTypes.TryAdd(key, key == DefaultPriceTypeName);
+        }
+        else
+        {
+            row.Prices.Remove(key);
+        }
+    }
+
+    private async Task DeletePriceAsync(PriceForm price)
+    {
+        var confirmed = await DialogService.ShowConfirmDeleteAsync(
+            L["DeleteDialogTitle", L["Price"]],
+            L["DeleteDialogMessage"]);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        Prices.Remove(price);
+    }
+
+    private async Task OpenAddDialogAsync()
+    {
+        var dialog = await DialogService.ShowAsync<PriceTypeDialogAdd>(null, _dialogOptions);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: not null })
+        {
+            var priceType = result.Data.ToString();
+            if (!string.IsNullOrWhiteSpace(priceType) && !PriceTypes.Contains(priceType))
+            {
+                PriceTypes.Add(priceType);
+                foreach (var price in Prices)
+                {
+                    price.PriceTypes.TryAdd(priceType, false);
+                }
+            }
+        }
+    }
+
+    private async Task OpenEditDialogAsync(string type)
+    {
+        _priceTypeName = type;
+        var parameters = new DialogParameters<PriceTypeDialogEdit>
+        {
+            { dialog => dialog.Name, _priceTypeName },
+            { dialog => dialog.OnDelete, EventCallback.Factory.Create(this, DeletePriceType) }
+        };
+        var dialog = await DialogService.ShowAsync<PriceTypeDialogEdit>(null, parameters, _dialogOptions);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: not null })
+        {
+            var nextType = result.Data.ToString();
+            if (!string.IsNullOrWhiteSpace(nextType))
+            {
+                EditPriceType(_priceTypeName, nextType);
+            }
+        }
+    }
+
+    private void EditPriceType(string oldName, string newName)
+    {
+        if (string.IsNullOrWhiteSpace(newName) || PriceTypes.Contains(newName))
+        {
+            return;
+        }
+
+        var index = PriceTypes.IndexOf(oldName);
+        if (index < 0)
+        {
+            return;
+        }
+
+        PriceTypes[index] = newName;
+        foreach (var price in Prices)
+        {
+            if (price.PriceTypes.Remove(oldName, out var isPrimary))
+            {
+                price.PriceTypes[newName] = isPrimary;
+            }
+
+            if (price.Prices.Remove(oldName, out var value))
+            {
+                price.Prices[newName] = value;
+            }
+        }
+    }
+
+    private void DeletePriceType()
+    {
+        PriceTypes.Remove(_priceTypeName);
+        foreach (var price in Prices)
+        {
+            price.PriceTypes.Remove(_priceTypeName);
+            price.Prices.Remove(_priceTypeName);
+        }
+    }
+}

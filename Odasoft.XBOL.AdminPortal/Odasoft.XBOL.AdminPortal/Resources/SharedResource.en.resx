@@ -546,17 +546,41 @@
   <data name="TabUpcoming" xml:space="preserve">
     <value>Upcoming</value>
   </data>
+  <data name="TabPasses" xml:space="preserve">
+    <value>Passes</value>
+  </data>
+  <data name="TabPackages" xml:space="preserve">
+    <value>Packages</value>
+  </data>
   <data name="TabPast" xml:space="preserve">
     <value>Past</value>
   </data>
   <data name="NewEvent" xml:space="preserve">
     <value>New event</value>
   </data>
+  <data name="GroupEvents" xml:space="preserve">
+    <value>Group events</value>
+  </data>
+  <data name="NewBundle" xml:space="preserve">
+    <value>Group events</value>
+  </data>
+  <data name="NewPackage" xml:space="preserve">
+    <value>Package</value>
+  </data>
+  <data name="NewSeasonPass" xml:space="preserve">
+    <value>Season pass</value>
+  </data>
   <data name="Suites" xml:space="preserve">
     <value>Suites</value>
   </data>
   <data name="PastEvents" xml:space="preserve">
     <value>Past events</value>
+  </data>
+  <data name="PassesTitle" xml:space="preserve">
+    <value>Season pass</value>
+  </data>
+  <data name="PackagesTitle" xml:space="preserve">
+    <value>Package</value>
   </data>
   <data name="SearchByOrderNumber" xml:space="preserve">
     <value>Search by order's number</value>
@@ -642,8 +666,17 @@
   <data name="AlternativePrice" xml:space="preserve">
     <value>Alternative price</value>
   </data>
+  <data name="AddPrice" xml:space="preserve">
+    <value>Add price</value>
+  </data>
+  <data name="BasePrice" xml:space="preserve">
+    <value>Base price</value>
+  </data>
   <data name="Description" xml:space="preserve">
     <value>Description</value>
+  </data>
+  <data name="NoSectionsInZone" xml:space="preserve">
+    <value>No sections in this zone</value>
   </data>
   <data name="Price" xml:space="preserve">
     <value>Price</value>
@@ -662,5 +695,11 @@
   </data>
   <data name="AccessDeniedGoToDashboard" xml:space="preserve">
     <value>Go to Dashboard</value>
+  </data>
+  <data name="ZonePrices" xml:space="preserve">
+    <value>Zone prices</value>
+  </data>
+  <data name="Zones" xml:space="preserve">
+    <value>Zones</value>
   </data>
 </root>

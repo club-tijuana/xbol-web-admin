@@ -3,348 +3,201 @@
 @using Odasoft.XBOL.Auth
 @attribute [RequireAnyPermission(AdminPermissions.Events.Read, AdminPermissions.Events.ReadCurrent)]
 
-@using Odasoft.XBOL.AdminPortal.Components.Shared;
-@using Odasoft.XBOL.AdminPortal.Extensions;
-@using Odasoft.XBOL.AdminPortal.States;
-@using Odasoft.XBOL.Business;
-@using Odasoft.XBOL.Business.Services;
-@using Odasoft.XBOL.Common.Constants;
+@using Odasoft.XBOL.AdminPortal.Components
+@using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.AdminPortal.Services
+@using Odasoft.XBOL.AdminPortal.ViewModels
+@using Odasoft.XBOL.Business
 
-@inject AppLocalizer<Events> L;
-@inject IEventService _eventService;
-@inject IDialogService _dialogService;
-@inject ISnackbar _snackbar;
-@inject CatalogsService _catalogsService;
-@inject NavigationManager _navigationManager;
-@inject LoadingState _loadingState;
-@inject ILogger<Events> Logger;
+@inject AppLocalizer<Events> L
+@inject IEventService EventService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject ILogger<Events> Logger
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
-<MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-    <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
-                    Class="border-secondary-lighten" Color="Color.Secondary">
-        <MudToggleItem Value="@TabUpcoming" Text="@L["TabUpcoming"].Value.ToUpper()"
-                        Class="@($"px-4 {(_selectedTab == TabUpcoming ? "bg-secondary-darken" : "")}")" />
-        <MudToggleItem Value="@TabPast" Text="@L["TabPast"].Value.ToUpper()"
-                        Class="@($"px-4 {(_selectedTab == TabPast ? "bg-secondary-darken" : "")}")" />
-    </MudToggleGroup>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                Href="./events/create">
-        @L["NewEvent"]
-    </MudButton>
-</MudStack>
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
+                            Class="border-secondary-lighten" Color="Color.Secondary">
+                <MudToggleItem Value="@UpcomingTab" Text="@L["TabUpcoming"]"
+                               Class="@($"px-4 {(_selectedTab == UpcomingTab ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@PassesTab" Text="@L["TabPasses"]"
+                               Class="@($"px-4 {(_selectedTab == PassesTab ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@PackagesTab" Text="@L["TabPackages"]"
+                               Class="@($"px-4 {(_selectedTab == PackagesTab ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@PastTab" Text="@L["TabPast"]"
+                               Class="@($"px-4 {(_selectedTab == PastTab ? "bg-secondary-darken" : "")}")" />
+            </MudToggleGroup>
+        </LeftContent>
+        <RightContent>
+            <MudStack Row Spacing="2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                           Href="./events/create">
+                    @L["NewEvent"]
+                </MudButton>
+                <MudMenu Label="@L["NewBundle"]"
+                         Variant="Variant.Filled"
+                         Color="Color.Primary"
+                         StartIcon="@Icons.Material.Outlined.LibraryAdd"
+                         EndIcon="@Icons.Material.Filled.ArrowDropDown">
+                    <MudMenuItem Icon="@Icons.Material.Outlined.Layers"
+                                 IconColor="Color.Secondary"
+                                 OnClick="@(() => Navigation.NavigateTo("/events/bundles/basic/create"))">
+                        @L["NewPackage"]
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Outlined.ConfirmationNumber"
+                                 IconColor="Color.Secondary"
+                                 OnClick="@(() => Navigation.NavigateTo("/events/bundles/season-pass/create"))">
+                        @L["NewSeasonPass"]
+                    </MudMenuItem>
+                </MudMenu>
+            </MudStack>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
 
 <LoadingContainer IsLoading="_loading">
-@if (_selectedTab == TabUpcoming)
-{
-    <MudGrid Spacing="8">
-        @if (EventsList.Any())
-        {
-            @foreach (var eventItem in EventsList)
+    @if (_selectedTab == UpcomingTab)
+    {
+        <MudGrid Spacing="4">
+            @if (_catalogItems.Count == 0)
             {
-
-                <MudItem xs="12" md="6" lg="3">
-                    <EventCard Event="eventItem"
-                               ShowActions
-                               OnClick="@(() => _navigationManager.NavigateTo($"./events/{eventItem.Id}{(eventItem.Status != AdminEventStatus.Published ? "/review" : string.Empty)}"))"></EventCard>
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info">@L["NoEventsFound"]</MudAlert>
                 </MudItem>
             }
-        }
-        else
-        {
-            <MudItem xs="12">
-                <MudAlert Severity="Severity.Info">@L["NoEventsFound"]</MudAlert>
-            </MudItem>
-        }
-    </MudGrid>
-}
-else if(_selectedTab == TabPast)
-{
-    <MudCard Elevation="3">
-        <MudCardHeader>
-            <!-- Table header -->
-            <CardHeaderContent>
-                <MudGrid Class="align-center">
-                    <MudItem xs="12" sm="6" lg="8">
-                        <MudText Class="pl-lg-4" Typo="Typo.h5">@L["PastEvents"]</MudText>
+            else
+            {
+                @foreach (var item in _catalogItems)
+                {
+                    <MudItem xs="12" sm="6" lg="4" xl="3">
+                        <EventCard Event="item"
+                                   ShowActions
+                                   OnClick="@(() => OpenCatalogItem(item))" />
                     </MudItem>
-                    <MudItem xs="12" sm="6" lg="4">
-                        <MudStack Row AlignItems="AlignItems.Center">
-                            <!-- Search field -->
-                            <MudTextField @bind-Value="searchString"
-                            @bind-Value:after="@(() => _dataGrid.ReloadServerData())" Placeholder="@L["Search"]"
-                            Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
-                            AdornmentAriaLabel="@L["Search"]" AdornmentIcon="@Icons.Material.Filled.Search"
-                            IconSize="Size.Medium" Margin="Margin.Dense" Typo="Typo.body2" Class="flex-grow-1"
-                            DebounceInterval="500" />
+                }
 
-                            <!-- Venue multi-select -->
-                            <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-                                <ActivatorContent>
-                                    <MudIconButton Icon="@Icons.Material.Outlined.FilterAlt"
-                                    Color="@(_filters.HasAnyFilter() ? Color.Primary : Color.Default)"
-                                    OnClick="@context.ToggleAsync" />
-                                </ActivatorContent>
-                                <ChildContent>
-                                    <MudStack Spacing="3" Class="pa-4" Style="width:375px">
-                                        <!-- Venue multi-select -->
-                                        <MudSelect T="string" Label="@L["FilterVenue"]" MultiSelection="true"
-                                        Margin="Margin.Dense" @bind-SelectedValues="_selectedVenues"
-                                        Variant="Variant.Outlined" ShrinkLabel>
-                                            @foreach (var venue in _venues)
-                                            {
-                                                <MudSelectItem T="string" Value="@venue.Name">
-                                                    <MudText Typo="Typo.body2">@venue.Name</MudText>
-                                                </MudSelectItem>
-                                            }
-                                        </MudSelect>
-
-                                        <!-- Event Category multi-select -->
-                                        <MudSelect T="string" Label="@L["FilterCategory"]" MultiSelection="true"
-                                        Margin="Margin.Dense" @bind-SelectedValues="_selectedCategories"
-                                        Variant="Variant.Outlined" ShrinkLabel>
-                                            @foreach (var category in _availableCategories)
-                                            {
-                                                <MudSelectItem T="string" Value="@category.Name">
-                                                    <MudText Typo="Typo.body2">@category.DisplayName</MudText>
-                                                </MudSelectItem>
-                                            }
-                                        </MudSelect>
-
-                                        <!-- Date picker -->
-                                        <MudDateRangePicker @bind-DateRange="_dateRange" Label="@L["FilterDateRange"]"
-                                        Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel
-                                        PlaceholderStart="DD/MM/AAAA" PlaceholderEnd="DD/MM/AAAA" />
-
-                                        <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
-                                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
-                                            Class="mud-no-activator" OnClick="ClearFilters">
-                                                @L["FilterClear"]
-                                            </MudButton>
-                                            <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
-                                            StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyFilters">
-                                                @L["FilterApply"]
-                                            </MudButton>
-                                        </MudStack>
-                                    </MudStack>
-                                </ChildContent>
-                            </MudMenu>
-                        </MudStack>
+                @if (PageCount(_catalogTotalItems, CatalogPageSize) > 1)
+                {
+                    <MudItem xs="12" Class="d-flex justify-center mt-4">
+                        <MudPagination Color="Color.Primary"
+                                       Count="@PageCount(_catalogTotalItems, CatalogPageSize)"
+                                       Selected="@_catalogPage"
+                                       SelectedChanged="OnCatalogPageChanged" />
                     </MudItem>
-                </MudGrid>
-            </CardHeaderContent>
-        </MudCardHeader>
-
-        <!-- Table content -->
-        <MudCardContent Class="pa-0">
-            <MudDataGrid T="EventViewModel" @ref="_dataGrid" ServerData="ServerReload" Loading="_loading" Filterable="true"
-            FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0">
-                <Columns>
-                    <PropertyColumn Property="x => x.DateTime" Sortable="true" Filterable="false"
-                    InitialDirection="MudSortDirection.Descending">
-                        <HeaderTemplate>
-                            <span Class="pl-lg-4">
-                                @L["ColumnDateTime"]
-                            </span>
-                        </HeaderTemplate>
-                        <CellTemplate>
-                            <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.DateTime.ToString(FormatConstants.DATE_TIME)</MudText>
-                        </CellTemplate>
-                    </PropertyColumn>
-
-                    <TemplateColumn Title="@L["ColumnEventName"]" Sortable="false" Filterable="false">
-                        <CellTemplate>
-                            <MudText Typo="Typo.subtitle2">
-                                <MudHighlighter Text="@context.Item.EventName" HighlightedText="@searchString" />
-                            </MudText>
-                        </CellTemplate>
-                    </TemplateColumn>
-
-                    <TemplateColumn Title="@L["ColumnCategory"]" SortBy="@(new Func<EventViewModel, object>(x => x.Categories))" Filterable="false">
-                        <CellTemplate>
-                            <MudText Typo="Typo.body2">
-                                @context.Item.Categories
-                            </MudText>
-                        </CellTemplate>
-                    </TemplateColumn>
-
-                    <TemplateColumn Title="@L["ColumnAvailability"]" Filterable="false" Sortable="false">
-                        <CellTemplate>
-                            <EventAvailability Available="@context.Item.Available" Total="@context.Item.Total" ExternalKey="@context.Item.ExternalEventKey" />
-                        </CellTemplate>
-                    </TemplateColumn>
-
-                    <TemplateColumn Title="@L["ColumnActions"]" Filterable="false" Sortable="false">
-                        <CellTemplate>
-                            <MudStack Row Spacing="2">
-                                <MudTooltip Text="@L["Delete"]" Placement="Placement.Top">
-                                    <MudIconButton Icon="@Icons.Material.Outlined.Delete"
-                                    Color="Color.Secondary"
-                                    Size="Size.Medium"
-                                    OnClick="@(() => DeleteEventAsync(context.Item))" />
-                                </MudTooltip>
-                            </MudStack>
-                        </CellTemplate>
-                    </TemplateColumn>
-                </Columns>
-
-                <PagerContent>
-                    <MudDataGridPager T="EventViewModel" />
-                </PagerContent>
-            </MudDataGrid>
-        </MudCardContent>
-    </MudCard>
-}
+                }
+            }
+        </MudGrid>
+    }
+    else if (_selectedTab == PassesTab)
+    {
+        @RenderBundleRows(_seasonPassBundles, L["PassesTitle"], _seasonPassTotalItems, _seasonPassPage, OnSeasonPassPageChanged)
+    }
+    else if (_selectedTab == PackagesTab)
+    {
+        @RenderBundleRows(_basicBundles, L["PackagesTitle"], _basicTotalItems, _basicPage, OnBasicPageChanged)
+    }
+    else
+    {
+        <MudCard Elevation="2">
+            <EventCatalogDataGrid Title="@L["PastEvents"]"
+                                  Upcoming="false" />
+        </MudCard>
+    }
 </LoadingContainer>
-    @code {
+
+@code {
     [Parameter] public string? Tab { get; set; }
 
-    private bool _loading = true;
-    private string searchString = "";
-    private MudDataGrid<EventViewModel> _dataGrid = default!;
+    private const string UpcomingTab = "upcoming";
+    private const string PassesTab = "passes";
+    private const string PackagesTab = "packages";
+    private const string PastTab = "past";
+    private const int BundleRowHeight = 330;
+    private const int CatalogPageSize = 12;
+    private const int BundlePageSize = 10;
 
-    private EventFilterParameters _filters = EventFilterParameters.Empty;
-
-    private List<VenueResponse> _venues = [];
-    private IReadOnlyCollection<string> _selectedVenues = [];
-
-    private List<AdminEventCategoryResult> _availableCategories = [];
-    private IReadOnlyCollection<string> _selectedCategories = [];
-
-    private DateRange? _dateRange = null;
-
-    private const string TabUpcoming = "upcoming";
-    private const string TabPast = "past";
-
-    private string _selectedTab = string.Empty;
-
-    private int _page = QueryParamsConstants.DEFAULT_PAGE;
-    private int _pageSize = QueryParamsConstants.DEFAULT_PAGE_SIZE;
-    private int _totalItems = 0;
-
-    private int TotalPages => (int)Math.Ceiling((double)_totalItems / _pageSize);
-
-    private IEnumerable<EventViewModel> EventsList { get; set; } = [];
+    private string _selectedTab = UpcomingTab;
+    private bool _loading;
+    private int _catalogPage = 1;
+    private int _catalogTotalItems;
+    private int _seasonPassPage = 1;
+    private int _seasonPassTotalItems;
+    private int _basicPage = 1;
+    private int _basicTotalItems;
+    private List<EventViewModel> _catalogItems = [];
+    private List<EventViewModel> _seasonPassBundles = [];
+    private List<EventViewModel> _basicBundles = [];
 
     protected override async Task OnParametersSetAsync()
     {
-        var currentTab = _selectedTab;
-
-        _selectedTab = Tab?.ToLowerInvariant() switch
+        var nextTab = Tab?.ToLowerInvariant() switch
         {
-            TabPast => TabPast,
-            _ => TabUpcoming
+            PassesTab => PassesTab,
+            PackagesTab => PackagesTab,
+            PastTab => PastTab,
+            _ => UpcomingTab
         };
 
-        if (currentTab != _selectedTab)
+        if (_selectedTab != nextTab || ShouldLoad(nextTab))
         {
-            await UpdateItemsAsync();
+            _selectedTab = nextTab;
+            await LoadSelectedTabAsync();
         }
     }
 
     private void OnTabChanged(string tab)
     {
-        _navigationManager.NavigateTo($"./events/{tab}", replace: true);
+        Navigation.NavigateTo($"./events/{tab}", replace: true);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private bool ShouldLoad(string tab)
     {
-        if (firstRender)
+        return tab switch
         {
-            try
-            {
-                _venues = await _catalogsService.GetVenuesAsync();
-                _availableCategories = (await _eventService.GetCategoriesAsync())
-                    .Where(c => c.IsActive == true).ToList();
-
-                await UpdateItemsAsync();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Failed to load event filters");
-                _snackbar.Add(L["ErrorLoadingFilters"], Severity.Error);
-            }
-            finally
-            {
-                _loading = false;
-                StateHasChanged();
-            }
-        }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        _selectedTab = Tab?.ToLowerInvariant() switch
-        {
-            TabPast => TabPast,
-            _ => TabUpcoming
+            UpcomingTab => _catalogItems.Count == 0,
+            PassesTab => _seasonPassBundles.Count == 0,
+            PackagesTab => _basicBundles.Count == 0,
+            _ => false
         };
     }
 
-    private async Task UpdateItemsAsync()
+    private async Task LoadSelectedTabAsync()
     {
-        _loadingState.Show();
-        if(_selectedTab == TabPast)
+        if (_selectedTab == PastTab)
         {
-            if (_dataGrid is not null)
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            if (_selectedTab == UpcomingTab)
             {
-                await _dataGrid.ReloadServerData();
+                var result = await LoadCatalogItemsAsync(null, _catalogPage, CatalogPageSize);
+                _catalogItems = result.Items.ToList();
+                _catalogTotalItems = result.TotalItems;
+            }
+            else if (_selectedTab == PassesTab)
+            {
+                var result = await LoadCatalogItemsAsync(BundleType.SeasonPass, _seasonPassPage, BundlePageSize);
+                _seasonPassBundles = result.Items.ToList();
+                _seasonPassTotalItems = result.TotalItems;
+            }
+            else if (_selectedTab == PackagesTab)
+            {
+                var result = await LoadCatalogItemsAsync(BundleType.Basic, _basicPage, BundlePageSize);
+                _basicBundles = result.Items.ToList();
+                _basicTotalItems = result.TotalItems;
             }
         }
-        else
-        {
-            await UpdateUpcomingItems();
-        }
-        _loadingState.Hide();
-    }
-
-    private async Task UpdateUpcomingItems()
-    {
-        _loadingState.Show();
-        try
-        {
-            var result = await _eventService.GetEventsAsync(
-            page: _page - 1,
-            pageSize: _pageSize,
-            sortColumn: null,
-            sortDescending: true,
-            search: null,
-            filters: null,
-            upcoming: Tab == TabPast ? false : true);
-
-            EventsList = result.Items;
-            _totalItems = result.TotalItems;
-        }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading events: {ex.Message}");
-            _snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
-        }
-        finally
-        {
-            _loadingState.Hide();
-            StateHasChanged();
-        }
-    }
-
-    private async Task<GridData<EventViewModel>> ServerReload(GridState<EventViewModel> state, CancellationToken token)
-    {
-        _loading = true;
-
-        try
-        {
-            return await FetchFromServer(state);
-        }
-        catch (TaskCanceledException)
-        {
-            return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to load events");
-            _snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
-            return new GridData<EventViewModel> { TotalItems = 0, Items = [] };
+            Logger.LogError(ex, "Failed to load events tab {Tab}", _selectedTab);
+            Snackbar.Add(L["ErrorLoadingEvents"], Severity.Error);
         }
         finally
         {
@@ -352,64 +205,111 @@ else if(_selectedTab == TabPast)
         }
     }
 
-    private bool HasSearchFilter() => !string.IsNullOrWhiteSpace(searchString);
-
-    private async Task<GridData<EventViewModel>> FetchFromServer(GridState<EventViewModel> state)
+    private async Task<GridData<EventViewModel>> LoadCatalogItemsAsync(BundleType? bundleType, int page, int pageSize)
     {
-        var sortDefinition = state.SortDefinitions.FirstOrDefault();
-        var result = await _eventService.GetEventsAsync(
-            page: state.Page,
-            pageSize: state.PageSize,
-            sortColumn: sortDefinition?.SortBy,
-            sortDescending: sortDefinition?.Descending ?? false,
-            search: searchString,
-            filters: _filters.HasAnyFilter() ? _filters : null,
-            upcoming: Tab == TabPast ? false : true
-    );
-
-        return result;
+        return await EventService.GetEventCatalogAsync(
+            page: page - 1,
+            pageSize: pageSize,
+            sortColumn: "startDate",
+            sortDescending: false,
+            itemType: bundleType is null ? null : EventCatalogItemType.Bundle,
+            bundleType: bundleType,
+            upcoming: true);
     }
 
-    private async Task ApplyFilters()
+    private void OpenCatalogItem(EventViewModel item)
     {
-        _filters = new EventFilterParameters(
-        _selectedVenues.ToList(),
-        _selectedCategories.ToList(),
-        _dateRange?.Start,
-        _dateRange?.End
-        );
-
-        await _dataGrid.ReloadServerData();
-    }
-
-    private async Task ClearFilters()
-    {
-        _selectedVenues = new HashSet<string>();
-        _selectedCategories = new HashSet<string>();
-        _dateRange = null;
-        _filters = EventFilterParameters.Empty;
-
-        await _dataGrid.ReloadServerData();
-    }
-
-    private async Task DeleteEventAsync(EventViewModel eventItem)
-    {
-        var confirmed = await _dialogService.ShowConfirmDeleteAsync(
-        L["DeleteDialogTitle", eventItem?.EventName ?? ""],
-        L["DeleteDialogMessage"]);
-
-        if (!confirmed) return;
-
-        try
+        if (item.IsBundle)
         {
-            await _eventService.DeleteEventAsync(eventItem.Id);
-            _snackbar.Add(L["DeleteSuccess"], Severity.Success);
-            _navigationManager.NavigateTo("./events");
+            return;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error deleting event: {ex.Message}");
-            _snackbar.Add(L["DeleteError"], Severity.Error);
-        }
+
+        var reviewSegment = item.Status != AdminEventStatus.Published ? "/review" : string.Empty;
+        Navigation.NavigateTo($"./events/{item.Id}{reviewSegment}");
     }
+
+    private async Task OnCatalogPageChanged(int page)
+    {
+        _catalogPage = page;
+        await LoadSelectedTabAsync();
+    }
+
+    private async Task OnSeasonPassPageChanged(int page)
+    {
+        _seasonPassPage = page;
+        await LoadSelectedTabAsync();
+    }
+
+    private async Task OnBasicPageChanged(int page)
+    {
+        _basicPage = page;
+        await LoadSelectedTabAsync();
+    }
+
+    private static int PageCount(int totalItems, int pageSize)
+    {
+        return (int)Math.Ceiling((double)totalItems / pageSize);
+    }
+
+    private RenderFragment RenderBundleRows(
+        IReadOnlyCollection<EventViewModel> items,
+        string title,
+        int totalItems,
+        int selectedPage,
+        Func<int, Task> pageChanged) => @<MudStack Spacing="4">
+        @if (items.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info">@L["NoEventsFound"]</MudAlert>
+        }
+        else
+        {
+            @foreach (var bundle in items)
+            {
+                <MudCard Elevation="2" Class="mb-2">
+                    <MudGrid Spacing="0">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudCard Elevation="0" Class="rounded-0 border-r" Style="border-color: var(--mud-palette-gray-lighter);">
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                                            @(string.IsNullOrWhiteSpace(bundle.Code) ? title : bundle.Code)
+                                        </MudText>
+                                        <MudText Typo="Typo.subtitle2">@bundle.EventName</MudText>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Color="Color.Secondary" Disabled />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+
+                                @if (string.IsNullOrEmpty(bundle.PosterImageUrl) && string.IsNullOrEmpty(bundle.BannerImageUrl))
+                                {
+                                    <ImagePlaceholder Height="@(BundleRowHeight + "px")" />
+                                }
+                                else
+                                {
+                                    <MudCardMedia Image="@(bundle.PosterImageUrl ?? bundle.BannerImageUrl)" Height="@BundleRowHeight" />
+                                }
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="9">
+                            <BundleSchedulesDataGrid BundleId="@bundle.Id"
+                                                     Height="@((BundleRowHeight - 55) + "px")"
+                                                     Dense
+                                                     HideTitle />
+                        </MudItem>
+                    </MudGrid>
+                </MudCard>
+            }
+
+            @if (PageCount(totalItems, BundlePageSize) > 1)
+            {
+                <MudStack Row Justify="Justify.Center" Class="mt-4">
+                    <MudPagination Color="Color.Primary"
+                                   Count="@PageCount(totalItems, BundlePageSize)"
+                                   Selected="@selectedPage"
+                                   SelectedChanged="@(async (int nextPage) => await pageChanged(nextPage))" />
+                </MudStack>
+            }
+        }
+    </MudStack>;
 }

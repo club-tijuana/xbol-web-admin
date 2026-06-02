@@ -76,6 +76,7 @@
             <CheckoutPanel EventId="@Id"
                            ExternalKey="@ExternalKey"
                            ItemType="@_itemType"
+                           BundleId="@BookingBundleId"
                            ReferenceOrderId="@_renewalPrefill?.RelatedOrderId"
                            Prefill="@_renewalPrefill?.ClientContact"
                            IsRenewal="@(_renewalPrefill is not null)"
@@ -153,6 +154,12 @@
     {
         try
         {
+            if (Navigation.Uri.Contains("/season-pass/", StringComparison.OrdinalIgnoreCase)
+                && await TryLoadBundleRenewalPrefillAsync(orderReference))
+            {
+                return;
+            }
+
             var info = await AdminClient.GetOrderRenawalInfoByReferenceAsync(orderReference);
             _renewalPrefill = ProjectRenewalPrefill(info);
 
@@ -191,6 +198,59 @@
         }
     }
 
+    private async Task<bool> TryLoadBundleRenewalPrefillAsync(string orderReference)
+    {
+        SaleResponse? sale;
+        try
+        {
+            var page = await AdminClient.GetSalesAsync(
+                AdminSaleType.Bundle,
+                Id,
+                true,
+                null,
+                null,
+                Array.Empty<PaymentType>(),
+                Array.Empty<SaleChannel>(),
+                Array.Empty<OrderStatus>(),
+                orderReference,
+                nameof(SaleResponse.OrderReference),
+                true,
+                0,
+                10);
+
+            sale = page.Items?
+                .FirstOrDefault(item => string.Equals(item.OrderReference, orderReference, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (ApiException ex) when (ex.StatusCode is StatusCodes.Status400BadRequest or StatusCodes.Status404NotFound)
+        {
+            return false;
+        }
+
+        if (sale is null)
+        {
+            return false;
+        }
+
+        _renewalPrefill = ProjectBundleRenewalPrefill(sale);
+
+        if (!_renewalPrefill.PendingRenewal)
+        {
+            _snackbar.Add(L["RenewalNotPendingWarning"], Severity.Warning);
+            Navigation.NavigateTo("./season-pass");
+            return true;
+        }
+
+        CartState.SetEvent(Id);
+        CartState.SelectedSeats = [.. _renewalPrefill.Seats];
+
+        _preselectedSeats = _renewalPrefill.Seats
+            .Select(s => s.SeatId)
+            .ToList();
+
+        _releaseDate = sale.RenewalStartDate ?? sale.RenewalOnSaleDate;
+        return true;
+    }
+
     private static SeasonRenewalPrefill ProjectRenewalPrefill(OrderRenewalInfoResponse info)
     {
         var contact = new CheckoutPrefill(
@@ -225,6 +285,47 @@
             Seats: seats);
     }
 
+    private static SeasonRenewalPrefill ProjectBundleRenewalPrefill(SaleResponse sale)
+    {
+        var contact = new CheckoutPrefill(
+            ClientId: sale.ClientId,
+            PhoneRegionCodeId: sale.BuyerPhoneRegionCodeId,
+            PhoneNumber: sale.BuyerPhoneNumber,
+            Email: sale.PurchaseEmail,
+            FullName: sale.BuyerName,
+            City: sale.BuyerCity,
+            Neighborhood: sale.BuyerNeighbourhood,
+            Gender: null,
+            Birthday: null);
+
+        var seats = (sale.Items ?? [])
+            .Where(item => item.IsRenewed != true && !string.IsNullOrWhiteSpace(item.TrackingCode))
+            .Select(item => new SeatInfo
+            {
+                SeatId = item.TrackingCode!,
+                Price = item.RenewalPrice ?? item.Price ?? 0,
+                Category = GetSeatCategory(item),
+                IsSelected = true,
+                IsSold = item.IsRenewed ?? false,
+                SourceOrderItemId = item.ItemId,
+            })
+            .ToList();
+
+        return new SeasonRenewalPrefill(
+            RelatedOrderId: sale.OrderId,
+            PendingRenewal: sale.CanRenew == true && sale.AlreadyRenewed != true && seats.Count > 0,
+            ClientContact: contact,
+            Seats: seats);
+    }
+
+    private static string? GetSeatCategory(SaleDetailResponse item)
+    {
+        var label = string.Join(" ", new[] { item.Zone, item.Section }
+            .Where(part => !string.IsNullOrWhiteSpace(part)));
+
+        return string.IsNullOrWhiteSpace(label) ? null : label;
+    }
+
     private static ClientGender? ConvertGender(Gender? gender) => gender switch
     {
         Business.Gender.Male => ClientGender.Male,
@@ -242,7 +343,14 @@
         {
             _detail = await AdminClient.GetSeatManagementDetailAsync(ExternalKey);
             _eventName = _detail.Name;
-            _itemType = _detail.Type == BookableUnitType.Season ? ItemType.SeasonPass : ItemType.Ticket;
+            _itemType = BookingBundleId is not null
+                ? ItemType.BundlePass
+                : _detail.Type switch
+            {
+                BookableUnitType.Bundle => ItemType.BundlePass,
+                BookableUnitType.Season => ItemType.SeasonPass,
+                _ => ItemType.Ticket
+            };
 
             _banner = new()
             {
@@ -266,6 +374,13 @@
             StateHasChanged();
         }
     }
+
+    private long? BookingBundleId =>
+        _detail?.Type == BookableUnitType.Bundle ||
+        (_detail?.Type == BookableUnitType.Schedule &&
+         Navigation.Uri.Contains("/season-pass/", StringComparison.OrdinalIgnoreCase))
+            ? Id
+            : null;
 
     private void GoToCheckoutStep(HoldToken _)
     {

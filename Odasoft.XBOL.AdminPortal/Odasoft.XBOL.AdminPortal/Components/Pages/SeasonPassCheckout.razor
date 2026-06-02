@@ -351,12 +351,7 @@
                 return;
             }
 
-            _request.Seats = _cartState.SelectedSeats.Select(s => new BookingSeatRequest
-            {
-                SeatKey = s.SeatId,
-                SeatPrice = s.Price,
-                PriceListItemId = s.PriceListItemId
-            }).ToList();
+            _request.Seats = BookingSeatMapper.ToBookingSeats(_cartState.SelectedSeats);
             _request.SeasonKey = _seasonKey ?? "";
             _request.HoldToken = _cartState.HoldToken ?? "";
 

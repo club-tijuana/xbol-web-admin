@@ -494,12 +494,7 @@
 
         var request = new SeasonBookingRequest
         {
-            Seats = _cartState.FinalSeatsSelection.Select(s => new BookingSeatRequest
-            {
-                SeatKey = s.SeatId,
-                SeatPrice = s.Price,
-                PriceListItemId = s.PriceListItemId
-            }).ToList(),
+            Seats = BookingSeatMapper.ToBookingSeats(_cartState.FinalSeatsSelection),
             HoldToken = _cartState.HoldToken ?? "",
             SeasonKey = EventKey,
             ClientContact = new ClientInfoRequest

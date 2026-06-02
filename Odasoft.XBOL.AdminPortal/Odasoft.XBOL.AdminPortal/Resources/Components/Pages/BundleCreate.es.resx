@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Availability" xml:space="preserve">
+    <value>Disponibilidad</value>
+  </data>
+  <data name="Categories" xml:space="preserve">
+    <value>Categorías</value>
+  </data>
+  <data name="Code" xml:space="preserve">
+    <value>Código</value>
+  </data>
+  <data name="DescriptionAndVenue" xml:space="preserve">
+    <value>Descripción y recinto</value>
+  </data>
+  <data name="DatesAndSale" xml:space="preserve">
+    <value>Fechas y venta</value>
+  </data>
+  <data name="BundleEvents" xml:space="preserve">
+    <value>Eventos del paquete</value>
+  </data>
+  <data name="RequiredFieldsNote" xml:space="preserve">
+    <value>*Campos obligatorios</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Crear</value>
+  </data>
+  <data name="CreatePackage" xml:space="preserve">
+    <value>Nuevo paquete</value>
+  </data>
+  <data name="CreateSeasonPass" xml:space="preserve">
+    <value>Nuevo pase de temporada</value>
+  </data>
+  <data name="CreateSuccess" xml:space="preserve">
+    <value>Paquete creado correctamente.</value>
+  </data>
+  <data name="DateTime" xml:space="preserve">
+    <value>Fecha y hora</value>
+  </data>
+  <data name="EndDate" xml:space="preserve">
+    <value>Fecha de término</value>
+  </data>
+  <data name="EndTime" xml:space="preserve">
+    <value>Hora de término</value>
+  </data>
+  <data name="EditorUndo" xml:space="preserve">
+    <value>Deshacer</value>
+  </data>
+  <data name="EditorRedo" xml:space="preserve">
+    <value>Rehacer</value>
+  </data>
+  <data name="EditorBold" xml:space="preserve">
+    <value>Negrita</value>
+  </data>
+  <data name="EditorItalic" xml:space="preserve">
+    <value>Cursiva</value>
+  </data>
+  <data name="EditorUnderline" xml:space="preserve">
+    <value>Subrayado</value>
+  </data>
+  <data name="EditorUnorderedList" xml:space="preserve">
+    <value>Lista de viñetas</value>
+  </data>
+  <data name="EditorOrderedList" xml:space="preserve">
+    <value>Lista numerada</value>
+  </data>
+  <data name="EditorLink" xml:space="preserve">
+    <value>Insertar enlace</value>
+  </data>
+  <data name="EditorUnlink" xml:space="preserve">
+    <value>Quitar enlace</value>
+  </data>
+  <data name="EditorRemoveFormat" xml:space="preserve">
+    <value>Quitar formato</value>
+  </data>
+  <data name="ErrorLoading" xml:space="preserve">
+    <value>Error al cargar el formulario.</value>
+  </data>
+  <data name="ErrorLoadingEvents" xml:space="preserve">
+    <value>Error al cargar eventos.</value>
+  </data>
+  <data name="ErrorLoadingVenueMaps" xml:space="preserve">
+    <value>Error al cargar mapas.</value>
+  </data>
+  <data name="ErrorLoadingVenueMapLayout" xml:space="preserve">
+    <value>Error al cargar el mapa del recinto.</value>
+  </data>
+  <data name="ErrorSaving" xml:space="preserve">
+    <value>Error al crear el paquete.</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>Evento</value>
+  </data>
+  <data name="Events" xml:space="preserve">
+    <value>Eventos</value>
+  </data>
+  <data name="GoBack" xml:space="preserve">
+    <value>Regresar</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Subtítulo</value>
+  </data>
+  <data name="LongDescription" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="LandingUrl" xml:space="preserve">
+    <value>URL de destino</value>
+  </data>
+  <data name="BannerImageUrl" xml:space="preserve">
+    <value>URL de banner</value>
+  </data>
+  <data name="PosterImageUrl" xml:space="preserve">
+    <value>URL de póster</value>
+  </data>
+  <data name="AgeRestrictions" xml:space="preserve">
+    <value>Restricciones de edad</value>
+  </data>
+  <data name="AllAges" xml:space="preserve">
+    <value>Para toda la familia</value>
+  </data>
+  <data name="AdultsOnly" xml:space="preserve">
+    <value>Mayores de edad (18+)</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>Sin restricciones</value>
+  </data>
+  <data name="BundleSchedule" xml:space="preserve">
+    <value>Horario del paquete</value>
+  </data>
+  <data name="BundleBanner" xml:space="preserve">
+    <value>Banner del paquete</value>
+  </data>
+  <data name="BundleBannerDescription" xml:space="preserve">
+    <value>Imagen horizontal principal para catálogo y detalle.</value>
+  </data>
+  <data name="BundleLogo" xml:space="preserve">
+    <value>Imagen del paquete</value>
+  </data>
+  <data name="BundleLogoDescription" xml:space="preserve">
+    <value>Imagen cuadrada usada como póster del paquete.</value>
+  </data>
+  <data name="Images" xml:space="preserve">
+    <value>Imágenes</value>
+  </data>
+  <data name="HorizontalImagePreview" xml:space="preserve">
+    <value>Vista horizontal</value>
+  </data>
+  <data name="SquareImagePreview" xml:space="preserve">
+    <value>Vista cuadrada</value>
+  </data>
+  <data name="UploadBanner" xml:space="preserve">
+    <value>Cargar banner</value>
+  </data>
+  <data name="UploadLogo" xml:space="preserve">
+    <value>Cargar imagen</value>
+  </data>
+  <data name="FileTooLarge" xml:space="preserve">
+    <value>El archivo '{0}' supera el límite de {1}MB.</value>
+  </data>
+  <data name="InvalidImage" xml:space="preserve">
+    <value>El archivo '{0}' no es una imagen válida.</value>
+  </data>
+  <data name="TicketsSale" xml:space="preserve">
+    <value>Venta de boletos</value>
+  </data>
+  <data name="PublishingAndPresale" xml:space="preserve">
+    <value>Publicación y preventa</value>
+  </data>
+  <data name="PublishedDate" xml:space="preserve">
+    <value>Fecha de publicación</value>
+  </data>
+  <data name="PublishedTime" xml:space="preserve">
+    <value>Hora de publicación</value>
+  </data>
+  <data name="PreSaleDate" xml:space="preserve">
+    <value>Inicio de preventa</value>
+  </data>
+  <data name="PreSaleTime" xml:space="preserve">
+    <value>Hora de preventa</value>
+  </data>
+  <data name="RenewalWindow" xml:space="preserve">
+    <value>Ventana de renovación</value>
+  </data>
+  <data name="RenewalStartDate" xml:space="preserve">
+    <value>Inicio de renovación</value>
+  </data>
+  <data name="RenewalStartTime" xml:space="preserve">
+    <value>Hora de inicio de renovación</value>
+  </data>
+  <data name="RenewalEndDate" xml:space="preserve">
+    <value>Fin de renovación</value>
+  </data>
+  <data name="RenewalEndTime" xml:space="preserve">
+    <value>Hora de fin de renovación</value>
+  </data>
+  <data name="SecurityPolicies" xml:space="preserve">
+    <value>Políticas de seguridad</value>
+  </data>
+  <data name="AdditionalComments" xml:space="preserve">
+    <value>Comentarios adicionales</value>
+  </data>
+  <data name="Map" xml:space="preserve">
+    <value>Mapa</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Siguiente</value>
+  </data>
+  <data name="NoEventsFound" xml:space="preserve">
+    <value>No se encontraron eventos.</value>
+  </data>
+  <data name="OffSaleDate" xml:space="preserve">
+    <value>Fin de venta</value>
+  </data>
+  <data name="OffSaleTime" xml:space="preserve">
+    <value>Hora de fin de venta</value>
+  </data>
+  <data name="OnSaleDate" xml:space="preserve">
+    <value>Inicio de venta</value>
+  </data>
+  <data name="OnSaleTime" xml:space="preserve">
+    <value>Hora de inicio de venta</value>
+  </data>
+  <data name="Organizer" xml:space="preserve">
+    <value>Organizador</value>
+  </data>
+  <data name="RequiredField" xml:space="preserve">
+    <value>Campo requerido</value>
+  </data>
+  <data name="ZonePrices" xml:space="preserve">
+    <value>Precios por zona</value>
+  </data>
+  <data name="SearchEvents" xml:space="preserve">
+    <value>Buscar...</value>
+  </data>
+  <data name="SelectEvents" xml:space="preserve">
+    <value>Selecciona al menos un evento.</value>
+  </data>
+  <data name="SelectVenueMapFirst" xml:space="preserve">
+    <value>Selecciona un mapa para buscar eventos.</value>
+  </data>
+  <data name="CompletePreviousStepsWarning" xml:space="preserve">
+    <value>Completa los pasos anteriores antes de avanzar.</value>
+  </data>
+  <data name="DuplicatePrices" xml:space="preserve">
+    <value>Hay precios duplicados para la misma zona, sección, fila o asiento.</value>
+  </data>
+  <data name="SelectedCount" xml:space="preserve">
+    <value>{0} seleccionados</value>
+  </data>
+  <data name="ShortDescription" xml:space="preserve">
+    <value>Resumen</value>
+  </data>
+  <data name="StartDate" xml:space="preserve">
+    <value>Fecha de inicio</value>
+  </data>
+  <data name="StartTime" xml:space="preserve">
+    <value>Hora de inicio</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Hora</value>
+  </data>
+  <data name="Venue" xml:space="preserve">
+    <value>Recinto</value>
+  </data>
+</root>

@@ -33,6 +33,7 @@
 @inject IJSRuntime JS;
 @inject ILogger<EventEdit> Logger;
 @inject PriceReferenceService PriceReferenceService;
+@inject AdminMediaUrlResolver MediaUrlResolver
 
 <style>
     .mud-stepper .mud-stepper-content {
@@ -1408,7 +1409,7 @@
         }
     }
 
-    private static ImageModel? ToImageModel(MediaResponse? media, AdminMediaType mediaType, int order = 0)
+    private ImageModel? ToImageModel(MediaResponse? media, AdminMediaType mediaType, int order = 0)
     {
         if (media is null || !media.Id.HasValue)
         {
@@ -1420,7 +1421,7 @@
             Id = media.Id,
             Name = GetMediaName(media),
             ContentType = media.ContentType ?? string.Empty,
-            Src = media.Url ?? string.Empty,
+            Src = MediaUrlResolver.Resolve(media.Url) ?? string.Empty,
             Order = media.Order ?? order,
             MediaType = mediaType
         };
@@ -1732,7 +1733,7 @@
             EventId = EventId,
             StartDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.StartDate, EventState.ScheduleInfo.StartTime),
             EndDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.EndDate, EventState.ScheduleInfo.EndTime),
-            PreSaleStartDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleDate, EventState.ScheduleInfo.PreSaleTime),
+            PreSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleDate, EventState.ScheduleInfo.PreSaleTime),
             PreSaleEndDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleEndDate, EventState.ScheduleInfo.PreSaleEndTime),
             OnSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OnSaleDate, EventState.ScheduleInfo.OnSaleTime),
             OffSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OffSaleDate, EventState.ScheduleInfo.OffSaleTime),

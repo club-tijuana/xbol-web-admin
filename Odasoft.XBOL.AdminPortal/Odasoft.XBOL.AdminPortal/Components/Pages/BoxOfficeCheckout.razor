@@ -473,12 +473,7 @@
 
         var request = new EventBookingRequest
         {
-            Seats = _cartState.FinalSeatsSelection.Select(x => new BookingSeatRequest
-            {
-                SeatKey = x.SeatId,
-                SeatPrice = x.Price,
-                PriceListItemId = x.PriceListItemId
-            }).ToList(),
+            Seats = BookingSeatMapper.ToBookingSeats(_cartState.FinalSeatsSelection),
             HoldToken = _cartState.HoldToken ?? "",
             EventKey = EventKey,
             ClientContact = new ClientInfoRequest

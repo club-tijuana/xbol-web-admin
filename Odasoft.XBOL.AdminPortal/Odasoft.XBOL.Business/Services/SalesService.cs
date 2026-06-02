@@ -12,6 +12,7 @@ namespace Odasoft.XBOL.Business.Services
         public async Task<SaleResponsePagedResponse> GetSalesAsync(
             AdminSaleType adminSaleType,
             long referenceId,
+            bool? renewalMode,
             DateTimeOffset? startDate,
             DateTimeOffset? endDate,
             IEnumerable<PaymentType>? paymentTypes,
@@ -26,6 +27,7 @@ namespace Odasoft.XBOL.Business.Services
             return await _adminClient.GetSalesAsync(
                 adminSaleType,
                 referenceId,
+                renewalMode,
                 startDate,
                 endDate,
                 paymentTypes,

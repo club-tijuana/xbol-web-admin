@@ -235,6 +235,7 @@
             var result = await _salesService.GetSalesAsync(
                 SaleType,
                 ReferenceId,
+                null,
                 _dateRange?.Start,
                 _dateRange?.End,
                 _selectedPaymentTypes.OfType<PaymentType>(),
