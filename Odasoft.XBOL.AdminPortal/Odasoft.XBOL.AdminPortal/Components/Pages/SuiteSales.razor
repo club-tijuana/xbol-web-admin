@@ -1,5 +1,6 @@
 @page "/suites/sales"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Suites.Read)]
 
 <PageTitle>Palcos - Ventas</PageTitle>
 

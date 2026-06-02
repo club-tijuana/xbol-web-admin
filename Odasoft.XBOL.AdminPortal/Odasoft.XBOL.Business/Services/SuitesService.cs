@@ -39,12 +39,12 @@ namespace Odasoft.XBOL.Business.Services
             await _adminClient.DeleteSuiteAsync(suiteId);
         }
 
-        public async Task<List<Amenity>> GetAmenitiesBySuiteAsync(long suiteId)
+        public async Task<List<AmenityDTO>> GetAmenitiesBySuiteAsync(long suiteId)
         {
             ICollection<SuiteAmenityResponse> suiteAmenities = await _adminClient.GetAmenitiesBySuiteAsync(suiteId);
 
             return suiteAmenities
-                    .Select(a => new Amenity
+                    .Select(a => new AmenityDTO
                     {
                         Id = a.Id,
                         Name = a.Name,

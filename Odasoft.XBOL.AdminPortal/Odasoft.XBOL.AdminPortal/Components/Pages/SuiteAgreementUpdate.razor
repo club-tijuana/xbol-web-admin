@@ -1,5 +1,6 @@
 @page "/suite-agreements/{_suiteAgreementId:long}/update"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.SuiteAgreements.Update)]
 
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;

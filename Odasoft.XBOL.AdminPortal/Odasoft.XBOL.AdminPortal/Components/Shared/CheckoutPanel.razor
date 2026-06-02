@@ -551,7 +551,7 @@
                 _request.FullName = $"{client.Name} {client.LastName}";
                 _request.PhoneRegionCodeId = client.PhoneRegionCodeId;
                 _request.PhoneNumber = string.IsNullOrWhiteSpace(client.PhoneNumber) ? _request.PhoneNumber : client.PhoneNumber;
-                _request.Email =  string.IsNullOrWhiteSpace(client.Email) ? _request.Email : client.Email;
+                _request.Email = string.IsNullOrWhiteSpace(client.Email) ? _request.Email : client.Email;
                 _request.ClientId = client.Id;
                 _request.City = client.City;
                 _request.Neighborhood = client.Neighbourhood;
@@ -737,7 +737,12 @@
 
         var request = new BookSeatsBody
         {
-            Seats = _cartState.FinalSeatsSelection.ToDictionary(x => x.SeatId, x => x.Price),
+            Seats = _cartState.FinalSeatsSelection.Select(s => new BookingSeatRequest
+            {
+                SeatKey = s.SeatId,
+                SeatPrice = s.Price,
+                PriceListItemId = s.PriceListItemId
+            }).ToList(),
             HoldToken = _cartState.HoldToken ?? "",
             TicketType = ItemType,
             ReferenceOrderId = ReferenceOrderId,

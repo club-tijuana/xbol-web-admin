@@ -24,7 +24,7 @@ namespace Odasoft.XBOL.Business.Services
             return await _adminClient.GetVenueMapLayoutByIdAsync(venueMapId);
         }
 
-        public async Task<Chart> GetMapChart(string mapKey)
+        public async Task<ChartResponse> GetMapChart(string mapKey)
         {
             return await _adminClient.GetVenueMapChartByKeyAsync(mapKey);
         }

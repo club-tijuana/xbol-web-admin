@@ -312,4 +312,16 @@
   <data name="Organizer" xml:space="preserve">
     <value>Organizer</value>
   </data>
+  <data name="CreateEvent" xml:space="preserve">
+    <value>Create event</value>
+  </data>
+  <data name="InvalidForm" xml:space="preserve">
+    <value>Check the form and complete required fields</value>
+  </data>
+  <data name="EventPublished" xml:space="preserve">
+    <value>Evento published</value>
+  </data>
+  <data name="ErrorPublishingEvent" xml:space="preserve">
+    <value>There was an error publishing the event</value>
+  </data>
 </root>

@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace Odasoft.XBOL.AdminPortal.Extensions;
 
 public static class PageStatusCodeConfiguration
@@ -10,26 +8,25 @@ public static class PageStatusCodeConfiguration
         {
             await next();
 
-            if (context.Response.HasStarted
-                || !IsPageRequest(context)
-                || !IsAnonymousAuthStatus(context))
+            if (context.Response.HasStarted || !IsPageRequest(context))
             {
                 return;
             }
 
-            RedirectToLogin(context);
+            var statusCode = context.Response.StatusCode;
+
+            if (statusCode is StatusCodes.Status401Unauthorized or StatusCodes.Status403Forbidden)
+            {
+                if (context.User.Identity?.IsAuthenticated != true)
+                {
+                    RedirectToLogin(context);
+                }
+                else
+                {
+                    RedirectToAccessDenied(context);
+                }
+            }
         });
-    }
-
-    private static bool IsAnonymousAuthStatus(HttpContext context)
-    {
-        if (context.User.Identity?.IsAuthenticated == true)
-        {
-            return false;
-        }
-
-        return context.Response.StatusCode is StatusCodes.Status401Unauthorized
-            or StatusCodes.Status403Forbidden;
     }
 
     private static bool IsPageRequest(HttpContext context)
@@ -62,5 +59,11 @@ public static class PageStatusCodeConfiguration
         context.Response.Clear();
         context.Response.Redirect(
             $"{context.Request.PathBase}/login?returnUrl={Uri.EscapeDataString(returnUrl)}");
+    }
+
+    private static void RedirectToAccessDenied(HttpContext context)
+    {
+        context.Response.Clear();
+        context.Response.Redirect($"{context.Request.PathBase}/access-denied");
     }
 }

@@ -14,7 +14,7 @@ namespace Odasoft.XBOL.Business.Services.Contracts
 
         Task DeleteSuiteAsync(long id);
 
-        Task<List<Amenity>> GetAmenitiesBySuiteAsync(long suiteId);
+        Task<List<AmenityDTO>> GetAmenitiesBySuiteAsync(long suiteId);
 
         Task SaveSuiteAmenitiesAsync(long suiteId, List<long> amenityIds);
 

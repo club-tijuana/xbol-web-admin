@@ -1,5 +1,6 @@
 @page "/clients/{_id:long}/credit"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.CreditAccounts.Read)]
 
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.AdminPortal.Extensions
@@ -206,11 +207,11 @@
 
                                     <MudStack Row Justify="Justify.SpaceBetween" Spacing="2" Class="mt-2">
                                         <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Reorder"
-                                                   Class="mud-no-activator" OnClick="ClearOrdersFilters">
+                                                   Class="mud-no-activator" OnClick="ClearCreditTransactionsFilters">
                                             @L["Clear"]
                                         </MudButton>
                                         <MudButton Variant="Variant.Filled" Color="Color.Tertiary"
-                                                   StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyOrdersFilters">
+                                                   StartIcon="@Icons.Material.Filled.Search" OnClick="ApplyCreditTransactionsFilters">
                                             @L["Search"]
                                         </MudButton>
                                     </MudStack>
@@ -222,7 +223,11 @@
                         <PropertyColumn Property="x => x.Date" Title="@L["Date"]" Sortable="false" Filterable="false" />
                         <PropertyColumn Property="x => x.PaymentId" Title="Id" Sortable="false" Filterable="false" />
                         <PropertyColumn Property="x => x.Amount" Title="@L["CreditPaymentAmount"]" Sortable="false" Filterable="false" HeaderClass="text-right" CellClass="text-right" />
-                        <PropertyColumn Property="x => x.PaymentMethod" Title="@L["PaymentMethod"]" Sortable="false" Filterable="false" />
+                        <TemplateColumn Title="@L["PaymentMethod"]" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                @FormatPaymentMethod(context.Item.PaymentMethod)
+                            </CellTemplate>
+                        </TemplateColumn>
                         <PropertyColumn Property="x => x.ReceivedBy" Title="@L["ReceivedBy"]" Sortable="false" Filterable="false" />
                         <TemplateColumn Filterable="false" Sortable="false">
                             <CellTemplate>
@@ -444,19 +449,14 @@
         string cleanAmount = Regex.Replace(model.Amount, @"[$,]", "");
         decimal amountPaid = decimal.Parse(cleanAmount);
         DateTime? paymentDate = DateTime.Parse(model.Date);
-        PaymentType? paymentType = model.PaymentMethod switch
-        {
-            "Cash" => PaymentType.Cash,
-            "CreditCard" => PaymentType.CreditCard,
-            "DebitCard" => PaymentType.DebitCard,
-            "Spei" => PaymentType.Spei,
-            _ => null
-        };
+        var paymentType = Enum.TryParse<PaymentType>(model.PaymentMethod, out var parsedPaymentType)
+            ? parsedPaymentType
+            : PaymentType.Cash;
 
         var parameters = new DialogParameters<CreditTransactionDialog>();
         parameters.Add(p => p.AmountPaid, amountPaid);
         parameters.Add(p => p.PaymentDate, paymentDate);
-        parameters.Add(p => p.PaymentMethod, paymentType is null ? PaymentType.Cash : paymentType.Value);
+        parameters.Add(p => p.PaymentMethod, paymentType);
 
         var dialog = await _dialogService.ShowAsync<CreditTransactionDialog>("", parameters, _dialogOptions);
         var result = await dialog.Result;
@@ -613,9 +613,7 @@
                     Date = credit.PaymentDate?.ToString(FormatConstants.DATE_ONLY) ?? "-",
                     PaymentId = credit.ReferenceId ?? "-",
                     Id = credit.Id ?? 0,
-                    PaymentMethod = credit.PaymentType.HasValue
-                                    ? L[credit.PaymentType.Value.ToString()]
-                                    : "-",
+                    PaymentMethod = credit.PaymentType?.ToString() ?? string.Empty,
                     ReceivedBy = credit.ReceivedBy ?? "-"
                 })
             };
@@ -659,8 +657,13 @@
         await _dataPayments.ReloadServerData();
     }
 
+    private string FormatPaymentMethod(string paymentMethod)
+    {
+        return string.IsNullOrWhiteSpace(paymentMethod) ? "-" : L[paymentMethod];
+    }
+
     private async Task ApplyCreditTransactionsFilters()
     {
-        await _dataOrders.ReloadServerData();
+        await _dataPayments.ReloadServerData();
     }
 }

@@ -1,5 +1,6 @@
 @page "/suite-agreements/create"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.SuiteAgreements.Create)]
 
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;

@@ -13,6 +13,6 @@ namespace Odasoft.XBOL.AdminPortal.ViewModels
         public string Src { get; set; } = string.Empty;
         public int Order { get; set; } = 0;
         public ImageType ImageType { get; set; }
-        public MediaType MediaType { get; set; }
+        public AdminMediaType MediaType { get; set; }
     }
 }
