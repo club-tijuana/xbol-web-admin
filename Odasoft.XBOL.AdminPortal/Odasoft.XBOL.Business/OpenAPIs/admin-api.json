@@ -430,13 +430,13 @@
         "tags": [
           "AdditionalCharges"
         ],
-        "summary": "Retrieves a specific additional charge by its ID.",
+        "summary": "Retrieves a list of charges by their price reference ID.",
         "operationId": "GetAdditionalChargesByPriceReferenceIdAsync",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the additional charge.",
+            "description": "The ID of the price reference.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -5674,7 +5674,7 @@
         }
       }
     },
-    "/api/event-schedules/{id}": {
+    "/api/event-schedules/{scheduleId}": {
       "get": {
         "tags": [
           "EventSchedule"
@@ -5689,14 +5689,6 @@
             "schema": {
               "type": "integer",
               "format": "int64"
-            }
-          },
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
             }
           }
         ],
@@ -5742,7 +5734,122 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/event-schedules": {
+      "post": {
+        "tags": [
+          "EventSchedule"
+        ],
+        "summary": "Creates a new event schedule using the specified request data and returns the result of the operation.",
+        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\r\n            successful creation, a 201 Created response is returned with the location of the newly created event schedule. If\r\n            the creation fails, a 422 Unprocessable Entity response is returned.",
+        "operationId": "CreateScheduleAsync",
+        "requestBody": {
+          "description": "The request object containing the details required to create a new event schedule. Must not be null and must satisfy\r\n            model validation requirements.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EventScheduleRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EventScheduleRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EventScheduleRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EventScheduleRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventScheduleResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventScheduleResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventScheduleResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/event-schedules/{id}": {
       "put": {
         "tags": [
           "EventSchedule"
@@ -5891,119 +5998,6 @@
         "responses": {
           "204": {
             "description": "No Content"
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/event-schedules": {
-      "post": {
-        "tags": [
-          "EventSchedule"
-        ],
-        "summary": "Creates a new event schedule using the specified request data and returns the result of the operation.",
-        "description": "If the model state is invalid, the method returns a 400 Bad Request response. On\r\n            successful creation, a 201 Created response is returned with the location of the newly created event schedule. If\r\n            the creation fails, a 422 Unprocessable Entity response is returned.",
-        "operationId": "CreateScheduleAsync",
-        "requestBody": {
-          "description": "The request object containing the details required to create a new event schedule. Must not be null and must satisfy\r\n            model validation requirements.",
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/EventScheduleRequest"
-                  }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/EventScheduleRequest"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/EventScheduleRequest"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/EventScheduleRequest"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventScheduleResult"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventScheduleResult"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventScheduleResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
           },
           "422": {
             "description": "Unprocessable Content",
@@ -9844,112 +9838,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/season-seats/{seasonId}/seat-prices": {
-      "get": {
-        "tags": [
-          "SeasonSeats"
-        ],
-        "summary": "Retrieves the list of seat prices for the specified season.",
-        "description": "This method performs an asynchronous operation to fetch seat prices associated with\r\n            the provided season ID. The returned list reflects the current pricing for all seats in the specified\r\n            season.",
-        "operationId": "GetSeatPricesBySeasonIdAsync",
-        "parameters": [
-          {
-            "name": "seasonId",
-            "in": "path",
-            "description": "The unique identifier of the season for which to obtain seat prices. Must be a positive long value.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeatPriceDTO"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeatPriceDTO"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeatPriceDTO"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/season-sections/{seasonId}/zone-prices": {
-      "get": {
-        "tags": [
-          "SeasonSection"
-        ],
-        "summary": "Retrieves the collection of zone prices associated with the specified season identifier.",
-        "description": "This method is asynchronous and responds to an HTTP GET request. Ensure that the\r\n            provided season identifier exists to avoid receiving an empty result.",
-        "operationId": "GetZonePricesBySeasonIdAsync",
-        "parameters": [
-          {
-            "name": "seasonId",
-            "in": "path",
-            "description": "The unique identifier of the season for which to obtain zone prices. Must be a valid long integer.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ZonePriceDTO"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ZonePriceDTO"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ZonePriceDTO"
-                  }
                 }
               }
             }
@@ -16157,7 +16045,7 @@
           "prices": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/PriceRequest"
+              "$ref": "#/components/schemas/PriceSegmentRequest"
             }
           }
         },
@@ -17109,11 +16997,6 @@
               }
             ]
           },
-          "priceOverride": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
-          },
           "externalSeatObjectKey": {
             "type": "string"
           },
@@ -17160,11 +17043,6 @@
           },
           "displayName": {
             "type": "string"
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
           },
           "totalSeats": {
             "type": "integer",
@@ -22318,33 +22196,6 @@
         },
         "additionalProperties": false
       },
-      "PriceRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "priceSegmentId": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "priceTypeId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "priceValue": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "applyDynamicPricing": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
       "PriceSegment": {
         "type": "object",
         "properties": {
@@ -23919,11 +23770,6 @@
               }
             ]
           },
-          "priceOverride": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
-          },
           "externalSeatObjectKey": {
             "type": "string"
           },
@@ -23964,11 +23810,6 @@
           },
           "displayName": {
             "type": "string"
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
           },
           "totalSeats": {
             "type": "integer",
@@ -24088,22 +23929,6 @@
             "items": {
               "$ref": "#/components/schemas/SeatsIoPriceResponse"
             }
-          }
-        },
-        "additionalProperties": false
-      },
-      "SeatPriceDTO": {
-        "required": [
-          "price"
-        ],
-        "type": "object",
-        "properties": {
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "seatKey": {
-            "type": "string"
           }
         },
         "additionalProperties": false
@@ -24747,39 +24572,6 @@
           "Transferred"
         ],
         "type": "string"
-      },
-      "TicketTypePriceDTO": {
-        "type": "object",
-        "properties": {
-          "ticketType": {
-            "type": "string"
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "label": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "primary": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "unavailable": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "unavailableReason": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
       },
       "UnblockSeatsRequest": {
         "type": "object",
@@ -26062,28 +25854,6 @@
         ],
         "type": "string"
       },
-      "ZonePriceDTO": {
-        "type": "object",
-        "properties": {
-          "category": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "ticketTypes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TicketTypePriceDTO"
-            },
-            "nullable": true
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ZoneSummaryResult": {
         "type": "object",
         "properties": {
@@ -26237,12 +26007,6 @@
     },
     {
       "name": "Seasons"
-    },
-    {
-      "name": "SeasonSeats"
-    },
-    {
-      "name": "SeasonSection"
     },
     {
       "name": "SeatManagement"
