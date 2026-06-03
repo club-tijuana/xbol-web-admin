@@ -99,8 +99,14 @@
   <data name="ErrorLoadingVenueMapLayout" xml:space="preserve"><value>Error loading venue map layout.</value></data>
   <data name="ErrorSaving" xml:space="preserve"><value>Error creating the bundle.</value></data>
   <data name="Event" xml:space="preserve"><value>Event</value></data>
+  <data name="EventBanner" xml:space="preserve"><value>Event cover image</value></data>
+  <data name="EventBannerDimensions" xml:space="preserve"><value>Upload a horizontal 16:9 image. Minimum recommended dimensions are 1920 x 1080 px.</value></data>
+  <data name="EventBannerDescription" xml:space="preserve"><value>Keep composition and text centered so the image also works when cropped to a square.</value></data>
   <data name="Events" xml:space="preserve"><value>Events</value></data>
   <data name="FileTooLarge" xml:space="preserve"><value>The file '{0}' exceeds the {1}MB limit.</value></data>
+  <data name="GalleryPreview" xml:space="preserve"><value>Gallery preview</value></data>
+  <data name="GalleryUploadHint" xml:space="preserve"><value>Drag images here or click to browse</value></data>
+  <data name="GalleryUploadHintDetails" xml:space="preserve"><value>PNG or JPG files up to {0}MB are recommended.</value></data>
   <data name="InvalidImage" xml:space="preserve"><value>The file '{0}' is not a valid image.</value></data>
   <data name="GoBack" xml:space="preserve"><value>Back</value></data>
   <data name="HorizontalImagePreview" xml:space="preserve"><value>Horizontal preview</value></data>
@@ -142,8 +148,10 @@
   <data name="Subtitle" xml:space="preserve"><value>Subtitle</value></data>
   <data name="TicketsSale" xml:space="preserve"><value>Ticket sale</value></data>
   <data name="Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
   <data name="SquareImagePreview" xml:space="preserve"><value>Square preview</value></data>
   <data name="UploadBanner" xml:space="preserve"><value>Upload banner</value></data>
   <data name="UploadLogo" xml:space="preserve"><value>Upload logo</value></data>
   <data name="Venue" xml:space="preserve"><value>Venue</value></data>
+  <data name="WebsiteGallery" xml:space="preserve"><value>Website gallery</value></data>
 </root>

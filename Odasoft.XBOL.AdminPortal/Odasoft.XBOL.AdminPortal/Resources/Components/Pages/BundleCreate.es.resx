@@ -211,6 +211,30 @@
   <data name="UploadLogo" xml:space="preserve">
     <value>Cargar imagen</value>
   </data>
+  <data name="EventBanner" xml:space="preserve">
+    <value>Carátula del evento</value>
+  </data>
+  <data name="EventBannerDimensions" xml:space="preserve">
+    <value>Cargue una imagen en formato horizontal 16:9 (dimensiones mínimas recomendadas de 1920 x 1080 px).</value>
+  </data>
+  <data name="EventBannerDescription" xml:space="preserve">
+    <value>La composición y texto deben estar alineados al centro, para asegurar que nada se pierda al recortar la imagen a un cuadrado.</value>
+  </data>
+  <data name="WebsiteGallery" xml:space="preserve">
+    <value>Galería para el sitio web</value>
+  </data>
+  <data name="GalleryUploadHint" xml:space="preserve">
+    <value>Arrastre las imágenes aquí o haga clic para buscar</value>
+  </data>
+  <data name="GalleryUploadHintDetails" xml:space="preserve">
+    <value>Se recomiendan archivos png o jpg no mayores a {0}MB.</value>
+  </data>
+  <data name="GalleryPreview" xml:space="preserve">
+    <value>Vista previa de galería</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Limpiar</value>
+  </data>
   <data name="FileTooLarge" xml:space="preserve">
     <value>El archivo '{0}' supera el límite de {1}MB.</value>
   </data>

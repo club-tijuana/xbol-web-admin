@@ -79,12 +79,15 @@
             </MudStack>
 
             <MudStepper @ref="_stepper"
-                        @bind-ActiveIndex="_activeIndex"
+                        ActiveIndex="_activeIndex"
+                        ActiveIndexChanged="HandleStepNavigation"
                         OnPreviewInteraction="OnPreviewInteraction"
                         NonLinear
                         Class="pa-0">
                 <ChildContent>
-                    <MudStep Title="@L["DescriptionAndVenue"]">
+                    <MudStep Title="@L["DescriptionAndVenue"]"
+                             HasError="DescriptionStepHasError"
+                             @bind-Completed="_descriptionFormCompleted">
                         <MudForm @ref="_descriptionForm"
                                  @bind-IsValid="_descriptionFormValid"
                                  @onkeydown="OnKeyDownAsync">
@@ -227,7 +230,9 @@
 
                     @if (HasPriceStep)
                     {
-                        <MudStep Title="@L["ZonePrices"]">
+                        <MudStep Title="@L["ZonePrices"]"
+                                 HasError="PriceStepHasError"
+                                 @bind-Completed="_pricesFormCompleted">
                             <MudForm @ref="_pricesForm"
                                      @bind-IsValid="_pricesFormValid"
                                      @onkeydown="OnKeyDownAsync">
@@ -241,7 +246,9 @@
                         </MudStep>
                     }
 
-                    <MudStep Title="@L["DatesAndSale"]">
+                    <MudStep Title="@L["DatesAndSale"]"
+                             HasError="DatesStepHasError"
+                             @bind-Completed="_datesFormCompleted">
                         <MudForm @ref="_datesForm"
                                  @bind-IsValid="_datesFormValid"
                                  @onkeydown="OnKeyDownAsync">
@@ -429,15 +436,17 @@
                         </MudForm>
                     </MudStep>
 
-                    <MudStep Title="@L["Images"]">
+                    <MudStep Title="@L["Images"]"
+                             @bind-Completed="_imagesStepCompleted">
                         <MudGrid Spacing="6">
-                            <MudItem xs="12" md="6">
+                            <MudItem xs="12">
                                 <MudStack Spacing="3">
                                     <MudStack Spacing="1">
                                         <MudText Typo="Typo.subtitle2" Class="text-secondary-darken fw-bold">
-                                            @L["BundleBanner"]
+                                            @L["EventBanner"]
                                         </MudText>
-                                        <MudText Typo="Typo.caption">@L["BundleBannerDescription"]</MudText>
+                                        <MudText Typo="Typo.caption">@L["EventBannerDimensions"]</MudText>
+                                        <MudText Typo="Typo.caption">@L["EventBannerDescription"]</MudText>
                                     </MudStack>
 
                                     <MudFileUpload @ref="_bannerImageUpload"
@@ -450,7 +459,7 @@
                                                            Variant="Variant.Filled"
                                                            Color="Color.Secondary"
                                                            OnClick="@context.OpenFilePickerAsync">
-                                                    @L["UploadBanner"]
+                                                    @L["EventBanner"]
                                                 </MudButton>
 
                                                 @if (_bannerImage is not null)
@@ -468,90 +477,146 @@
                                         <SelectedTemplate />
                                     </MudFileUpload>
 
-                                    <MudStack>
-                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken fw-bold">
-                                            @L["HorizontalImagePreview"]
-                                        </MudText>
+                                    <MudGrid Spacing="4">
+                                        <MudItem xs="12" md="7">
+                                            <MudStack>
+                                                <MudText Typo="Typo.subtitle2" Class="text-secondary-darken fw-bold">
+                                                    @L["HorizontalImagePreview"]
+                                                </MudText>
 
-                                        @if (string.IsNullOrEmpty(_bannerImage?.Src))
-                                        {
-                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
-                                        }
-                                        else
-                                        {
-                                            <MudImage Src="@_bannerImage.Src"
-                                                      Class="rounded-lg bundle-create-banner-preview"
-                                                      ObjectFit="ObjectFit.Cover"
-                                                      ObjectPosition="ObjectPosition.Center"
-                                                      Height="200"
-                                                      Width="355" />
-                                        }
-                                    </MudStack>
+                                                @if (string.IsNullOrEmpty(_bannerImage?.Src))
+                                                {
+                                                    <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
+                                                }
+                                                else
+                                                {
+                                                    <MudImage Src="@_bannerImage.Src"
+                                                              Class="rounded-lg bundle-create-banner-preview"
+                                                              ObjectFit="ObjectFit.Cover"
+                                                              ObjectPosition="ObjectPosition.Center"
+                                                              Height="200"
+                                                              Width="355" />
+                                                }
+                                            </MudStack>
+                                        </MudItem>
+
+                                        <MudItem xs="12" md="5">
+                                            <MudStack>
+                                                <MudText Typo="Typo.subtitle2" Class="text-secondary-darken fw-bold">
+                                                    @L["SquareImagePreview"]
+                                                </MudText>
+
+                                                @if (string.IsNullOrEmpty(_bannerImage?.Src))
+                                                {
+                                                    <ImagePlaceholder Class="rounded-lg" Height="200px" Width="200px" />
+                                                }
+                                                else
+                                                {
+                                                    <MudImage Src="@_bannerImage.Src"
+                                                              Class="rounded-lg"
+                                                              ObjectFit="ObjectFit.Cover"
+                                                              ObjectPosition="ObjectPosition.Center"
+                                                              Height="200"
+                                                              Width="200" />
+                                                }
+                                            </MudStack>
+                                        </MudItem>
+                                    </MudGrid>
                                 </MudStack>
                             </MudItem>
 
-                            <MudItem xs="12" md="6">
-                                <MudStack Spacing="3">
-                                    <MudStack Spacing="1">
-                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken fw-bold">
-                                            @L["BundleLogo"]
-                                        </MudText>
-                                        <MudText Typo="Typo.caption">@L["BundleLogoDescription"]</MudText>
-                                    </MudStack>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.subtitle2" Class="text-secondary-darken fw-bold">@L["WebsiteGallery"]</MudText>
+                            </MudItem>
 
-                                    <MudFileUpload @ref="_logoImageUpload"
-                                                   T="IBrowserFile"
-                                                   FilesChanged="(file) => AddImageAsync(file, AdminMediaType.Logo)"
-                                                   Accept=".jpg, .png, .jpeg">
-                                        <CustomContent>
-                                            <div class="d-flex align-center gap-4">
-                                                <MudButton StartIcon="@Icons.Material.Filled.Upload"
-                                                           Variant="Variant.Filled"
-                                                           Color="Color.Secondary"
-                                                           OnClick="@context.OpenFilePickerAsync">
-                                                    @L["UploadLogo"]
-                                                </MudButton>
+                            <MudItem xs="12" Class="pt-0">
+                                <MudFileUpload @ref="_galleryUpload"
+                                               T="IReadOnlyList<IBrowserFile>"
+                                               Accept=".jpg, .png, .jpeg"
+                                               AppendMultipleFiles="true"
+                                               DragAndDrop="true"
+                                               @bind-Dragging="@_dragging"
+                                               @bind-Dragging:after="@ClearDragClass"
+                                               FilesChanged="UploadGalleryImagesAsync">
+                                    <CustomContent>
+                                        <MudPaper Height="300px;" Outlined="true" @onclick="@context.OpenFilePickerAsync" @ondragenter="@SetDragClass"
+                                                  Class="@($"pa-4 {_dragClass}")">
+                                            <MudText Typo="Typo.body1">
+                                                @L["GalleryUploadHint"]
+                                            </MudText>
+                                            <MudText Typo="Typo.caption">
+                                                @L["GalleryUploadHintDetails", MaxImageFileSize / 1024 / 1024]
+                                            </MudText>
 
-                                                @if (_logoImage is not null)
-                                                {
-                                                    <MudChip T="string"
-                                                             Variant="Variant.Text"
-                                                             Color="Color.Dark"
-                                                             OnClose="DeleteLogoImageAsync"
-                                                             CloseIcon="@Icons.Material.Filled.Close">
-                                                        @_logoImage.Name
-                                                    </MudChip>
-                                                }
-                                            </div>
-                                        </CustomContent>
-                                        <SelectedTemplate />
-                                    </MudFileUpload>
+                                            @if (_galleryImages.Count > 0)
+                                            {
+                                                <div class="mt-4 d-flex flex-wrap gap-2" style="z-index: 10;">
+                                                    @foreach (var image in _galleryImages)
+                                                    {
+                                                        <span @onclick:stopPropagation="true">
+                                                            <MudChip T="string"
+                                                                     Variant="Variant.Filled"
+                                                                     Class="bg-secondary-darken"
+                                                                     Color="Color.Dark"
+                                                                     OnClose="@(() => RemoveGalleryImageAsync(image))"
+                                                                     CloseIcon="@Icons.Material.Filled.Close"
+                                                                     @onclick:preventDefault="true">
+                                                                @image.Name
+                                                            </MudChip>
+                                                        </span>
+                                                    }
+                                                </div>
+                                            }
 
-                                    <MudStack>
-                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken fw-bold">
-                                            @L["SquareImagePreview"]
-                                        </MudText>
+                                            @if (_galleryImages.Any())
+                                            {
+                                                <div style="position: absolute; bottom: 16px; right: 16px; z-index: 20;" @onclick:stopPropagation="true">
+                                                    <MudButton Variant="Variant.Outlined"
+                                                               StartIcon="@Icons.Material.Filled.ClearAll"
+                                                               Color="Color.Secondary"
+                                                               OnClick="CleanGalleryImagesAsync">
+                                                        @L["Clear"]
+                                                    </MudButton>
+                                                </div>
+                                            }
+                                        </MudPaper>
+                                    </CustomContent>
+                                    <SelectedTemplate />
+                                </MudFileUpload>
+                            </MudItem>
 
-                                        @if (string.IsNullOrEmpty(_logoImage?.Src))
-                                        {
-                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="200px" />
-                                        }
-                                        else
-                                        {
-                                            <MudImage Src="@_logoImage.Src"
-                                                      Class="rounded-lg"
-                                                      ObjectFit="ObjectFit.Cover"
-                                                      ObjectPosition="ObjectPosition.Center"
-                                                      Height="200"
-                                                      Width="200" />
-                                        }
-                                    </MudStack>
+                            <MudItem xs="12">
+                                <MudStack>
+                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken fw-bold">@L["GalleryPreview"]</MudText>
+                                    @if (!_galleryImages.Any())
+                                    {
+                                        <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
+                                    }
+                                    else
+                                    {
+                                        <MudCarousel @ref="_carousel"
+                                                     ItemsSource="_galleryImages"
+                                                     Style="height:200px; width: 355px;"
+                                                     ShowArrows
+                                                     ShowBullets>
+                                            <ItemTemplate>
+                                                <MudImage Src="@context.Src"
+                                                          Class="rounded-lg"
+                                                          ObjectFit="ObjectFit.Cover"
+                                                          ObjectPosition="ObjectPosition.Center"
+                                                          Height="200"
+                                                          Width="355" />
+                                            </ItemTemplate>
+                                        </MudCarousel>
+                                    }
                                 </MudStack>
                             </MudItem>
                         </MudGrid>
                     </MudStep>
 
-                    <MudStep Title="@L["BundleEvents"]">
+                    <MudStep Title="@L["BundleEvents"]"
+                             HasError="EventsStepHasError"
+                             @bind-Completed="_eventsFormCompleted">
                         <MudForm @ref="_eventsForm" @bind-IsValid="_eventsFormValid" @onkeydown="OnKeyDownAsync">
                             <MudStack Spacing="3">
                                 <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
@@ -657,21 +722,31 @@
 
     private MudStepper _stepper = default!;
     private int _activeIndex;
-    private int _highestUnlockedStep;
+    private HashSet<int> _visitedSteps = [];
 
     private MudForm _descriptionForm = default!;
-    private bool _descriptionFormValid;
+    private bool _descriptionFormValid = true;
+    private bool _descriptionFormValidationAttempted;
+    private bool _descriptionFormCompleted;
     private FormContext _descriptionFormContext = default!;
 
     private MudForm _datesForm = default!;
-    private bool _datesFormValid;
+    private bool _datesFormValid = true;
+    private bool _datesFormValidationAttempted;
+    private bool _datesFormCompleted;
     private FormContext _datesFormContext = default!;
 
     private MudForm _eventsForm = default!;
-    private bool _eventsFormValid;
+    private bool _eventsFormValid = true;
+    private bool _eventsFormValidationAttempted;
+    private bool _eventsFormCompleted;
 
     private MudForm _pricesForm = default!;
-    private bool _pricesFormValid;
+    private bool _pricesFormValid = true;
+    private bool _pricesFormValidationAttempted;
+    private bool _pricesFormCompleted;
+
+    private bool _imagesStepCompleted;
 
     private bool _loading = true;
     private bool _loadingEvents;
@@ -724,10 +799,14 @@
     private List<PriceForm> _prices = [];
     private List<string> _priceTypes = [];
     private MudFileUpload<IBrowserFile> _bannerImageUpload = null!;
-    private MudFileUpload<IBrowserFile> _logoImageUpload = null!;
+    private MudFileUpload<IReadOnlyList<IBrowserFile>> _galleryUpload = null!;
+    private MudCarousel<ImageModel> _carousel = null!;
     private ImageModel? _bannerImage;
-    private ImageModel? _logoImage;
+    private List<ImageModel> _galleryImages = [];
     private const long MaxImageFileSize = 10 * 1024 * 1024;
+    private const string DefaultDragClass = "relative d-flex flex-column p-r gap-2 rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
+    private string _dragClass = DefaultDragClass;
+    private bool _dragging = false;
 
     private string BundleIcon => _bundleType == BundleType.SeasonPass
         ? Icons.Material.Outlined.ConfirmationNumber
@@ -739,8 +818,13 @@
         : BundlePricingType.Composite;
     private int PriceStepIndex => HasPriceStep ? 1 : -1;
     private int DatesStepIndex => HasPriceStep ? 2 : 1;
+    private int ImagesStepIndex => HasPriceStep ? 3 : 2;
     private int EventsStepIndex => HasPriceStep ? 4 : 3;
     private int MaxIndex => EventsStepIndex;
+    private bool DescriptionStepHasError => _descriptionFormValidationAttempted && !_descriptionFormValid;
+    private bool PriceStepHasError => _pricesFormValidationAttempted && !_pricesFormValid;
+    private bool DatesStepHasError => _datesFormValidationAttempted && !_datesFormValid;
+    private bool EventsStepHasError => _eventsFormValidationAttempted && !_eventsFormValid;
 
     private IEnumerable<EventViewModel> CandidateEventsForSelection
     {
@@ -989,44 +1073,58 @@
 
     private async Task OnPreviewInteraction(StepperInteractionEventArgs arg)
     {
-        var isAttemptingNextStep = arg.Action == StepAction.Activate && arg.StepIndex == _activeIndex + 1;
-        if (arg.Action == StepAction.Complete || isAttemptingNextStep)
-        {
-            if (!await ValidateCurrentStepAsync())
-            {
-                arg.Cancel = true;
-                return;
-            }
-
-            if (_activeIndex >= _highestUnlockedStep)
-            {
-                _highestUnlockedStep = _activeIndex + 1;
-            }
-        }
-        else if (arg.Action == StepAction.Activate && arg.StepIndex > _highestUnlockedStep)
-        {
-            arg.Cancel = true;
-            Snackbar.Add(L["CompletePreviousStepsWarning"], Severity.Warning);
-        }
+        await ValidateCurrentStepAsync(showSelectedEventsWarning: false);
     }
 
-    private async Task<bool> ValidateCurrentStepAsync()
+    private async Task<bool> ValidateCurrentStepAsync(bool showSelectedEventsWarning = true)
     {
-        switch (_activeIndex)
+        return await ValidateStepAsync(_activeIndex, showSelectedEventsWarning);
+    }
+
+    private async Task<bool> ValidateStepAsync(int stepIndex, bool showSelectedEventsWarning = true)
+    {
+        switch (stepIndex)
         {
             case 0:
                 _descriptionFormContext.SetForm(_descriptionForm);
-                return await _descriptionFormContext.ValidateAsync();
+                _descriptionFormValidationAttempted = true;
+                _descriptionFormValid = await _descriptionFormContext.ValidateAsync();
+                _descriptionFormCompleted = _descriptionFormValid;
+                return _descriptionFormValid;
             case var step when HasPriceStep && step == PriceStepIndex:
+                _pricesFormValidationAttempted = true;
                 await _pricesForm.ValidateAsync();
+                _pricesFormCompleted = _pricesFormValid;
                 return _pricesFormValid;
             case var step when step == DatesStepIndex:
                 _datesFormContext.SetForm(_datesForm);
-                return await _datesFormContext.ValidateAsync();
+                _datesFormValidationAttempted = true;
+                _datesFormValid = await _datesFormContext.ValidateAsync();
+                _datesFormCompleted = _datesFormValid;
+                return _datesFormValid;
+            case var step when step == ImagesStepIndex:
+                _imagesStepCompleted = true;
+                return true;
             case var step when step == EventsStepIndex:
-                return ValidateSelectedEvents();
+                _eventsFormValidationAttempted = true;
+                _eventsFormValid = ValidateSelectedEvents(showSelectedEventsWarning);
+                _eventsFormCompleted = _eventsFormValid;
+                return _eventsFormValid;
             default:
                 return true;
+        }
+    }
+
+    private async Task HandleStepNavigation(int newIndex)
+    {
+        _visitedSteps.Add(_activeIndex);
+        _activeIndex = newIndex;
+
+        await Task.Yield();
+
+        if (_visitedSteps.Contains(newIndex))
+        {
+            await ValidateCurrentStepAsync(showSelectedEventsWarning: false);
         }
     }
 
@@ -1052,13 +1150,12 @@
 
     private async Task SubmitAsync()
     {
-        if (!ValidateSelectedEvents())
+        if (!await ValidateStepAsync(EventsStepIndex))
         {
             return;
         }
 
-        _descriptionFormContext.SetForm(_descriptionForm);
-        if (!await _descriptionFormContext.ValidateAsync())
+        if (!await ValidateStepAsync(0))
         {
             _activeIndex = 0;
             return;
@@ -1066,16 +1163,17 @@
 
         if (HasPriceStep)
         {
-            await _pricesForm.ValidateAsync();
-            if (!_pricesFormValid || !ValidatePriceScopes())
+            if (!await ValidateStepAsync(PriceStepIndex) || !ValidatePriceScopes())
             {
+                _pricesFormValidationAttempted = true;
+                _pricesFormValid = false;
+                _pricesFormCompleted = false;
                 _activeIndex = PriceStepIndex;
                 return;
             }
         }
 
-        _datesFormContext.SetForm(_datesForm);
-        if (!await _datesFormContext.ValidateAsync())
+        if (!await ValidateStepAsync(DatesStepIndex))
         {
             _activeIndex = DatesStepIndex;
             return;
@@ -1169,10 +1267,60 @@
             return;
         }
 
+        var image = await ReadImageAsync(file, mediaType);
+        if (image is null)
+        {
+            return;
+        }
+
+        switch (mediaType)
+        {
+            case AdminMediaType.Banner:
+                _bannerImage = image;
+                await _bannerImageUpload.ClearAsync();
+                break;
+        }
+    }
+
+    private async Task DeleteBannerImageAsync()
+    {
+        _bannerImage = null;
+        await _bannerImageUpload.ClearAsync();
+    }
+
+    private async Task UploadGalleryImagesAsync(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var file in files)
+        {
+            var image = await ReadImageAsync(file, AdminMediaType.Gallery);
+            if (image is not null)
+            {
+                _galleryImages.Add(image);
+            }
+        }
+
+        if (_galleryUpload is not null)
+        {
+            await _galleryUpload.ClearAsync();
+        }
+
+        if (_carousel is not null && _galleryImages.Count > 0)
+        {
+            _carousel.MoveTo(_galleryImages.Count - 1);
+        }
+    }
+
+    private async Task<ImageModel?> ReadImageAsync(IBrowserFile file, AdminMediaType mediaType)
+    {
         if (file.Size > MaxImageFileSize)
         {
             Snackbar.Add(L["FileTooLarge", file.Name, MaxImageFileSize / 1024 / 1024], Severity.Error);
-            return;
+            return null;
         }
 
         using var stream = file.OpenReadStream(MaxImageFileSize);
@@ -1183,60 +1331,77 @@
         {
             memoryStream.Position = 0;
             var imageInfo = await SixLabors.ImageSharp.Image.IdentifyAsync(memoryStream);
-            if (imageInfo is not null)
+            if (imageInfo is null)
             {
-                var fileBytes = memoryStream.ToArray();
-                var contentType = string.IsNullOrWhiteSpace(file.ContentType)
-                    ? "application/octet-stream"
-                    : file.ContentType;
-                var image = new ImageModel
-                {
-                    Name = file.Name,
-                    FileBytes = fileBytes,
-                    ContentType = contentType,
-                    Src = $"data:{contentType};base64,{Convert.ToBase64String(fileBytes)}",
-                    MediaType = mediaType
-                };
-
-                switch (mediaType)
-                {
-                    case AdminMediaType.Banner:
-                        _bannerImage = image;
-                        await _bannerImageUpload.ClearAsync();
-                        break;
-                    case AdminMediaType.Logo:
-                        _logoImage = image;
-                        await _logoImageUpload.ClearAsync();
-                        break;
-                }
-
-                return;
+                Snackbar.Add(L["InvalidImage", file.Name], Severity.Error);
+                return null;
             }
+
+            var fileBytes = memoryStream.ToArray();
+            var contentType = string.IsNullOrWhiteSpace(file.ContentType)
+                ? "application/octet-stream"
+                : file.ContentType;
+
+            return new ImageModel
+            {
+                Name = file.Name,
+                FileBytes = fileBytes,
+                ContentType = contentType,
+                Src = $"data:{contentType};base64,{Convert.ToBase64String(fileBytes)}",
+                MediaType = mediaType
+            };
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Rejected invalid bundle image file {FileName}", file.Name);
+            Snackbar.Add(L["InvalidImage", file.Name], Severity.Error);
+            return null;
         }
-
-        Snackbar.Add(L["InvalidImage", file.Name], Severity.Error);
     }
 
-    private async Task DeleteBannerImageAsync()
+    private async Task RemoveGalleryImageAsync(ImageModel image)
     {
-        _bannerImage = null;
-        await _bannerImageUpload.ClearAsync();
+        _galleryImages.Remove(image);
+        await Task.Delay(1);
+
+        if (_carousel is not null && _galleryImages.Count > 0)
+        {
+            _carousel.MoveTo(Math.Max(_galleryImages.Count - 1, 0));
+        }
     }
 
-    private async Task DeleteLogoImageAsync()
+    private async Task CleanGalleryImagesAsync()
     {
-        _logoImage = null;
-        await _logoImageUpload.ClearAsync();
+        _galleryImages.Clear();
+        await Task.Delay(1);
+
+        if (_carousel is not null)
+        {
+            _carousel.MoveTo(0);
+        }
+    }
+
+    private void SetDragClass()
+    {
+        _dragClass = $"{DefaultDragClass} mud-border-success";
+        _dragging = true;
+    }
+
+    private void ClearDragClass()
+    {
+        if (!_dragging)
+        {
+            _dragClass = DefaultDragClass;
+        }
     }
 
     private async Task SaveBundleMediaAsync(long bundleId)
     {
         await UploadBundleMediaItemAsync(bundleId, _bannerImage, AdminMediaType.Banner, 0);
-        await UploadBundleMediaItemAsync(bundleId, _logoImage, AdminMediaType.Logo, 0);
+        foreach (var (index, image) in _galleryImages.Index())
+        {
+            await UploadBundleMediaItemAsync(bundleId, image, AdminMediaType.Gallery, index);
+        }
     }
 
     private async Task UploadBundleMediaItemAsync(
@@ -1279,14 +1444,18 @@
             price.BaseSeatId ?? 0);
     }
 
-    private bool ValidateSelectedEvents()
+    private bool ValidateSelectedEvents(bool showWarning = true)
     {
         if (_selectedEventsByScheduleId.Count > 0)
         {
             return true;
         }
 
-        Snackbar.Add(L["SelectEvents"], Severity.Warning);
+        if (showWarning)
+        {
+            Snackbar.Add(L["SelectEvents"], Severity.Warning);
+        }
+
         return false;
     }
 

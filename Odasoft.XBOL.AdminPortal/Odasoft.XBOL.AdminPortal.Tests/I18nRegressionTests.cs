@@ -48,6 +48,30 @@ public sealed class I18nRegressionTests
     }
 
     [Fact]
+    public void Bundle_create_media_labels_match_event_caratula_and_gallery()
+    {
+        string[] keys =
+        [
+            "EventBanner",
+            "EventBannerDimensions",
+            "EventBannerDescription",
+            "WebsiteGallery",
+            "GalleryUploadHint",
+            "GalleryUploadHintDetails",
+            "GalleryPreview",
+            "Clear"
+        ];
+
+        foreach (var key in keys)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/BundleCreate.en.resx", key)));
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/BundleCreate.es.resx", key)));
+        }
+
+        Assert.Equal("Car\u00e1tula del evento", ResourceValue("Resources/Components/Pages/BundleCreate.es.resx", "EventBanner"));
+    }
+
+    [Fact]
     public void New_catalog_grids_use_localized_date_placeholders()
     {
         Assert.Equal("MM/DD/YYYY", ResourceValue("Resources/Components/EventsDataGrid.en.resx", "DatePlaceholder"));
