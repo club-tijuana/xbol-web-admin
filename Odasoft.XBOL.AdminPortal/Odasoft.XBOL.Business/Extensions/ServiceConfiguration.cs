@@ -27,6 +27,7 @@ namespace Odasoft.XBOL.Business.Extensions
             services.AddScoped<VenueMapsService>();
             services.AddScoped<VenuesService>();
             services.AddScoped<ExchangeRateService>();
+            services.AddScoped<PaymentLinkService>();
 
             return services;
         }

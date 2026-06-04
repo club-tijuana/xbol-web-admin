@@ -14,5 +14,11 @@ namespace Odasoft.XBOL.Business.Services
             var response = await _adminClient.GetExchangeRateByEventAsync(eventId);
             return response;
         }
+
+        public async Task<ExchangeRateResponse> GetExchangeRateBySeasonAsync(long seasonId)
+        {
+            var response = await _adminClient.GetExchangeRateBySeasonAsync(seasonId);
+            return response;
+        }
     }
 }

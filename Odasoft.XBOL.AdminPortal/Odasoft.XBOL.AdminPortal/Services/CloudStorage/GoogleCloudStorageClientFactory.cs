@@ -1,5 +1,6 @@
 using Google.Cloud.Storage.V1;
 using Microsoft.Extensions.Options;
+using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.Common.Options;
 
 namespace Odasoft.XBOL.AdminPortal.Services.CloudStorage;

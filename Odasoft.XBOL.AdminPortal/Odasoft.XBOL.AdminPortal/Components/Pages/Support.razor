@@ -1,4 +1,5 @@
 @page "/support/"
+@page "/support/{OrderLocalizer}"
 @attribute [Authorize]
 
 @using Odasoft.XBOL.Business;
@@ -7,9 +8,11 @@
 @inject AppLocalizer<Support> _localizer;
 @inject ClientsService _clientService;
 @inject SupportService _supportService;
+@inject PaymentLinkService _paymentLinkService;
 
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
+@inject IJSRuntime JS;
 
 <PageTitle>@_localizer["Support"]</PageTitle>
 
@@ -42,7 +45,7 @@
         @* Order Summary Card *@
         <MudPaper Class="pa-4 mb-4" Elevation="1">
             <MudGrid>
-                <MudItem xs="12" md="6" lg="3">
+                <MudItem xs="12" md="6" lg="@DynamicLg">
                     <MudText Typo="Typo.caption" Color="Color.Warning">Orden</MudText>
                     <MudText Typo="Typo.body1">@_orderInfoResponse.Reference</MudText>
                 </MudItem>
@@ -50,7 +53,7 @@
                     <MudText Typo="Typo.caption" Color="Color.Warning">Nombre</MudText>
                     <MudText Typo="Typo.body1">@_orderInfoResponse.ClientName</MudText>
                 </MudItem>
-                <MudItem xs="12" md="6" lg="3">
+                <MudItem xs="12" md="6" lg="@DynamicLg">
                     <MudText Typo="Typo.caption" Color="Color.Warning">Teléfono</MudText>
                     <MudText Typo="Typo.body1">@($"+{_orderInfoResponse.DialCode} {_orderInfoResponse.PhoneNumber}")</MudText>
                 </MudItem>
@@ -58,6 +61,34 @@
                     <MudText Typo="Typo.caption" Color="Color.Warning">Correo electrónico</MudText>
                     <MudText Typo="Typo.body1">@_orderInfoResponse.Email</MudText>
                 </MudItem>
+                @if (_orderInfoResponse.PaymentLink != null)
+                {
+                    <MudItem xs="12" md="6" lg="2" Style="display: flex; flex-direction: column; align-items: start">
+                        <MudMenu Label="LINK DE PAGO" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.ArrowDropDown">
+                            <MudMenuItem 
+                                Icon="@Icons.Material.Outlined.ContentCopy" 
+                                IconColor="@Color.Secondary" 
+                                OnClick="CopyPaymentLink"
+                                         Disabled="_orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending">
+                                Copiar
+                            </MudMenuItem>
+                            <MudMenuItem
+                                Icon="@Icons.Material.Outlined.Cancel"
+                                IconColor="@Color.Secondary"
+                                OnClick="CancelPaymentLink"
+                                Disabled="_orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending">
+                                Cancelar
+                            </MudMenuItem>
+                            <MudMenuItem
+                                Icon="@Icons.Material.Outlined.Refresh"
+                                IconColor="@Color.Secondary"
+                                         OnClick="RegeneratePaymentLink"
+                                Disabled="_orderInfoResponse.PaymentLinkStatus == PaymentLinkStatus.Pending">
+                                Regenerar
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudItem>
+                }
             </MudGrid>
         </MudPaper>
 
@@ -149,7 +180,10 @@
     }
 </MudContainer>
 
-@code {
+    @code {
+    [Parameter]
+    public string? OrderLocalizer { get; set; }
+
     private string _searchText = "";
     private string _searchQuery = "";
     private int _activeTabIndex = 0;
@@ -163,6 +197,18 @@
     private string _newEmail = "";
     private string _comments = "";
     private HashSet<OrderItemResponse> _selectedItems = [];
+    private int DynamicLg => _orderInfoResponse.PaymentLink != null ? 2 : 3;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(OrderLocalizer))
+        {
+            _searchText = OrderLocalizer;
+            _searchQuery = OrderLocalizer;
+
+            await SearchOrderAsync();
+        }
+    }
 
     private async Task SearchOrderAsync()
     {
@@ -203,6 +249,51 @@
         _orderInfo.Clear();
         _orderItems.Clear();
         _activeTabIndex = 0;
+    }
+
+    private async void CopyPaymentLink()
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", _orderInfoResponse.PaymentLink);
+        _snackbar.Add("Link copiado", Severity.Success);
+    }
+
+    private async void CancelPaymentLink()
+    {
+        if (_orderInfoResponse.PaymentLinkCode == null) 
+        {
+            return;
+        }
+
+        await _paymentLinkService.Cancel(_orderInfoResponse.PaymentLinkCode);
+        _orderInfoResponse.PaymentLinkStatus = PaymentLinkStatus.Cancelled;
+
+        _snackbar.Add("Link de pago cancelado", Severity.Success);
+    }
+
+    private async void RegeneratePaymentLink()
+    {
+        if (_orderInfoResponse.OrderId == null)
+        {
+            return;
+        }
+
+        var dialog = await _dialogService.ShowAsync<RegeneratePaymentLinkDialog>();
+        var result = await dialog.Result;
+
+        if (
+            result != null
+            && !result.Canceled
+            && result.Data is PaymentLinkRequest request
+        )
+        {
+            var response = await _paymentLinkService.Regenerate(_orderInfoResponse.OrderId.Value, request);
+
+            _orderInfoResponse.PaymentLinkCode = response.Code;
+            _orderInfoResponse.PaymentLink = response.Link;
+            _orderInfoResponse.PaymentLinkStatus = response.Status;
+
+            _snackbar.Add("Link de pago generado", Severity.Success);
+        }
     }
 
     private async Task OpenOrderOwnerDiagloAsync()
@@ -408,8 +499,7 @@
         Dictionary<string, string> seats = [];
 
         if (action == OrderAction.CancelWithRefund
-            || action == OrderAction.CancelWithoutRefund
-            || action == OrderAction.ReissueTickets)
+            || action == OrderAction.CancelWithoutRefund)
         {
             seats = _orderItems
                     .Where(i => i.IsCancelled == false)

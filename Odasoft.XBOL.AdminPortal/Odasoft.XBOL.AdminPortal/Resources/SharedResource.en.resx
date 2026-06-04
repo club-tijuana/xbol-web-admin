@@ -702,4 +702,13 @@
   <data name="Zones" xml:space="preserve">
     <value>Zones</value>
   </data>
+  <data name="ExpirationDays" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="ExpirationHours" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="ExpirationMinutes" xml:space="preserve">
+    <value>Minutes</value>
+  </data>
 </root>

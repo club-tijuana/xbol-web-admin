@@ -6250,6 +6250,234 @@
         }
       }
     },
+    "/api/exchange-rates/season/{seasonId}": {
+      "get": {
+        "tags": [
+          "ExchangeRate"
+        ],
+        "summary": "Retrieves the exchange rate associated with the organizer of the specified season.\r\nIf the organizer does not have a configured exchange rate, the default exchange rate is returned.",
+        "operationId": "GetExchangeRateBySeasonAsync",
+        "parameters": [
+          {
+            "name": "seasonId",
+            "in": "path",
+            "description": "Unique identifier of the season used to determine the applicable exchange rate.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/executive-reports/report": {
+      "post": {
+        "tags": [
+          "ExecutiveReports"
+        ],
+        "operationId": "GenerateExecutiveReport",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/executive-reports/list": {
+      "post": {
+        "tags": [
+          "ExecutiveReports"
+        ],
+        "operationId": "GetExecutiveReportList",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/executive-reports/report-types": {
+      "get": {
+        "tags": [
+          "ExecutiveReports"
+        ],
+        "operationId": "GetReportTypeOptions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/hold-seats": {
       "post": {
         "tags": [
@@ -7691,6 +7919,110 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payment-links/cancel/{code}": {
+      "put": {
+        "tags": [
+          "PaymentLink"
+        ],
+        "operationId": "CancelPaymentLinkAsync",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/payment-links/regenerate/{orderId}": {
+      "put": {
+        "tags": [
+          "PaymentLink"
+        ],
+        "operationId": "RegeneratePaymentLinkCodeAsync",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaymentLinkRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaymentLinkRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaymentLinkRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaymentLinkRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentLinkResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentLinkResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentLinkResponse"
                 }
               }
             }
@@ -15603,6 +15935,17 @@
             "type": "integer",
             "format": "int64",
             "nullable": true
+          },
+          "isPaymentLink": {
+            "type": "boolean"
+          },
+          "paymentLinkRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentLinkRequest"
+              }
+            ],
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -19149,8 +19492,25 @@
               }
             ]
           },
+          "paymentLinkRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentLinkRequest"
+              }
+            ],
+            "nullable": true
+          },
           "localizer": {
             "type": "string",
+            "nullable": true
+          },
+          "userProfileId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isPaymentLink": {
+            "type": "boolean",
             "nullable": true
           }
         },
@@ -21012,6 +21372,22 @@
           },
           "email": {
             "type": "string"
+          },
+          "paymentLinkCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentLink": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentLinkStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentLinkStatus"
+              }
+            ],
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -21684,6 +22060,59 @@
           }
         },
         "additionalProperties": false
+      },
+      "PaymentLinkRequest": {
+        "type": "object",
+        "properties": {
+          "expirationDays": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "expirationHours": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "expirationMinutes": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentLinkResponse": {
+        "required": [
+          "code",
+          "link"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentLinkStatus"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentLinkStatus": {
+        "enum": [
+          "Pending",
+          "Paid",
+          "Expired",
+          "Cancelled"
+        ],
+        "type": "string"
       },
       "PaymentType": {
         "enum": [
@@ -22702,6 +23131,57 @@
         },
         "additionalProperties": false
       },
+      "ReportFilter": {
+        "type": "object",
+        "properties": {
+          "reportType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportType"
+              }
+            ]
+          },
+          "eventId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cashierId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sortBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortDirection": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortDirection"
+              }
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ReportType": {
         "enum": [
           "GlobalReport",
@@ -23312,8 +23792,25 @@
               }
             ]
           },
+          "paymentLinkRequest": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentLinkRequest"
+              }
+            ],
+            "nullable": true
+          },
           "localizer": {
             "type": "string",
+            "nullable": true
+          },
+          "userProfileId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isPaymentLink": {
+            "type": "boolean",
             "nullable": true
           }
         },
@@ -24065,6 +24562,18 @@
               "type": "integer",
               "format": "int32"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "SelectOption": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -25980,6 +26489,9 @@
     },
     {
       "name": "Permissions"
+    },
+    {
+      "name": "PaymentLink"
     },
     {
       "name": "PhoneNumbers"

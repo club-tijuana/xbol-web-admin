@@ -90,7 +90,7 @@
     }
 </LoadingContainer>
 
-@code {
+    @code {
     [Parameter]
     public long Id { get; set; }
 
@@ -402,7 +402,18 @@
         }
     }
 
-    private void HandleSucceeded(BookingResult _) => Navigation.NavigateTo(_successUrl);
+    private void HandleSucceeded((BookingResult result, bool isPaymentLink) data)
+    {
+        if (data.isPaymentLink)
+        {
+            _successUrl = $"./support/{data.result.Localizer}";
+            Navigation.NavigateTo(_successUrl);
+        }
+        else 
+        {
+            Navigation.NavigateTo(_successUrl);
+        }
+    }
 
     private void HandleFailed(Exception _) => _step = 1;
 

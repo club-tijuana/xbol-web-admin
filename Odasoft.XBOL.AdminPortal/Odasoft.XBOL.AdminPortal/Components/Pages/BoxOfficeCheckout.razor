@@ -19,6 +19,7 @@
 @inject IDialogService _dialogService;
 @inject ClientsService _clientsService;
 @inject CatalogsService _catalogsService;
+@inject ExchangeRateService _exchangeRateService
 @inject ILogger<BoxOfficeCheckout> Logger;
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="true" />
@@ -136,79 +137,195 @@
             </MudStack>
         </MudItem>
         <MudItem xs="3">
-            <MudGrid>
+            <MudGrid class="d-flex gap-4 align-center mb-3">
                 <MudItem xs="12">
-                    <MudText Typo="Typo.h5" Class="text-primary-darken">@L["PaymentMethod"]</MudText>
-                </MudItem>
-                <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudNumericField @bind-Value="_request.CardAmount"
-                                     For="@(() => _request.CardAmount)"
-                                     Format="N2"
-                                     Label="@L["Card"]"
-                                     Variant="Variant.Outlined"
-                                     Adornment="Adornment.Start"
-                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                     Margin="Margin.Dense"
-                                     Placeholder="0.00"
-                                     HideSpinButtons="true"
-                                     Immediate="false" />
-                    <MudButton Variant="Variant.Outlined" @onclick="SetAllCardAsync">TODO</MudButton>
-                </MudItem>
-                <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudNumericField @bind-Value="_request.CashAmount"
-                                     For="@(() => _request.CashAmount)"
-                                     Format="N2"
-                                     Label="@L["Cash"]"
-                                     Variant="Variant.Outlined"
-                                     Adornment="Adornment.Start"
-                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                     Margin="Margin.Dense"
-                                     Placeholder="0.00"
-                                     HideSpinButtons="true"
-                                     Immediate="false" />
-                    <MudButton Variant="Variant.Outlined" @onclick="SetAllCashAsync">TODO</MudButton>
-                </MudItem>
-                <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudNumericField @bind-Value="_request.DolarAmount"
-                                     For="@(() => _request.DolarAmount)"
-                                     Format="N2"
-                                     Label="@L["Dollars"]"
-                                     Variant="Variant.Outlined"
-                                     Adornment="Adornment.Start"
-                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                     Margin="Margin.Dense"
-                                     Placeholder="0.00"
-                                     HideSpinButtons="true"
-                                     Immediate="false" />
-                    <MudButton Variant="Variant.Outlined" @onclick="SetAllDolar">TODO</MudButton>
-                </MudItem>
-                <MudItem xs="12" class="d-flex gap-4 align-center">
-                    <MudNumericField @bind-Value="_request.OtherAmount"
-                                     For="@(() => _request.OtherAmount)"
-                                     Format="N2"
-                                     Label="@L["OtherPaymentMethod"]"
-                                     Variant="Variant.Outlined"
-                                     Adornment="Adornment.Start"
-                                     AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                     Margin="Margin.Dense"
-                                     Placeholder="0.00"
-                                     HideSpinButtons="true"
-                                     Immediate="false" />
-                    <MudButton Variant="Variant.Outlined" @onclick="SetAllOtherAsync">TODO</MudButton>
-                </MudItem>
-                <MudItem xs="12">
-                    <div class="order-summary">
-                        <div class="d-flex justify-space-between summary-item summary-received">
-                            <MudText Typo="Typo.body1">@L["Received"]</MudText>
-                            <MudText Typo="Typo.body1" Style="font-size: 20px;">@TotalPay.ToString(FormatConstants.CURRENCY)</MudText>
-                        </div>
 
-                        <div class="d-flex justify-space-between summary-item summary-change">
-                            <MudText Typo="Typo.body1">@(PendingPay < 0 ? L["Change"] : L["Pending"])</MudText>
-                            <MudText Typo="Typo.body1" Color="PendingPayColor">@FormattedPendingPay</MudText>
-                        </div>
-                    </div>
+                    <MudToggleGroup T="int" @bind-Value="_value">
+
+                        <MudToggleItem T="int" Value="1" Text="Caja" />
+                        <MudToggleItem T="int" Value="2" Text="Link de pago" />
+
+                    </MudToggleGroup>
+
                 </MudItem>
+            </MudGrid>
+
+            @if (_value == 1)
+            {
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h5" Class="text-primary-darken">@L["PaymentMethod"]</MudText>
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.CardAmount"
+                                         For="@(() => _request.CardAmount)"
+                                         Format="N2"
+                                         Label="@L["Card"]"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0.00"
+                                         HideSpinButtons="true"
+                                         Immediate="false" />
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllCardAsync">TODO</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.CashAmount"
+                                         For="@(() => _request.CashAmount)"
+                                         Format="N2"
+                                         Label="@L["Cash"]"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0.00"
+                                         HideSpinButtons="true"
+                                         Immediate="false" />
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllCashAsync">TODO</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.DolarAmount"
+                                         For="@(() => _request.DolarAmount)"
+                                         Format="N2"
+                                         Label="@L["Dollars"]"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0.00"
+                                         HideSpinButtons="true"
+                                         Immediate="false" />
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllDolar">TODO</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.OtherAmount"
+                                         For="@(() => _request.OtherAmount)"
+                                         Format="N2"
+                                         Label="@L["OtherPaymentMethod"]"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0.00"
+                                         HideSpinButtons="true"
+                                         Immediate="false" />
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllOtherAsync">TODO</MudButton>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <div class="order-summary">
+                            <div class="d-flex justify-space-between summary-item">
+                                <MudText Typo="Typo.caption">
+                                    Tipo de cambio
+                                </MudText>
+                                <MudText Typo="Typo.caption">
+                                    @((exchangeRate.Rate ?? 0).ToString("N2")) MXN/USD
+                                </MudText>
+                            </div>
+
+                            <div class="d-flex justify-space-between summary-item summary-received">
+                                <MudText Typo="Typo.body1">@L["Received"]</MudText>
+                                <MudText Typo="Typo.body1" Style="font-size: 20px;">@TotalPay.ToString(FormatConstants.CURRENCY)</MudText>
+                            </div>
+
+                            <div class="d-flex justify-space-between summary-item summary-change">
+                                <MudText Typo="Typo.body1">@(PendingPay < 0 ? L["Change"] : L["Pending"])</MudText>
+                                <MudText Typo="Typo.body1" Color="PendingPayColor">@FormattedPendingPay</MudText>
+                            </div>
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudText Typo="Typo.h6">
+                            Cambio
+                        </MudText>
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.MXNAmount"
+                                         For="@(() => _request.MXNAmount)"
+                                         Format="N2"
+                                         Label="MXN"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0.00"
+                                         HideSpinButtons="true"
+                                         Immediate="true" />
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllMXNChangeAsync">TODO</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.USDAmount"
+                                         For="@(() => _request.USDAmount)"
+                                         Format="N2"
+                                         Label="USD"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0.00"
+                                         HideSpinButtons="true"
+                                         Immediate="true" />
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllUSDChangeAsync">TODO</MudButton>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <div class="order-summary">
+                            <div class="d-flex justify-space-between summary-item summary-received">
+                                <MudText Typo="Typo.body2" class="me-1">Saldo</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="RemainingBalanceColor">
+                                    @RemainingBalance.ToString(FormatConstants.CURRENCY)
+                                </MudText>
+                            </div>
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            }
+            else
+            {
+                <MudGrid>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.PaymentLinkExpirationDays"
+                                         For="@(() => _request.PaymentLinkExpirationDays)"
+                                         Format="N2"
+                                         Label="@L["ExpirationDays"]"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0"
+                                         HideSpinButtons="true"
+                                         Immediate="false" />
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.PaymentLinkExpirationHours"
+                                         For="@(() => _request.PaymentLinkExpirationHours)"
+                                         Format="N2"
+                                         Label="@L["ExpirationHours"]"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0"
+                                         HideSpinButtons="true"
+                                         Immediate="false" />
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.PaymentLinkExpirationMinutes"
+                                         For="@(() => _request.PaymentLinkExpirationMinutes)"
+                                         Format="N2"
+                                         Label="@L["ExpirationMinutes"]"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0"
+                                         HideSpinButtons="true"
+                                         Immediate="false" />
+                    </MudItem>
+                </MudGrid>
+            }
+
+            <MudGrid>
                 <MudItem xs="12">
                     <MudRadioGroup @bind-Value="_request.DeliveryType" For="@(() => _request.DeliveryType)">
                         <MudGrid Justify="Justify.SpaceBetween">
@@ -266,22 +383,55 @@
     private bool _isSubmitting = false;
     private bool _successfulPurchase = false;
 
+    private int _value = 1;
+
     private List<ClientGender> genders = Enum.GetValues<ClientGender>().ToList();
 
     private BookingForm _request = new();
     private BookingFormFluentValidator orderValidator = new();
 
+    private ExchangeRateResponse exchangeRate = new();
+
     private EventScheduleDTO? _eventSchedulueInfo;
+
+    private decimal DollarAmountInMXN =>
+        (_request.DolarAmount ?? 0) * (exchangeRate?.Rate ?? 0);
 
     private decimal TotalPay =>
         (_request.CardAmount ?? 0) +
         (_request.CashAmount ?? 0) +
-        (_request.DolarAmount ?? 0) +
+        DollarAmountInMXN +
         (_request.OtherAmount ?? 0);
+
+    private decimal TotalReceived =>
+        (_request.CardAmount ?? 0) +
+        (_request.CashAmount ?? 0) +
+        DollarAmountInMXN +
+        (_request.OtherAmount ?? 0);
+
+    private decimal TotalChangeMx =>
+        (_request.MXNAmount ?? 0)
+        + ((_request.USDAmount ?? 0) * (exchangeRate.Rate ?? 0));
+
+    private decimal RemainingBalance => TotalPay - _cartState.TotalPrice - TotalChangeMx;
+
+    private bool HasValidPaymentLinkExpiration =>
+        (_request.PaymentLinkExpirationDays ?? 0) > 0 ||
+        (_request.PaymentLinkExpirationHours ?? 0) > 0 ||
+        (_request.PaymentLinkExpirationMinutes ?? 0) > 0;
+
+    private bool HasBalanceError =>
+        _value == 1 &&
+        RemainingBalance != 0;
+
+    private bool HasPaymentLinkError =>
+        _value == 2 &&
+        !HasValidPaymentLinkExpiration;
 
     private decimal PendingPay => _cartState.TotalPrice - TotalPay;
     private string FormattedPendingPay => Math.Abs(PendingPay).ToString(FormatConstants.CURRENCY);
     private Color PendingPayColor => PendingPay > 0 ? Color.Error : PendingPay < 0 ? Color.Tertiary : Color.Secondary;
+    private Color RemainingBalanceColor => RemainingBalance > 0 ? Color.Error : RemainingBalance < 0 ? Color.Warning : Color.Success;
 
     private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
@@ -297,6 +447,7 @@
             }
 
             _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
+            exchangeRate = await _exchangeRateService.GetExchangeRateByEventAsync(_cartState.CurrentEventId.Value);
 
             // TODO: Move this to a proper service
             var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
@@ -413,6 +564,13 @@
         }
     }
 
+    private void ClearPaymentExpirationsAsync()
+    {
+        _request.PaymentLinkExpirationDays = null;
+        _request.PaymentLinkExpirationHours = null;
+        _request.PaymentLinkExpirationMinutes = null;
+    }
+
     private async void ClearAmountsAsync()
     {
         _request.CardAmount = null;
@@ -434,9 +592,18 @@
     }
     private async void SetAllDolar()
     {
-        // TODO: Do currency conversions
         ClearAmountsAsync();
-        _request.DolarAmount = _cartState.TotalPrice;
+
+        if (exchangeRate == null || exchangeRate.Rate == null)
+        {
+            _snackbar.Add("No hay tipo de cambio configurado.");
+            return;
+        }
+
+        _request.DolarAmount = Math.Round(
+            _cartState.TotalPrice / exchangeRate.Rate.Value,
+            2
+        );
     }
 
     private async void SetAllOtherAsync()
@@ -445,10 +612,49 @@
         _request.OtherAmount = _cartState.TotalPrice;
     }
 
+    private void SetAllMXNChangeAsync()
+    {
+        _request.MXNAmount = Math.Abs(PendingPay);
+        _request.USDAmount = 0;
+    }
+
+    private void SetAllUSDChangeAsync()
+    {
+        if (exchangeRate?.Rate is null || exchangeRate.Rate <= 0)
+        {
+            return;
+        }
+
+        _request.MXNAmount = 0;
+
+        _request.USDAmount = Math.Round(
+            Math.Abs(PendingPay) / exchangeRate.Rate.Value,
+            2,
+            MidpointRounding.AwayFromZero);
+    }
+
+    private void OnTogglePaymentTypeChanged()
+    {
+        if (_value == 1)
+        {
+            _request.PaymentLinkExpirationDays = null;
+            _request.PaymentLinkExpirationHours = null;
+            _request.PaymentLinkExpirationMinutes = null;
+        }
+        else
+        {
+            ClearAmountsAsync();
+        }
+    }
+
     private async Task SubmitAsync()
     {
         if (_isSubmitting)
             return;
+
+        _request.PendingPay = PendingPay;
+        _request.ExchangeRate = exchangeRate.Rate ?? 0;
+        _request.TotalPrice = _cartState.TotalPrice;
 
         await _form.ValidateAsync();
 
@@ -458,10 +664,14 @@
         }
 
         // TODO: Add this validation to the FluentValidator
-        if(TotalPay < PendingPay)
+        if (_value == 1) 
         {
-            return;
+            if(TotalPay < PendingPay)
+            {
+                return;
+            }
         }
+        
         if(_cartState.FinalSeatsSelection.Count == 0)
         {
             _snackbar.Add(L["SelectSeatsMessage"], MudBlazor.Severity.Warning);
@@ -473,7 +683,12 @@
 
         var request = new EventBookingRequest
         {
-            Seats = BookingSeatMapper.ToBookingSeats(_cartState.FinalSeatsSelection),
+            Seats = _cartState.FinalSeatsSelection.Select(x => new BookingSeatRequest
+            {
+                SeatKey = x.SeatId,
+                SeatPrice = x.Price,
+                PriceListItemId = x.PriceListItemId
+            }).ToList(),
             HoldToken = _cartState.HoldToken ?? "",
             EventKey = EventKey,
             ClientContact = new ClientInfoRequest
@@ -487,6 +702,25 @@
                 Neighborhood = _request.Neighborhood,
                 Gender = _request.Gender,
                 Birthday = DateTimeHelpers.ToDateTimeOffset(_request.Birthday)
+            },
+            PaymentInfoRequest = new PaymentInfoRequest
+            {
+                CardAmount = _request.CardAmount,
+                CashAmount = _request.CashAmount,
+                DolarAmount = _request.DolarAmount,
+                OtherAmount = _request.OtherAmount
+            },
+            ChangeInfoRequest = new ChangeInfoRequest
+            {
+                AmountMXN = _request.MXNAmount,
+                AmountUSD = _request.USDAmount
+            },
+            IsPaymentLink = _value == 2,
+            PaymentLinkRequest = new PaymentLinkRequest
+            {
+                ExpirationDays = _request.PaymentLinkExpirationDays,
+                ExpirationHours = _request.PaymentLinkExpirationHours,
+                ExpirationMinutes = _request.PaymentLinkExpirationMinutes
             },
             TicketType = ItemType.Ticket,
         };
@@ -502,7 +736,14 @@
             _cartState.ClearCart();
             _cartState.ClearTokenAsync();
 
-            _navigation.NavigateTo("./box-office");
+            if (_value == 2)
+            {
+                _navigation.NavigateTo($"./support/{result.Localizer}");
+            }
+            else 
+            {
+                _navigation.NavigateTo("./box-office");
+            }
         }
         catch (Exception)
         {
@@ -584,6 +825,53 @@
 
             RuleFor(x => x.AcceptTermsAndConditions)
                 .Equal(true).WithMessage("Debes aceptar los términos y condiciones.");
+
+            RuleFor(x => x)
+                .Custom((model, context) =>
+                {
+                    var totalPaidMx =
+                        (model.CardAmount ?? 0)
+                        + (model.CashAmount ?? 0)
+                        + ((model.DolarAmount ?? 0) * model.ExchangeRate)
+                        + (model.OtherAmount ?? 0);
+
+                    var totalChangeMx =
+                        (model.MXNAmount ?? 0)
+                        + ((model.USDAmount ?? 0) * model.ExchangeRate);
+
+                    var overpayment =
+                        totalPaidMx - model.TotalPrice;
+
+                    if (overpayment <= 0)
+                    {
+                        return;
+                    }
+
+                    var remaining =
+                        overpayment - totalChangeMx;
+
+                    if (remaining > 0.01m)
+                    {
+                        context.AddFailure(
+                            nameof(model.MXNAmount),
+                            $"Falta devolver {remaining:C2} de cambio.");
+
+                        context.AddFailure(
+                            nameof(model.USDAmount),
+                            $"Falta devolver {remaining:C2} de cambio.");
+                    }
+
+                    if (remaining < -0.01m)
+                    {
+                        context.AddFailure(
+                            nameof(model.MXNAmount),
+                            $"El cambio excede por {Math.Abs(remaining ?? 0):C2}.");
+
+                        context.AddFailure(
+                            nameof(model.USDAmount),
+                            $"El cambio excede por {Math.Abs(remaining ?? 0):C2}.");
+                    }
+                });
         }
 
         public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

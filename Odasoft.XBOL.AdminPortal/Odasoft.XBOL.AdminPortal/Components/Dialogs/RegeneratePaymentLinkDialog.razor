@@ -1,0 +1,81 @@
+@using Odasoft.XBOL.Business
+@using Odasoft.XBOL.AdminPortal.Components.Pages
+
+@inject AppLocalizer<Events> L
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.subtitle2">¿Deseas regenerar el link de pago?</MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" class="d-flex gap-4 align-center">
+                <MudNumericField @bind-Value="_request.ExpirationDays"
+                                 For="@(() => _request.ExpirationDays)"
+                                 Format="N2"
+                                 Label="@L["ExpirationDays"]"
+                                 Variant="Variant.Outlined"
+                                 Adornment="Adornment.Start"
+                                 AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
+                                 Margin="Margin.Dense"
+                                 Placeholder="0"
+                                 HideSpinButtons="true"
+                                 Immediate="false" />
+            </MudItem>
+            <MudItem xs="12" class="d-flex gap-4 align-center">
+                <MudNumericField @bind-Value="_request.ExpirationHours"
+                                 For="@(() => _request.ExpirationHours)"
+                                 Format="N2"
+                                 Label="@L["ExpirationHours"]"
+                                 Variant="Variant.Outlined"
+                                 Adornment="Adornment.Start"
+                                 AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
+                                 Margin="Margin.Dense"
+                                 Placeholder="0"
+                                 HideSpinButtons="true"
+                                 Immediate="false" />
+            </MudItem>
+            <MudItem xs="12" class="d-flex gap-4 align-center">
+                <MudNumericField @bind-Value="_request.ExpirationMinutes"
+                                 For="@(() => _request.ExpirationMinutes)"
+                                 Format="N2"
+                                 Label="@L["ExpirationMinutes"]"
+                                 Variant="Variant.Outlined"
+                                 Adornment="Adornment.Start"
+                                 AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
+                                 Margin="Margin.Dense"
+                                 Placeholder="0"
+                                 HideSpinButtons="true"
+                                 Immediate="false" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel">CANCELAR</MudButton>
+
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Confirm">
+            Confirmar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private PaymentLinkRequest _request = new();
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private void Confirm()
+    {
+        MudDialog.Close(DialogResult.Ok(_request));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

@@ -3,6 +3,7 @@ using Odasoft.XBOL.AdminPortal.Services;
 using Odasoft.XBOL.AdminPortal.Services.Contracts;
 using Odasoft.XBOL.Business;
 using Odasoft.XBOL.Common.Options;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace Odasoft.XBOL.AdminPortal.Extensions;
 
@@ -34,13 +35,7 @@ public static class HttpClientConfiguration
         services.AddScoped<IAdminClient>(provider =>
             new AdminClient(provider.GetRequiredService<HttpClient>()));
 
-        services.AddHttpClient<IExecutiveReportsApiClient, ExecutiveReportsApiClient>(
-            (provider, client) =>
-            {
-                var config = provider.GetRequiredService<IOptions<AdminApiClientOptions>>().Value;
-                client.BaseAddress = new Uri(config.BaseAddress);
-                client.DefaultRequestHeaders.Add("Accept-Language", "es");
-            });
+        services.AddScoped<IExecutiveReportsApiClient, ExecutiveReportsApiClient>();
 
         return services;
     }
