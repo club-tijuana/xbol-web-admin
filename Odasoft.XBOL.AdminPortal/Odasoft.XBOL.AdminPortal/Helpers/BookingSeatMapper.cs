@@ -11,7 +11,8 @@ public static class BookingSeatMapper
             .Select(seat => new BookingSeatRequest
             {
                 SeatKey = seat.SeatId,
-                SeatPrice = seat.Price
+                SeatPrice = seat.Price,
+                PriceListItemId = seat.PriceListItemId ?? 0
             })
             .ToList();
     }
