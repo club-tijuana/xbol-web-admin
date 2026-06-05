@@ -329,8 +329,12 @@
     private void OnDateRangeChanged(DateRange range)
     {
         _dateRange = range;
-        _filter.StartDate = range.Start;
-        _filter.EndDate = range.End;
+        _filter.StartDate = range.Start.HasValue
+            ? new DateTimeOffset(range.Start.Value, TimeSpan.Zero)
+            : (DateTimeOffset?)null;
+        _filter.EndDate = range.End.HasValue
+            ? new DateTimeOffset(range.End.Value, TimeSpan.Zero)
+            : (DateTimeOffset?)null;
     }
 
     private async Task GenerateReportAsync()
@@ -510,7 +514,7 @@
                 break;
 
             case "datetime":
-                var dt = GetDateTimeValue(row, col.Key);
+                var dt = GetDateTimeOffsetValue(row, col.Key);
                 builder.AddContent(9, dt?.ToString("dd/MM/yyyy HH:mm", MxCulture));
                 break;
 
@@ -543,11 +547,11 @@
         return null;
     }
 
-    private static DateTime? GetDateTimeValue(ReportRow row, string key)
+    private static DateTimeOffset? GetDateTimeOffsetValue(ReportRow row, string key)
     {
         if (!row.TryGetValue(key, out var el) || el.ValueKind != JsonValueKind.String) return null;
         var s = el.GetString();
-        return DateTime.TryParse(s, null, DateTimeStyles.RoundtripKind, out var dt) ? dt : null;
+        return DateTimeOffset.TryParse(s, null, DateTimeStyles.RoundtripKind, out var dto) ? dto : null;
     }
 
     private static string? GetAlignStyle(string? align) => align switch
