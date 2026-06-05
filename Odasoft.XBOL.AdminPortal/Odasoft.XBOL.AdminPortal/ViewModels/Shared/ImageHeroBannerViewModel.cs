@@ -1,4 +1,5 @@
 using Odasoft.XBOL.AdminPortal.Helpers;
+using Odasoft.XBOL.Business;
 
 namespace Odasoft.XBOL.AdminPortal.ViewModels.Shared
 {
@@ -12,6 +13,7 @@ namespace Odasoft.XBOL.AdminPortal.ViewModels.Shared
         public DateTime? EndDateTime { get; set; }
         public int? AvailableSeats { get; set; }
         public int? TotalSeats { get; set; }
+        public AdminEventStatus? EventStatus { get; set; }
         public string? ExternalKey { get; set; }
         public string? DateRangeText => EventDisplayDateHelper.GetDateRange(StartDateTime, EndDateTime);
         public string? ShortDate => EventDisplayDateHelper.GetShortDate(StartDateTime);

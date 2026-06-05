@@ -146,6 +146,7 @@
                                     <MudGrid Spacing="4">
                                         <MudItem xs="12">
                                             <AdminTextField @bind-Value="EventState.EventInfo.Name"
+                                                            Class="required"
                                                             Label="@L["Name"].Value"
                                                             For="@(() => EventState.EventInfo.Name)"
                                                             Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
@@ -165,7 +166,8 @@
                                                        Variant="Variant.Outlined"
                                                        Margin="Margin.Dense"
                                                        ToStringFunc="@(c => c?.DisplayName ?? "")"
-                                                       Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                       Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                       Class="required">
 
                                                 @foreach (var category in _eventCategories)
                                                 {
@@ -233,6 +235,7 @@
                                     <MudGrid Spacing="4">
                                         <MudItem xs="12" md="6">
                                             <AdminSelect T="VenueResponse?"
+                                                         Class="required"
                                                          Value="EventState.EventInfo.SelectedVenue"
                                                          ValueChanged="OnVenueSelected"
                                                          For="@(() => EventState.EventInfo.SelectedVenue)"
@@ -246,6 +249,7 @@
                                         </MudItem>
                                         <MudItem xs="12" md="6">
                                             <AdminSelect T="VenueMapResponse?"
+                                                         Class="required"
                                                          Value="EventState.EventInfo.SelectedVenueMap"
                                                          ValueChanged="OnVenueMapSelected"
                                                          For="@(() => EventState.EventInfo.SelectedVenueMap)"
@@ -562,7 +566,8 @@
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.StartDate"
                                                      Label="@L["StartDate"].Value"
                                                      For="@(() => EventState.ScheduleInfo.StartDate)"
-                                                     Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                     Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                     Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="EventState.ScheduleInfo.StartTime"
@@ -572,14 +577,16 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.StartTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker 
                                         @bind-Date="EventState.ScheduleInfo.EndDate" 
                                         Label="@L["EndDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.EndDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="EventState.ScheduleInfo.EndTime"
@@ -589,7 +596,8 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.EndTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Class="required" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12">
@@ -637,7 +645,8 @@
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OnSaleDate"
                                         Label="@L["StartDate"].Value" 
                                         For="@(() => EventState.ScheduleInfo.OnSaleDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="EventState.ScheduleInfo.OnSaleTime"
@@ -647,13 +656,15 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.OnSaleTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OffSaleDate"
                                         Label="@L["EndDate"].Value" 
                                         For="@(() => EventState.ScheduleInfo.OffSaleDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="EventState.ScheduleInfo.OffSaleTime"
@@ -663,7 +674,8 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.OffSaleTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" 
+                                                   Class="required" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12" md="5">
@@ -715,17 +727,15 @@
                                     </MudGrid>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <AdminTextField @bind-Value="EventState.ScheduleInfo.ExternalEventKey"
-                                                    Label="@L["ExternalEventKey"].Value"
-                                                    For="@(() => EventState.ScheduleInfo.ExternalEventKey)"
-                                                    Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
-                                </MudItem>
-                                <MudItem xs="12" md="2">
-                                    <AdminNumericField @bind-Value="EventState.ScheduleInfo.HoldExpirationInMinutes"
+                                    <MudStack Spacing="6">
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                        ;">@L["Timer"]</MudText>
+                                        <AdminNumericField @bind-Value="EventState.ScheduleInfo.HoldExpirationInMinutes"
                                                        Label="@L["TimeToPurchaseInMinutes"].Value"
                                                     For="@(() => EventState.ScheduleInfo.HoldExpirationInMinutes)"
                                                     HideSpinButtons="@true"
                                                     Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                    </MudStack>
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudSelect Label="@L["AgeRestrictions"]"

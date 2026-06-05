@@ -339,10 +339,13 @@
   <data name="Percentage" xml:space="preserve">
     <value>Porcentaje</value>
   </data>
+  <data name="FeeAmount" xml:space="preserve">
+    <value>Cantidad</value>
+  </data>
   <data name="ReviewDescription" xml:space="preserve">
     <value>Favor de revisar que toda la información ingresada sea correcta. Al terminar presione 'Terminar revisión' si todo está en orden presione 'Aprobar'; de lo contrario, 'Requiere cambios' para realizar las correcciones necesarias.</value>
   </data>
-  <data name="FeeAmount" xml:space="preserve">
-    <value>Cantidad</value>
+  <data name="Timer" xml:space="preserve">
+    <value>Temporizador</value>
   </data>
 </root>

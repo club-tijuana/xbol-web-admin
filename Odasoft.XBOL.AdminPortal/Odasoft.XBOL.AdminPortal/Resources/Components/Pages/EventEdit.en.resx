@@ -342,4 +342,7 @@
   <data name="FeeAmount" xml:space="preserve">
     <value>Amount</value>
   </data>
+  <data name="Timer" xml:space="preserve">
+    <value>Timer</value>
+  </data>
 </root>

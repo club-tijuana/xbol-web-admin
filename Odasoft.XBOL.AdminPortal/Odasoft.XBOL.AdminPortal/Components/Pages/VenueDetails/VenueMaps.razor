@@ -33,6 +33,12 @@
                                                        Color="Color.Error"
                                                        OnClick="@(() => DeleteMapAsync(map.Id))" />
                                     </MudTooltip>
+                                    <MudTooltip Text="Sync">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Sync"
+                                                       Size="Size.Small"
+                                                       Color="Color.Success"
+                                                       OnClick="@(() => SyncMapAsync(map.Id))" />
+                                    </MudTooltip>
                                 </MudStack>
                             </MudStack>
                         </TabContent>
@@ -85,6 +91,19 @@
             {
                 _snackbar.Add("Ocurrio un error al tratar de actualizar el mapa del recinto.", Severity.Error);
             }
+        }
+    }
+
+    private async Task SyncMapAsync(long mapId)
+    {
+        try
+        {
+            await _venueMapsService.SyncChartAsync(mapId);
+            _snackbar.Add("Mapa del recinto sincronizado satisfactoriamente.", Severity.Success);
+        }
+        catch (Exception)
+        {
+            _snackbar.Add("Ocurrio un error al tratar de sincronizar el mapa del recinto.", Severity.Error);
         }
     }
 

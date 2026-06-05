@@ -197,6 +197,8 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
 
     public async Task<EventInfoDTO> GetEventByIdAsync(long id) => await adminClient.GetEventByIdAsync(id);
 
+    public async Task<BundleDTO> GetBundleByIdAsync(long id) => await adminClient.GetBundleByIdAsync(id);
+
     public async Task<GridData<EventViewModel>> GetEventsOnSaleAsync(
         int page,
         int pageSize,
@@ -250,9 +252,13 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
     public async Task<BundleDTO> CreateBundleAsync(BundleCreateRequest request) => await adminClient.CreateBundleAsync(request);
 
     public async Task UpdateEventAsync(long id, EventRequest request) => await adminClient.UpdateEventAsync(id, request);
+    public async Task UpdateBundleAsync(long id, BundleUpdateRequest request) => await adminClient.UpdateBundleAsync(id, request);
 
     public async Task DeleteEventAsync(long id)
             => await adminClient.DeleteEventAsync(id);
+
+    public async Task DeleteBundleAsync(long id)
+            => await adminClient.DeleteBundleAsync(id);
 
     private static string FormatCategories(ICollection<AdminEventCategoryResult>? categories)
         => categories is { Count: > 0 }

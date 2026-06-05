@@ -174,4 +174,28 @@
   <data name="None" xml:space="preserve">
     <value>No restrictions</value>
   </data>
+  <data name="TabGallery" xml:space="preserve">
+    <value>Gallery</value>
+  </data>
+  <data name="TabEvents" xml:space="preserve">
+    <value>Events</value>
+  </data>
+  <data name="Bundle" xml:space="preserve">
+    <value>Bundle</value>
+  </data>
+  <data name="Sponsors" xml:space="preserve">
+    <value>Sponsors</value>
+  </data>
+  <data name="WebsiteGallery" xml:space="preserve">
+    <value>Website gallery</value>
+  </data>
+  <data name="NoSponsorImages" xml:space="preserve">
+    <value>No sponsor images for the event</value>
+  </data>
+  <data name="SponsorsDescription" xml:space="preserve">
+    <value>Los patrocinadores aparecerán en el boleto en PDF y en el sitio web. Cargue una imagen en formato horizontal 16:9 (dimensiones mínimas de 1920 x 1080 px).</value>
+  </data>
+  <data name="NoGalleryImages" xml:space="preserve">
+    <value>No hay imagenes de galería en este evento</value>
+  </data>
 </root>

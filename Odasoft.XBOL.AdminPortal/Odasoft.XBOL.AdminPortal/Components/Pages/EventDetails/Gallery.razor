@@ -1,0 +1,65 @@
+@using Odasoft.XBOL.Business
+@inject AppLocalizer<EventDetail> L
+<MudCard Class="pa-6 bg-white" Elevation="3">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudStack>
+                <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["Sponsors"]</MudText>
+                @if (Media.Sponsors is null || !Media.Sponsors.Any())
+                {
+                    <MudAlert Severity="Severity.Info">@L["NoSponsorImages"]</MudAlert>
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption">@L["SponsorsDescription"]</MudText>
+                }
+            </MudStack>
+        </MudItem>
+        @if (Media.Sponsors is not null && Media.Sponsors.Any())
+        {
+            @foreach (var sponsor in Media.Sponsors)
+            {
+                <MudItem xs="12" lg="3">
+
+                    <MudImage Src="@sponsor.Url"
+                    Class="rounded-lg mb-4"
+                    ObjectFit="ObjectFit.Cover"
+                    ObjectPosition="ObjectPosition.Center"
+                    Height="200"
+                    Width="355" />
+                </MudItem>
+            }
+        }
+
+        <MudItem xs="12">
+            <MudStack>
+                <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["WebsiteGallery"]</MudText>
+                @if (Media.Gallery is null || !Media.Gallery.Any())
+                {
+                    <MudAlert Severity="Severity.Info">@L["NoGalleryImages"]</MudAlert>
+                }
+            </MudStack>
+        </MudItem>
+        @if (Media.Gallery is not null && Media.Gallery.Any())
+        {
+            <MudItem xs="12">
+                <MudCarousel ItemsSource="Media.Gallery"
+                             Style="height:200px; width: 355px;"
+                             ShowArrows
+                             ShowBullets>
+                    <ItemTemplate>
+                        <MudImage Src="@context.Url"
+                                  Class="rounded-lg"
+                                  ObjectFit="ObjectFit.Cover"
+                                  ObjectPosition="ObjectPosition.Center"
+                                  Height="200"
+                                  Width="355" />
+                    </ItemTemplate>
+                </MudCarousel>
+            </MudItem>
+        }
+    </MudGrid>
+ </MudCard>
+@code {
+    [Parameter, EditorRequired] public EventMediaSetResponse Media { get; set; }
+}

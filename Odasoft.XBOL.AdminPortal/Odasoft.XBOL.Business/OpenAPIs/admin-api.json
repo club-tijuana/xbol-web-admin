@@ -6065,191 +6065,6 @@
         }
       }
     },
-    "/api/executive-reports/report": {
-      "post": {
-        "tags": [
-          "ExecutiveReports"
-        ],
-        "operationId": "GenerateExecutiveReport",
-        "requestBody": {
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ReportFilter"
-                  }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ReportFilter"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ReportFilter"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ReportFilter"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/executive-reports/list": {
-      "post": {
-        "tags": [
-          "ExecutiveReports"
-        ],
-        "operationId": "GetExecutiveReportList",
-        "requestBody": {
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ReportFilter"
-                  }
-                ]
-              }
-            },
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ReportFilter"
-                  }
-                ]
-              }
-            },
-            "text/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ReportFilter"
-                  }
-                ]
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ReportFilter"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/executive-reports/report-types": {
-      "get": {
-        "tags": [
-          "ExecutiveReports"
-        ],
-        "operationId": "GetReportTypeOptions",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SelectOption"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SelectOption"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SelectOption"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/exchange-rates/season/{seasonId}": {
       "get": {
         "tags": [
@@ -6366,6 +6181,79 @@
         }
       }
     },
+    "/api/executive-reports/report-pdf": {
+      "post": {
+        "tags": [
+          "ExecutiveReports"
+        ],
+        "operationId": "GenerateExecutiveReportPdf",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportFilter"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/executive-reports/list": {
       "post": {
         "tags": [
@@ -6445,6 +6333,114 @@
           "ExecutiveReports"
         ],
         "operationId": "GetReportTypeOptions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/executive-reports/cashiers": {
+      "get": {
+        "tags": [
+          "ExecutiveReports"
+        ],
+        "operationId": "GetCashierOptions",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SelectOption"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/executive-reports/clients": {
+      "get": {
+        "tags": [
+          "ExecutiveReports"
+        ],
+        "operationId": "GetClientOptions",
         "responses": {
           "200": {
             "description": "OK",
@@ -7866,66 +7862,6 @@
         }
       }
     },
-    "/api/permissions": {
-      "get": {
-        "tags": [
-          "Permissions"
-        ],
-        "summary": "Retrieves all available permissions.",
-        "operationId": "GetPermissionsAsync",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PermissionResponse"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PermissionResponse"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PermissionResponse"
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/payment-links/cancel/{code}": {
       "put": {
         "tags": [
@@ -8023,6 +7959,66 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PaymentLinkResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/permissions": {
+      "get": {
+        "tags": [
+          "Permissions"
+        ],
+        "summary": "Retrieves all available permissions.",
+        "operationId": "GetPermissionsAsync",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionResponse"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -14598,6 +14594,83 @@
         }
       }
     },
+    "/api/venue-maps/sync": {
+      "post": {
+        "tags": [
+          "VenueMaps"
+        ],
+        "summary": "Synchronizes a seats.io chart asynchronously",
+        "operationId": "SyncChartAsync",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SyncChartRequest"
+                  }
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SyncChartRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SyncChartRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SyncChartRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/venues": {
       "get": {
         "tags": [
@@ -18152,6 +18225,10 @@
           "referenceId": {
             "type": "string"
           },
+          "orderReference": {
+            "type": "string",
+            "nullable": true
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -18205,6 +18282,10 @@
           },
           "description": {
             "type": "string"
+          },
+          "orderReference": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -21064,6 +21145,14 @@
             ],
             "nullable": true
           },
+          "paymentLink": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentLink"
+              }
+            ],
+            "nullable": true
+          },
           "items": {
             "type": "array",
             "items": {
@@ -22057,6 +22146,75 @@
             "type": "number",
             "format": "decimal",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentLink": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ]
+          },
+          "createdById": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "createdBy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "nullable": true
+          },
+          "code": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentLinkStatus"
+              }
+            ]
+          },
+          "activationDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expirationDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -23099,55 +23257,9 @@
             "format": "uuid",
             "nullable": true
           },
-          "page": {
+          "clientId": {
             "type": "integer",
-            "format": "int32"
-          },
-          "pageSize": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "sortBy": {
-            "type": "string",
-            "nullable": true
-          },
-          "sortDirection": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SortDirection"
-              }
-            ]
-          },
-          "startDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "endDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ReportFilter": {
-        "type": "object",
-        "properties": {
-          "reportType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReportType"
-              }
-            ]
-          },
-          "eventId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "cashierId": {
-            "type": "string",
-            "format": "uuid",
+            "format": "int64",
             "nullable": true
           },
           "page": {
@@ -24566,18 +24678,6 @@
         },
         "additionalProperties": false
       },
-      "SelectOption": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "string"
-          },
-          "label": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
       "SectionType": {
         "enum": [
           "General",
@@ -24818,6 +24918,22 @@
           "Terrace"
         ],
         "type": "string"
+      },
+      "SyncChartRequest": {
+        "type": "object",
+        "properties": {
+          "venueMapId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "Tag": {
         "type": "object",
@@ -25554,6 +25670,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AuthInvitation"
+            }
+          },
+          "paymentLinks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentLink"
             }
           },
           "userRoles": {
@@ -26488,10 +26610,10 @@
       "name": "Organizer"
     },
     {
-      "name": "Permissions"
+      "name": "PaymentLink"
     },
     {
-      "name": "PaymentLink"
+      "name": "Permissions"
     },
     {
       "name": "PhoneNumbers"

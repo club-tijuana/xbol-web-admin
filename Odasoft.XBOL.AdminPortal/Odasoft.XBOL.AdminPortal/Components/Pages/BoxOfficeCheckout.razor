@@ -450,17 +450,21 @@
             exchangeRate = await _exchangeRateService.GetExchangeRateByEventAsync(_cartState.CurrentEventId.Value);
 
             // TODO: Move this to a proper service
-            var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
+            var holdToken = await _adminClient.HoldSeatsByKeyAsync(EventKey, new HoldSeatsBody
             {
-                EventScheduleId = _cartState.CurrentEventId.Value,
                 Seats = _cartState.FinalSeatsSelection.Select(x => x.SeatId).ToList(),
-                SaleType = SaleType.Event
             });
+
+            if (string.IsNullOrWhiteSpace(holdToken.Token))
+            {
+                throw new InvalidOperationException("HoldSeatsByKeyAsync returned a response with no token.");
+            }
 
             _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to hold seats");
             _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
             await ReturnAsync();
         }

@@ -202,3 +202,8 @@ h1:focus {
 .mud-input-control>.mud-input-control-input-container>.mud-input-outlined>.mud-input-outlined-border {
     border-radius: 4px !important;
 }
+
+.required .mud-input-label::after {
+    content: "*";
+    color: var(--mud-palette-error);
+}

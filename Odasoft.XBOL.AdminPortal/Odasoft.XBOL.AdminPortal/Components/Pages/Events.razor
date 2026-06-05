@@ -109,7 +109,7 @@
     }
 </LoadingContainer>
 
-@code {
+    @code {
     [Parameter] public string? Tab { get; set; }
 
     private const string UpcomingTab = "upcoming";
@@ -219,13 +219,16 @@
 
     private void OpenCatalogItem(EventViewModel item)
     {
-        if (item.IsBundle)
-        {
-            return;
-        }
+        var url = BuildCatalogItemUrl(item);
+        Navigation.NavigateTo(url);
+    }
 
+    private string BuildCatalogItemUrl(EventViewModel item)
+    {
+        var bundleSegment = item.IsBundle ? "/bundles" : string.Empty;
         var reviewSegment = item.Status != AdminEventStatus.Published ? "/review" : string.Empty;
-        Navigation.NavigateTo($"./events/{item.Id}{reviewSegment}");
+
+        return $"./events{bundleSegment}/{item.Id}{reviewSegment}";
     }
 
     private async Task OnCatalogPageChanged(int page)

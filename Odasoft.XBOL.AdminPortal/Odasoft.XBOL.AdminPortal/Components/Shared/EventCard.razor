@@ -3,7 +3,7 @@
 @inject NavigationManager _navigationManager;
 
 <MudCard Elevation="3" Style="cursor: pointer;" Class="rounded-lg">
-    <div style="position: relative;">
+    <div style="position: relative;" class="rounded-lg">
         @if (string.IsNullOrEmpty(Event.BannerImageUrl))
         {
             <ImagePlaceholder OnClick="HandleOnClick" Ratio="16/9" Class="rounded-t-lg" />

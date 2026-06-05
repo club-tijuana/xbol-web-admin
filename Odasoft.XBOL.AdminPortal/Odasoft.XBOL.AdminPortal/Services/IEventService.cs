@@ -75,4 +75,7 @@ public interface IEventService
     Task RejectEventAsync(long id);
 
     Task PublishEventAsync(long id);
+    Task<BundleDTO> GetBundleByIdAsync(long id);
+    Task DeleteBundleAsync(long id);
+    Task UpdateBundleAsync(long id, BundleUpdateRequest request);
 }

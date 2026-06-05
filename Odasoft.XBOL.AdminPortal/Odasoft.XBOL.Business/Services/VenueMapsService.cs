@@ -43,5 +43,10 @@ namespace Odasoft.XBOL.Business.Services
         {
             await _adminClient.DeleteVenueMapAsync(venueMapId);
         }
+
+        public async Task SyncChartAsync(long venueMapId)
+        {
+            await _adminClient.SyncChartAsync(new SyncChartRequest { VenueMapId = venueMapId });
+        }
     }
 }
