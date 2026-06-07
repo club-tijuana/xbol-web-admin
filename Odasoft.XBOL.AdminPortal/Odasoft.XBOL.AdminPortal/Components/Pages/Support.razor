@@ -69,21 +69,30 @@
                                 Icon="@Icons.Material.Outlined.ContentCopy" 
                                 IconColor="@Color.Secondary" 
                                 OnClick="CopyPaymentLink"
-                                         Disabled="_orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending">
+                                Disabled="
+                                    _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
+                                         || _orderInfoResponse.Status != OrderStatus.Pending
+                                ">
                                 Copiar
                             </MudMenuItem>
                             <MudMenuItem
                                 Icon="@Icons.Material.Outlined.Cancel"
                                 IconColor="@Color.Secondary"
                                 OnClick="CancelPaymentLink"
-                                Disabled="_orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending">
+                                Disabled="
+                                    _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
+                                         || _orderInfoResponse.Status != OrderStatus.Pending
+                                ">
                                 Cancelar
                             </MudMenuItem>
                             <MudMenuItem
                                 Icon="@Icons.Material.Outlined.Refresh"
                                 IconColor="@Color.Secondary"
                                          OnClick="RegeneratePaymentLink"
-                                Disabled="_orderInfoResponse.PaymentLinkStatus == PaymentLinkStatus.Pending">
+                                Disabled="
+                                    _orderInfoResponse.PaymentLinkStatus == PaymentLinkStatus.Pending
+                                    || _orderInfoResponse.Status != OrderStatus.Pending
+                                ">
                                 Regenerar
                             </MudMenuItem>
                         </MudMenu>
