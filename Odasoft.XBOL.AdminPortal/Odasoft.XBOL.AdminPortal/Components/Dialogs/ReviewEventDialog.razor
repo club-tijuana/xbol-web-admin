@@ -1,3 +1,4 @@
+@using Odasoft.XBOL.Business
 @inject ISnackbar Snackbar
 @inject ILogger<ReviewEventDialog> Logger
 @inject IEventService EventService;
@@ -26,11 +27,21 @@
     [Parameter]
     public long EventId { get; set; }
 
+    [Parameter]
+    public bool IsBundle { get; set; } = false;
+
     public async Task ApproveAsync()
     {
         try
         {
-            await EventService.ApproveEventAsync(EventId);
+            if(IsBundle)
+            {
+                await EventService.UpdateBundleAsync(EventId, new BundleUpdateRequest() { Status = Business.AdminEventStatus.Approved});
+            }
+            else
+            {
+                await EventService.ApproveEventAsync(EventId);
+            }
             Snackbar.Add(L["EventApproved"], Severity.Success);
             MudDialog.Close();
         }
@@ -45,7 +56,14 @@
     {
         try
         {
-            await EventService.RejectEventAsync(EventId);
+            if(IsBundle)
+            {
+                await EventService.UpdateBundleAsync(EventId, new BundleUpdateRequest() { Status = Business.AdminEventStatus.ChangesRequested });
+            }
+            else
+            {
+                await EventService.RejectEventAsync(EventId);
+            }
             Snackbar.Add(L["EventRejected"], Severity.Success);
             MudDialog.Close();
         }

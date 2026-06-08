@@ -14,13 +14,12 @@
         }
 
         @if (Event.IsBundle)
-        {
-            <MudTooltip Text="Paquete" Placement="Placement.Left">
-                <MudPaper Elevation="0" Class="d-flex align-center justify-center"
-                          Style="position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:50%;background:var(--mud-palette-surface);border:2px solid var(--mud-palette-white);">
+        {            
+            <MudPaper Elevation="0" Class="d-flex align-center justify-center" Style="position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:50%;background:var(--mud-palette-surface);border:2px solid var(--mud-palette-white);">
+                <MudTooltip RootClass="d-flex" Text="Paquete" Placement="Placement.Left">
                     <MudIcon Icon="@Icons.Material.Outlined.Layers" Color="Color.Secondary" Size="Size.Medium" />
-                </MudPaper>
-            </MudTooltip>
+                </MudTooltip>
+            </MudPaper>
         }
     </div>
     <MudCardContent Class="py-2 px-3" @onclick="@HandleOnClick">
@@ -60,8 +59,7 @@
                         <MudIconButton Icon="@Icons.Material.Outlined.Edit"
                                        Size="Size.Medium"
                                        Color="Color.Secondary"
-                                       Disabled="@Event.IsBundle"
-                                       OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/edit"))" />
+                                       OnClick="@(() => _navigationManager.NavigateTo(GetEditRoute()))" />
                     </MudTooltip>
                 </MudItem>
                 <MudItem>
@@ -99,15 +97,15 @@
     </MudCard>
 
 @code {
-    [Parameter]
-    [EditorRequired]
-    public EventViewModel Event { get; set; }
+        [Parameter]
+        [EditorRequired]
+        public EventViewModel Event { get; set; }
 
-    [Parameter]
-    public EventCallback OnClick { get; set; }
+        [Parameter]
+        public EventCallback OnClick { get; set; }
 
-    [Parameter]
-    public bool ShowActions { get; set; } = false;
+        [Parameter]
+        public bool ShowActions { get; set; } = false;
 
     private async Task HandleOnClick()
     {
@@ -117,7 +115,16 @@
     private string GetBookingRoute()
     {
         return Event.IsBundle
-            ? $"./season-pass/{Event.Id}/key/{Event.ExternalEventKey}/booking"
+            ? Event.BundleType == BundleType.SeasonPass 
+                ? $"./season-pass/{Event.Id}/key/{Event.ExternalEventKey}/booking"
+                : $""
             : $"./events/{Event.Id}/key/{Event.ExternalEventKey}/booking";
+    }
+
+    private string GetEditRoute()
+    {
+        return Event.IsBundle
+            ? $"./events/bundles/{Event.BundleType?.ToString().ToLower()}/{Event.Id}/edit"
+            : $"./events/{Event.Id}/edit";
     }
 }

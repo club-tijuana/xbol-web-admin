@@ -17,13 +17,14 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         EventFilterParameters? filters = null,
         EventCatalogItemType? itemType = null,
         BundleType? bundleType = null,
-        bool? upcoming = null)
+        bool? upcoming = null,
+        AdminEventStatus? status = null)
     {
         var response = await adminClient.GetEventCatalogItemsAsync(
             searchTerm: search,
             itemType: itemType,
             bundleType: bundleType,
-            status: null,
+            status: status,
             venue: filters?.Venues.FirstOrDefault(),
             startDate: ToOffset(filters?.DateFrom),
             endDate: ToEndOffset(filters?.DateTo),

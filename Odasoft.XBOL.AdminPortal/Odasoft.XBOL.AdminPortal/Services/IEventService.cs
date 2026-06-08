@@ -37,7 +37,8 @@ public interface IEventService
         EventFilterParameters? filters = null,
         EventCatalogItemType? itemType = null,
         BundleType? bundleType = null,
-        bool? upcoming = null
+        bool? upcoming = null,
+        AdminEventStatus? status = null
     );
 
     Task<GridData<BundleScheduleViewModel>> GetBundleScheduleItemsAsync(

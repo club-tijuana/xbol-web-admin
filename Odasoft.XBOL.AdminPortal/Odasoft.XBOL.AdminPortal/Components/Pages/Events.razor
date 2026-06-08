@@ -225,7 +225,7 @@
 
     private string BuildCatalogItemUrl(EventViewModel item)
     {
-        var bundleSegment = item.IsBundle ? "/bundles" : string.Empty;
+        var bundleSegment = item.IsBundle ? item.Status == AdminEventStatus.Published ? "/bundles" : $"/bundles/{item.BundleType?.ToString().ToLower()}" : string.Empty;
         var reviewSegment = item.Status != AdminEventStatus.Published ? "/review" : string.Empty;
 
         return $"./events{bundleSegment}/{item.Id}{reviewSegment}";

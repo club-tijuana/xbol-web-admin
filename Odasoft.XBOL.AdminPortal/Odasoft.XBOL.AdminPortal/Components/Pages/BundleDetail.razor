@@ -150,9 +150,7 @@
     private void OnTabChanged(string tab)
     {
         _selectedTab = tab;
-        var currentUri = new Uri(_navigationManager.Uri);
-        var baseUri = currentUri.GetLeftPart(UriPartial.Path).Substring(0, currentUri.GetLeftPart(UriPartial.Path).LastIndexOf('/'));
-        _navigationManager.NavigateTo($"{baseUri}/{tab}", replace: true);
+        _navigationManager.NavigateTo($"./events/bundles/{BundleId}/{tab}", replace: true);
     }
 
     private async Task LoadBundleAsync()

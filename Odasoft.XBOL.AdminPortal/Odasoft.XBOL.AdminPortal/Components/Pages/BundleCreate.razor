@@ -1,4 +1,6 @@
 @page "/events/bundles/{BundleKind}/create"
+@page "/events/bundles/{BundleKind}/{BundleId:long}/edit"
+@page "/events/bundles/{BundleKind}/{BundleId:long}/review"
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Components.Forms
@@ -15,9 +17,12 @@
 @inject MediaService MediaService
 @inject OrganizersService OrganizersService
 @inject VenueMapsService VenueMapsService
+@inject PriceReferenceService PriceReferenceService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject ILogger<BundleCreate> Logger
+@inject AdminMediaUrlResolver MediaUrlResolver
+@inject IDialogService DialogService
 
 <style>
     .mud-stepper .mud-stepper-content {
@@ -61,13 +66,33 @@
                 @L["GoBack"]
             </MudButton>
         </LeftContent>
+        <RightContent>
+            @if (_isReview)
+            {
+                <MudButton StartIcon="@Icons.Material.Filled.TaskAlt"
+                            Color="MudBlazor.Color.Tertiary"
+                            Variant="Variant.Filled"
+                            DropShadow="false"
+                           Disabled="_loading || _bundleStatus != AdminEventStatus.PendingReview"
+                            OnClick="OpenReviewDialog">@L["FinishReview"]</MudButton>
+            }
+            else if(_isEdit)
+            {
+                <MudButton StartIcon="@Icons.Material.Filled.Save"
+                            Color="MudBlazor.Color.Tertiary"
+                            Variant="Variant.Filled"
+                            DropShadow="false"
+                            OnClick="PublishAsync"
+                            Disabled="_bundleStatus != AdminEventStatus.Approved || _loading">@L["Publish"]</MudButton>
+            }
+        </RightContent>
     </PageActionBar>
 </SectionContent>
 
 <LoadingContainer IsLoading="_loading"
                   HasError="_error"
                   ErrorMessage="@L["ErrorLoading"]"
-                  OnRetry="LoadAsync">
+                  OnRetry="InitializeFormAsync">
     <MudCard Elevation="3">
         <MudCardContent Class="pa-6">
             <MudStack Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch" Class="mb-4">
@@ -90,7 +115,8 @@
                              @bind-Completed="_descriptionFormCompleted">
                         <MudForm @ref="_descriptionForm"
                                  @bind-IsValid="_descriptionFormValid"
-                                 @onkeydown="OnKeyDownAsync">
+                                 @onkeydown="OnKeyDownAsync"
+                                 Disabled="_isReview">
                             <MudGrid Spacing="7">
                                 <MudItem xs="12" lg="6">
                                     <MudGrid Spacing="4">
@@ -98,7 +124,8 @@
                                             <AdminTextField @bind-Value="_name"
                                                             Label="@L["Name"].Value"
                                                             Field="@_descriptionFormContext.Field("Name")"
-                                                            Required />
+                                                            Required 
+                                                            />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <AdminTextField @bind-Value="_subtitle"
@@ -139,7 +166,7 @@
                                                 </MudText>
                                                 <MudPaper Outlined="true" Class="pa-0">
                                                     <RadzenHtmlEditor @bind-Value="_longDescription"
-                                                                      class="bundle-create-rich-editor-lg">
+                                                                      class="bundle-create-rich-editor-lg" Disabled="_isReview">
                                                         <RadzenHtmlEditorUndo Title="@L["EditorUndo"].Value" />
                                                         <RadzenHtmlEditorRedo Title="@L["EditorRedo"].Value" />
                                                         <RadzenHtmlEditorSeparator />
@@ -235,7 +262,8 @@
                                  @bind-Completed="_pricesFormCompleted">
                             <MudForm @ref="_pricesForm"
                                      @bind-IsValid="_pricesFormValid"
-                                     @onkeydown="OnKeyDownAsync">
+                                     @onkeydown="OnKeyDownAsync"
+                                     Disabled="_isReview">
                                 <BundlePriceEditor Layout="_venueMapLayout"
                                                    Prices="_prices"
                                                    PriceTypes="_priceTypes"
@@ -251,7 +279,8 @@
                              @bind-Completed="_datesFormCompleted">
                         <MudForm @ref="_datesForm"
                                  @bind-IsValid="_datesFormValid"
-                                 @onkeydown="OnKeyDownAsync">
+                                 @onkeydown="OnKeyDownAsync"
+                                 Disabled="_isReview">
                             <MudGrid Spacing="6">
                                 <MudItem xs="12">
                                     <MudText Typo="Typo.subtitle2" Class="text-secondary-darken fw-bold">
@@ -403,7 +432,7 @@
                                         </MudText>
                                         <MudPaper Outlined="true" Class="pa-0">
                                             <RadzenHtmlEditor @bind-Value="_securityPolicies"
-                                                              class="bundle-create-rich-editor">
+                                                              class="bundle-create-rich-editor" Disabled="_isReview">
                                                 <RadzenHtmlEditorBold Title="@L["EditorBold"].Value" />
                                                 <RadzenHtmlEditorItalic Title="@L["EditorItalic"].Value" />
                                                 <RadzenHtmlEditorUnderline Title="@L["EditorUnderline"].Value" />
@@ -421,7 +450,7 @@
                                         </MudText>
                                         <MudPaper Outlined="true" Class="pa-0">
                                             <RadzenHtmlEditor @bind-Value="_additionalComments"
-                                                              class="bundle-create-rich-editor">
+                                                              class="bundle-create-rich-editor" Disabled="_isReview">
                                                 <RadzenHtmlEditorBold Title="@L["EditorBold"].Value" />
                                                 <RadzenHtmlEditorItalic Title="@L["EditorItalic"].Value" />
                                                 <RadzenHtmlEditorUnderline Title="@L["EditorUnderline"].Value" />
@@ -617,7 +646,8 @@
                     <MudStep Title="@L["BundleEvents"]"
                              HasError="EventsStepHasError"
                              @bind-Completed="_eventsFormCompleted">
-                        <MudForm @ref="_eventsForm" @bind-IsValid="_eventsFormValid" @onkeydown="OnKeyDownAsync">
+                        <MudForm @ref="_eventsForm" @bind-IsValid="_eventsFormValid" @onkeydown="OnKeyDownAsync"
+                        Disabled="_isReview">
                             <MudStack Spacing="3">
                                 <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
                                     <MudText Typo="Typo.h6">@L["BundleEvents"]</MudText>
@@ -701,15 +731,27 @@
                             @L["Next"]
                         </MudButton>
                     }
-                    else
+                    else if(!_isReview)
                     {
-                        <MudButton OnClick="SubmitAsync"
-                                   Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Outlined.Save"
-                                   Color="Color.Tertiary"
-                                   Disabled="_saving">
-                            @L["Create"]
-                        </MudButton>
+                        <MudStack Row>
+                            @if(_bundleStatus == AdminEventStatus.Draft || _bundleStatus == AdminEventStatus.ChangesRequested)
+                            {
+                                <MudButton OnClick="SendToReviewAsync"
+                                           Variant="Variant.Filled"
+                                           StartIcon="@Icons.Material.Outlined.Send"
+                                           Color="Color.Primary"
+                                           Disabled="_saving">
+                                    @L["SendToReview"]
+                                </MudButton>
+                            }
+                            <MudButton OnClick="SubmitAsync"
+                                       Variant="Variant.Filled"
+                                       StartIcon="@Icons.Material.Outlined.Save"
+                                       Color="Color.Tertiary"
+                                       Disabled="_saving">
+                                @L["Save"]
+                            </MudButton>
+                        </MudStack>
                     }
                 </ActionContent>
             </MudStepper>
@@ -719,6 +761,9 @@
 
 @code {
     [Parameter] public string? BundleKind { get; set; }
+    [Parameter] public long? BundleId { get; set; }
+
+    private long? _priceReferenceId = null;
 
     private MudStepper _stepper = default!;
     private int _activeIndex;
@@ -752,6 +797,8 @@
     private bool _loadingEvents;
     private bool _saving;
     private bool _error;
+    private bool _isEdit = false;
+    private bool _isReview = false;
 
     private BundleType _bundleType;
     private string _pageTitle = string.Empty;
@@ -785,6 +832,8 @@
     private DateTime? _renewalEndDate;
     private TimeSpan? _renewalEndTime;
 
+    private AdminEventStatus? _bundleStatus;
+
     private string? _eventSearch;
     private List<VenueResponse> _venues = [];
     private List<VenueMapResponse> _venueMaps = [];
@@ -812,7 +861,7 @@
         ? Icons.Material.Outlined.ConfirmationNumber
         : Icons.Material.Outlined.Layers;
 
-    private bool HasPriceStep => false;
+    private bool HasPriceStep => true;
     private BundlePricingType CurrentBundlePricingType => _bundleType == BundleType.SeasonPass
         ? BundlePricingType.Single
         : BundlePricingType.Composite;
@@ -889,6 +938,20 @@
     {
         _descriptionFormContext = new FormContext(StateHasChanged);
         _datesFormContext = new FormContext(StateHasChanged);
+
+        // TODO: Change to use user permissions instead of URL to determine read-only mode
+        if (Navigation.Uri.Contains("/review"))
+        {
+            _isReview = true;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeFormAsync();
+        }
     }
 
     protected override async Task OnParametersSetAsync()
@@ -906,11 +969,39 @@
         {
             _activeIndex = MaxIndex;
         }
-
-        await LoadAsync();
     }
 
-    private async Task LoadAsync()
+    private async Task InitializeFormAsync()
+    {
+        _loading = true;
+        _error = false;
+        StateHasChanged();
+        try
+        {
+            await LoadCatalogsAsync();
+            if (BundleId.HasValue && BundleId.Value > 0)
+            {
+                _isEdit = true;
+                await LoadDataAsync();
+            }
+            else
+            {
+                _isEdit = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load data");
+            _error = true;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadCatalogsAsync()
     {
         _loading = true;
         _error = false;
@@ -935,6 +1026,127 @@
         finally
         {
             _loading = false;
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        if (BundleId is null || BundleId <= 0)
+        {
+            return;
+        }
+
+        _loading = true;
+        _error = false;
+        StateHasChanged();
+
+        try
+        {
+            var bundleResult = await EventService.GetBundleByIdAsync(BundleId.Value);
+
+            _name = bundleResult.Name;
+            _subtitle = bundleResult.Subtitle;
+            _code = bundleResult.Code;
+            _shortDescription = bundleResult.ShortDescription;
+            _longDescription = bundleResult.LongDescription;
+            _landingUrl = bundleResult.LandingUrl;
+            _ageRestriction = bundleResult.AgeRestriction;
+            _securityPolicies = bundleResult.SecurityPolicies;
+            _additionalComments = bundleResult.AdditionalComments;
+            _eventCategories = bundleResult.Categories?.ToList() ?? [];
+            _organizerId = bundleResult.OrganizerId;
+            _bundleStatus = bundleResult.Status;
+
+            await OnVenueSelected(_venues.FirstOrDefault(v => v.Id == bundleResult.VenueId));
+            await OnVenueMapSelected(_venueMaps.FirstOrDefault(m => m.Id == bundleResult.VenueMapId));
+
+            _startDate = DateTimeHelpers.ToNullableDateTime(bundleResult.StartDate);
+            _startTime = DateTimeHelpers.ToNullableTimeSpan(bundleResult.StartDate);
+            _endDate = DateTimeHelpers.ToNullableDateTime(bundleResult.EndDate);
+            _endTime = DateTimeHelpers.ToNullableTimeSpan(bundleResult.EndDate);
+            _publishedDate = DateTimeHelpers.ToNullableDateTime(bundleResult.PublishedDate);
+            _publishedTime = DateTimeHelpers.ToNullableTimeSpan(bundleResult.PublishedDate);
+            _preSaleDate = DateTimeHelpers.ToNullableDateTime(bundleResult.PreSaleDate);
+            _preSaleTime = DateTimeHelpers.ToNullableTimeSpan(bundleResult.PreSaleDate);
+            _onSaleDate = DateTimeHelpers.ToNullableDateTime(bundleResult.OnSaleDate);
+            _onSaleTime = DateTimeHelpers.ToNullableTimeSpan(bundleResult.OnSaleDate);
+            _offSaleDate = DateTimeHelpers.ToNullableDateTime(bundleResult.OffSaleDate);
+            _offSaleTime = DateTimeHelpers.ToNullableTimeSpan(bundleResult.OffSaleDate);
+            _renewalStartDate = DateTimeHelpers.ToNullableDateTime(bundleResult.RenewalStartDate);
+            _renewalStartTime = DateTimeHelpers.ToNullableTimeSpan(bundleResult.RenewalStartDate);
+            _renewalEndDate = DateTimeHelpers.ToNullableDateTime(bundleResult.RenewalEndDate);
+            _renewalEndTime = DateTimeHelpers.ToNullableTimeSpan(bundleResult.RenewalEndDate);
+
+            var banner = bundleResult.Media?.FirstOrDefault(m => m.MediaType == AdminMediaType.Banner);
+            var gallery = bundleResult.Media?.Where(m => m.MediaType == AdminMediaType.Gallery).ToList();
+
+            _bannerImage = ToImageModel(banner, AdminMediaType.Banner);
+
+            foreach (var (index, image) in (gallery ?? []).OrderBy(g => g.Order ?? int.MaxValue).Index())
+            {
+                var imageModel = ToImageModel(image, AdminMediaType.Gallery, index);
+                if (imageModel is not null)
+                {
+                    imageModel.Order = index;
+                    _galleryImages.Add(imageModel);
+                }
+            }
+
+            _venueMapLayout = await VenueMapsService.GetVenueMapLayoutByIdAsync(_selectedVenueMap?.Id ?? 0);
+
+            await LoadPricesAsync();
+
+            var scheduleIds = bundleResult.Schedules.Select(x => x.Id).ToList();
+
+            var selectedEvents = _candidateEvents.Where(x => scheduleIds.Contains(x.EventScheduleId ?? 0)).ToHashSet();
+
+            OnVisibleSelectedEventsChanged(selectedEvents);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load data");
+            _error = true;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadPricesAsync()
+    {
+        if (BundleId == null || _selectedVenueMap == null)
+        {
+            InitializeEmptyPrices();
+            return;
+        }
+
+        try
+        {
+            PriceReferenceResponse priceResponse = await PriceReferenceService.GetPriceReferenceAsync(AdminSaleType.Bundle, BundleId.Value, _selectedVenueMap.Id);
+
+            _priceReferenceId = priceResponse.Id;
+
+            _prices = priceResponse.PriceSegments.Select(x => new PriceForm
+            {
+                Id = x.Id,
+                BaseZoneId = x.BaseZoneId,
+                BaseSectionId = x.BaseSectionId,
+                BaseRowId = x.BaseRowId,
+                BaseSeatId = x.BaseSeatId,
+                PriceTypes = x.PriceTypes?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new(),
+                Prices = x.Prices?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new()
+            }).ToList();
+
+            // _priceTypes = _prices.FirstOrDefault()?.PriceTypes ?? new Dictionary<string, bool> { { "General", true } };
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode == StatusCodes.Status404NotFound)
+            {
+                InitializeEmptyPrices();
+            }
         }
     }
 
@@ -1190,6 +1402,68 @@
 
         try
         {
+            await SaveBundleAsync();
+
+            await SavePricesAsync();
+
+            await SaveBundleMediaAsync(BundleId.Value);
+
+            Snackbar.Add(L["CreateSuccess"], Severity.Success);
+            Navigation.NavigateTo(_bundleType == BundleType.SeasonPass ? "/events/passes" : "/events/packages");
+        }
+        catch (ApiException<ValidationProblemDetails> ex)
+        {
+            Snackbar.Add(ex.Result.Title ?? L["ErrorSaving"], Severity.Error);
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _datesFormContext.HandleApiException(ex);
+            Snackbar.Add(ex.Result.Title ?? L["ErrorSaving"], Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to create bundle");
+            Snackbar.Add(L["ErrorSaving"], Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+            _datesFormContext.SetSaving(false);
+        }
+    }
+
+    private async Task SaveBundleAsync(AdminEventStatus? status = null)
+    {
+        if (_isEdit || (BundleId.HasValue && BundleId.Value > 0))
+        {
+            await EventService.UpdateBundleAsync(BundleId.Value, new BundleUpdateRequest
+            {
+                Name = _name ?? string.Empty,
+                Subtitle = _subtitle,
+                Code = _code,
+                ShortDescription = _shortDescription,
+                LongDescription = _longDescription,
+                LandingUrl = _landingUrl,
+                CategoryIds = _selectedCategories
+                    .Where(category => category.Id.HasValue)
+                    .Select(category => category.Id!.Value)
+                    .ToList(),
+                AgeRestriction = _ageRestriction,
+                SecurityPolicies = _securityPolicies,
+                AdditionalComments = _additionalComments,
+                StartDate = DateTimeHelpers.ToDateTimeOffset(_startDate, _startTime),
+                EndDate = DateTimeHelpers.ToDateTimeOffset(_endDate, _endTime),
+                PublishedDate = DateTimeHelpers.ToDateTimeOffset(_publishedDate, _publishedTime),
+                PreSaleDate = DateTimeHelpers.ToDateTimeOffset(_preSaleDate, _preSaleTime),
+                OnSaleDate = DateTimeHelpers.ToDateTimeOffset(_onSaleDate, _onSaleTime),
+                OffSaleDate = DateTimeHelpers.ToDateTimeOffset(_offSaleDate, _offSaleTime),
+                RenewalStartDate = DateTimeHelpers.ToDateTimeOffset(_renewalStartDate, _renewalStartTime),
+                RenewalEndDate = DateTimeHelpers.ToDateTimeOffset(_renewalEndDate, _renewalEndTime),
+                Status = status
+            });
+        }
+        else
+        {
             var createdBundle = await EventService.CreateBundleAsync(new BundleCreateRequest
             {
                 Name = _name ?? string.Empty,
@@ -1229,30 +1503,36 @@
                 throw new InvalidOperationException("Created bundle response did not include an id.");
             }
 
-            await SaveBundleMediaAsync(bundleId);
+            BundleId = bundleId;
+        }
+    }
 
-            Snackbar.Add(L["CreateSuccess"], Severity.Success);
-            Navigation.NavigateTo(_bundleType == BundleType.SeasonPass ? "./events/passes" : "./events/packages");
-        }
-        catch (ApiException<ValidationProblemDetails> ex)
+    private async Task SavePricesAsync()
+    {
+        var request = new PriceReferenceRequest
         {
-            Snackbar.Add(ex.Result.Title ?? L["ErrorSaving"], Severity.Error);
-        }
-        catch (ApiException<ProblemDetails> ex)
+            ReferenceId = BundleId,
+            ReferenceType = AdminSaleType.Bundle,
+            PriceSegments = _prices.Select(p => new PriceSegmentRequest
+            {
+                VenueMapId = _selectedVenueMap?.Id,
+                BaseRowId = p.BaseRowId,
+                BaseSeatId = p.BaseSeatId,
+                BaseSectionId = p.BaseSectionId,
+                BaseZoneId = p.BaseZoneId,
+                Id = p.Id,
+                PriceTypes = p.PriceTypes,
+                Prices = p.Prices
+            }).ToList()
+        };
+
+        var response = await PriceReferenceService.SavePriceReferenceAsync(request);
+
+        if (response.Id is not long priceReferenceId || priceReferenceId <= 0)
         {
-            _datesFormContext.HandleApiException(ex);
-            Snackbar.Add(ex.Result.Title ?? L["ErrorSaving"], Severity.Error);
+            throw new InvalidOperationException("Created price reference response did not include an id.");
         }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to create bundle");
-            Snackbar.Add(L["ErrorSaving"], Severity.Error);
-        }
-        finally
-        {
-            _saving = false;
-            _datesFormContext.SetSaving(false);
-        }
+        _priceReferenceId = response.Id;
     }
 
     private List<PriceSegmentRequest> BuildPriceRequests()
@@ -1420,6 +1700,29 @@
         await MediaService.UploadMediaAsync(bundleId, AdminSaleType.Bundle, mediaType, order, file);
     }
 
+    private ImageModel? ToImageModel(MediaResponse? media, AdminMediaType mediaType, int order = 0)
+    {
+        if (media is null || !media.Id.HasValue)
+        {
+            return null;
+        }
+
+        return new ImageModel
+        {
+            Id = media.Id,
+            Name = GetMediaName(media),
+            ContentType = media.ContentType ?? string.Empty,
+            Src = MediaUrlResolver.Resolve(media.Url) ?? string.Empty,
+            Order = media.Order ?? order,
+            MediaType = mediaType
+        };
+    }
+
+    private static string GetMediaName(MediaResponse media)
+        => !string.IsNullOrWhiteSpace(media.FileName)
+            ? media.FileName
+            : media.Title ?? string.Empty;
+
     private bool ValidatePriceScopes()
     {
         var duplicateScope = _prices
@@ -1473,5 +1776,50 @@
             "basic" or "package" or "packages" => BundleType.Basic,
             _ => BundleType.Basic
         };
+    }
+
+    private async Task SendToReviewAsync()
+    {
+        try
+        {
+            // TODO: Do validation of all forms
+            await SaveBundleAsync(AdminEventStatus.PendingReview);
+            Snackbar.Add(L["EventSentToReview"], MudBlazor.Severity.Success);
+            Navigation.NavigateTo("./events");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to send event to review");
+            Snackbar.Add(L["ErrorSendingEventToReview"], MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task OpenReviewDialog()
+    {
+        DialogOptions dialogOptions = new() { CloseButton = true };
+        var parameters = new DialogParameters<ReviewEventDialog> { { x => x.EventId, BundleId.Value }, { x => x.IsBundle, true } };
+        var dialog = await DialogService.ShowAsync<ReviewEventDialog>(null, parameters, dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            Navigation.NavigateTo("./events");
+        }
+    }
+
+    private async Task PublishAsync()
+    {
+        try
+        {
+            await EventService.UpdateBundleAsync(BundleId.Value, new BundleUpdateRequest() { Status = Business.AdminEventStatus.Published });
+            Snackbar.Add(L["EventPublished"], MudBlazor.Severity.Success);
+            Navigation.NavigateTo("./events");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to publish event");
+            Snackbar.Add(L["ErrorPublishingEvent"], MudBlazor.Severity.Error);
+        }
     }
 }
