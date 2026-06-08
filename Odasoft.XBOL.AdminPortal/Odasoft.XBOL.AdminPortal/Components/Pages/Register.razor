@@ -114,7 +114,7 @@
             var authState = await AuthenticationStateTask;
             if (authState.User.Identity?.IsAuthenticated is true)
             {
-                Navigation.NavigateTo("/", replace: true);
+                Navigation.NavigateTo("./", replace: true);
                 return;
             }
         }

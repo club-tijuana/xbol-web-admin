@@ -11,12 +11,27 @@ public sealed class BundleRouteRegressionTests
         var eventsSource = ReadAppSource("Components/Pages/Events.razor");
 
         Assert.Contains("@page \"/events/bundles/{BundleKind}/create\"", bundleCreateSource, StringComparison.Ordinal);
-        Assert.Contains("Navigation.NavigateTo(\"/events/bundles/basic/create\")", eventsSource, StringComparison.Ordinal);
-        Assert.Contains("Navigation.NavigateTo(\"/events/bundles/season-pass/create\")", eventsSource, StringComparison.Ordinal);
+        Assert.Contains("Navigation.NavigateTo(\"./events/bundles/basic/create\")", eventsSource, StringComparison.Ordinal);
+        Assert.Contains("Navigation.NavigateTo(\"./events/bundles/season-pass/create\")", eventsSource, StringComparison.Ordinal);
 
         Assert.DoesNotContain("@page \"/events/bundles/create/{BundleKind}\"", bundleCreateSource, StringComparison.Ordinal);
         Assert.DoesNotContain("Navigation.NavigateTo(\"/events/bundles/create/basic\")", eventsSource, StringComparison.Ordinal);
         Assert.DoesNotContain("Navigation.NavigateTo(\"/events/bundles/create/season-pass\")", eventsSource, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Admin_component_navigation_targets_are_base_relative()
+    {
+        var componentRoot = Path.Combine(GetAppSourceRoot(), "Components");
+        var unsafeTargets = Directory.EnumerateFiles(componentRoot, "*.razor", SearchOption.AllDirectories)
+            .SelectMany(FindRootRelativeNavigationTargets)
+            .ToList();
+
+        Assert.True(
+            unsafeTargets.Count == 0,
+            "Found root-relative component navigation targets that bypass Hosting:PathBase:"
+            + Environment.NewLine
+            + string.Join(Environment.NewLine, unsafeTargets));
     }
 
     [Fact]
@@ -70,12 +85,35 @@ public sealed class BundleRouteRegressionTests
 
     private static string ReadAppSource(string relativePath)
     {
-        var path = Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory,
-            "../../../..",
-            "Odasoft.XBOL.AdminPortal",
-            relativePath));
+        var path = Path.Combine(GetAppSourceRoot(), relativePath);
 
         return File.ReadAllText(path);
+    }
+
+    private static string GetAppSourceRoot()
+    {
+        return Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "../../../..",
+            "Odasoft.XBOL.AdminPortal"));
+    }
+
+    private static IEnumerable<string> FindRootRelativeNavigationTargets(string path)
+    {
+        var relativePath = Path.GetRelativePath(GetAppSourceRoot(), path);
+        var lines = File.ReadLines(path);
+        var lineNumber = 0;
+
+        foreach (var line in lines)
+        {
+            lineNumber++;
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(line, @"NavigateTo\([^;\r\n]*[$@]?""/")
+                || System.Text.RegularExpressions.Regex.IsMatch(line, @"\bHref\s*=\s*[$@]?""/")
+                || System.Text.RegularExpressions.Regex.IsMatch(line, @"\bBackUrl\s*=\s*[$@]?""/"))
+            {
+                yield return $"{relativePath}:{lineNumber}: {line.Trim()}";
+            }
+        }
     }
 }

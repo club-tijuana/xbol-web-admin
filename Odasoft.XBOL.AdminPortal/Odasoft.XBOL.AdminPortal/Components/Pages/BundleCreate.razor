@@ -1232,7 +1232,7 @@
             await SaveBundleMediaAsync(bundleId);
 
             Snackbar.Add(L["CreateSuccess"], Severity.Success);
-            Navigation.NavigateTo(_bundleType == BundleType.SeasonPass ? "/events/passes" : "/events/packages");
+            Navigation.NavigateTo(_bundleType == BundleType.SeasonPass ? "./events/passes" : "./events/packages");
         }
         catch (ApiException<ValidationProblemDetails> ex)
         {
@@ -1461,7 +1461,7 @@
 
     private async Task GoBackAsync()
     {
-        Navigation.NavigateTo(_bundleType == BundleType.SeasonPass ? "/events/passes" : "/events/packages");
+        Navigation.NavigateTo(_bundleType == BundleType.SeasonPass ? "./events/passes" : "./events/packages");
         await Task.CompletedTask;
     }
 
