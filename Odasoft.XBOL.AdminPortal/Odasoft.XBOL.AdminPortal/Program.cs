@@ -77,6 +77,7 @@ app.UseAntiforgery();
 
 app.MapAdminSessionEndpoints();
 app.MapWorkerDashboardProxyEndpoints();
+app.MapApiDocsProxyEndpoints();
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 

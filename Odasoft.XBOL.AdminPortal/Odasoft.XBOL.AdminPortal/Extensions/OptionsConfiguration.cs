@@ -15,6 +15,9 @@ public static class OptionsConfiguration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<ApiDocsProxyOptions>()
+            .BindConfiguration(ApiDocsProxyOptions.SectionName);
+
         services.AddOptions<FirebaseAuthOptions>()
             .BindConfiguration("FirebaseAuth")
             .ValidateDataAnnotations()

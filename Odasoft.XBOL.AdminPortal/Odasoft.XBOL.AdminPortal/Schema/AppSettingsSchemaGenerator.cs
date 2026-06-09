@@ -283,6 +283,9 @@ public static class AppSettingsSchemaGenerator
         [Description("Admin API client settings")]
         public AdminApiClientOptions? AdminApiClient { get; set; }
 
+        [Description("API docs reverse proxy settings")]
+        public ApiDocsProxyOptions? ApiDocs { get; set; }
+
         [Description("Firebase Web SDK authentication settings for admin users")]
         public FirebaseAuthOptions? FirebaseAuth { get; set; }
 
