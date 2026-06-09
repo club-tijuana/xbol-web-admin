@@ -72,7 +72,7 @@
                                OnClick="OpenReviewDialog">@L["FinishReview"]</MudButton>
                 }
                 else
-                {                    
+                {
                     <MudButton StartIcon="@Icons.Material.Filled.Save"
                                Color="MudBlazor.Color.Tertiary"
                                Variant="Variant.Filled"
@@ -109,7 +109,7 @@
                     >@L["ReviewDescription"]</MudAlert>
                 }
                 else
-                {                    
+                {
                     <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">@L["RequiredFieldsNote"]</MudText>
                 }
             </MudStack>
@@ -117,15 +117,15 @@
             <MudStepper @ref="_stepper" ActiveIndex="_activeIndex" OnPreviewInteraction="OnPreviewInteraction" ActiveIndexChanged="HandleStepNavigation" NonLinear Class="pa-0"
             CompletedStepColor="MudBlazor.Color.Tertiary">
                 <ChildContent>
-                    <MudStep 
-                        Title="@L["DescriptionAndVenue"]" 
+                    <MudStep
+                        Title="@L["DescriptionAndVenue"]"
                         HasError="!_descriptionFormValid"
                         @bind-Completed="_descriptionFormCompleted">
-                        <MudForm 
-                            @ref="_descriptionForm" 
-                            @bind-IsValid="_descriptionFormValid" 
-                            Model="EventState.EventInfo" 
-                            Validation="@(_eventInfoValidator.ValidateValue)" 
+                        <MudForm
+                            @ref="_descriptionForm"
+                            @bind-IsValid="_descriptionFormValid"
+                            Model="EventState.EventInfo"
+                            Validation="@(_eventInfoValidator.ValidateValue)"
                             @onkeydown="OnKeyDownAsync">
                             <MudGrid Spacing="7">
                                 <MudItem xs="12">
@@ -136,7 +136,7 @@
 
                                         @foreach (var organizer in _organizers)
                                         {
-                                            <MudSelectItem T="long?" Value="organizer.Id" >
+                                            <MudSelectItem T="long?" Value="organizer.Id">
                                                 @organizer.Name
                                             </MudSelectItem>
                                         }
@@ -190,7 +190,7 @@
                                     ;">@L["EventDescription"]</MudText>
                                                 @* TODO: Create and use component *@
                                                 <MudPaper Outlined="true" Class="pa-0">
-                                                    <RadzenHtmlEditor 
+                                                    <RadzenHtmlEditor
                                                         @bind-Value="EventState.EventInfo.LongDescription" Style="min-height: 300px; width: 100%;"
                                                           Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
                                                         <RadzenHtmlEditorUndo Title="Deshacer" />
@@ -286,17 +286,17 @@
                             </MudGrid>
                         </MudForm>
                     </MudStep>
-                    <MudStep 
+                    <MudStep
                         Title="@L["ZonePrices"]"
                         HasError="!_pricesValid"
                         @bind-Completed="_pricesCompleted">
-                        <MudForm 
+                        <MudForm
                             @ref="_pricesForm"
-                            @bind-IsValid="_pricesValid" 
-                            Model="EventState.PricesInfo" 
-                            Validation="@(_pricesValidator.ValidateValue)" 
+                            @bind-IsValid="_pricesValid"
+                            Model="EventState.PricesInfo"
+                            Validation="@(_pricesValidator.ValidateValue)"
                             @onkeydown="OnKeyDownAsync">
-                            <MudTable 
+                            <MudTable
                                 Items="EventState.PricesInfo.Prices"
                                 GroupBy="_groupDefinition"
                                 Elevation="0"
@@ -461,10 +461,9 @@
                                         EditMode="DataGridEditMode.Cell"
                                         ReadOnly="_isReview"
                                         Validator="_additionalChargesForm"
-                                        Bordered="true" 
+                                        Bordered="true"
                                         Dense="true"
-                                        Elevation="0"
-                                        >
+                                        Elevation="0">
                                         <ToolBarContent>
                                             <MudText Typo="Typo.h5">@L["AdditionalCharges"]</MudText>
                                             <MudSpacer />
@@ -483,8 +482,8 @@
                                                     @{
                                                         var item = context.Item;
                                                     }
-                                                    <AdminTextField 
-                                                        @key="item.UiId"            
+                                                    <AdminTextField
+                                                        @key="item.UiId"
                                                         @bind-Value="item.Name"
                                                                   For="@(() => item.Name)"
                                                                   Validation="@(new Func<string, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.Name), val)))"
@@ -529,8 +528,8 @@
                                                                        HideSpinButtons="@true"
                                                                        Disabled="@_isReview" />
                                                 </EditTemplate>
-                                            </PropertyColumn>     
-                                            
+                                            </PropertyColumn>
+
                                             @if (!_isReview)
                                             {
                                                 <TemplateColumn>
@@ -548,14 +547,14 @@
                             </MudGrid>
                         </MudForm>
                     </MudStep>
-                    <MudStep 
+                    <MudStep
                         Title="@L["DatesAndSalePolicies"]"
                         HasError="!_scheduleValid"
                         @bind-Completed="_scheduleCompleted">
                         <MudForm @ref="_scheduleForm"
-                            @bind-IsValid="_scheduleValid" 
-                            Model="EventState.ScheduleInfo" 
-                            Validation="@(_scheduleValidator.ValidateValue)" 
+                            @bind-IsValid="_scheduleValid"
+                            Model="EventState.ScheduleInfo"
+                            Validation="@(_scheduleValidator.ValidateValue)"
                             @onkeydown="OnKeyDownAsync">
                             <MudGrid Spacing="6">
                                 <MudItem xs="12">
@@ -581,8 +580,8 @@
                                                    Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker 
-                                        @bind-Date="EventState.ScheduleInfo.EndDate" 
+                                    <AdminDatePicker
+                                        @bind-Date="EventState.ScheduleInfo.EndDate"
                                         Label="@L["EndDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.EndDate)"
                                         Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
@@ -643,7 +642,7 @@
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OnSaleDate"
-                                        Label="@L["StartDate"].Value" 
+                                        Label="@L["StartDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.OnSaleDate)"
                                         Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
                                         Class="required" />
@@ -661,7 +660,7 @@
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OffSaleDate"
-                                        Label="@L["EndDate"].Value" 
+                                        Label="@L["EndDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.OffSaleDate)"
                                         Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
                                         Class="required" />
@@ -674,7 +673,7 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.OffSaleTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" 
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
                                                    Class="required" />
                                 </MudItem>
                                 <MudFlexBreak />
@@ -696,33 +695,51 @@
                                                            Variant="Variant.Outlined"
                                                            Margin="Margin.Dense"
                                                            TimeFormat="h:mm tt"
-                                                           AmPm="true" 
+                                                           AmPm="true"
                                                            For="@(() => EventState.ScheduleInfo.PublishedTime)"
                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
-                                <MudItem xs="12" md="5">
+                                <MudItem xs="12" md="7">
                                     <MudGrid Spacing="6">
                                         <MudItem xs="12">
                                             <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
                                             ;">@L["VenueAccess"]</MudText>
                                         </MudItem>
-                                        <MudItem xs="12" md="7">
+                                        <MudItem xs="12" md="5">
                                             <AdminDatePicker @bind-Date="EventState.ScheduleInfo.GateOpenDate"
                                                 Label="@L["AccessDate"].Value"
                                                 For="@(() => EventState.ScheduleInfo.GateOpenDate)"
                                                 Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                         </MudItem>
-                                        <MudItem xs="12" md="5">
+                                        <MudItem xs="12" md="4">
                                             <MudTimePicker @bind-Time="EventState.ScheduleInfo.GateOpenTime"
                                                            Label="@L["Time"].Value"
                                                            Variant="Variant.Outlined"
                                                            Margin="Margin.Dense"
                                                            TimeFormat="h:mm tt"
-                                                           AmPm="true" 
+                                                           AmPm="true"
                                                            For="@(() => EventState.ScheduleInfo.GateOpenTime)"
                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        </MudItem>
+                                        <MudItem xs="12" md="3">
+                                            <MudSelect Label="@L["AgeRestrictions"]"
+                                                       T="AgeRestriction?"
+                                                       @bind-Value="EventState.EventInfo.AgeRestriction"
+                                                       Variant="Variant.Outlined"
+                                                       Margin="Margin.Dense"
+                                                       For="@(() => EventState.EventInfo.AgeRestriction)"
+                                                       ToStringFunc="@(restriction => L[restriction.ToString()].Value)"
+                                                       Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+
+                                                @foreach (var restriction in _ageRestrictions)
+                                                {
+                                                    <MudSelectItem T="AgeRestriction?" Value="restriction">
+                                                        @L[restriction.ToString()]
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
@@ -737,31 +754,16 @@
                                                     Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                     </MudStack>
                                 </MudItem>
-                                <MudItem xs="12" md="2">
-                                    <MudSelect Label="@L["AgeRestrictions"]"
-                                               T="AgeRestriction?"
-                                               @bind-Value="EventState.EventInfo.AgeRestriction"
-                                               Variant="Variant.Outlined"
-                                               Margin="Margin.Dense"
-                                               For="@(() => EventState.EventInfo.AgeRestriction)"
-                                               ToStringFunc="@(restriction => L[restriction.ToString()].Value)"
-                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
-
-                                        @foreach (var restriction in _ageRestrictions)
-                                        {
-                                            <MudSelectItem T="AgeRestriction?" Value="restriction">
-                                                @L[restriction.ToString()]
-                                            </MudSelectItem>
-                                        }
-                                    </MudSelect>
+                                <MudItem xs="12" md="6">
+                                    <MudText></MudText>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudStack>
                                         <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
                                     ;">@L["SecurityPolicies"]</MudText>
                                         <MudPaper Outlined="true" Class="pa-0">
-                                            <RadzenHtmlEditor 
-                                                @bind-Value="EventState.EventInfo.SecurityPolicies" 
+                                            <RadzenHtmlEditor
+                                                @bind-Value="EventState.EventInfo.SecurityPolicies"
                                                 Style="min-height: 300px; width: 100%;"
                                                 Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
                                                 <RadzenHtmlEditorUndo Title="Deshacer" />
@@ -805,8 +807,8 @@
                                         <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
                                         ;">@L["AdditionalComments"]</MudText>
                                         <MudPaper Outlined="true" Class="pa-0">
-                                            <RadzenHtmlEditor 
-                                                @bind-Value="EventState.EventInfo.AdditionalComments" 
+                                            <RadzenHtmlEditor
+                                                @bind-Value="EventState.EventInfo.AdditionalComments"
                                                 Style="min-height: 300px; width: 100%;"
                                                 Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
                                                 <RadzenHtmlEditorUndo Title="Deshacer" />
@@ -848,13 +850,13 @@
                             </MudGrid>
                         </MudForm>
                     </MudStep>
-                    <MudStep 
+                    <MudStep
                         Title="@L["Images"]"
                         HasError="!_imagesValid"
                         @bind-Completed="_imagesCompleted">
                         <MudForm @ref="_imagesForm"
-                            @bind-IsValid="_imagesValid" 
-                            Model="EventState.ImagesInfo" 
+                            @bind-IsValid="_imagesValid"
+                            Model="EventState.ImagesInfo"
                             Validation="@(_imagesValidator.ValidateValue)">
                             <MudGrid Spacing="7">
                                 <MudItem xs="12">
@@ -867,9 +869,9 @@
                                     </MudStack>
                                 </MudItem>
                                 <MudItem xs="12">
-                                    <MudFileUpload 
-                                        @ref="_bannerImageUpload" 
-                                        T="IBrowserFile" 
+                                    <MudFileUpload
+                                        @ref="_bannerImageUpload"
+                                        T="IBrowserFile"
                                         FilesChanged="(file) => AddImage(file, AdminMediaType.Banner)"
                                         Accept=".jpg, .png, .jpeg">
                                         <CustomContent>
@@ -884,9 +886,9 @@
 
                                                 @if (EventState.ImagesInfo.BannerImage != null && !(_isReview || _eventStatus == AdminEventStatus.Published))
                                                 {
-                                                    <MudChip T="string" 
+                                                    <MudChip T="string"
                                                         Variant="Variant.Text"
-                                                        Color="MudBlazor.Color.Dark" 
+                                                        Color="MudBlazor.Color.Dark"
                                                         OnClose="() => DeleteImageAsync(AdminMediaType.Banner)"
                                                         CloseIcon="@Icons.Material.Filled.Close">
                                                         @EventState.ImagesInfo.BannerImage?.Name
@@ -897,7 +899,7 @@
                                         <SelectedTemplate />
                                     </MudFileUpload>
                                 </MudItem>
-                                <MudItem xs="12"> 
+                                <MudItem xs="12">
                                     <MudStack Row Spacing="13">
                                         <MudStack>
                                             <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
@@ -907,7 +909,7 @@
                                                 <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
                                             }
                                             else
-                                            {                                    
+                                            {
                                                 <MudImage Src="@EventState.ImagesInfo.BannerImage.Src"
                                                           Class="rounded-lg"
                                                           ObjectFit="ObjectFit.Cover"
@@ -932,7 +934,7 @@
                                                           Height="200"
                                                           Width="200" />
                                             }
-                                        </MudStack>                                    
+                                        </MudStack>
                                     </MudStack>
                                 </MudItem>
 
@@ -943,7 +945,7 @@
                                     </MudStack>
                                 </MudItem>
                                 <MudItem xs="12" lg="6">
-                                    <MudStack>                                
+                                    <MudStack>
                                         <MudFileUpload @ref="_sponsorUploads[0]"
                                                        T="IBrowserFile"
                                                        FilesChanged="(file) => AddImage(file, AdminMediaType.Sponsor)"
@@ -1103,11 +1105,11 @@
                                         }
                                         else
                                         {
-                                            <MudCarousel 
+                                            <MudCarousel
                                             @ref="_carousel"
                                             ItemsSource="EventState.ImagesInfo.GalleryImages"
-                                            Style="height:200px; width: 355px;" 
-                                            ShowArrows 
+                                            Style="height:200px; width: 355px;"
+                                            ShowArrows
                                             ShowBullets>
                                                 <ItemTemplate>
                                                     <MudImage Src="@context.Src"
@@ -1990,8 +1992,8 @@
                 break;
             default:
                 return;
-        }        
-    }   
+        }
+    }
 
     private async Task UploadGalleryImagesAsync(IReadOnlyList<IBrowserFile> files)
     {
@@ -2051,7 +2053,7 @@
                 Console.WriteLine($"An error occurred while trying to read the file '{file.Name}'. Error: {ex.Message}");
                 Snackbar.Add($"Error al procesar '{file.Name}': El formato podría no estar soportado.", MudBlazor.Severity.Error);
                 continue;
-            }           
+            }
         }
 
         if (_galleryUpload != null)
@@ -2367,7 +2369,7 @@
                 EventState.AdditionalChargesInfo.AdditionalCharges = [];
             }
         }
-    }   
+    }
 
     private void InitializeEmptyPrices()
     {
@@ -2720,7 +2722,7 @@
 
     public record PricesInfoModel()
     {
-        public List<PriceInfoModel> Prices { get; set; } = [];        
+        public List<PriceInfoModel> Prices { get; set; } = [];
     }
 
     public record PriceInfoModel()
@@ -2808,7 +2810,7 @@
     {
         public PricesInfoValidator(AppLocalizer<EventEdit> L)
         {
-            RuleForEach(x => x.Prices).SetValidator(new PriceInfoValidator(L));            
+            RuleForEach(x => x.Prices).SetValidator(new PriceInfoValidator(L));
         }
     }
 
@@ -2897,7 +2899,7 @@
     {
         public ImagesInfoValidator(AppLocalizer<EventEdit> L)
         {
-            
+
         }
     }
 }

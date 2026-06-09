@@ -10963,6 +10963,36 @@
         }
       }
     },
+    "/api/settings/qr-code": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "operationId": "GetQrCodeSettings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrCodeSettings"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrCodeSettings"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrCodeSettings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/suite-agreements": {
       "get": {
         "tags": [
@@ -23197,6 +23227,31 @@
         },
         "additionalProperties": false
       },
+      "QrCodeSettings": {
+        "type": "object",
+        "properties": {
+          "secretKey": {
+            "type": "string"
+          },
+          "physicalQrStepSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "digitalQrStepSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dynamicQrStepSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "otpSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "RegisterRequest": {
         "type": "object",
         "properties": {
@@ -23431,7 +23486,8 @@
       "SaleChannel": {
         "enum": [
           "Online",
-          "BoxOffice"
+          "BoxOffice",
+          "Administrative"
         ],
         "type": "string"
       },
@@ -23535,12 +23591,11 @@
           "buyerNeighbourhood": {
             "type": "string"
           },
-          "paymentType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PaymentType"
-              }
-            ]
+          "paymentTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentType"
+            }
           },
           "saleChannel": {
             "allOf": [

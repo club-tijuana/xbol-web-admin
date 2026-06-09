@@ -45,7 +45,21 @@
                         {
                             @RowLeadingContent(item)
                         }
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
+
+                        @* TODO: Review how the map was generated since having a full name object name for the seat is not practical. *@
+                        @if ((item.Category ?? "") == "")
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@($"SECCIÓN {item.SeatId}")</MudText>
+                        }
+                        else if (item.SeatId.ToLower().Contains(item.Category.ToLower()))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.SeatId.ToUpper()}")</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category.ToUpper()} SECCIÓN {item.SeatId}")</MudText>
+                        }
+
                         @if (RowStatusContent != null)
                         {
                             @RowStatusContent(item)

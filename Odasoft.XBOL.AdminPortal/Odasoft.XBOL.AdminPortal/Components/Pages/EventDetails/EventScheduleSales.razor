@@ -9,8 +9,7 @@
 <MudCard Elevation="3">
     <MudCardContent Class="pa-0">
         <MudDataGrid T="SaleResponse" @ref="_dataGrid" ServerData="ServerReloadAsync" Loading="_loading"
-                     Filterable="false" Hover="true" Elevation="0"
-                     RowClassFunc="@SelectedRowClassFunc">
+                     Filterable="false" Hover="true" Elevation="0" RowClassFunc="@SelectedRowClassFunc">
 
             <ToolBarContent>
                 <MudGrid Class="align-center pa-4">
@@ -111,11 +110,15 @@
 
                 <TemplateColumn Title="Método de pago" Sortable="false">
                     <CellTemplate>
-                        <MudText Typo="Typo.body2" Style="color: #607D8B;">@(context.Item.PaymentType != null ? context.Item.PaymentType.ToString() : "")</MudText>
+                        <MudText Typo="Typo.body2" Style="color: #607D8B;">@(context.Item.PaymentTypes != null ? string.Join(", ", context.Item.PaymentTypes.Select(pt => _localizer[pt.ToString()].Value)) : "")</MudText>
                     </CellTemplate>
                 </TemplateColumn>
 
-                <PropertyColumn Property="x => x.SaleChannel" Title="Canal" Sortable="false" />
+                <TemplateColumn Title="Canal" Sortable="false">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@_localizer[context.Item.SaleChannel.ToString()]</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
 
                 <TemplateColumn Title="Estatus" Sortable="false">
                     <CellTemplate>
@@ -163,14 +166,14 @@
             <ChildRowContent>
                 @if (context.Item.ShowDetails.HasValue && context.Item.ShowDetails.Value)
                 {
-                    <div style="background-color: #F8F9FA; padding: 16px 24px; width: 100%;">
-                        <MudDataGrid Items="@context.Item.Items" Elevation="0" Dense="true" Style="background-color: transparent;">
+                    <div style="background-color: #F8F9FA; padding: 12px 24px; width: 100%;">
+                        <MudDataGrid Items="@context.Item.Items" Elevation="0" Style="background-color: transparent;">
                             <Columns>
-                                <PropertyColumn Property="x => x.Zone" Title="Zona" />
-                                <PropertyColumn Property="x => x.Section" Title="Sección" />
-                                <PropertyColumn Property="x => x.Row" Title="Fila" />
-                                <PropertyColumn Property="x => x.Seat" Title="Asiento" />
-                                <PropertyColumn Property="x => x.Price" Title="Subtotal">
+                                <PropertyColumn Property="x => x.Zone" Title="Zona" HeaderStyle="font-weight: 600;" Sortable="false" />
+                                <PropertyColumn Property="x => x.Section" Title="Sección" HeaderStyle="font-weight: 600;" Sortable="false" />
+                                <PropertyColumn Property="x => x.Row" Title="Fila" HeaderStyle="font-weight: 600;" Sortable="false" />
+                                <PropertyColumn Property="x => x.Seat" Title="Asiento" HeaderStyle="font-weight: 600;" Sortable="false" />
+                                <PropertyColumn Property="x => x.Price" Title="Subtotal" HeaderStyle="font-weight: 600;" Sortable="false">
                                     <CellTemplate Context="DetailContext">
                                         @(DetailContext.Item.Price.HasValue ? DetailContext.Item.Price.Value.ToString("C") : "0.00")
                                     </CellTemplate>
@@ -189,12 +192,22 @@
 </MudCard>
 
 <style>
+
     .selected-row {
         background-color: #FFFDE7 !important;
     }
 
     .mud-table-row.selected-row > td {
         border-bottom: none !important;
+    }
+
+    .mud-table-root .mud-table-cell {
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;        
+    }
+
+    .mud-table-cell .mud-icon-button {
+        padding: 4px !important;
     }
 </style>
 
