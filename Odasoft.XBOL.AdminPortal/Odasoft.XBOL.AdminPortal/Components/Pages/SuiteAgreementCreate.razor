@@ -75,10 +75,15 @@
         </MudGrid>
         <MudGrid Class="mud-width-full">
             <MudItem xs="12" sm="12" md="6" lg="3">
-                <MudFileUpload T="IBrowserFile" FilesChanged="OnInputFileChanged" Required>
-                    <CustomContent>
-                        <MudButton StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Secondary"
-                                   Variant="Variant.Filled" Class="text-uppercase">
+                <MudFileUpload T="IBrowserFile"
+                               FilesChanged="OnInputFileChanged"
+                               Required>
+                    <CustomContent Context="context">
+                        <MudButton StartIcon="@Icons.Material.Filled.UploadFile"
+                                   Color="Color.Secondary"
+                                   Variant="Variant.Filled"
+                                   Class="text-uppercase"
+                                   OnClick="@context.OpenFilePickerAsync">
                             Subir contrato
                         </MudButton>
                     </CustomContent>

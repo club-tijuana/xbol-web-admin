@@ -477,13 +477,16 @@
         }
         else if (_opcionNivel == 2)
         {
-            var newLevel = await _suiteLevelsService.CreateSuiteLevelAsync(new CreateSuiteLevelRequest
+            if (_suiteRequest.SuiteLevelId == 0)
             {
-                Name = _newSuiteLevelName,
-                VenueId = venueId
-            });
+                var newLevel = await _suiteLevelsService.CreateSuiteLevelAsync(new CreateSuiteLevelRequest
+                {
+                    Name = _newSuiteLevelName,
+                    VenueId = venueId
+                });
 
-            _suiteRequest.SuiteLevelId = newLevel;
+                _suiteRequest.SuiteLevelId = newLevel;
+            }
         }
 
         if (suiteId.HasValue)
