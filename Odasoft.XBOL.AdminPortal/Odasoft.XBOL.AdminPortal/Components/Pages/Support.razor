@@ -90,7 +90,7 @@
                                 IconColor="@Color.Secondary"
                                          OnClick="RegeneratePaymentLink"
                                 Disabled="
-                                    _orderInfoResponse.PaymentLinkStatus == PaymentLinkStatus.Pending
+                                    _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
                                     || _orderInfoResponse.Status != OrderStatus.Pending
                                 ">
                                 Regenerar

@@ -2,6 +2,7 @@
 @using Odasoft.XBOL.AdminPortal.Components.Pages
 
 @inject AppLocalizer<Events> L
+@inject IDialogService _dialogService
 
 <MudDialog>
     <TitleContent>
@@ -10,44 +11,12 @@
 
     <DialogContent>
         <MudGrid>
-            <MudItem xs="12" class="d-flex gap-4 align-center">
-                <MudNumericField @bind-Value="_request.ExpirationDays"
-                                 For="@(() => _request.ExpirationDays)"
-                                 Format="N2"
-                                 Label="@L["ExpirationDays"]"
-                                 Variant="Variant.Outlined"
-                                 Adornment="Adornment.Start"
-                                 AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
-                                 Margin="Margin.Dense"
-                                 Placeholder="0"
-                                 HideSpinButtons="true"
-                                 Immediate="false" />
-            </MudItem>
-            <MudItem xs="12" class="d-flex gap-4 align-center">
-                <MudNumericField @bind-Value="_request.ExpirationHours"
-                                 For="@(() => _request.ExpirationHours)"
-                                 Format="N2"
-                                 Label="@L["ExpirationHours"]"
-                                 Variant="Variant.Outlined"
-                                 Adornment="Adornment.Start"
-                                 AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
-                                 Margin="Margin.Dense"
-                                 Placeholder="0"
-                                 HideSpinButtons="true"
-                                 Immediate="false" />
-            </MudItem>
-            <MudItem xs="12" class="d-flex gap-4 align-center">
-                <MudNumericField @bind-Value="_request.ExpirationMinutes"
-                                 For="@(() => _request.ExpirationMinutes)"
-                                 Format="N2"
-                                 Label="@L["ExpirationMinutes"]"
-                                 Variant="Variant.Outlined"
-                                 Adornment="Adornment.Start"
-                                 AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
-                                 Margin="Margin.Dense"
-                                 Placeholder="0"
-                                 HideSpinButtons="true"
-                                 Immediate="false" />
+            <MudItem xs="12" class="d-flex align-center">
+                <MudTextField Label="Fecha de expiración"
+                              Value="@ExpirationDateText"
+                              ReadOnly="true"
+                              @onclick="OpenDateTimeDialog"
+                              Variant="Variant.Outlined" />
             </MudItem>
         </MudGrid>
     </DialogContent>
@@ -66,6 +35,11 @@
 @code {
     private PaymentLinkRequest _request = new();
 
+    private DateTime? ExpirationDate { get; set; } = DateTime.Now;
+
+    private string ExpirationDateText =>
+        ExpirationDate?.ToString("dd/MM/yy - HH:mm 'hrs'") ?? "";
+
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
@@ -77,5 +51,36 @@
     private void Cancel()
     {
         MudDialog.Cancel();
+    }
+
+    private async Task OpenDateTimeDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["Value"] = ExpirationDate,
+            ["Title"] = "Fecha de expiración"
+        };
+
+        var options = new DialogOptions
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = true
+        };
+
+        var dialog = await _dialogService.ShowAsync<DateTimeDialog>(
+            "",
+            parameters,
+            options
+        );
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is DateTime selected)
+        {
+            ExpirationDate = selected;
+            _request.ExpiresAt = selected;
+        }
     }
 }

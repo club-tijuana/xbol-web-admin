@@ -687,6 +687,18 @@
   <data name="Select" xml:space="preserve">
     <value>Seleccionar</value>
   </data>
+  <data name="ZonePrices" xml:space="preserve">
+    <value>Precios por zona</value>
+  </data>
+  <data name="Zones" xml:space="preserve">
+    <value>Zonas</value>
+  </data>
+  <data name="ExpirationDate" xml:space="preserve">
+    <value>Fecha de expiración</value>
+  </data>
+  <data name="ExpirationTime" xml:space="preserve">
+    <value>Hora de expiración</value>
+  </data>
   <data name="AccessDeniedTitle" xml:space="preserve">
     <value>Acceso denegado</value>
   </data>
@@ -695,20 +707,5 @@
   </data>
   <data name="AccessDeniedGoToDashboard" xml:space="preserve">
     <value>Ir al panel principal</value>
-  </data>
-  <data name="ZonePrices" xml:space="preserve">
-    <value>Precios por zona</value>
-  </data>
-  <data name="Zones" xml:space="preserve">
-    <value>Zonas</value>
-  </data>
-  <data name="ExpirationDays" xml:space="preserve">
-    <value>Días</value>
-  </data>
-  <data name="ExpirationHours" xml:space="preserve">
-    <value>Horas</value>
-  </data>
-  <data name="ExpirationMinutes" xml:space="preserve">
-    <value>Minutos</value>
   </data>
 </root>

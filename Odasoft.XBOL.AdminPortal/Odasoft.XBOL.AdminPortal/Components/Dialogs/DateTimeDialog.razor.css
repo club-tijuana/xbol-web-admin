@@ -1,0 +1,38 @@
+.datetime-dialog-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 420px;
+    padding-top: 1rem;
+}
+
+.datetime-dialog-title {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.datetime-dialog-calendar {
+    display: flex;
+    justify-content: center;
+}
+
+.datetime-dialog-time {
+    display: flex;
+    justify-content: center;
+    margin-top: 0rem;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
+
+.datetime-dialog-time-input {
+    width: 180px;
+}
+
+.datetime-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}

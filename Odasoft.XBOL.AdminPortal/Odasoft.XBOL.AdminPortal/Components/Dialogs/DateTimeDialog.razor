@@ -1,0 +1,89 @@
+@using MudBlazor
+@using System.Globalization
+
+<MudDialog>
+    <DialogContent>
+        <div class="datetime-dialog-container">
+
+            <MudText Typo="Typo.h5"
+                     Align="Align.Center"
+                     Class="datetime-dialog-title">
+                @Title
+            </MudText>
+
+            <div class="datetime-dialog-calendar">
+                <MudDatePicker @bind-Date="_selectedDate"
+                               PickerVariant="PickerVariant.Static"
+                               ShowToolbar="false"
+                               Elevation="0"
+                               DateFormat="dd/MM/yyyy"
+                               Culture="_culture" />
+            </div>
+
+            <div class="datetime-dialog-time">
+                <MudTextField @bind-Value="_timeText"
+                              InputType="InputType.Time"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Class="datetime-dialog-time-input" />
+            </div>
+
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <div class="datetime-dialog-actions">
+            <MudButton Variant="Variant.Outlined"
+                       OnClick="Cancel">
+                Cancelar
+            </MudButton>
+
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       OnClick="Submit">
+                Actualizar
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public DateTime? Value { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Fecha límite";
+
+    private DateTime? _selectedDate;
+    private string _timeText = string.Empty;
+
+    private readonly CultureInfo _culture = new("es-MX");
+
+    protected override void OnInitialized()
+    {
+        _selectedDate = Value?.Date ?? DateTime.Today;
+        _timeText = Value?.ToString("HH:mm")
+            ?? DateTime.Now.ToString("HH:mm");
+    }
+
+    private void Submit()
+    {
+        if (_selectedDate is null)
+            return;
+
+        if (!TimeSpan.TryParse(_timeText, out var time))
+            return;
+
+        var result = _selectedDate.Value.Date.Add(time);
+
+        MudDialog.Close(DialogResult.Ok(result));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

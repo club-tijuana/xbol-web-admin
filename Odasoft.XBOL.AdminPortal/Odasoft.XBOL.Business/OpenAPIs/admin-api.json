@@ -22252,19 +22252,9 @@
       "PaymentLinkRequest": {
         "type": "object",
         "properties": {
-          "expirationDays": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "expirationHours": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "expirationMinutes": {
-            "type": "integer",
-            "format": "int64",
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },

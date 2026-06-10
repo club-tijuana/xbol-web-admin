@@ -283,44 +283,12 @@
             else
             {
                 <MudGrid>
-                    <MudItem xs="12" class="d-flex gap-4 align-center">
-                        <MudNumericField @bind-Value="_request.PaymentLinkExpirationDays"
-                                         For="@(() => _request.PaymentLinkExpirationDays)"
-                                         Format="N2"
-                                         Label="@L["ExpirationDays"]"
-                                         Variant="Variant.Outlined"
-                                         Adornment="Adornment.Start"
-                                         AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
-                                         Margin="Margin.Dense"
-                                         Placeholder="0"
-                                         HideSpinButtons="true"
-                                         Immediate="false" />
-                    </MudItem>
-                    <MudItem xs="12" class="d-flex gap-4 align-center">
-                        <MudNumericField @bind-Value="_request.PaymentLinkExpirationHours"
-                                         For="@(() => _request.PaymentLinkExpirationHours)"
-                                         Format="N2"
-                                         Label="@L["ExpirationHours"]"
-                                         Variant="Variant.Outlined"
-                                         Adornment="Adornment.Start"
-                                         AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
-                                         Margin="Margin.Dense"
-                                         Placeholder="0"
-                                         HideSpinButtons="true"
-                                         Immediate="false" />
-                    </MudItem>
-                    <MudItem xs="12" class="d-flex gap-4 align-center">
-                        <MudNumericField @bind-Value="_request.PaymentLinkExpirationMinutes"
-                                         For="@(() => _request.PaymentLinkExpirationMinutes)"
-                                         Format="N2"
-                                         Label="@L["ExpirationMinutes"]"
-                                         Variant="Variant.Outlined"
-                                         Adornment="Adornment.Start"
-                                         AdornmentIcon="@Icons.Material.Filled.AccessTimeFilled"
-                                         Margin="Margin.Dense"
-                                         Placeholder="0"
-                                         HideSpinButtons="true"
-                                         Immediate="false" />
+                    <MudItem xs="12" class="d-flex align-center">
+                        <MudTextField Label="Fecha de expiración"
+                                      Value="@ExpirationDateText"
+                                      ReadOnly="true"
+                                      @onclick="OpenDateTimeDialog"
+                                      Variant="Variant.Outlined" />
                     </MudItem>
                 </MudGrid>
             }
@@ -416,9 +384,7 @@
     private decimal RemainingBalance => TotalPay - _cartState.TotalPrice - TotalChangeMx;
 
     private bool HasValidPaymentLinkExpiration =>
-        (_request.PaymentLinkExpirationDays ?? 0) > 0 ||
-        (_request.PaymentLinkExpirationHours ?? 0) > 0 ||
-        (_request.PaymentLinkExpirationMinutes ?? 0) > 0;
+        _request.PaymentLinkExpiresAt != null;
 
     private bool HasBalanceError =>
         _value == 1 &&
@@ -427,6 +393,11 @@
     private bool HasPaymentLinkError =>
         _value == 2 &&
         !HasValidPaymentLinkExpiration;
+
+    private DateTime? ExpirationDate { get; set; } = DateTime.Now;
+
+    private string ExpirationDateText =>
+        ExpirationDate?.ToString("dd/MM/yy - HH:mm 'hrs'") ?? "";
 
     private decimal PendingPay => _cartState.TotalPrice - TotalPay;
     private string FormattedPendingPay => Math.Abs(PendingPay).ToString(FormatConstants.CURRENCY);
@@ -570,9 +541,7 @@
 
     private void ClearPaymentExpirationsAsync()
     {
-        _request.PaymentLinkExpirationDays = null;
-        _request.PaymentLinkExpirationHours = null;
-        _request.PaymentLinkExpirationMinutes = null;
+        _request.PaymentLinkExpiresAt = null;
     }
 
     private async void ClearAmountsAsync()
@@ -641,9 +610,7 @@
     {
         if (_value == 1)
         {
-            _request.PaymentLinkExpirationDays = null;
-            _request.PaymentLinkExpirationHours = null;
-            _request.PaymentLinkExpirationMinutes = null;
+            _request.PaymentLinkExpiresAt = null;
         }
         else
         {
@@ -722,9 +689,7 @@
             IsPaymentLink = _value == 2,
             PaymentLinkRequest = new PaymentLinkRequest
             {
-                ExpirationDays = _request.PaymentLinkExpirationDays,
-                ExpirationHours = _request.PaymentLinkExpirationHours,
-                ExpirationMinutes = _request.PaymentLinkExpirationMinutes
+                ExpiresAt = _request.PaymentLinkExpiresAt
             },
             TicketType = ItemType.Ticket,
         };
@@ -760,6 +725,37 @@
         {
             _isSubmitting = false;
             _loadingState.Hide();
+        }
+    }
+
+    private async Task OpenDateTimeDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["Value"] = ExpirationDate,
+            ["Title"] = "Fecha de expiración"
+        };
+
+        var options = new DialogOptions
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = true
+        };
+
+        var dialog = await _dialogService.ShowAsync<DateTimeDialog>(
+            "",
+            parameters,
+            options
+        );
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is DateTime selected)
+        {
+            ExpirationDate = selected;
+            _request.PaymentLinkExpiresAt = selected;
         }
     }
 

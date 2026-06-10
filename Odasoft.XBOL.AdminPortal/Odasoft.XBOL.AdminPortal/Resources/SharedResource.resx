@@ -693,13 +693,10 @@
   <data name="Zones" xml:space="preserve">
     <value>Zonas</value>
   </data>
-  <data name="ExpirationDays" xml:space="preserve">
-    <value>Días</value>
+  <data name="ExpirationDate" xml:space="preserve">
+    <value>Fecha de expiración</value>
   </data>
-  <data name="ExpirationHours" xml:space="preserve">
-    <value>Horas</value>
-  </data>
-  <data name="ExpirationMinutes" xml:space="preserve">
-    <value>Minutos</value>
+  <data name="ExpirationTime" xml:space="preserve">
+    <value>Hora de expiración</value>
   </data>
 </root>
