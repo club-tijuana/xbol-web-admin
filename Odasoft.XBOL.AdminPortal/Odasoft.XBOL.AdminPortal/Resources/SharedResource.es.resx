@@ -546,17 +546,41 @@
   <data name="TabUpcoming" xml:space="preserve">
     <value>Próximos</value>
   </data>
+  <data name="TabPasses" xml:space="preserve">
+    <value>Pases</value>
+  </data>
+  <data name="TabPackages" xml:space="preserve">
+    <value>Paquetes</value>
+  </data>
   <data name="TabPast" xml:space="preserve">
     <value>Pasados</value>
   </data>
   <data name="NewEvent" xml:space="preserve">
     <value>Nuevo evento</value>
   </data>
+  <data name="GroupEvents" xml:space="preserve">
+    <value>Agrupar eventos</value>
+  </data>
+  <data name="NewBundle" xml:space="preserve">
+    <value>Agrupar eventos</value>
+  </data>
+  <data name="NewPackage" xml:space="preserve">
+    <value>Paquete</value>
+  </data>
+  <data name="NewSeasonPass" xml:space="preserve">
+    <value>Pase de temporada</value>
+  </data>
   <data name="Suites" xml:space="preserve">
     <value>Palcos</value>
   </data>
   <data name="PastEvents" xml:space="preserve">
     <value>Eventos pasados</value>
+  </data>
+  <data name="PassesTitle" xml:space="preserve">
+    <value>Pase de temporada</value>
+  </data>
+  <data name="PackagesTitle" xml:space="preserve">
+    <value>Paquete</value>
   </data>
   <data name="SearchByOrderNumber" xml:space="preserve">
     <value>Buscar por número de orden</value>
@@ -642,8 +666,17 @@
   <data name="AlternativePrice" xml:space="preserve">
     <value>Precio alternativo</value>
   </data>
+  <data name="AddPrice" xml:space="preserve">
+    <value>Agregar precio</value>
+  </data>
+  <data name="BasePrice" xml:space="preserve">
+    <value>Precio base</value>
+  </data>
   <data name="Description" xml:space="preserve">
     <value>Descripción</value>
+  </data>
+  <data name="NoSectionsInZone" xml:space="preserve">
+    <value>No hay secciones en la zona</value>
   </data>
   <data name="Price" xml:space="preserve">
     <value>Precio</value>
@@ -653,5 +686,29 @@
   </data>
   <data name="Select" xml:space="preserve">
     <value>Seleccionar</value>
+  </data>
+  <data name="AccessDeniedTitle" xml:space="preserve">
+    <value>Acceso denegado</value>
+  </data>
+  <data name="AccessDeniedMessage" xml:space="preserve">
+    <value>No tiene permiso para acceder a esta página.</value>
+  </data>
+  <data name="AccessDeniedGoToDashboard" xml:space="preserve">
+    <value>Ir al panel principal</value>
+  </data>
+  <data name="ZonePrices" xml:space="preserve">
+    <value>Precios por zona</value>
+  </data>
+  <data name="Zones" xml:space="preserve">
+    <value>Zonas</value>
+  </data>
+  <data name="ExpirationDays" xml:space="preserve">
+    <value>Días</value>
+  </data>
+  <data name="ExpirationHours" xml:space="preserve">
+    <value>Horas</value>
+  </data>
+  <data name="ExpirationMinutes" xml:space="preserve">
+    <value>Minutos</value>
   </data>
 </root>

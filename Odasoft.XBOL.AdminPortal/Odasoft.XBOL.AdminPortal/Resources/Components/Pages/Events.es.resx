@@ -231,4 +231,43 @@
   <data name="Seats_ConflictedSeats" xml:space="preserve">
     <value>Los siguientes asientos ya no están disponibles: {0}.</value>
   </data>
+  <data name="TabUpcoming" xml:space="preserve">
+    <value>PRÓXIMOS</value>
+  </data>
+  <data name="TabPasses" xml:space="preserve">
+    <value>PASES</value>
+  </data>
+  <data name="TabPackages" xml:space="preserve">
+    <value>PAQUETES</value>
+  </data>
+  <data name="TabPast" xml:space="preserve">
+    <value>PASADOS</value>
+  </data>
+  <data name="NewEvent" xml:space="preserve">
+    <value>Nuevo Evento</value>
+  </data>
+  <data name="GroupEvents" xml:space="preserve">
+    <value>Agrupar Eventos</value>
+  </data>
+  <data name="NewBundle" xml:space="preserve">
+    <value>Agrupar Eventos</value>
+  </data>
+  <data name="NewSeasonPass" xml:space="preserve">
+    <value>Pase de Temporada</value>
+  </data>
+  <data name="NewPackage" xml:space="preserve">
+    <value>Paquete</value>
+  </data>
+  <data name="NoEventsFound" xml:space="preserve">
+    <value>No se encontraron eventos.</value>
+  </data>
+  <data name="PastEvents" xml:space="preserve">
+    <value>Eventos pasados</value>
+  </data>
+  <data name="PassesTitle" xml:space="preserve">
+    <value>Pase de temporada</value>
+  </data>
+  <data name="PackagesTitle" xml:space="preserve">
+    <value>Paquete</value>
+  </data>
 </root>

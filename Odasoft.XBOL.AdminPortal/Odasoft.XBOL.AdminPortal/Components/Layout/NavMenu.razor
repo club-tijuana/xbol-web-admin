@@ -1,55 +1,99 @@
 @using Odasoft.XBOL.Common.Constants
-
+@using Odasoft.XBOL.Auth
 @inject AppLocalizer<NavMenu> _localizer;
 
 <MudNavMenu>
-    <MudNavLink Href="./" Match="NavLinkMatch.All" IconColor="Color.Primary"
-                Icon="@Icons.Material.Filled.Dashboard" Class="nav-link pt-1">
-        Dashboard
-    </MudNavLink>
-    <MudNavLink Href="@SitePages.SUPPORT" IconColor="Color.Primary" Class="nav-link pt-1"
-                Icon="@Icons.Material.Filled.ManageSearch">
-        @_localizer["Support"]
-    </MudNavLink>
-    <MudNavLink Href="./seasons" IconColor="Color.Primary" Class="nav-link pt-1"
-                Icon="@Icons.Material.Filled.SportsSoccer">
-        Torneos
-    </MudNavLink>
-    <MudNavLink Href="./events" IconColor="Color.Primary" Class="nav-link pt-1"
-                Icon="@Icons.Material.Filled.ConfirmationNumber">
-        Eventos
-    </MudNavLink>
-    <MudNavGroup Title="Pases de temporada" IconColor="Color.Primary" Class="nav-link pt-1" Icon="@Icons.Material.Filled.EventSeat" Expanded="false">
-        <MudNavLink Href="./season-schedules" Class="nav-link pt-1" Disabled>
-            Configuración de venta
-        </MudNavLink>
-        <MudNavLink Href="./season-pass" Class="nav-link pt-1">
-            Xolopass
-        </MudNavLink>
-    </MudNavGroup>
-    <MudNavLink Href="./clients" IconColor="Color.Primary" Class="nav-link-rounded pt-1"
-                Icon="@Icons.Material.Filled.Badge">
-        Empresas y créditos
-    </MudNavLink>
-    <MudNavLink Href="@SitePages.SUITE_AGREEMENTS" IconColor="Color.Primary" Class="nav-link-rounded pt-1" Icon="@Icons.Custom.Uncategorized.ChessQueen">
-        Contratos de palcos
-    </MudNavLink>
-    <MudNavLink Href="./reports" IconColor="Color.Primary" Class="nav-link-rounded pt-1"
-                Icon="@Icons.Material.Filled.InsertChart">
-        Reportes
-    </MudNavLink>
-    <MudNavGroup Title="@_localizer["Settings"]"
-                 Icon="@Icons.Material.Filled.Settings"
-                 IconColor="Color.Primary"
-                 Class="nav-link-rounded pt-1">
-        <MudNavLink Href="@SitePages.VENUES" Class="nav-link pt-1">
-            @_localizer["VenuesAndSuites"]
-        </MudNavLink>
+    <AuthorizeView>
+        <Authorized>
+            <MudNavLink Href="./" Match="NavLinkMatch.All" IconColor="Color.Primary"
+                        Icon="@Icons.Material.Filled.Dashboard" Class="nav-link pt-1">
+                Dashboard
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+    <AuthorizeView Policy="@PermissionPolicy.Build(AdminPermissions.Orders.Create)">
+        <Authorized>
+            <MudNavLink Href="./box-office" IconColor="Color.Primary" Class="nav-link pt-1"
+                        Icon="@Icons.Material.Filled.Storefront">
+                Box Office
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+    <AuthorizeView Policy="@PermissionPolicy.BuildAny(AdminPermissions.Events.Read, AdminPermissions.Events.ReadCurrent)">
+        <Authorized>
+            <MudNavLink Href="./events" IconColor="Color.Primary" Class="nav-link pt-1"
+                        Icon="@Icons.Material.Filled.ConfirmationNumber">
+                Eventos
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+    <AuthorizeView Policy="@PermissionPolicy.BuildAny(AdminPermissions.Seasons.Read, AdminPermissions.SeasonPasses.Read)">
+        <Authorized>
+            <MudNavGroup Title="Pases de temporada" IconColor="Color.Primary" Class="nav-link pt-1" Icon="@Icons.Material.Filled.EventSeat" Expanded="false">
+                <MudNavLink Href="./season-schedules" Class="nav-link pt-1" Disabled>
+                    Configuración de venta
+                </MudNavLink>
+                <MudNavLink Href="./season-pass" Class="nav-link pt-1">
+                    Xolopass
+                </MudNavLink>
+            </MudNavGroup>
+        </Authorized>
+    </AuthorizeView>
+    <AuthorizeView Policy="@PermissionPolicy.Build(AdminPermissions.Clients.Read)">
+        <Authorized>
+            <MudNavLink Href="./clients" IconColor="Color.Primary" Class="nav-link-rounded pt-1"
+                        Icon="@Icons.Material.Filled.Badge">
+                Empresas y créditos
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+    <AuthorizeView Policy="@PermissionPolicy.Build(AdminPermissions.SuiteAgreements.Read)">
+        <Authorized>
+            <MudNavLink Href="@SitePages.SUITE_AGREEMENTS" IconColor="Color.Primary" Class="nav-link-rounded pt-1" Icon="@Icons.Custom.Uncategorized.ChessQueen">
+                Contratos de palcos
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+    <AuthorizeView Policy="@PermissionPolicy.BuildAny(AdminPermissions.Reports.Sales.SelfRead, AdminPermissions.Reports.Sales.CashiersRead, AdminPermissions.Reports.Sales.WebRead)">
+        <Authorized>
+            <MudNavLink Href="./reports" IconColor="Color.Primary" Class="nav-link-rounded pt-1"
+                        Icon="@Icons.Material.Filled.InsertChart">
+                Reportes
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+    <AuthorizeView Policy="@PermissionPolicy.Build(AdminPermissions.Orders.Read)">
+        <Authorized>
+            <MudNavLink Href="@SitePages.SUPPORT" IconColor="Color.Primary" Class="nav-link pt-1"
+                        Icon="@Icons.Material.Filled.ManageSearch">
+                @_localizer["Support"]
+            </MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+    <AuthorizeView Policy="@PermissionPolicy.BuildAny(AdminPermissions.Venues.Read, AdminPermissions.Roles.Read)">
+        <Authorized>
+            <MudNavGroup Title="@_localizer["Settings"]"
+                         Icon="@Icons.Material.Filled.Settings"
+                         IconColor="Color.Primary"
+                         Class="nav-link-rounded pt-1">
+        <AuthorizeView Policy="@PermissionPolicy.Build(AdminPermissions.Venues.Read)" Context="venuesCtx">
+            <Authorized>
+                <MudNavLink Href="@SitePages.VENUES" Class="nav-link pt-1">
+                    @_localizer["VenuesAndSuites"]
+                </MudNavLink>
+            </Authorized>
+        </AuthorizeView>
         <MudNavLink Href="./settings/dinamyc-prices" Class="pt-1" Disabled>
             Precios dinámicos
         </MudNavLink>
-        <MudNavLink Href="./settings/security" Class="pt-1" Disabled>
-            Roles y permisos
-        </MudNavLink>
-    </MudNavGroup>
+        <AuthorizeView Policy="@PermissionPolicy.Build(AdminPermissions.Roles.Read)" Context="rolesCtx">
+            <Authorized>
+                <MudNavLink Href="./settings/security" Class="pt-1">
+                    Roles y permisos
+                </MudNavLink>
+            </Authorized>
+        </AuthorizeView>
+            </MudNavGroup>
+        </Authorized>
+    </AuthorizeView>
 </MudNavMenu>

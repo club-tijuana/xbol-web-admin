@@ -37,6 +37,10 @@
                     <EventAvailability Available="@(Banner.AvailableSeats ?? 0)" Total="@Banner.TotalSeats" ExternalKey="@Banner.ExternalKey" />
                 </MudStack>
             }
+            else
+            {
+                <EventStatusChip Status="@Banner.EventStatus"></EventStatusChip>
+            }
         </MudItem>
     </MudGrid>
 </MudCard>

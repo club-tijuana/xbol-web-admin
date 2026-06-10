@@ -12,12 +12,18 @@ public record EventViewModel(
     string Venue,
     int Available,
     int Total,
-    EventStatus? Status,
+    AdminEventStatus? Status,
     string? ExternalEventKey,
     string? PosterImageUrl = null,
     string? BannerImageUrl = null,
-    bool? IsSeason = null
+    bool? IsSeason = null,
+    EventCatalogItemType? ItemType = null,
+    BundleType? BundleType = null,
+    string? Code = null,
+    long? EventScheduleId = null,
+    long? VenueMapId = null
 )
 {
     public string Availability => $"{Available:D3}/{Total:D3}";
+    public bool IsBundle => ItemType == EventCatalogItemType.Bundle;
 }

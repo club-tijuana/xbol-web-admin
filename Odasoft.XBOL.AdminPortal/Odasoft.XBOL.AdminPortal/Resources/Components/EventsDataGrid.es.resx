@@ -56,6 +56,9 @@
   <data name="Search" xml:space="preserve">
     <value>Buscar...</value>
   </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filtrar</value>
+  </data>
   <data name="FilterVenue" xml:space="preserve">
     <value>Recinto</value>
   </data>
@@ -64,6 +67,9 @@
   </data>
   <data name="FilterDateRange" xml:space="preserve">
     <value>Rango de Fechas</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>DD/MM/AAAA</value>
   </data>
   <data name="FilterClear" xml:space="preserve">
     <value>Limpiar</value>

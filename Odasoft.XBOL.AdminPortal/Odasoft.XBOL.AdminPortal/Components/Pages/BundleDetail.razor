@@ -1,0 +1,232 @@
+@page "/events/bundles/{BundleId:long}"
+@page "/events/bundles/{BundleId:long}/{Tab}"
+
+@using Odasoft.XBOL.Auth
+@attribute [RequireAnyPermission(AdminPermissions.Events.Read, AdminPermissions.Events.ReadCurrent)]
+
+@using Odasoft.XBOL.AdminPortal.Components.Pages.EventDetails;
+@using Odasoft.XBOL.AdminPortal.Components.Shared;
+@using Odasoft.XBOL.AdminPortal.Extensions;
+@using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
+@using Odasoft.XBOL.Business;
+
+@inject AppLocalizer<EventDetail> L;
+@inject IEventService _eventService;
+@inject NavigationManager _navigationManager;
+@inject IDialogService _dialogService;
+@inject ISnackbar _snackbar;
+@inject AdminMediaUrlResolver MediaUrlResolver;
+
+<PageTitle>@(_bundle?.Name ?? "")</PageTitle>
+
+<SectionContent SectionName="nav-header">
+    <PageActionBar>
+        <LeftContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="@(() => _navigationManager.NavigateTo("./events"))" Color="Color.Secondary"
+                       Variant="Variant.Outlined" Class="text-uppercase">
+                @L["GoBack"]
+            </MudButton>
+        </LeftContent>
+        <RightContent>
+            <MudStack Row>
+                <MudButton StartIcon="@Icons.Material.Outlined.EventBusy" Color="Color.Error" Variant="Variant.Filled"
+                           Class="text-uppercase" OnClick="DeleteBundleAsync">
+                    @L["DeleteItem", L["Bundle"]]
+                </MudButton>
+                <MudButton StartIcon="@Icons.Material.Outlined.Edit" Href="@($"./events/bundles/{BundleId}/edit")"
+                           Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">
+                    @L["Edit"]
+                </MudButton>
+            </MudStack>
+        </RightContent>
+    </PageActionBar>
+</SectionContent>
+
+<LoadingContainer IsLoading="_loading" HasError="_error" ErrorMessage="@L["ErrorLoading"]" OnRetry="LoadBundleAsync">
+
+    @if (_bundle is not null)
+    {
+        <ImageHeroBanner Banner="_banner"></ImageHeroBanner>
+
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+            <MudToggleGroup T="string" Value="@_selectedTab" ValueChanged="OnTabChanged" CheckMark="false"
+                            Class="border-secondary-lighten" Color="Color.Secondary">
+                <MudToggleItem Value="@TabSales" Text="@L["TabSales"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabSales ? "bg-secondary-darken" : "")}")" />
+@*                 <MudToggleItem Value="@TabSuitesSales" Text="@L["TabSuitesSales"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabSuitesSales ? "bg-secondary-darken" : "")}")" /> *@
+                <MudToggleItem Value="@TabPolicies" Text="@L["TabPolicies"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabPolicies ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@TabGallery" Text="@L["TabGallery"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabGallery ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@TabEvents" Text="@L["TabEvents"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabEvents ? "bg-secondary-darken" : "")}")" />
+            </MudToggleGroup>
+            <MudStack Row Spacing="2">
+                <MudButton StartIcon="@Icons.Material.Outlined.LocalActivity"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="true">
+                    @L["BuySuites"]
+                </MudButton>
+                <MudButton StartIcon="@Icons.Material.Outlined.ShoppingCart"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="true">
+                    @L["BuyTickets"]
+                </MudButton>
+            </MudStack>
+        </MudStack>
+
+        @if (_selectedTab == TabSales)
+        {
+            <EventScheduleSales SaleType="AdminSaleType.Bundle" ReferenceId="BundleId" />
+        }
+        else if (_selectedTab == TabSuitesSales)
+        {
+            <EventScheduleSuitesSales EventScheduleId="BundleId" />
+        }
+        else if (_selectedTab == TabPolicies)
+        {
+            <ScheduleAndPolicies ScheduleDetails="_scheduleAndPolicies" />
+        }
+        else if (_selectedTab == TabGallery)
+        {
+            <Gallery Media="_media" />
+        }
+        else if(_selectedTab == TabEvents)
+        {
+            <MudCard Class="bg-white" Elevation="3">
+                <BundleSchedulesDataGrid BundleId="@BundleId" />
+            </MudCard>
+        }
+    }
+</LoadingContainer>
+
+    @code {
+    [Parameter] public long BundleId { get; set; }
+    [Parameter] public string? Tab { get; set; }
+
+    private const string TabSales = "sales";
+    private const string TabSuitesSales = "suites-sales";
+    private const string TabPolicies = "policies";
+    private const string TabGallery = "gallery";
+    private const string TabEvents = "events";
+
+    private string _selectedTab = TabPolicies;
+    private bool _loading = true;
+    private bool _error;
+    private BundleDTO? _bundle;
+    private ImageHeroBannerViewModel _banner = new();
+    private ScheduleAndPoliciesViewModel _scheduleAndPolicies = new();
+    private EventMediaSetResponse _media = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadBundleAsync();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _selectedTab = Tab?.ToLowerInvariant() switch
+        {
+            TabSuitesSales => TabSuitesSales,
+            TabPolicies => TabPolicies,
+            TabGallery => TabGallery,
+            TabEvents => TabEvents,
+            _ => TabSales
+        };
+    }
+
+    private void OnTabChanged(string tab)
+    {
+        _selectedTab = tab;
+        _navigationManager.NavigateTo($"./events/bundles/{BundleId}/{tab}", replace: true);
+    }
+
+    private async Task LoadBundleAsync()
+    {
+        _loading = true;
+        _error = false;
+
+        try
+        {
+            _bundle = await _eventService.GetBundleByIdAsync(BundleId);
+
+            _scheduleAndPolicies = new()
+            {
+                StartDateTime = _bundle?.StartDate,
+                EndDateTime = _bundle?.EndDate,
+                PreSaleStartDate = _bundle?.PreSaleDate,
+                OnSaleDate = _bundle?.OnSaleDate,
+                OffSaleDate = _bundle?.OffSaleDate,
+                PublishedDate = _bundle?.PublishedDate,
+                AgeRestriction = _bundle?.AgeRestriction,
+                SecurityPolicies = _bundle?.SecurityPolicies,
+                AdditionalComments = _bundle?.AdditionalComments
+            };
+
+            _media = new EventMediaSetResponse
+                {
+                    Banner = _bundle?.Media?.FirstOrDefault(x => x.MediaType == AdminMediaType.Banner) ?? new MediaResponse { Url = _bundle?.BannerImageUrl },
+                    Sponsors = _bundle?.Media?.Where(x => x.MediaType == AdminMediaType.Sponsor).ToList() ?? new List<MediaResponse>(),
+                    Gallery = _bundle?.Media?.Where(x => x.MediaType == AdminMediaType.Gallery).ToList() ?? new List<MediaResponse>()
+                };
+
+
+            _banner = new()
+            {
+                Title = _bundle?.Name,
+                Subtitle = _bundle?.Subtitle,
+                StartDateTime = _bundle?.StartDate?.UtcDateTime,
+                EndDateTime = _bundle?.EndDate?.UtcDateTime,
+                ImageUrl = MediaUrlResolver.Resolve(_media.Banner?.Url)
+                    ?? MediaUrlResolver.Resolve(_bundle?.BannerImageUrl),
+                Venue = _bundle?.VenueName,
+                ExternalKey = _bundle?.ExternalKey,
+                EventStatus = _bundle?.Status
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading bundle '{BundleId}': {ex.Message}");
+            _error = true;
+            _snackbar.Add(L["ErrorLoading"], Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteBundleAsync()
+    {
+        var confirmed = await _dialogService.ShowConfirmDeleteAsync(
+        L["DeleteDialogTitle", _bundle?.Name ?? ""],
+        L["DeleteDialogMessage"]);
+
+        if (!confirmed) return;
+
+        try
+        {
+            await _eventService.DeleteBundleAsync(BundleId);
+            _snackbar.Add(L["DeleteSuccess"], Severity.Success);
+            _navigationManager.NavigateTo("./events");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting bundle: {ex.Message}");
+            _snackbar.Add(L["DeleteError"], Severity.Error);
+        }
+    }
+}

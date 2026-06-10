@@ -28,12 +28,55 @@ public interface IEventService
         EventFilterParameters? filters = null
     );
 
-    Task<List<EventCategoryResult>> GetCategoriesAsync();
+    Task<GridData<EventViewModel>> GetEventCatalogAsync(
+        int page,
+        int pageSize,
+        string? sortColumn,
+        bool sortDescending,
+        string? search = null,
+        EventFilterParameters? filters = null,
+        EventCatalogItemType? itemType = null,
+        BundleType? bundleType = null,
+        bool? upcoming = null,
+        AdminEventStatus? status = null
+    );
+
+    Task<GridData<BundleScheduleViewModel>> GetBundleScheduleItemsAsync(
+        long bundleId,
+        int page,
+        int pageSize,
+        string? sortColumn,
+        bool sortDescending,
+        string? search = null,
+        EventFilterParameters? filters = null
+    );
+
+    Task<GridData<EventViewModel>> GetEventScheduleItemsAsync(
+        int page,
+        int pageSize,
+        string? sortColumn,
+        bool sortDescending,
+        string? search = null,
+        EventFilterParameters? filters = null,
+        long? venueMapId = null,
+        bool? upcoming = null
+    );
+
+    Task<List<AdminEventCategoryResult>> GetCategoriesAsync();
     Task<EventResult> CreateEventAsync(EventRequest request);
+    Task<BundleDTO> CreateBundleAsync(BundleCreateRequest request);
     Task UpdateEventAsync(long id, EventRequest request);
+
     Task DeleteEventAsync(long id);
+
     Task<EventInfoDTO> GetEventByIdAsync(long id);
+
     Task ApproveEventAsync(long id);
+
     Task RejectEventAsync(long id);
+
     Task PublishEventAsync(long id);
+    Task<BundleDTO> GetBundleByIdAsync(long id);
+    Task DeleteBundleAsync(long id);
+    Task UpdateBundleAsync(long id, BundleUpdateRequest request);
 }

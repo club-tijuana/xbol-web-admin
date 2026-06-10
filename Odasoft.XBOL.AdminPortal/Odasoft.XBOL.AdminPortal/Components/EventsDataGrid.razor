@@ -101,7 +101,7 @@
                 @if (IsVisible(EventColumn.DateTime))
                 {
                     <PropertyColumn Property="x => x.DateTime" Sortable="true" Filterable="false"
-                                    InitialDirection="SortDirection.Descending">
+                                    InitialDirection="MudSortDirection.Descending">
                         <HeaderTemplate>
                             <span Class="pl-lg-4">@L["ColumnDateTime"]</span>
                         </HeaderTemplate>
@@ -200,7 +200,7 @@
     private EventFilterParameters _filters = EventFilterParameters.Empty;
     private List<VenueResponse> _venues = [];
     private IReadOnlyCollection<string> _selectedVenues = [];
-    private List<EventCategoryResult> _availableCategories = [];
+    private List<AdminEventCategoryResult> _availableCategories = [];
     private IReadOnlyCollection<string> _selectedCategories = [];
     private DateRange? _dateRange = null;
 

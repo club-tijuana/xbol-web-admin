@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AdditionalComments" xml:space="preserve"><value>Additional comments</value></data>
+  <data name="AdultsOnly" xml:space="preserve"><value>Adults only (18+)</value></data>
+  <data name="AgeRestrictions" xml:space="preserve"><value>Age restrictions</value></data>
+  <data name="AllAges" xml:space="preserve"><value>All ages</value></data>
+  <data name="Availability" xml:space="preserve"><value>Availability</value></data>
+  <data name="BannerImageUrl" xml:space="preserve"><value>Banner URL</value></data>
+  <data name="BundleEvents" xml:space="preserve"><value>Bundle events</value></data>
+  <data name="BundleBanner" xml:space="preserve"><value>Banner image</value></data>
+  <data name="BundleBannerDescription" xml:space="preserve"><value>Main horizontal image for catalog and detail pages.</value></data>
+  <data name="BundleLogo" xml:space="preserve"><value>Logo image</value></data>
+  <data name="BundleLogoDescription" xml:space="preserve"><value>Square image used as the package poster.</value></data>
+  <data name="BundleSchedule" xml:space="preserve"><value>Bundle schedule</value></data>
+  <data name="Categories" xml:space="preserve"><value>Categories</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="CompletePreviousStepsWarning" xml:space="preserve"><value>Complete the previous steps before continuing.</value></data>
+  <data name="Create" xml:space="preserve"><value>Create</value></data>
+  <data name="CreatePackage" xml:space="preserve"><value>New package</value></data>
+  <data name="CreateSeasonPass" xml:space="preserve"><value>New season pass</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>Bundle created successfully.</value></data>
+  <data name="DateTime" xml:space="preserve"><value>Date and time</value></data>
+  <data name="DatesAndSale" xml:space="preserve"><value>Dates and sale</value></data>
+  <data name="DescriptionAndVenue" xml:space="preserve"><value>Description and venue</value></data>
+  <data name="DuplicatePrices" xml:space="preserve"><value>Duplicate prices exist for the same zone, section, row, or seat.</value></data>
+  <data name="EndDate" xml:space="preserve"><value>End date</value></data>
+  <data name="EndTime" xml:space="preserve"><value>End time</value></data>
+  <data name="EditorUndo" xml:space="preserve"><value>Undo</value></data>
+  <data name="EditorRedo" xml:space="preserve"><value>Redo</value></data>
+  <data name="EditorBold" xml:space="preserve"><value>Bold</value></data>
+  <data name="EditorItalic" xml:space="preserve"><value>Italic</value></data>
+  <data name="EditorUnderline" xml:space="preserve"><value>Underline</value></data>
+  <data name="EditorUnorderedList" xml:space="preserve"><value>Bullet list</value></data>
+  <data name="EditorOrderedList" xml:space="preserve"><value>Numbered list</value></data>
+  <data name="EditorLink" xml:space="preserve"><value>Insert link</value></data>
+  <data name="EditorUnlink" xml:space="preserve"><value>Remove link</value></data>
+  <data name="EditorRemoveFormat" xml:space="preserve"><value>Remove format</value></data>
+  <data name="ErrorLoading" xml:space="preserve"><value>Error loading the form.</value></data>
+  <data name="ErrorLoadingEvents" xml:space="preserve"><value>Error loading events.</value></data>
+  <data name="ErrorLoadingVenueMaps" xml:space="preserve"><value>Error loading maps.</value></data>
+  <data name="ErrorLoadingVenueMapLayout" xml:space="preserve"><value>Error loading venue map layout.</value></data>
+  <data name="ErrorSaving" xml:space="preserve"><value>Error creating the bundle.</value></data>
+  <data name="Event" xml:space="preserve"><value>Event</value></data>
+  <data name="EventBanner" xml:space="preserve"><value>Event cover image</value></data>
+  <data name="EventBannerDimensions" xml:space="preserve"><value>Upload a horizontal 16:9 image. Minimum recommended dimensions are 1920 x 1080 px.</value></data>
+  <data name="EventBannerDescription" xml:space="preserve"><value>Keep composition and text centered so the image also works when cropped to a square.</value></data>
+  <data name="Events" xml:space="preserve"><value>Events</value></data>
+  <data name="FileTooLarge" xml:space="preserve"><value>The file '{0}' exceeds the {1}MB limit.</value></data>
+  <data name="GalleryPreview" xml:space="preserve"><value>Gallery preview</value></data>
+  <data name="GalleryUploadHint" xml:space="preserve"><value>Drag images here or click to browse</value></data>
+  <data name="GalleryUploadHintDetails" xml:space="preserve"><value>PNG or JPG files up to {0}MB are recommended.</value></data>
+  <data name="InvalidImage" xml:space="preserve"><value>The file '{0}' is not a valid image.</value></data>
+  <data name="GoBack" xml:space="preserve"><value>Back</value></data>
+  <data name="HorizontalImagePreview" xml:space="preserve"><value>Horizontal preview</value></data>
+  <data name="Images" xml:space="preserve"><value>Images</value></data>
+  <data name="LandingUrl" xml:space="preserve"><value>Landing URL</value></data>
+  <data name="LongDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="Map" xml:space="preserve"><value>Map</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Next" xml:space="preserve"><value>Next</value></data>
+  <data name="NoEventsFound" xml:space="preserve"><value>No events found.</value></data>
+  <data name="None" xml:space="preserve"><value>No restrictions</value></data>
+  <data name="OffSaleDate" xml:space="preserve"><value>Sale end</value></data>
+  <data name="OffSaleTime" xml:space="preserve"><value>Sale end time</value></data>
+  <data name="OnSaleDate" xml:space="preserve"><value>Sale start</value></data>
+  <data name="OnSaleTime" xml:space="preserve"><value>Sale start time</value></data>
+  <data name="Organizer" xml:space="preserve"><value>Organizer</value></data>
+  <data name="PosterImageUrl" xml:space="preserve"><value>Poster URL</value></data>
+  <data name="PreSaleDate" xml:space="preserve"><value>Presale start</value></data>
+  <data name="PreSaleTime" xml:space="preserve"><value>Presale time</value></data>
+  <data name="PublishedDate" xml:space="preserve"><value>Published date</value></data>
+  <data name="PublishedTime" xml:space="preserve"><value>Published time</value></data>
+  <data name="PublishingAndPresale" xml:space="preserve"><value>Publishing and presale</value></data>
+  <data name="RenewalEndDate" xml:space="preserve"><value>Renewal end</value></data>
+  <data name="RenewalEndTime" xml:space="preserve"><value>Renewal end time</value></data>
+  <data name="RenewalStartDate" xml:space="preserve"><value>Renewal start</value></data>
+  <data name="RenewalStartTime" xml:space="preserve"><value>Renewal start time</value></data>
+  <data name="RenewalWindow" xml:space="preserve"><value>Renewal window</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Required field</value></data>
+  <data name="ZonePrices" xml:space="preserve"><value>Zone prices</value></data>
+  <data name="RequiredFieldsNote" xml:space="preserve"><value>*Required fields</value></data>
+  <data name="SearchEvents" xml:space="preserve"><value>Search...</value></data>
+  <data name="SecurityPolicies" xml:space="preserve"><value>Security policies</value></data>
+  <data name="SelectEvents" xml:space="preserve"><value>Select at least one event.</value></data>
+  <data name="SelectVenueMapFirst" xml:space="preserve"><value>Select a map to search events.</value></data>
+  <data name="SelectedCount" xml:space="preserve"><value>{0} selected</value></data>
+  <data name="ShortDescription" xml:space="preserve"><value>Summary</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Start date</value></data>
+  <data name="StartTime" xml:space="preserve"><value>Start time</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>Subtitle</value></data>
+  <data name="TicketsSale" xml:space="preserve"><value>Ticket sale</value></data>
+  <data name="Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="SquareImagePreview" xml:space="preserve"><value>Square preview</value></data>
+  <data name="UploadBanner" xml:space="preserve"><value>Upload banner</value></data>
+  <data name="UploadLogo" xml:space="preserve"><value>Upload logo</value></data>
+  <data name="Venue" xml:space="preserve"><value>Venue</value></data>
+  <data name="WebsiteGallery" xml:space="preserve"><value>Website gallery</value></data>
+</root>

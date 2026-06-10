@@ -55,8 +55,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-
 app.UseHsts();
 
 // Only use HTTPS redirection when running directly (Visual Studio, dotnet run)
@@ -79,6 +77,7 @@ app.UseAntiforgery();
 
 app.MapAdminSessionEndpoints();
 app.MapWorkerDashboardProxyEndpoints();
+app.MapApiDocsProxyEndpoints();
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 

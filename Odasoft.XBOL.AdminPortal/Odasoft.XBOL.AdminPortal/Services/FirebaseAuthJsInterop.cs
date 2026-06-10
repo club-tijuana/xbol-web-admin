@@ -64,7 +64,20 @@ public sealed class FirebaseAuthJsInterop(
     {
         if (_module is not null)
         {
-            await _module.DisposeAsync();
+            try
+            {
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The client disconnected, so the JS runtime is gone.
+                // We can safely ignore this.
+            }
+            catch (TaskCanceledException)
+            {
+                // The circuit is being torn down.
+                // Also safe to ignore during disposal.
+            }
         }
     }
 }

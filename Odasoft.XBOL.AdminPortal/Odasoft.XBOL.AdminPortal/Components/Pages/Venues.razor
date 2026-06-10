@@ -1,5 +1,6 @@
 @page "/venues"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Venues.Read)]
 
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.Business;
@@ -95,7 +96,7 @@
                 </MudGrid>
             </ToolBarContent>
             <Columns>
-                <PropertyColumn Title="@_localizer["Venue"]" Property="x => x.Name" Sortable="true" Filterable="false" InitialDirection="SortDirection.Ascending">
+                <PropertyColumn Title="@_localizer["Venue"]" Property="x => x.Name" Sortable="true" Filterable="false" InitialDirection="MudSortDirection.Ascending">
                     <CellTemplate>
                         <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.Name</MudText>
                     </CellTemplate>

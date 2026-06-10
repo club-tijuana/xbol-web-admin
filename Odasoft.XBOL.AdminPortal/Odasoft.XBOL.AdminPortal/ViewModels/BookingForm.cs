@@ -26,4 +26,7 @@ public class BookingForm
     public decimal? PendingPay { get; set; }
     public decimal? ExchangeRate { get; set; }
     public decimal? TotalPrice { get; set; }
+    public long? PaymentLinkExpirationDays { get; set; }
+    public long? PaymentLinkExpirationHours { get; set; }
+    public long? PaymentLinkExpirationMinutes { get; set; }
 }

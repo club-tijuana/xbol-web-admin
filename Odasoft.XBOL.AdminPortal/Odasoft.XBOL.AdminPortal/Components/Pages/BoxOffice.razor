@@ -1,7 +1,9 @@
 @page "/box-office"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Orders.Create)]
 
 @using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
 
@@ -86,13 +88,15 @@
         _isLoading = true;
         try
         {
-            var result = await EventService.GetEventsOnSaleAsync(
+            var result = await EventService.GetEventCatalogAsync(
             page: _page - 1,
             pageSize: _pageSize,
-            sortColumn: null,
-            sortDescending: true,
+            sortColumn: "startDate",
+            sortDescending: false,
             search: null,
-            filters: null);
+            filters: null,
+            upcoming: true,
+            status: AdminEventStatus.Published);
 
             Events = result.Items;
             _totalItems = result.TotalItems;

@@ -9,6 +9,7 @@ public static class ApplicationServicesConfiguration
 {
     public static IServiceCollection ConfigureApplicationServices(this IServiceCollection services)
     {
+        services.AddScoped<AdminMediaUrlResolver>();
         services.AddScoped<IEventService, ApiEventService>();
         services.AddScoped<ISeasonPassService, SeasonPassService>();
         services.AddScoped<ISeasonService, SeasonService>();

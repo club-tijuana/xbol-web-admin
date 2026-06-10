@@ -61,12 +61,12 @@ namespace Odasoft.XBOL.Business.Services
             return regionCodes.OrderBy(x => x.RegionCode).ToList();
         }
 
-        public async Task<List<Amenity>> GetVenueAmenitiesAsync()
+        public async Task<List<AmenityDTO>> GetVenueAmenitiesAsync()
         {
             var amenities = await _adminClient.GetVenueAmenitiesCatalogAsync();
 
             return amenities
-                    .Select(x => new Amenity
+                    .Select(x => new AmenityDTO
                     {
                         IconIdentifier = x.IconIdentifier,
                         Id = x.Id,
@@ -76,12 +76,12 @@ namespace Odasoft.XBOL.Business.Services
                     .ToList();
         }
 
-        public async Task<List<Amenity>> GetSuiteAmenitiesAsync()
+        public async Task<List<AmenityDTO>> GetSuiteAmenitiesAsync()
         {
             var amenities = await _adminClient.GetSuiteAmenitiesCatalogAsync();
 
             return amenities
-                    .Select(x => new Amenity
+                    .Select(x => new AmenityDTO
                     {
                         IconIdentifier = x.IconIdentifier,
                         Id = x.Id,

@@ -1,33 +1,39 @@
 @page "/events/create"
 @page "/events/{EventId:long}/edit"
 @page "/events/{EventId:long}/schedules/{ScheduleId:long}/edit"
-@attribute [Authorize]
 @page "/events/{EventId:long}/review"
 @page "/events/{EventId:long}/schedules/{ScheduleId:long}/review"
+
+@using Odasoft.XBOL.Auth
+@attribute [RequireAnyPermission(AdminPermissions.Events.Read, AdminPermissions.Events.ReadCurrent, AdminPermissions.Events.Create, AdminPermissions.Events.Update)]
+
 @using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.AdminPortal.Extensions
 @using Odasoft.XBOL.AdminPortal.States
-@using Odasoft.XBOL.AdminPortal.ViewModels.Event
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
+@using Odasoft.XBOL.Business.ModelValidators
 @using Radzen.Blazor
 @using SixLabors.ImageSharp
+@using FluentValidation;
 
 @inject CatalogsService CatalogsService;
 @inject IEventService EventService;
 @inject OrganizersService OrganizersService;
 @inject VenuesService VenuesService
 @inject VenueMapsService VenueMapsService;
-@inject PriceService PriceService;
 @inject EventScheduleService ScheduleService;
 @inject MediaService MediaService;
+@inject AdditionalChargesService AdditionalChargesService;
 @inject AppLocalizer<EventEdit> L
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject LoadingState LoadingState;
 @inject IJSRuntime JS;
-@inject ILogger<EventEdit> Logger
+@inject ILogger<EventEdit> Logger;
+@inject PriceReferenceService PriceReferenceService;
+@inject AdminMediaUrlResolver MediaUrlResolver
 
 <style>
     .mud-stepper .mud-stepper-content {
@@ -62,17 +68,17 @@
                                Color="MudBlazor.Color.Tertiary"
                                Variant="Variant.Filled"
                                DropShadow="false"
-                               Disabled="_loading || _eventStatus != EventStatus.PendingReview"
+                               Disabled="_loading || _eventStatus != AdminEventStatus.PendingReview"
                                OnClick="OpenReviewDialog">@L["FinishReview"]</MudButton>
                 }
                 else
-                {                    
+                {
                     <MudButton StartIcon="@Icons.Material.Filled.Save"
-                        Color="MudBlazor.Color.Tertiary"
-                        Variant="Variant.Filled"
-                        DropShadow="false"
-                        OnClick="PublishAsync"
-                        Disabled="_eventStatus != EventStatus.Approved || _loading">@L["Publish"]</MudButton>
+                               Color="MudBlazor.Color.Tertiary"
+                               Variant="Variant.Filled"
+                               DropShadow="false"
+                               OnClick="PublishAsync"
+                               Disabled="_eventStatus != AdminEventStatus.Approved || _loading">@L["Publish"]</MudButton>
                 }
             }
         </RightContent>
@@ -88,7 +94,7 @@
         <MudCardContent Class="pa-6">
             <MudStack Justify="Justify.SpaceBetween" AlignItems="AlignItems.Stretch" Class="mb-4">
                 <MudStack Row>
-                    <MudText Typo="Typo.h5">@($"{(_isEdit || _isReview ? _name : _pageTitle)}")</MudText>
+                    <MudText Typo="Typo.h5">@($"{(_isEdit || _isReview ? EventState.EventInfo.Name : _pageTitle)}")</MudText>
                     @if (!_isReview)
                     {
                         <EventStatusChip Status="_eventStatus"></EventStatusChip>
@@ -96,32 +102,41 @@
                 </MudStack>
                 @if (_isReview)
                 {
-                    <MudAlert 
-                        Severity="Severity.Warning"
+                    <MudAlert Severity="MudBlazor.Severity.Warning"
                         Class="bg-primary-lighten text-secondary w-100"
                         Dense
                         NoIcon
                     >@L["ReviewDescription"]</MudAlert>
                 }
                 else
-                {                    
+                {
                     <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">@L["RequiredFieldsNote"]</MudText>
                 }
             </MudStack>
 
-            <MudStepper @ref="_stepper" @bind-ActiveIndex="_activeIndex" OnPreviewInteraction="OnPreviewInteraction" NonLinear Class="pa-0">
+            <MudStepper @ref="_stepper" ActiveIndex="_activeIndex" OnPreviewInteraction="OnPreviewInteraction" ActiveIndexChanged="HandleStepNavigation" NonLinear Class="pa-0"
+            CompletedStepColor="MudBlazor.Color.Tertiary">
                 <ChildContent>
-                    <MudStep Title="@L["DescriptionAndVenue"]">
-                        <MudForm @ref="_descriptionForm" @bind-IsValid="_descriptionFormValid" @onkeydown="OnKeyDownAsync">
+                    <MudStep
+                        Title="@L["DescriptionAndVenue"]"
+                        HasError="!_descriptionFormValid"
+                        @bind-Completed="_descriptionFormCompleted">
+                        <MudForm
+                            @ref="_descriptionForm"
+                            @bind-IsValid="_descriptionFormValid"
+                            Model="EventState.EventInfo"
+                            Validation="@(_eventInfoValidator.ValidateValue)"
+                            @onkeydown="OnKeyDownAsync">
                             <MudGrid Spacing="7">
                                 <MudItem xs="12">
                                     <AdminSelect Label="@(L["Organizer"].Value)"
-                                               @bind-Value="_organizerId"
-                                               Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
+                                               @bind-Value="EventState.EventInfo.OrganizerId"
+                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                 For="@(() => EventState.EventInfo.OrganizerId)">
 
                                         @foreach (var organizer in _organizers)
                                         {
-                                            <MudSelectItem T="long?" Value="organizer.Id" >
+                                            <MudSelectItem T="long?" Value="organizer.Id">
                                                 @organizer.Name
                                             </MudSelectItem>
                                         }
@@ -130,43 +145,44 @@
                                 <MudItem xs="12" sm="6">
                                     <MudGrid Spacing="4">
                                         <MudItem xs="12">
-                                            <AdminTextField @bind-Value="_name"
+                                            <AdminTextField @bind-Value="EventState.EventInfo.Name"
+                                                            Class="required"
                                                             Label="@L["Name"].Value"
-                                                            Field="@_descriptionFormContext.Field("Name")"
-                                                            Required
-                                                            Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                            For="@(() => EventState.EventInfo.Name)"
+                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                         </MudItem>
                                         <MudItem xs="12">
-                                            <AdminTextField @bind-Value="_subtitle"
+                                            <AdminTextField @bind-Value="EventState.EventInfo.Subtitle"
                                                             Label="@L["Subtitle"].Value"
-                                                            Field="@_descriptionFormContext.Field("Subtitle")"
-                                                            Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                            For="@(() => EventState.EventInfo.Subtitle)"
+                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <MudSelect Label="@L["EventType"]"
-                                                       T="EventCategoryResult"
+                                                       T="AdminEventCategoryResult"
                                                        MultiSelection="true"
-                                                       @bind-SelectedValues="_selectedCategories"
+                                                       @bind-SelectedValues="EventState.EventInfo.SelectedCategories"
+                                                       Validation="@(new Func<IEnumerable<AdminEventCategoryResult>, Task<IEnumerable<string>>>(ValidateCategories))"
                                                        Variant="Variant.Outlined"
                                                        Margin="Margin.Dense"
                                                        ToStringFunc="@(c => c?.DisplayName ?? "")"
-                                                       Required
-                                                       Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
+                                                       Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                       Class="required">
 
                                                 @foreach (var category in _eventCategories)
                                                 {
-                                                    <MudSelectItem T="EventCategoryResult" Value="category">
+                                                    <MudSelectItem T="AdminEventCategoryResult" Value="category">
                                                         @category.DisplayName
                                                     </MudSelectItem>
                                                 }
                                             </MudSelect>
                                         </MudItem>
                                         <MudItem xs="12">
-                                            <AdminTextField @bind-Value="_shortDescription"
+                                            <AdminTextField @bind-Value="EventState.EventInfo.ShortDescription"
                                                             Label="@L["EventSummary"].Value"
-                                                            Field="@_descriptionFormContext.Field("ShortDescription")"
+                                                            For="@(() => EventState.EventInfo.ShortDescription)"
                                                             Lines="@(3)"
-                                                            Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <MudStack>
@@ -174,9 +190,9 @@
                                     ;">@L["EventDescription"]</MudText>
                                                 @* TODO: Create and use component *@
                                                 <MudPaper Outlined="true" Class="pa-0">
-                                                    <RadzenHtmlEditor 
-                                                        @bind-Value="_longDescription" Style="min-height: 300px; width: 100%;"
-                                                          Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
+                                                    <RadzenHtmlEditor
+                                                        @bind-Value="EventState.EventInfo.LongDescription" Style="min-height: 300px; width: 100%;"
+                                                          Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
                                                         <RadzenHtmlEditorUndo Title="Deshacer" />
                                                         <RadzenHtmlEditorRedo Title="Rehacer" />
                                                         <RadzenHtmlEditorSeparator />
@@ -219,11 +235,12 @@
                                     <MudGrid Spacing="4">
                                         <MudItem xs="12" md="6">
                                             <AdminSelect T="VenueResponse?"
-                                                         Value="_selectedVenue"
+                                                         Class="required"
+                                                         Value="EventState.EventInfo.SelectedVenue"
                                                          ValueChanged="OnVenueSelected"
+                                                         For="@(() => EventState.EventInfo.SelectedVenue)"
                                                          Label="@L["Venue"].Value"
-                                                         Required
-                                                         Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
+                                                         Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
                                                 @foreach (var venue in _venues)
                                                 {
                                                     <MudSelectItem T="VenueResponse?" Value="@venue">@venue.Name</MudSelectItem>
@@ -232,11 +249,12 @@
                                         </MudItem>
                                         <MudItem xs="12" md="6">
                                             <AdminSelect T="VenueMapResponse?"
-                                                         Value="_selectedVenueMap"
+                                                         Class="required"
+                                                         Value="EventState.EventInfo.SelectedVenueMap"
                                                          ValueChanged="OnVenueMapSelected"
+                                                         For="@(() => EventState.EventInfo.SelectedVenueMap)"
                                                          Label="@L["Map"].Value"
-                                                         Required
-                                                         Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
+                                                         Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
                                                 @foreach (var map in _venueMaps)
                                                 {
                                                     <MudSelectItem T="VenueMapResponse?" Value="@map">@map.Name</MudSelectItem>
@@ -257,10 +275,10 @@
                                                           Margin="Margin.Dense"
                                                           Disabled="@true" />
                                         </MudItem>
-                                        @if (_selectedVenueMap is not null)
+                                        @if (EventState.EventInfo.SelectedVenueMap is not null)
                                         {
                                             <MudItem xs="12" Class="d-flex justify-center">
-                                                <MudImage Src="@_selectedVenueMap.ThumbnailUrl" Alt="@_selectedVenueMap.Name" Class="rounded-lg" Height="400" />
+                                                <MudImage Src="@EventState.EventInfo.SelectedVenueMap.ThumbnailUrl" Alt="@EventState.EventInfo.SelectedVenueMap.Name" Class="rounded-lg" Height="400" />
                                             </MudItem>
                                         }
                                     </MudGrid>
@@ -268,10 +286,18 @@
                             </MudGrid>
                         </MudForm>
                     </MudStep>
-                    <MudStep Title="@L["ZonePrices"]">                        
-                        <MudForm @ref="_pricesForm" @bind-IsValid="_pricesValid" @onkeydown="OnKeyDownAsync">
+                    <MudStep
+                        Title="@L["ZonePrices"]"
+                        HasError="!_pricesValid"
+                        @bind-Completed="_pricesCompleted">
+                        <MudForm
+                            @ref="_pricesForm"
+                            @bind-IsValid="_pricesValid"
+                            Model="EventState.PricesInfo"
+                            Validation="@(_pricesValidator.ValidateValue)"
+                            @onkeydown="OnKeyDownAsync">
                             <MudTable
-                                Items="_prices"
+                                Items="EventState.PricesInfo.Prices"
                                 GroupBy="_groupDefinition"
                                 Elevation="0"
                                 FixedHeader>
@@ -294,28 +320,26 @@
                                     <col />
                                     <col />
                                     <col />
-                                    <col />
                                     @foreach (var priceType in PriceTypes)
                                     {
                                         <col />
                                     }
                                 </ColGroup>
                                 <HeaderContent>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetZoneName(x.BaseZoneId))">@L["Zone"]</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseSectionId))">@L["Section"]</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseRowId))">@L["Row"]</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => GetSectionName(x.BaseSeatId))">@L["Seat"]</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceForm, object>(x => x.ItemPrice ?? 0)">@L["BasePrice"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceInfoModel, object>(x => GetZoneName(x.BaseZoneId))">@L["Zone"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceInfoModel, object>(x => GetSectionName(x.BaseSectionId))">@L["Section"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceInfoModel, object>(x => GetSectionName(x.BaseRowId))">@L["Row"]</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PriceInfoModel, object>(x => GetSectionName(x.BaseSeatId))">@L["Seat"]</MudTableSortLabel></MudTh>
                                     @foreach (var priceType in PriceTypes)
                                     {
                                         <MudTh>
-                                            @priceType
-                                            @if (!_isReview)
+                                            @priceType.Key
+                                            @if (!priceType.Value)
                                             {
                                                 <MudIconButton Icon="@Icons.Material.Outlined.Edit"
-                                                           Color="MudBlazor.Color.Secondary"
-                                                           Size="MudBlazor.Size.Small"
-                                                           OnClick="@(() => OpenEditDialog(priceType))" />
+                                                               Color="MudBlazor.Color.Secondary"
+                                                               Size="MudBlazor.Size.Small"
+                                                               OnClick="@(() => OpenEditDialog(priceType.Key))" />
                                             }
                                         </MudTh>
                                     }
@@ -331,11 +355,11 @@
                                     <MudTd></MudTd>
                                     <MudTd>
                                         <AdminSelect T="long?"
-                                            Value="@context.BaseSectionId"
-                                            ValueChanged="@((long? newValue) => OnSectionChanged(context, newValue))"
-                                            Disabled="@(context.IsZonePrice || _isReview)"
-                                            Placeholder="@L["Select"].Value">
-                                            @foreach(var section in GetSectionsFor(context.BaseZoneId))
+                                                     Value="@context.BaseSectionId"
+                                                     ValueChanged="@((long? newValue) => OnSectionChanged(context, newValue))"
+                                                     Disabled="@(context.IsZonePrice || _isReview)"
+                                                     Placeholder="@L["Select"].Value">
+                                            @foreach (var section in GetSectionsFor(context.BaseZoneId))
                                             {
                                                 <MudSelectItem T="long?" Value="section.Id">
                                                     @(section.Name)
@@ -372,23 +396,13 @@
                                             }
                                         </AdminSelect>
                                     </MudTd>
-                                    <MudTd>
-                                        <AdminNumericField @bind-Value="@context.ItemPrice"
-                                                         Format="N2"
-                                                         Adornment="@Adornment.Start"
-                                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                                         Placeholder="0.00"
-                                                         HideSpinButtons="@true"
-                                                         Immediate="@false"
-                                                         Required
-                                                         Disabled="@_isReview"/>
-                                    </MudTd>
                                     @foreach (var priceType in PriceTypes)
                                     {
-                                        <MudTd DataLabel="@priceType">
+                                        <MudTd DataLabel="@priceType.Key">
                                             <AdminNumericField T="decimal?"
-                                                               Value="@GetPriceTypeValue(context, priceType)"
-                                                               ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType, newValue))"
+                                                               Value="@GetPriceTypeValue(context, priceType.Key)"
+                                                               ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType.Key, newValue))"
+                                                               Validation="@(new Func<decimal?, Task<IEnumerable<string>>>(val => ValidateSpecificPrice(PriceTypes, priceType.Key, val)))"
                                                                Clearable="@true"
                                                                Format="N2"
                                                                Adornment="@Adornment.Start"
@@ -396,7 +410,7 @@
                                                                Placeholder="0.00"
                                                                HideSpinButtons="@true"
                                                                Immediate="@false"
-                                                               Disabled="@_isReview"/>
+                                                               Disabled="@_isReview" />
                                         </MudTd>
                                     }
                                     <MudTd></MudTd>
@@ -421,57 +435,168 @@
                                     <MudTh>
                                         @if (!_isReview)
                                         {
-                                            <MudIconButton
-                                            Color="MudBlazor.Color.Primary"
-                                            Icon="@Icons.Material.Outlined.Add"
-                                            OnClick="@(() => AddPrice(long.Parse(context.Key.ToString())))">@L["AddPrice"]</MudIconButton>
+                                            <MudIconButton Color="MudBlazor.Color.Primary"
+                                                           Icon="@Icons.Material.Outlined.Add"
+                                                           OnClick="@(() => AddPrice(long.Parse(context.Key.ToString())))">@L["AddPrice"]</MudIconButton>
                                         }
                                     </MudTh>
                                 </GroupHeaderTemplate>
                             </MudTable>
                         </MudForm>
                     </MudStep>
-                    <MudStep Title="@L["DatesAndSalePolicies"]">
-                        <MudForm @ref="_datesAndSalePoliciesForm" @bind-IsValid="_datesAndSalePoliciesValid" @onkeydown="OnKeyDownAsync">
+                    <MudStep Title="@L["AdditionalCharges"]"
+                             HasError="!_additionalChargesValid"
+                             @bind-Completed="_additionalChargesCompleted">
+                        <MudForm @ref="_additionalChargesForm"
+                                 @bind-IsValid="_additionalChargesValid"
+                                 Model="EventState.AdditionalChargesInfo"
+                                 Validation="@(_additionalChargesInfoValidator.ValidateValue)"
+                                 @onkeydown="OnKeyDownAsync">
+                            <MudGrid Spacing="6">
+                                <MudItem xs="12">
+                                    <MudDataGrid @ref="_additionalChargesGrid"
+                                        T="AdditionalChargeInfoModel"
+                                        Items="@EventState.AdditionalChargesInfo.AdditionalCharges"
+                                        CommittedItemChanges="@CommittedItemChanges"
+                                        EditMode="DataGridEditMode.Cell"
+                                        ReadOnly="_isReview"
+                                        Validator="_additionalChargesForm"
+                                        Bordered="true"
+                                        Dense="true"
+                                        Elevation="0">
+                                        <ToolBarContent>
+                                            <MudText Typo="Typo.h5">@L["AdditionalCharges"]</MudText>
+                                            <MudSpacer />
+                                            <MudButtonGroup Class="ma-0 pa-0" Color="MudBlazor.Color.Primary" Variant="Variant.Filled">
+                                                @if (!_isReview)
+                                                {
+                                                    <MudButton OnClick="NewAdditionalChargeAsync">
+                                                        @L["AddAdditionalCharge"]
+                                                    </MudButton>
+                                                }
+                                            </MudButtonGroup>
+                                        </ToolBarContent>
+                                        <Columns>
+                                            <PropertyColumn Property="x => x.Name" Title="@L["FeeName"]">
+                                                <EditTemplate>
+                                                    @{
+                                                        var item = context.Item;
+                                                    }
+                                                    <AdminTextField
+                                                        @key="item.UiId"
+                                                        @bind-Value="item.Name"
+                                                                  For="@(() => item.Name)"
+                                                                  Validation="@(new Func<string, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.Name), val)))"
+                                                                    Disabled="@_isReview" />
+                                                </EditTemplate>
+                                            </PropertyColumn>
+
+                                            <PropertyColumn Property="x => x.FeeType" Title="@L["Type"]">
+                                                <EditTemplate>
+                                                    @{
+                                                        var item = context.Item;
+                                                    }
+                                                    <MudSelect @key="item.UiId"
+                                                               T="FeeType"
+                                                               @bind-Value="item.FeeType"
+                                                               Variant="Variant.Outlined"
+                                                               Margin="Margin.Dense"
+                                                               For="@(() => item.FeeType)"
+                                                               ToStringFunc="@(feeType => L[feeType.ToString()].Value)"
+                                                               Validation="@(new Func<FeeType, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.FeeType), val)))"
+                                                               Disabled="@(_isReview)">
+
+                                                        @foreach (var fee in _feeTypes)
+                                                        {
+                                                            <MudSelectItem T="FeeType" Value="fee">
+                                                                @L[fee.ToString()]
+                                                            </MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                </EditTemplate>
+                                            </PropertyColumn>
+
+                                            <PropertyColumn Property="x => x.Value" Title="@L["FeeAmount"]">
+                                                <EditTemplate>
+                                                    @{
+                                                        var item = context.Item;
+                                                    }
+                                                    <AdminNumericField @key="item.UiId"
+                                                                    @bind-Value="item.Value"
+                                                                     For="@(() => item.Value)"
+                                                                       Validation="@(new Func<decimal?, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.Value), val)))"
+                                                                       HideSpinButtons="@true"
+                                                                       Disabled="@_isReview" />
+                                                </EditTemplate>
+                                            </PropertyColumn>
+
+                                            @if (!_isReview)
+                                            {
+                                                <TemplateColumn>
+                                                    <CellTemplate>
+                                                        <MudIconButton Color="MudBlazor.Color.Default" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteAdditionalCharge(context.Item))" />
+                                                    </CellTemplate>
+                                                    <EditTemplate>
+                                                        <MudIconButton Color="MudBlazor.Color.Default" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteAdditionalCharge(context.Item))" />
+                                                    </EditTemplate>
+                                                </TemplateColumn>
+                                            }
+                                        </Columns>
+                                    </MudDataGrid>
+                                </MudItem>
+                            </MudGrid>
+                        </MudForm>
+                    </MudStep>
+                    <MudStep
+                        Title="@L["DatesAndSalePolicies"]"
+                        HasError="!_scheduleValid"
+                        @bind-Completed="_scheduleCompleted">
+                        <MudForm @ref="_scheduleForm"
+                            @bind-IsValid="_scheduleValid"
+                            Model="EventState.ScheduleInfo"
+                            Validation="@(_scheduleValidator.ValidateValue)"
+                            @onkeydown="OnKeyDownAsync">
                             <MudGrid Spacing="6">
                                 <MudItem xs="12">
                                     <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
                                     ;">@L["EventSchedule"]</MudText>
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker @bind-Date="_startDate"
+                                    <AdminDatePicker @bind-Date="EventState.ScheduleInfo.StartDate"
                                                      Label="@L["StartDate"].Value"
-                                                     Field="@_datesAndSalePoliciesFormContext.Field("StartDate")"
-                                                     Required 
-                                                     Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                     For="@(() => EventState.ScheduleInfo.StartDate)"
+                                                     Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                     Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudTimePicker @bind-Time="_startTime"
+                                    <MudTimePicker @bind-Time="EventState.ScheduleInfo.StartTime"
                                                    Label="@L["Time"].Value"
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
-                                                   Required 
-                                                   Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                   For="@(() => EventState.ScheduleInfo.StartTime)"
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker 
-                                        @bind-Date="_endDate" 
-                                        Label="@L["EndDate"].Value" 
-                                        Required
-                                        Field="@_datesAndSalePoliciesFormContext.Field("EndDate")"
-                                        Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                    <AdminDatePicker
+                                        @bind-Date="EventState.ScheduleInfo.EndDate"
+                                        Label="@L["EndDate"].Value"
+                                        For="@(() => EventState.ScheduleInfo.EndDate)"
+                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudTimePicker @bind-Time="_endTime"
+                                    <MudTimePicker @bind-Time="EventState.ScheduleInfo.EndTime"
                                                    Label="@L["Time"].Value"
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
-                                                   Required
-                                                   Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                   For="@(() => EventState.ScheduleInfo.EndTime)"
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Class="required" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12">
@@ -479,36 +604,36 @@
                                     ;">@L["TicketsPreSale"]</MudText>
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker 
-                                        @bind-Date="_preSaleDate"
+                                    <AdminDatePicker @bind-Date="EventState.ScheduleInfo.PreSaleDate"
                                         Label="@L["StartDate"].Value"
-                                        Field="@_datesAndSalePoliciesFormContext.Field("PreSaleDate")"
-                                        Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                        For="@(() => EventState.ScheduleInfo.PreSaleDate)"
+                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudTimePicker @bind-Time="_preSaleTime"
+                                    <MudTimePicker @bind-Time="EventState.ScheduleInfo.PreSaleTime"
                                                    Label="@L["Time"].Value"
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
-                                                   Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                   For="@(() => EventState.ScheduleInfo.PreSaleTime)"
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker 
-                                        @bind-Date="_presaleEndDate" 
+                                    <AdminDatePicker @bind-Date="EventState.ScheduleInfo.PreSaleEndDate"
                                         Label="@L["EndDate"].Value"
-                                        Field="@_datesAndSalePoliciesFormContext.Field("PreSaleEndDate")"
-                                        Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                        For="@(() => EventState.ScheduleInfo.PreSaleEndDate)"
+                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudTimePicker @bind-Time="_preSaleEndTime"
+                                    <MudTimePicker @bind-Time="EventState.ScheduleInfo.PreSaleEndTime"
                                                    Label="@L["Time"].Value"
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
-                                                   Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                   For="@(() => EventState.ScheduleInfo.PreSaleEndTime)"
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12">
@@ -516,40 +641,40 @@
                                     ;">@L["TicketsSale"]</MudText>
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker 
-                                        @bind-Date="_onSaleDate" 
+                                    <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OnSaleDate"
                                         Label="@L["StartDate"].Value"
-                                        Field="@_datesAndSalePoliciesFormContext.Field("OnSaleDate")" 
-                                        Required 
-                                        Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                        For="@(() => EventState.ScheduleInfo.OnSaleDate)"
+                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudTimePicker @bind-Time="_onSaleTime"
+                                    <MudTimePicker @bind-Time="EventState.ScheduleInfo.OnSaleTime"
                                                    Label="@L["Time"].Value"
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
-                                                   Required
-                                                   Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                   For="@(() => EventState.ScheduleInfo.OnSaleTime)"
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <AdminDatePicker 
-                                        @bind-Date="_offSaleDate" 
-                                        Label="@L["EndDate"].Value" 
-                                        Required 
-                                        Field="@_datesAndSalePoliciesFormContext.Field("OffSaleDate")"
-                                        Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                    <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OffSaleDate"
+                                        Label="@L["EndDate"].Value"
+                                        For="@(() => EventState.ScheduleInfo.OffSaleDate)"
+                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudTimePicker @bind-Time="_offSaleTime"
+                                    <MudTimePicker @bind-Time="EventState.ScheduleInfo.OffSaleTime"
                                                    Label="@L["Time"].Value"
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
-                                                   Required
-                                                   Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                   For="@(() => EventState.ScheduleInfo.OffSaleTime)"
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Class="required" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12" md="5">
@@ -559,87 +684,88 @@
                                             ;">@L["WebSitePublishing"]</MudText>
                                         </MudItem>
                                         <MudItem xs="12" md="7">
-                                            <AdminDatePicker 
-                                                @bind-Date="_publishedDate" 
+                                            <AdminDatePicker @bind-Date="EventState.ScheduleInfo.PublishedDate"
                                                 Label="@L["PublishDate"].Value"
-                                                Field="@_datesAndSalePoliciesFormContext.Field("PublishedDate")"
-                                                Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                For="@(() => EventState.ScheduleInfo.PublishedDate)"
+                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                         </MudItem>
                                         <MudItem xs="12" md="5">
-                                            <MudTimePicker @bind-Time="_publishedTime"
+                                            <MudTimePicker @bind-Time="EventState.ScheduleInfo.PublishedTime"
                                                            Label="@L["Time"].Value"
                                                            Variant="Variant.Outlined"
                                                            Margin="Margin.Dense"
                                                            TimeFormat="h:mm tt"
-                                                           AmPm="true" 
-                                                           Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                           AmPm="true"
+                                                           For="@(() => EventState.ScheduleInfo.PublishedTime)"
+                                                           Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
-                                <MudItem xs="12" md="5">
+                                <MudItem xs="12" md="7">
                                     <MudGrid Spacing="6">
                                         <MudItem xs="12">
                                             <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
                                             ;">@L["VenueAccess"]</MudText>
                                         </MudItem>
-                                        <MudItem xs="12" md="7">
-                                            <AdminDatePicker 
-                                                @bind-Date="_gateOpenDate" 
-                                                Label="@L["AccessDate"].Value"
-                                                Field="@_datesAndSalePoliciesFormContext.Field("GateOpenDate")"             
-                                                Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
-                                        </MudItem>
                                         <MudItem xs="12" md="5">
-                                            <MudTimePicker @bind-Time="_gateOpenTime"
+                                            <AdminDatePicker @bind-Date="EventState.ScheduleInfo.GateOpenDate"
+                                                Label="@L["AccessDate"].Value"
+                                                For="@(() => EventState.ScheduleInfo.GateOpenDate)"
+                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        </MudItem>
+                                        <MudItem xs="12" md="4">
+                                            <MudTimePicker @bind-Time="EventState.ScheduleInfo.GateOpenTime"
                                                            Label="@L["Time"].Value"
                                                            Variant="Variant.Outlined"
                                                            Margin="Margin.Dense"
                                                            TimeFormat="h:mm tt"
-                                                           AmPm="true" 
-                                                           Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                           AmPm="true"
+                                                           For="@(() => EventState.ScheduleInfo.GateOpenTime)"
+                                                           Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        </MudItem>
+                                        <MudItem xs="12" md="3">
+                                            <MudSelect Label="@L["AgeRestrictions"]"
+                                                       T="AgeRestriction?"
+                                                       @bind-Value="EventState.EventInfo.AgeRestriction"
+                                                       Variant="Variant.Outlined"
+                                                       Margin="Margin.Dense"
+                                                       For="@(() => EventState.EventInfo.AgeRestriction)"
+                                                       ToStringFunc="@(restriction => L[restriction.ToString()].Value)"
+                                                       Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+
+                                                @foreach (var restriction in _ageRestrictions)
+                                                {
+                                                    <MudSelectItem T="AgeRestriction?" Value="restriction">
+                                                        @L[restriction.ToString()]
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <AdminTextField @bind-Value="_externalEventKey"
-                                                    Label="@L["ExternalEventKey"].Value"
-                                                    Field="@_descriptionFormContext.Field("ExternalEventKey")"
-                                                    Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
-                                </MudItem>
-                                <MudItem xs="12" md="2">
-                                    <AdminNumericField @bind-Value="_holdExpirationInMinutes"
+                                    <MudStack Spacing="6">
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                        ;">@L["Timer"]</MudText>
+                                        <AdminNumericField @bind-Value="EventState.ScheduleInfo.HoldExpirationInMinutes"
                                                        Label="@L["TimeToPurchaseInMinutes"].Value"
-                                                    Field="@_datesAndSalePoliciesFormContext.Field("HoldExpirationInMinutes")"
+                                                    For="@(() => EventState.ScheduleInfo.HoldExpirationInMinutes)"
                                                     HideSpinButtons="@true"
-                                                    Disabled="@(_isReview || _eventStatus == EventStatus.Published)" />
+                                                    Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                    </MudStack>
                                 </MudItem>
-                                <MudItem xs="12" md="2">
-                                    <MudSelect Label="@L["AgeRestrictions"]"
-                                               T="AgeRestriction?"
-                                               @bind-Value="_ageRestriction"
-                                               Variant="Variant.Outlined"
-                                               Margin="Margin.Dense"
-                                               Validation="@(_descriptionFormContext.Field("AgeRestriction").ValidationFor<AgeRestriction?>())"
-                                               ToStringFunc="@(restriction => L[restriction.ToString()].Value)"
-                                               Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
-
-                                        @foreach (var restriction in _ageRestrictions)
-                                        {
-                                            <MudSelectItem T="AgeRestriction?" Value="restriction">
-                                                @L[restriction.ToString()]
-                                            </MudSelectItem>
-                                        }
-                                    </MudSelect>
+                                <MudItem xs="12" md="6">
+                                    <MudText></MudText>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudStack>
                                         <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
                                     ;">@L["SecurityPolicies"]</MudText>
                                         <MudPaper Outlined="true" Class="pa-0">
-                                            <RadzenHtmlEditor 
-                                                @bind-Value="_securityPolicies" 
+                                            <RadzenHtmlEditor
+                                                @bind-Value="EventState.EventInfo.SecurityPolicies"
                                                 Style="min-height: 300px; width: 100%;"
-                                                Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
+                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
                                                 <RadzenHtmlEditorUndo Title="Deshacer" />
                                                 <RadzenHtmlEditorRedo Title="Rehacer" />
                                                 <RadzenHtmlEditorSeparator />
@@ -681,10 +807,10 @@
                                         <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
                                         ;">@L["AdditionalComments"]</MudText>
                                         <MudPaper Outlined="true" Class="pa-0">
-                                            <RadzenHtmlEditor 
-                                                @bind-Value="_additionalComments" 
+                                            <RadzenHtmlEditor
+                                                @bind-Value="EventState.EventInfo.AdditionalComments"
                                                 Style="min-height: 300px; width: 100%;"
-                                                Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
+                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
                                                 <RadzenHtmlEditorUndo Title="Deshacer" />
                                                 <RadzenHtmlEditorRedo Title="Rehacer" />
                                                 <RadzenHtmlEditorSeparator />
@@ -724,273 +850,281 @@
                             </MudGrid>
                         </MudForm>
                     </MudStep>
-                    <MudStep Title="@L["Images"]">
-                        <MudGrid Spacing="7">
-                            <MudItem xs="12">
-                                <MudStack>
-                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["EventBanner"]</MudText>
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.caption">@L["EventBannerDimensions"]</MudText>
-                                        <MudText Typo="Typo.caption">@L["EventBannerDescription"]</MudText>
+                    <MudStep
+                        Title="@L["Images"]"
+                        HasError="!_imagesValid"
+                        @bind-Completed="_imagesCompleted">
+                        <MudForm @ref="_imagesForm"
+                            @bind-IsValid="_imagesValid"
+                            Model="EventState.ImagesInfo"
+                            Validation="@(_imagesValidator.ValidateValue)">
+                            <MudGrid Spacing="7">
+                                <MudItem xs="12">
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["EventBanner"]</MudText>
+                                        <MudStack Spacing="0">
+                                            <MudText Typo="Typo.caption">@L["EventBannerDimensions"]</MudText>
+                                            <MudText Typo="Typo.caption">@L["EventBannerDescription"]</MudText>
+                                        </MudStack>
                                     </MudStack>
-                                </MudStack>
-                            </MudItem>
-                            <MudItem xs="12">
-                                <MudFileUpload 
-                                    @ref="_bannerImageUpload" 
-                                    T="IBrowserFile" 
-                                    FilesChanged="(file) => AddImage(file, MediaType.Banner)"
-                                    Accept=".jpg, .png, .jpeg">
-                                    <CustomContent>
-                                        <div class="d-flex align-center gap-4">
-                                            <MudButton StartIcon="@Icons.Material.Filled.Upload"
-                                                       Variant="Variant.Filled"
-                                                       Color="MudBlazor.Color.Secondary"
-                                                       OnClick="@context.OpenFilePickerAsync"
-                                                       Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
-                                                @L["EventBanner"]
-                                            </MudButton>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudFileUpload
+                                        @ref="_bannerImageUpload"
+                                        T="IBrowserFile"
+                                        FilesChanged="(file) => AddImage(file, AdminMediaType.Banner)"
+                                        Accept=".jpg, .png, .jpeg">
+                                        <CustomContent>
+                                            <div class="d-flex align-center gap-4">
+                                                <MudButton StartIcon="@Icons.Material.Filled.Upload"
+                                                           Variant="Variant.Filled"
+                                                           Color="MudBlazor.Color.Secondary"
+                                                           OnClick="@context.OpenFilePickerAsync"
+                                                           Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                    @L["EventBanner"]
+                                                </MudButton>
 
-                                            @if (_bannerImage != null && !(_isReview || _eventStatus == EventStatus.Published))
+                                                @if (EventState.ImagesInfo.BannerImage != null && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                                                {
+                                                    <MudChip T="string"
+                                                        Variant="Variant.Text"
+                                                        Color="MudBlazor.Color.Dark"
+                                                        OnClose="() => DeleteImageAsync(AdminMediaType.Banner)"
+                                                        CloseIcon="@Icons.Material.Filled.Close">
+                                                        @EventState.ImagesInfo.BannerImage?.Name
+                                                    </MudChip>
+                                                }
+                                            </div>
+                                        </CustomContent>
+                                        <SelectedTemplate />
+                                    </MudFileUpload>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudStack Row Spacing="13">
+                                        <MudStack>
+                                            <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
+
+                                            @if (string.IsNullOrEmpty(EventState.ImagesInfo.BannerImage?.Src))
                                             {
-                                                <MudChip T="string" 
-                                                    Variant="Variant.Text"
-                                                    Color="MudBlazor.Color.Dark" 
-                                                    OnClose="() => DeleteImageAsync(MediaType.Banner)"
-                                                    CloseIcon="@Icons.Material.Filled.Close">
-                                                    @_bannerImage?.Name
-                                                </MudChip>
+                                                <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
                                             }
-                                        </div>
-                                    </CustomContent>
-                                    <SelectedTemplate />
-                                </MudFileUpload>
-                            </MudItem>
-                            <MudItem xs="12"> 
-                                <MudStack Row Spacing="13">
-                                    <MudStack>
-                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
-
-                                        @if (string.IsNullOrEmpty(_bannerImage?.Src))
-                                        {
-                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
-                                        }
-                                        else
-                                        {                                    
-                                            <MudImage Src="@_bannerImage.Src"
-                                                      Class="rounded-lg"
-                                                      ObjectFit="ObjectFit.Cover"
-                                                      ObjectPosition="ObjectPosition.Center"
-                                                      Height="200"
-                                                      Width="355" />
-                                        }
-                                    </MudStack>
-                                    <MudStack>
-                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["SquareImagePreview"]</MudText>
-
-                                        @if (string.IsNullOrEmpty(_bannerImage?.Src))
-                                        {
-                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="200px" />
-                                        }
-                                        else
-                                        {
-                                            <MudImage Src="@_bannerImage.Src"
-                                                      Class="rounded-lg"
-                                                      ObjectFit="ObjectFit.Cover"
-                                                      ObjectPosition="ObjectPosition.Center"
-                                                      Height="200"
-                                                      Width="200" />
-                                        }
-                                    </MudStack>                                    
-                                </MudStack>
-                            </MudItem>
-
-                            <MudItem xs="12">
-                                <MudStack>
-                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["Sponsors"]</MudText>
-                                    <MudText Typo="Typo.caption">@L["SponsorsDescription"]</MudText>
-                                </MudStack>
-                            </MudItem>
-                            <MudItem xs="12" lg="6">
-                                <MudStack>                                
-                                    <MudFileUpload @ref="_sponsorUploads[0]"
-                                                   T="IBrowserFile"
-                                                   FilesChanged="(file) => AddImage(file, MediaType.Sponsor)"
-                                                   Accept=".jpg, .png, .jpeg">
-                                        <CustomContent>
-                                            <div class="d-flex align-center gap-4">
-                                                <MudButton StartIcon="@Icons.Material.Filled.Upload"
-                                                           Variant="Variant.Filled"
-                                                           Color="MudBlazor.Color.Secondary"
-                                                           OnClick="@context.OpenFilePickerAsync"
-                                                           Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
-                                                    @L["Sponsor"] 1
-                                                </MudButton>
-
-                                                @if (_sponsorImages[0] != null && !(_isReview || _eventStatus == EventStatus.Published))
-                                                {
-                                                    <MudChip T="string"
-                                                             Variant="Variant.Text"
-                                                             Color="MudBlazor.Color.Dark"
-                                                             OnClose="() => DeleteImageAsync(MediaType.Sponsor)"
-                                                             CloseIcon="@Icons.Material.Filled.Close">
-                                                        @_sponsorImages[0]?.Name
-                                                    </MudChip>
-                                                }
-                                            </div>
-                                        </CustomContent>
-                                        <SelectedTemplate />
-                                    </MudFileUpload>
-                                    <MudStack>
-                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
-
-                                        @if (string.IsNullOrEmpty(_sponsorImages[0]?.Src))
-                                        {
-                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
-                                        }
-                                        else
-                                        {
-                                            <MudImage Src="@_sponsorImages[0].Src"
-                                                      Class="rounded-lg"
-                                                      ObjectFit="ObjectFit.Cover"
-                                                      ObjectPosition="ObjectPosition.Center"
-                                                      Height="200"
-                                                      Width="355" />
-                                        }
-                                    </MudStack>
-                                </MudStack>
-                            </MudItem>
-                            <MudItem xs="12" lg="6">
-                                <MudStack>
-                                    <MudFileUpload @ref="_sponsorUploads[1]"
-                                                   T="IBrowserFile"
-                                                   FilesChanged="(file) => AddImage(file, MediaType.Sponsor, 1)"
-                                                   Accept=".jpg, .png, .jpeg">
-                                        <CustomContent>
-                                            <div class="d-flex align-center gap-4">
-                                                <MudButton StartIcon="@Icons.Material.Filled.Upload"
-                                                           Variant="Variant.Filled"
-                                                           Color="MudBlazor.Color.Secondary"
-                                                           OnClick="@context.OpenFilePickerAsync"
-                                                           Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
-                                                    @L["Sponsor"] 2
-                                                </MudButton>
-
-                                                @if (_sponsorImages[1] != null && !(_isReview || _eventStatus == EventStatus.Published))
-                                                {
-                                                    <MudChip T="string"
-                                                             Variant="Variant.Text"
-                                                             Color="MudBlazor.Color.Dark"
-                                                             OnClose="() => DeleteImageAsync(MediaType.Sponsor, 1)"
-                                                             CloseIcon="@Icons.Material.Filled.Close">
-                                                        @_sponsorImages[1]?.Name
-                                                    </MudChip>
-                                                }
-                                            </div>
-                                        </CustomContent>
-                                        <SelectedTemplate />
-                                    </MudFileUpload>
-                                    <MudStack>
-                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
-
-                                        @if (string.IsNullOrEmpty(_sponsorImages[1]?.Src))
-                                        {
-                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
-                                        }
-                                        else
-                                        {
-                                            <MudImage Src="@_sponsorImages[1].Src"
-                                                      Class="rounded-lg"
-                                                      ObjectFit="ObjectFit.Cover"
-                                                      ObjectPosition="ObjectPosition.Center"
-                                                      Height="200"
-                                                      Width="355" />
-                                        }
-                                    </MudStack>
-                                </MudStack>
-                            </MudItem>
-
-                            <MudItem xs="12">
-                                <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">@L["WebsiteGallery"]</MudText>
-                            </MudItem>
-
-                            <MudItem xs="12" Class="pt-0">
-                                <MudFileUpload @ref="_galleryUpload" T="IReadOnlyList<IBrowserFile>" Accept=".jpg, .png, .jpeg" AppendMultipleFiles="true" DragAndDrop="true"
-                                               @bind-Dragging="@_dragging" @bind-Dragging:after="@ClearDragClass" FilesChanged="UploadGalleryImagesAsync"
-                                               Disabled="@(_isReview || _eventStatus == EventStatus.Published)">
-                                    <CustomContent>
-                                        <MudPaper Height="300px;" Outlined="true" @onclick="@context.OpenFilePickerAsync" @ondragenter="@SetDragClass"
-                                                  Class="@($"pa-4 {_dragClass}")">
-
-                                            <MudText Typo="Typo.body1">
-                                                @L["GalleryUploadHint"]
-                                            </MudText>
-                                            <MudText Typo="Typo.caption">
-                                                @L["GalleryUploadHintDetails", _minWidth, _minHeight, _maxFileSize / 1024 / 1024]
-                                            </MudText>
-
-                                            @if (_galleryImages != null && _galleryImages.Count() > 0 && !(_isReview || _eventStatus == EventStatus.Published))
+                                            else
                                             {
-                                                <div class="mt-4 d-flex flex-wrap gap-2" style="z-index: 10;">
-                                                    @foreach (var fileName in _galleryImages.Keys)
+                                                <MudImage Src="@EventState.ImagesInfo.BannerImage.Src"
+                                                          Class="rounded-lg"
+                                                          ObjectFit="ObjectFit.Cover"
+                                                          ObjectPosition="ObjectPosition.Center"
+                                                          Height="200"
+                                                          Width="355" />
+                                            }
+                                        </MudStack>
+                                        <MudStack>
+                                            <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["SquareImagePreview"]</MudText>
+
+                                            @if (string.IsNullOrEmpty(EventState.ImagesInfo.BannerImage?.Src))
+                                            {
+                                                <ImagePlaceholder Class="rounded-lg" Height="200px" Width="200px" />
+                                            }
+                                            else
+                                            {
+                                                <MudImage Src="@EventState.ImagesInfo.BannerImage.Src"
+                                                          Class="rounded-lg"
+                                                          ObjectFit="ObjectFit.Cover"
+                                                          ObjectPosition="ObjectPosition.Center"
+                                                          Height="200"
+                                                          Width="200" />
+                                            }
+                                        </MudStack>
+                                    </MudStack>
+                                </MudItem>
+
+                                <MudItem xs="12">
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["Sponsors"]</MudText>
+                                        <MudText Typo="Typo.caption">@L["SponsorsDescription"]</MudText>
+                                    </MudStack>
+                                </MudItem>
+                                <MudItem xs="12" lg="6">
+                                    <MudStack>
+                                        <MudFileUpload @ref="_sponsorUploads[0]"
+                                                       T="IBrowserFile"
+                                                       FilesChanged="(file) => AddImage(file, AdminMediaType.Sponsor)"
+                                                       Accept=".jpg, .png, .jpeg">
+                                            <CustomContent>
+                                                <div class="d-flex align-center gap-4">
+                                                    <MudButton StartIcon="@Icons.Material.Filled.Upload"
+                                                               Variant="Variant.Filled"
+                                                               Color="MudBlazor.Color.Secondary"
+                                                               OnClick="@context.OpenFilePickerAsync"
+                                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                        @L["Sponsor"] 1
+                                                    </MudButton>
+
+                                                    @if (EventState.ImagesInfo.SponsorImages[0] != null && !(_isReview || _eventStatus == AdminEventStatus.Published))
                                                     {
                                                         <MudChip T="string"
-                                                                 Variant="Variant.Filled"
-                                                                 Class="bg-secondary-darken"
+                                                                 Variant="Variant.Text"
                                                                  Color="MudBlazor.Color.Dark"
-                                                                 OnClose="@(() => RemoveGalleryImageAsync(fileName))"
-                                                                 CloseIcon="@Icons.Material.Filled.Close"
-                                                                 @onclick:preventDefault="true">
-                                                            @fileName
+                                                                 OnClose="() => DeleteImageAsync(AdminMediaType.Sponsor)"
+                                                                 CloseIcon="@Icons.Material.Filled.Close">
+                                                            @EventState.ImagesInfo.SponsorImages[0]?.Name
                                                         </MudChip>
                                                     }
                                                 </div>
-                                            }
+                                            </CustomContent>
+                                            <SelectedTemplate />
+                                        </MudFileUpload>
+                                        <MudStack>
+                                            <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
 
-                                            @if (_galleryImages != null && _galleryImages.Any() && !(_isReview || _eventStatus == EventStatus.Published))
+                                            @if (string.IsNullOrEmpty(EventState.ImagesInfo.SponsorImages[0]?.Src))
                                             {
-                                                <div style="position: absolute; bottom: 16px; right: 16px; z-index: 20;">
-                                                    <MudButton Variant="Variant.Outlined"
-                                                               StartIcon="@Icons.Material.Filled.ClearAll"
-                                                               Color="MudBlazor.Color.Secondary"
-                                                               OnClick="CleanGalleryImagesAsync">
-                                                        @L["Clear"]
-                                                    </MudButton>
-                                                </div>
+                                                <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
                                             }
-                                        </MudPaper>
-                                    </CustomContent>
-                                    <SelectedTemplate />
-                                </MudFileUpload>
-                            </MudItem>
-                            <MudItem xs="12">
-                                <MudStack>
-                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["GalleryPreview"]</MudText>
-                                    @if (_galleryImages == null || !_galleryImages.Any())
-                                    {
-                                        <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
-                                    }
-                                    else
-                                    {
-                                        <MudCarousel 
-                                        @ref="_carousel"
-                                        ItemsSource="_galleryImages"
-                                        Style="height:200px; width: 355px;" 
-                                        ShowArrows 
-                                        ShowBullets>
-                                            <ItemTemplate>
-                                                <MudImage Src="@context.Value.Src"
-                                                Class="rounded-lg"
-                                                ObjectFit="ObjectFit.Cover"
-                                                ObjectPosition="ObjectPosition.Center"
-                                                Height="200"
-                                                Width="355" />
-                                            </ItemTemplate>
-                                        </MudCarousel>
-                                    }
-                                </MudStack>
-                            </MudItem>
-                        </MudGrid>
+                                            else
+                                            {
+                                                <MudImage Src="@EventState.ImagesInfo.SponsorImages[0].Src"
+                                                          Class="rounded-lg"
+                                                          ObjectFit="ObjectFit.Cover"
+                                                          ObjectPosition="ObjectPosition.Center"
+                                                          Height="200"
+                                                          Width="355" />
+                                            }
+                                        </MudStack>
+                                    </MudStack>
+                                </MudItem>
+                                <MudItem xs="12" lg="6">
+                                    <MudStack>
+                                        <MudFileUpload @ref="_sponsorUploads[1]"
+                                                       T="IBrowserFile"
+                                                       FilesChanged="(file) => AddImage(file, AdminMediaType.Sponsor, 1)"
+                                                       Accept=".jpg, .png, .jpeg">
+                                            <CustomContent>
+                                                <div class="d-flex align-center gap-4">
+                                                    <MudButton StartIcon="@Icons.Material.Filled.Upload"
+                                                               Variant="Variant.Filled"
+                                                               Color="MudBlazor.Color.Secondary"
+                                                               OnClick="@context.OpenFilePickerAsync"
+                                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                        @L["Sponsor"] 2
+                                                    </MudButton>
+
+                                                    @if (EventState.ImagesInfo.SponsorImages[1] != null && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                                                    {
+                                                        <MudChip T="string"
+                                                                 Variant="Variant.Text"
+                                                                 Color="MudBlazor.Color.Dark"
+                                                                 OnClose="() => DeleteImageAsync(AdminMediaType.Sponsor, 1)"
+                                                                 CloseIcon="@Icons.Material.Filled.Close">
+                                                            @EventState.ImagesInfo.SponsorImages[1]?.Name
+                                                        </MudChip>
+                                                    }
+                                                </div>
+                                            </CustomContent>
+                                            <SelectedTemplate />
+                                        </MudFileUpload>
+                                        <MudStack>
+                                            <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["HorizontalImagePreview"]</MudText>
+
+                                            @if (string.IsNullOrEmpty(EventState.ImagesInfo.SponsorImages[1]?.Src))
+                                            {
+                                                <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
+                                            }
+                                            else
+                                            {
+                                                <MudImage Src="@EventState.ImagesInfo.SponsorImages[1]?.Src"
+                                                          Class="rounded-lg"
+                                                          ObjectFit="ObjectFit.Cover"
+                                                          ObjectPosition="ObjectPosition.Center"
+                                                          Height="200"
+                                                          Width="355" />
+                                            }
+                                        </MudStack>
+                                    </MudStack>
+                                </MudItem>
+
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">@L["WebsiteGallery"]</MudText>
+                                </MudItem>
+
+                                <MudItem xs="12" Class="pt-0">
+                                    <MudFileUpload @ref="_galleryUpload" T="IReadOnlyList<IBrowserFile>" Accept=".jpg, .png, .jpeg" AppendMultipleFiles="true" DragAndDrop="true"
+                                                   @bind-Dragging="@_dragging" @bind-Dragging:after="@ClearDragClass" FilesChanged="UploadGalleryImagesAsync"
+                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                        <CustomContent>
+                                            <MudPaper Height="300px;" Outlined="true" @onclick="@context.OpenFilePickerAsync" @ondragenter="@SetDragClass"
+                                                      Class="@($"pa-4 {_dragClass}")">
+
+                                                <MudText Typo="Typo.body1">
+                                                    @L["GalleryUploadHint"]
+                                                </MudText>
+                                                <MudText Typo="Typo.caption">
+                                                    @L["GalleryUploadHintDetails", _minWidth, _minHeight, _maxFileSize / 1024 / 1024]
+                                                </MudText>
+
+                                                @if (EventState.ImagesInfo.GalleryImages.Count() > 0 && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                                                {
+                                                    <div class="mt-4 d-flex flex-wrap gap-2" style="z-index: 10;">
+                                                        @foreach (var image in EventState.ImagesInfo.GalleryImages)
+                                                        {
+                                                            <MudChip T="string"
+                                                                     Variant="Variant.Filled"
+                                                                     Class="bg-secondary-darken"
+                                                                     Color="MudBlazor.Color.Dark"
+                                                                     OnClose="@(() => RemoveGalleryImageAsync(image))"
+                                                                     CloseIcon="@Icons.Material.Filled.Close"
+                                                                     @onclick:preventDefault="true">
+                                                                @image.Name
+                                                            </MudChip>
+                                                        }
+                                                    </div>
+                                                }
+
+                                                @if (EventState.ImagesInfo.GalleryImages.Any() && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                                                {
+                                                    <div style="position: absolute; bottom: 16px; right: 16px; z-index: 20;">
+                                                        <MudButton Variant="Variant.Outlined"
+                                                                   StartIcon="@Icons.Material.Filled.ClearAll"
+                                                                   Color="MudBlazor.Color.Secondary"
+                                                                   OnClick="CleanGalleryImagesAsync">
+                                                            @L["Clear"]
+                                                        </MudButton>
+                                                    </div>
+                                                }
+                                            </MudPaper>
+                                        </CustomContent>
+                                        <SelectedTemplate />
+                                    </MudFileUpload>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight: 600;">@L["GalleryPreview"]</MudText>
+                                        @if (!EventState.ImagesInfo.GalleryImages.Any())
+                                        {
+                                            <ImagePlaceholder Class="rounded-lg" Height="200px" Width="355px" />
+                                        }
+                                        else
+                                        {
+                                            <MudCarousel
+                                            @ref="_carousel"
+                                            ItemsSource="EventState.ImagesInfo.GalleryImages"
+                                            Style="height:200px; width: 355px;"
+                                            ShowArrows
+                                            ShowBullets>
+                                                <ItemTemplate>
+                                                    <MudImage Src="@context.Src"
+                                                    Class="rounded-lg"
+                                                    ObjectFit="ObjectFit.Cover"
+                                                    ObjectPosition="ObjectPosition.Center"
+                                                    Height="200"
+                                                    Width="355" />
+                                                </ItemTemplate>
+                                            </MudCarousel>
+                                        }
+                                    </MudStack>
+                                </MudItem>
+                            </MudGrid>
+                        </MudForm>
                     </MudStep>
                 </ChildContent>
                 <ActionContent Context="stepperContext">
@@ -1004,7 +1138,7 @@
                             @L["Next"]
                         </MudButton>
                     }
-                    else if (_activeIndex == _maxIndex && !(_isReview || _eventStatus == EventStatus.Published))
+                    else if (_activeIndex == _maxIndex && !(_isReview || _eventStatus == AdminEventStatus.Published))
                     {
                         <MudButton OnClick="SubmitAsync"
                                    Variant="Variant.Filled"
@@ -1023,6 +1157,8 @@
     [Parameter] public long? EventId { get; set; }
     [Parameter] public long? ScheduleId { get; set; }
 
+    private long? _priceReferenceId = null;
+
     private string _pageTitle = "";
     private bool _loading = true;
     private bool _error = false;
@@ -1031,35 +1167,61 @@
 
     private MudStepper _stepper = null!;
     private int _activeIndex = 0;
-    private int _highestUnlockedStep = 0;
-    private int _maxIndex = 3;
+    private int _maxIndex = 4;
+    private HashSet<int> _visitedSteps = new();
+
+    private EventFormModel EventState { get; set; } = new();
+
+    private EventInfoModel _originalEventInfo = new();
+    private ScheduleInfoModel _originalScheduleInfo = new();
+    private HashSet<long> _dirtyPriceIds = new();
+    private bool _imageHasChanges = false;
 
     private MudForm _descriptionForm = default!;
-    private bool _descriptionFormValid;
+    private bool _descriptionFormValid = true;
+    private bool _descriptionFormCompleted = false;
+    private EventInfoValidator _eventInfoValidator;
     private FormContext _descriptionFormContext = default!;
 
-    private MudForm _datesAndSalePoliciesForm = default!;
-    private bool _datesAndSalePoliciesValid;
-    private FormContext _datesAndSalePoliciesFormContext = default!;
+    private MudForm _scheduleForm = default!;
+    private bool _scheduleValid = true;
+    private bool _scheduleCompleted = false;
+    private ScheduleInfoValidator _scheduleValidator;
+    private FormContext _scheduleFormContext = default!;
 
     private MudForm _pricesForm = default!;
-    private bool _pricesValid;
+    private bool _pricesValid = true;
+    private bool _pricesCompleted = false;
+    private PricesInfoValidator _pricesValidator;
     private FormContext _pricesFormContext = default!;
 
-    private List<EventCategoryResult> _eventCategories = [];
-    private IReadOnlyCollection<EventCategoryResult> _selectedCategories = [];
+    private MudForm _additionalChargesForm = default!;
+    private bool _additionalChargesValid = true;
+    private bool _additionalChargesCompleted = false;
+    private AdditionalChargesInfoValidator _additionalChargesInfoValidator;
+    private AdditionalChargeInfoValidator _additionalChargeInfoValidator;
+    private FormContext _additionalChargesFormContext = default!;
+    private MudDataGrid<AdditionalChargeInfoModel> _additionalChargesGrid = default!;
+
+    private MudForm _imagesForm = default!;
+    private bool _imagesValid = true;
+    private bool _imagesCompleted = false;
+    private ImagesInfoValidator _imagesValidator;
+    private FormContext _imagesFormContext = default!;
+
+    private bool IsFormReadyToSubmit => _descriptionFormValid && _scheduleValid && _pricesValid && _imagesValid && _additionalChargesValid;
+
+    private List<AdminEventCategoryResult> _eventCategories = [];
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
+    private List<FeeType> _feeTypes = Enum.GetValues<FeeType>().ToList();
     private List<VenueResponse> _venues = [];
     private List<VenueMapResponse> _venueMaps = [];
     private List<ListItem> _organizers = [];
 
     private MudFileUpload<IBrowserFile> _bannerImageUpload = null!;
-    private ImageModel? _bannerImage;
     private MudFileUpload<IBrowserFile>[] _sponsorUploads = new MudFileUpload<IBrowserFile>[2];
-    private ImageModel?[] _sponsorImages = new ImageModel?[2];
     private MudFileUpload<IReadOnlyList<IBrowserFile>> _galleryUpload = null!;
-    private Dictionary<string, ImageModel> _galleryImages = [];
-    private MudCarousel<KeyValuePair<string, ImageModel>> _carousel;
+    private MudCarousel<ImageModel> _carousel = null!;
 
     private readonly long _maxFileSize = 10 * 1024 * 1024; // 10 MB
     private readonly int _minWidth = 1920;
@@ -1069,37 +1231,11 @@
     private string _dragClass = DefaultDragClass;
     private bool _dragging = false;
 
-    private EventStatus? _eventStatus;
-    private string? _name;
-    private string? _subtitle;
-    private string? _shortDescription;
-    private string? _longDescription;
-    private DateTime? _startDate;
-    private TimeSpan? _startTime;
-    private DateTime? _endDate;
-    private TimeSpan? _endTime;
-    private DateTime? _preSaleDate;
-    private TimeSpan? _preSaleTime;
-    private DateTime? _presaleEndDate;
-    private TimeSpan? _preSaleEndTime;
-    private DateTime? _onSaleDate;
-    private TimeSpan? _onSaleTime;
-    private DateTime? _offSaleDate;
-    private TimeSpan? _offSaleTime;
-    private DateTime? _publishedDate;
-    private TimeSpan? _publishedTime;
-    private DateTime? _gateOpenDate;
-    private TimeSpan? _gateOpenTime;
-    private int? _holdExpirationInMinutes;
-    private AgeRestriction? _ageRestriction;
-    private string? _securityPolicies;
-    private string? _additionalComments;
-    private string? _externalEventKey;
+    private AdminEventStatus? _eventStatus;
 
-    private List<PriceForm> _prices = [];
     private long? _currentPricesMapId;
     private string _searchPrices = string.Empty;
-    private TableGroupDefinition<PriceForm> _groupDefinition = new()
+    private TableGroupDefinition<PriceInfoModel> _groupDefinition = new()
     {
         GroupName = "Zone",
         Indentation = true,
@@ -1108,17 +1244,13 @@
         IsInitiallyExpanded = true
     };
 
-    private List<string> PriceTypes { get; set; } = new();
+    private Dictionary<string, bool> PriceTypes { get; set; } = new Dictionary<string, bool> { { "General", true } };
     private string _priceTypeName = string.Empty;
 
     private VenueMapLayoutResponse _layout;
 
     private string? _venueAddress;
     private string? _venueCoordinates;
-
-    private long? _organizerId;
-    private VenueResponse? _selectedVenue;
-    private VenueMapResponse? _selectedVenueMap;
 
     private static readonly DialogOptions _dialogOptions = new() { CloseButton = true };
 
@@ -1134,14 +1266,23 @@
     protected override async Task OnInitializedAsync()
     {
         _descriptionFormContext = new FormContext(StateHasChanged);
-        _datesAndSalePoliciesFormContext = new FormContext(StateHasChanged);
+        _scheduleFormContext = new FormContext(StateHasChanged);
         _pricesFormContext = new FormContext(StateHasChanged);
+        _additionalChargesFormContext = new FormContext(StateHasChanged);
+        _imagesFormContext = new FormContext(StateHasChanged);
 
         // TODO: Change to use user permissions instead of URL to determine read-only mode
         if (Navigation.Uri.Contains("/review"))
         {
             _isReview = true;
         }
+
+        _eventInfoValidator = new(L);
+        _scheduleValidator = new(L);
+        _pricesValidator = new(L);
+        _additionalChargesInfoValidator = new(L);
+        _additionalChargeInfoValidator = new(L);
+        _imagesValidator = new(L);
     }
 
     private async Task InitializeForm()
@@ -1156,7 +1297,7 @@
             {
                 _isEdit = true;
                 await LoadData();
-                _pageTitle = _name;
+                _pageTitle = EventState.EventInfo.Name;
             }
             else
             {
@@ -1208,96 +1349,50 @@
 
             var schedule = eventResult.Schedules?.FirstOrDefault(s => s.Id == ScheduleId);
 
-            _name = eventResult.Name;
-            _subtitle = eventResult.Subtitle;
-            _shortDescription = eventResult.ShortDescription;
-            _longDescription = eventResult.LongDescription;
-            _ageRestriction = eventResult.AgeRestriction;
-            _securityPolicies = eventResult.SecurityPolicies;
-            _additionalComments = eventResult.AdditionalComments;
-            _selectedCategories = eventResult.Categories.ToList();
+            EventState.EventInfo.Name = eventResult.Name;
+            EventState.EventInfo.Subtitle = eventResult.Subtitle;
+            EventState.EventInfo.ShortDescription = eventResult.ShortDescription;
+            EventState.EventInfo.LongDescription = eventResult.LongDescription;
+            EventState.EventInfo.AgeRestriction = eventResult.AgeRestriction;
+            EventState.EventInfo.SecurityPolicies = eventResult.SecurityPolicies;
+            EventState.EventInfo.AdditionalComments = eventResult.AdditionalComments;
+            EventState.EventInfo.SelectedCategories = eventResult.Categories.ToList();
+            EventState.EventInfo.OrganizerId = eventResult.OrganizerId;
             _eventStatus = eventResult.Status;
-            _organizerId = eventResult.OrganizerId;
 
             await OnVenueSelected(_venues.FirstOrDefault(v => v.Id == eventResult.VenueId));
             await OnVenueMapSelected(_venueMaps.FirstOrDefault(m => m.Id == eventResult.VenueMapId));
 
             if (schedule is not null)
             {
-                _startDate = DateTimeHelpers.ToNullableDateTime(schedule?.StartDateTime);
-                _startTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.StartDateTime);
-                _endDate = DateTimeHelpers.ToNullableDateTime(schedule?.EndDateTime);
-                _endTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.EndDateTime);
-                _preSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.PreSaleStartDate);
-                _preSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PreSaleStartDate);
-                _presaleEndDate = DateTimeHelpers.ToNullableDateTime(schedule?.PreSaleEndDate);
-                _preSaleEndTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PreSaleEndDate);
-                _onSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.OnSaleDate);
-                _onSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.OnSaleDate);
-                _offSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.OffSaleDate);
-                _offSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.OffSaleDate);
-                _publishedDate = DateTimeHelpers.ToNullableDateTime(schedule?.PublishedDate);
-                _publishedTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PublishedDate);
-                _gateOpenDate = DateTimeHelpers.ToNullableDateTime(schedule?.GateOpenDate);
-                _gateOpenTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.GateOpenDate);
-                _holdExpirationInMinutes = schedule.HoldExpirationInMinutes;
-                _externalEventKey = schedule.ExternalEventKey;
+                EventState.ScheduleInfo.StartDate = DateTimeHelpers.ToNullableDateTime(schedule?.StartDateTime);
+                EventState.ScheduleInfo.StartTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.StartDateTime);
+                EventState.ScheduleInfo.EndDate = DateTimeHelpers.ToNullableDateTime(schedule?.EndDateTime);
+                EventState.ScheduleInfo.EndTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.EndDateTime);
+                EventState.ScheduleInfo.PreSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.PreSaleStartDate);
+                EventState.ScheduleInfo.PreSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PreSaleStartDate);
+                EventState.ScheduleInfo.PreSaleEndDate = DateTimeHelpers.ToNullableDateTime(schedule?.PreSaleEndDate);
+                EventState.ScheduleInfo.PreSaleEndTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PreSaleEndDate);
+                EventState.ScheduleInfo.OnSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.OnSaleDate);
+                EventState.ScheduleInfo.OnSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.OnSaleDate);
+                EventState.ScheduleInfo.OffSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.OffSaleDate);
+                EventState.ScheduleInfo.OffSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.OffSaleDate);
+                EventState.ScheduleInfo.PublishedDate = DateTimeHelpers.ToNullableDateTime(schedule?.PublishedDate);
+                EventState.ScheduleInfo.PublishedTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PublishedDate);
+                EventState.ScheduleInfo.GateOpenDate = DateTimeHelpers.ToNullableDateTime(schedule?.GateOpenDate);
+                EventState.ScheduleInfo.GateOpenTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.GateOpenDate);
+                EventState.ScheduleInfo.HoldExpirationInMinutes = schedule.HoldExpirationInMinutes;
+                EventState.ScheduleInfo.ExternalEventKey = schedule.ExternalEventKey;
             }
 
-            _layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(_selectedVenueMap.Id);
+            _layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(EventState.EventInfo.SelectedVenueMap?.Id ?? 0);
 
             await LoadPrices();
+            await LoadAdditionalCharges();
+            await LoadEventMediaAsync();
 
-            ICollection<MediaResponse> bannerImages = await MediaService.GetReferenceMediaByMediaTypeAsync(EventId.Value, AdminSaleType.Event, MediaType.Banner);
-            var banner = bannerImages.FirstOrDefault();
-
-            if (banner != null && banner.Id.HasValue)
-            {
-                _bannerImage = new ImageModel
-                {
-                    Id = banner.Id,
-                    Name = banner.Title,
-                    Src = banner.Url ?? string.Empty,
-                    MediaType = MediaType.Banner                    
-                };
-            }
-
-            ICollection<MediaResponse> sponsorImages = await MediaService.GetReferenceMediaByMediaTypeAsync(EventId.Value, AdminSaleType.Event, MediaType.Sponsor);
-
-            foreach (var sponsor in sponsorImages)
-            {
-                if (sponsor != null && sponsor.Id.HasValue)
-                {
-                    _sponsorImages[sponsor.Order.Value] = new ImageModel
-                    {
-                        Id = sponsor.Id,
-                        Name = sponsor.Title,
-                        Src = sponsor.Url ?? string.Empty,
-                        Order = sponsor.Order ?? 0,
-                        MediaType = MediaType.Sponsor
-                    };
-                }
-            }
-
-            ICollection<MediaResponse> galleryImages = await MediaService.GetReferenceMediaByMediaTypeAsync(EventId.Value, AdminSaleType.Event, MediaType.Gallery);
-
-            foreach (var image in galleryImages)
-            {
-
-                if (string.IsNullOrWhiteSpace(image.Title))
-                {
-                    continue;
-                }
-
-                _galleryImages.Add(image.Title, new ImageModel
-                {
-                    Id = image.Id,
-                    Name = image.Title,
-                    Src = image.Url ?? string.Empty,
-                    Order = image.Order ?? 0,
-                    MediaType = MediaType.Gallery
-                });
-            }
+            _originalEventInfo = EventState.EventInfo with { };
+            _originalScheduleInfo = EventState.ScheduleInfo with { };
         }
         catch (Exception ex)
         {
@@ -1306,17 +1401,76 @@
         }
         finally
         {
+            await ValidateForm();
             _loading = false;
             StateHasChanged();
         }
     }
 
+    private async Task LoadEventMediaAsync()
+    {
+        if (EventId is null || EventId <= 0)
+        {
+            return;
+        }
+
+        var media = await MediaService.GetEventMediaAsync(EventId.Value);
+
+        EventState.ImagesInfo.BannerImage = ToImageModel(media.Banner, AdminMediaType.Banner);
+        EventState.ImagesInfo.SponsorImages = new ImageModel?[2];
+        EventState.ImagesInfo.GalleryImages = [];
+
+        foreach (var sponsor in (media.Sponsors ?? []).OrderBy(s => s.Order ?? int.MaxValue))
+        {
+            var order = sponsor.Order ?? 0;
+            if (order < 0 || order >= EventState.ImagesInfo.SponsorImages.Length)
+            {
+                continue;
+            }
+
+            EventState.ImagesInfo.SponsorImages[order] = ToImageModel(sponsor, AdminMediaType.Sponsor, order);
+        }
+
+        foreach (var (index, image) in (media.Gallery ?? []).OrderBy(g => g.Order ?? int.MaxValue).Index())
+        {
+            var imageModel = ToImageModel(image, AdminMediaType.Gallery, index);
+            if (imageModel is not null)
+            {
+                imageModel.Order = index;
+                EventState.ImagesInfo.GalleryImages.Add(imageModel);
+            }
+        }
+    }
+
+    private ImageModel? ToImageModel(MediaResponse? media, AdminMediaType mediaType, int order = 0)
+    {
+        if (media is null || !media.Id.HasValue)
+        {
+            return null;
+        }
+
+        return new ImageModel
+        {
+            Id = media.Id,
+            Name = GetMediaName(media),
+            ContentType = media.ContentType ?? string.Empty,
+            Src = MediaUrlResolver.Resolve(media.Url) ?? string.Empty,
+            Order = media.Order ?? order,
+            MediaType = mediaType
+        };
+    }
+
+    private static string GetMediaName(MediaResponse media)
+        => !string.IsNullOrWhiteSpace(media.FileName)
+            ? media.FileName
+            : media.Title ?? string.Empty;
+
     private async Task OnVenueSelected(VenueResponse? venueSelected)
     {
-        _selectedVenue = venueSelected;
-        _selectedVenueMap = null;
+        EventState.EventInfo.SelectedVenue = venueSelected;
+        EventState.EventInfo.SelectedVenueMap = null;
 
-        if (_selectedVenue is null)
+        if (EventState.EventInfo.SelectedVenue is null)
         {
             _venueMaps = [];
             _venueAddress = null;
@@ -1327,15 +1481,15 @@
         LoadingState.Show();
         try
         {
-            _venueMaps = await CatalogsService.GetVenueMapsByVenueId(_selectedVenue.Id);
+            _venueMaps = await CatalogsService.GetVenueMapsByVenueId(EventState.EventInfo.SelectedVenue.Id);
 
-            _venueAddress = $"{_selectedVenue.StreetAddress} {_selectedVenue.ExtNum}, {_selectedVenue.Neighborhood}, {_selectedVenue.ZipCode} {_selectedVenue.City}, {_selectedVenue.State}";
-            _venueCoordinates = $"{_selectedVenue.Latitude}, {_selectedVenue.Longitude}";
+            _venueAddress = $"{EventState.EventInfo.SelectedVenue.StreetAddress} {EventState.EventInfo.SelectedVenue.ExtNum}, {EventState.EventInfo.SelectedVenue.Neighborhood}, {EventState.EventInfo.SelectedVenue.ZipCode} {EventState.EventInfo.SelectedVenue.City}, {EventState.EventInfo.SelectedVenue.State}";
+            _venueCoordinates = $"{EventState.EventInfo.SelectedVenue.Latitude}, {EventState.EventInfo.SelectedVenue.Longitude}";
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to load venue");
-            Snackbar.Add(L["ErrorLoadingVenue"], Severity.Error);
+            Snackbar.Add(L["ErrorLoadingVenue"], MudBlazor.Severity.Error);
         }
         finally
         {
@@ -1345,72 +1499,105 @@
 
     private async Task OnVenueMapSelected(VenueMapResponse? venueMap)
     {
-        _selectedVenueMap = venueMap;
+        EventState.EventInfo.SelectedVenueMap = venueMap;
     }
 
     private async Task OnPreviewInteraction(StepperInteractionEventArgs arg)
     {
-        bool isAttemptingNextStep = arg.Action == StepAction.Activate && arg.StepIndex == _activeIndex + 1;
-        if (arg.Action == StepAction.Complete || isAttemptingNextStep)
+        bool isCurrentStepValid = false;
+        switch (_activeIndex)
         {
-            bool isCurrentStepValid = false;
+            case 0:
+                _descriptionFormContext.SetForm(_descriptionForm);
+                isCurrentStepValid = await _descriptionFormContext.ValidateAsync();
+                _descriptionFormValid = isCurrentStepValid;
+                _descriptionFormCompleted = isCurrentStepValid;
+                break;
+            case 1:
+                _pricesFormContext.SetForm(_pricesForm);
+                isCurrentStepValid = await _pricesFormContext.ValidateAsync();
+                _pricesValid = isCurrentStepValid;
+                _pricesCompleted = isCurrentStepValid;
+                break;
+            case 2:
+                _additionalChargesFormContext.SetForm(_additionalChargesForm);
+                isCurrentStepValid = await _additionalChargesFormContext.ValidateAsync();
+                _additionalChargesValid = isCurrentStepValid;
+                _additionalChargesCompleted = isCurrentStepValid;
+                break;
+            case 3:
+                _scheduleFormContext.SetForm(_scheduleForm);
+                isCurrentStepValid = await _scheduleFormContext.ValidateAsync();
+                _scheduleValid = isCurrentStepValid;
+                _scheduleCompleted = isCurrentStepValid;
+                break;
+            case 4:
+                _imagesFormContext.SetForm(_imagesForm);
+                isCurrentStepValid = await _imagesFormContext.ValidateAsync();
+                _imagesValid = isCurrentStepValid;
+                _imagesCompleted = isCurrentStepValid;
+                break;
+            default:
+                break;
+        }
 
-            switch (_activeIndex)
+        if (_activeIndex == 0)
+        {
+            if (EventState.EventInfo.SelectedVenueMap is not null && _currentPricesMapId != EventState.EventInfo.SelectedVenueMap.Id)
+            {
+                _layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(EventState.EventInfo.SelectedVenueMap.Id);
+                await LoadPrices();
+                _currentPricesMapId = EventState.EventInfo.SelectedVenueMap.Id;
+            }
+        }
+    }
+
+    private async Task HandleStepNavigation(int newIndex)
+    {
+        _visitedSteps.Add(_activeIndex);
+
+        _activeIndex = newIndex;
+
+        await Task.Yield();
+
+        if (_visitedSteps.Contains(newIndex))
+        {
+            switch (newIndex)
             {
                 case 0:
                     _descriptionFormContext.SetForm(_descriptionForm);
-                    isCurrentStepValid = await _descriptionFormContext.ValidateAsync();
+                    await _descriptionFormContext.ValidateAsync();
                     break;
                 case 1:
                     _pricesFormContext.SetForm(_pricesForm);
-                    isCurrentStepValid = await _pricesFormContext.ValidateAsync();
+                    await _pricesFormContext.ValidateAsync();
                     break;
                 case 2:
-                    _datesAndSalePoliciesFormContext.SetForm(_datesAndSalePoliciesForm);
-                    isCurrentStepValid = await _datesAndSalePoliciesFormContext.ValidateAsync();
+                    _additionalChargesFormContext.SetForm(_additionalChargesForm);
+                    await _additionalChargesFormContext.ValidateAsync();
                     break;
-                default:
-                    isCurrentStepValid = true;
+                case 3:
+                    _scheduleFormContext.SetForm(_scheduleForm);
+                    await _scheduleFormContext.ValidateAsync();
                     break;
-            }
-
-            if (!isCurrentStepValid)
-            {
-                arg.Cancel = true;
-                return;
-            }
-            else
-            {
-                if (_activeIndex >= _highestUnlockedStep)
-                {
-                    _highestUnlockedStep = _activeIndex + 1;
-                }
-
-                if (_activeIndex == 0)
-                {
-                    if (_currentPricesMapId != _selectedVenueMap.Id)
-                    {
-                        _layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(_selectedVenueMap.Id);
-                        await LoadPrices();
-                        _currentPricesMapId = _selectedVenueMap.Id;
-                    }
-                }
-            }
-        }
-        else if (arg.Action == StepAction.Activate)
-        {
-            if (arg.StepIndex > _highestUnlockedStep)
-            {
-                arg.Cancel = true;
-
-                Snackbar.Add(L["CompletePreviousStepsWarning"], Severity.Warning);
+                case 4:
+                    _imagesFormContext.SetForm(_imagesForm);
+                    await _imagesFormContext.ValidateAsync();
+                    break;
             }
         }
     }
 
     private async Task GoBackAsync()
     {
-        if ((_descriptionForm is not null && _descriptionForm.IsTouched) || (_datesAndSalePoliciesForm is not null && _datesAndSalePoliciesForm.IsTouched) || (_pricesForm is not null && _pricesForm.IsTouched))
+        bool eventChanged = _originalEventInfo != EventState.EventInfo;
+        bool scheduleChanged = _originalScheduleInfo != EventState.ScheduleInfo;
+        bool pricesChanged = _dirtyPriceIds.Any();
+        bool imagesChanged = _imageHasChanges;
+
+        bool changed = eventChanged || scheduleChanged || pricesChanged || imagesChanged;
+
+        if (changed)
         {
             var result = await DialogService.ShowMessageBoxAsync(
                 L["UnsavedChangesTitle"],
@@ -1444,95 +1631,176 @@
         await _stepper.NextStepAsync();
     }
 
+    private async Task ValidateForm()
+    {
+        var eventInfoResult = await _eventInfoValidator.ValidateAsync(EventState.EventInfo);
+        _descriptionFormValid = eventInfoResult.IsValid;
+        _descriptionFormCompleted = _descriptionFormValid;
+
+        var pricesResult = await _pricesValidator.ValidateAsync(EventState.PricesInfo);
+        _pricesValid = pricesResult.IsValid;
+        _pricesCompleted = _pricesValid;
+
+        var additionalChargesResult = await _additionalChargesInfoValidator.ValidateAsync(EventState.AdditionalChargesInfo);
+        _additionalChargesValid = additionalChargesResult.IsValid;
+        _additionalChargesCompleted = _additionalChargesValid;
+
+        var scheduleResult = await _scheduleValidator.ValidateAsync(EventState.ScheduleInfo);
+        _scheduleValid = scheduleResult.IsValid;
+        _scheduleCompleted = _scheduleValid;
+
+        var imagesResult = await _imagesValidator.ValidateAsync(EventState.ImagesInfo);
+        _imagesValid = imagesResult.IsValid;
+        _imagesCompleted = _imagesValid;
+
+        _visitedSteps.UnionWith(Enumerable.Range(1, _maxIndex));
+    }
+
     private async Task SubmitAsync()
     {
-        _datesAndSalePoliciesFormContext.SetForm(_datesAndSalePoliciesForm);
-        if (!await _datesAndSalePoliciesFormContext.ValidateAsync()) return;
+        await ValidateForm();
 
-        _datesAndSalePoliciesFormContext.SetSaving(true);
+        _imagesFormContext.SetForm(_imagesForm);
+        if (!await _imagesFormContext.ValidateAsync() || !IsFormReadyToSubmit)
+        {
+            Snackbar.Add(L["InvalidForm"], MudBlazor.Severity.Warning);
+            return;
+        }
+
+        _imagesFormContext.SetSaving(true);
         LoadingState.Show();
         try
         {
-            var request = new EventRequest
+            await SaveEventAsync();
+
+            if (_originalScheduleInfo != EventState.ScheduleInfo)
             {
-                Name = _name,
-                Subtitle = _subtitle,
-                CategoryIds = _selectedCategories.Where(c => c.Id.HasValue).Select(c => c.Id!.Value).ToList(),
-                ShortDescription = _shortDescription,
-                LongDescription = _longDescription,
-                VenueMapId = _selectedVenueMap.Id,
-                SecurityPolicies = _securityPolicies,
-                AdditionalComments = _additionalComments,
-                AgeRestriction = _ageRestriction,
-                OrganizerId = _organizerId
-            };
-
-            await SaveEventAsync(request);
-
-            var scheduleRequest = new EventScheduleRequest
+                await SaveEventScheduleAsync();
+            }
+            if (_dirtyPriceIds.Any())
             {
-                EventId = EventId,
-                StartDateTime = DateTimeHelpers.ToDateTimeOffset(_startDate, _startTime),
-                EndDateTime = DateTimeHelpers.ToDateTimeOffset(_endDate, _endTime),
-                PreSaleDate = DateTimeHelpers.ToDateTimeOffset(_preSaleDate, _preSaleTime),
-                PreSaleEndDate = DateTimeHelpers.ToDateTimeOffset(_presaleEndDate, _preSaleEndTime),
-                OnSaleDate = DateTimeHelpers.ToDateTimeOffset(_onSaleDate, _onSaleTime),
-                OffSaleDate = DateTimeHelpers.ToDateTimeOffset(_offSaleDate, _offSaleTime),
-                PublishedDate = DateTimeHelpers.ToDateTimeOffset(_publishedDate, _publishedTime),
-                GateOpenDate = DateTimeHelpers.ToDateTimeOffset(_gateOpenDate, _gateOpenTime),
-                ExternalEventKey = _externalEventKey,
-                AgeRestriction = _ageRestriction,
-                SecurityPolicies = _securityPolicies,
-                AdditionalComments = _additionalComments,
-                HoldExpirationInMinutes = _holdExpirationInMinutes
-            };
+                await SavePricesAsync();
+            }
 
-            await SaveEventScheduleAsync(scheduleRequest);
+            await SaveAdditionalChargesAsync();
 
-            var priceRequest = new PricesRequest { 
-                VenueMapId = _selectedVenueMap.Id,
-                ReferenceId = ScheduleId.Value,
-                ReferenceType = AdminSaleType.Event,
-                Prices = _prices.Select(p => new PriceRequest { BaseRowId = p.BaseRowId, BaseSeatId = p.BaseSeatId, BaseSectionId = p.BaseSectionId, BaseZoneId = p.BaseZoneId, ItemPrice = p.ItemPrice, Id = p.Id, PriceTypes = p.PriceTypes.Select(d => new PriceTypeRequest { Name = d.Key, Price = d.Value }).ToList() }).ToList() 
-            };
+            if (_imageHasChanges)
+            {
+                await SaveEventMediaAsync();
+            }
 
-            await SavePricesAsync(priceRequest);
-
-            await SaveImageAsync(_bannerImage);
-            await SaveImageAsync(_sponsorImages[0]);
-            await SaveImageAsync(_sponsorImages[1]);
-            await SaveGalleryImagesAsync();
-
-            Snackbar.Add(L["UpdateSuccess", L["Event"]], Severity.Success);
+            Snackbar.Add(L["UpdateSuccess", L["Event"]], MudBlazor.Severity.Success);
             Navigation.NavigateTo("./events");
+        }
+        catch (ApiException<ValidationProblemDetails> ex)
+        {
+            Snackbar.Add(ex.Result.Title ?? L["ErrorSavingEvent"], MudBlazor.Severity.Error);
         }
         catch (ApiException<ProblemDetails> ex)
         {
-            _datesAndSalePoliciesFormContext.HandleApiException(ex);
-            Snackbar.Add(ex.Result.Title ?? L["ErrorSavingEvent"], Severity.Error);
+            _imagesFormContext.HandleApiException(ex);
+            _imagesValidator.LoadServerErrors(ex);
+            await _imagesFormContext.ValidateAsync();
+            Snackbar.Add(ex.Result.Title ?? L["ErrorSavingEvent"], MudBlazor.Severity.Error);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to edit event");
-            Snackbar.Add(L["ErrorSavingEvent"], Severity.Error);
+            Logger.LogError(ex, "Failed to save event");
+            Snackbar.Add(L["ErrorSavingEvent"], MudBlazor.Severity.Error);
         }
         finally
         {
-            _datesAndSalePoliciesFormContext.SetSaving(false);
+            _imagesFormContext.SetSaving(false);
             LoadingState.Hide();
         }
     }
 
-    private async Task SaveEventAsync(EventRequest request)
+    private async Task SaveEventAsync()
     {
-        if (_isEdit)
+        var request = new EventRequest
         {
-            await EventService.UpdateEventAsync(EventId.Value, request);
+            Name = EventState.EventInfo.Name,
+            Subtitle = EventState.EventInfo.Subtitle,
+            CategoryIds = EventState.EventInfo.SelectedCategories.Where(c => c.Id.HasValue).Select(c => c.Id!.Value).ToList(),
+            ShortDescription = EventState.EventInfo.ShortDescription,
+            LongDescription = EventState.EventInfo.LongDescription,
+            VenueMapId = EventState.EventInfo.SelectedVenueMap?.Id,
+            SecurityPolicies = EventState.EventInfo.SecurityPolicies,
+            AdditionalComments = EventState.EventInfo.AdditionalComments,
+            AgeRestriction = EventState.EventInfo.AgeRestriction,
+            OrganizerId = EventState.EventInfo.OrganizerId
+        };
+        try
+        {
+            if (_isEdit || EventId.HasValue)
+            {
+                await EventService.UpdateEventAsync(EventId.Value, request);
+            }
+            else
+            {
+                EventResult result = await EventService.CreateEventAsync(request);
+                EventId = result.Id;
+            }
         }
-        else
+        catch (ApiException<ProblemDetails> ex)
         {
-            EventResult result = await EventService.CreateEventAsync(request);
-            EventId = result.Id;
+            _eventInfoValidator.LoadServerErrors(ex);
+
+            if (_descriptionForm != null)
+            {
+                _descriptionFormContext.SetForm(_descriptionForm);
+                await _descriptionFormContext.ValidateAsync();
+            }
+
+            var validationResult = await _eventInfoValidator.ValidateAsync(EventState.EventInfo);
+            _descriptionFormValid = validationResult.IsValid && !_eventInfoValidator.ServerErrors.Any();
+            StateHasChanged();
+            throw;
+        }
+    }
+
+    private async Task SaveEventScheduleAsync()
+    {
+        var request = new EventScheduleRequest
+        {
+            EventId = EventId,
+            StartDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.StartDate, EventState.ScheduleInfo.StartTime),
+            EndDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.EndDate, EventState.ScheduleInfo.EndTime),
+            PreSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleDate, EventState.ScheduleInfo.PreSaleTime),
+            PreSaleEndDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleEndDate, EventState.ScheduleInfo.PreSaleEndTime),
+            OnSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OnSaleDate, EventState.ScheduleInfo.OnSaleTime),
+            OffSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OffSaleDate, EventState.ScheduleInfo.OffSaleTime),
+            PublishedDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PublishedDate, EventState.ScheduleInfo.PublishedTime),
+            GateOpenDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.GateOpenDate, EventState.ScheduleInfo.GateOpenTime),
+            HoldExpirationInMinutes = EventState.ScheduleInfo.HoldExpirationInMinutes
+        };
+
+        try
+        {
+            if (_isEdit || ScheduleId.HasValue)
+            {
+                await ScheduleService.UpdateScheduleAsync(ScheduleId.Value, request);
+            }
+            else
+            {
+                var result = await ScheduleService.CreateScheduleAsync(request);
+                ScheduleId = result.Id;
+            }
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _scheduleValidator.LoadServerErrors(ex);
+
+            if (_scheduleForm != null)
+            {
+                _scheduleFormContext.SetForm(_scheduleForm);
+                await _scheduleFormContext.ValidateAsync();
+            }
+
+            var validationResult = await _scheduleValidator.ValidateAsync(EventState.ScheduleInfo);
+            _scheduleValid = validationResult.IsValid && !_scheduleValidator.ServerErrors.Any();
+            StateHasChanged();
+            throw;
         }
     }
 
@@ -1554,42 +1822,89 @@
         try
         {
             await EventService.PublishEventAsync(EventId.Value);
-            Snackbar.Add(L["EventPublished"], Severity.Success);
+            Snackbar.Add(L["EventPublished"], MudBlazor.Severity.Success);
             Navigation.NavigateTo("./events");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to publish event");
-            Snackbar.Add(L["ErrorPublishingEvent"], Severity.Error);
+            Snackbar.Add(L["ErrorPublishingEvent"], MudBlazor.Severity.Error);
         }
     }
 
-    private async Task SaveEventScheduleAsync(EventScheduleRequest request)
+    private async Task SavePricesAsync()
     {
-        if (_isEdit)
+        var request = new PriceReferenceRequest
         {
-            await ScheduleService.UpdateScheduleAsync(ScheduleId.Value, request);
+            ReferenceId = EventId.Value,
+            ReferenceType = AdminSaleType.Event,
+            PriceSegments = EventState.PricesInfo.Prices.Select(p => new PriceSegmentRequest
+            {
+                VenueMapId = EventState.EventInfo.SelectedVenueMap?.Id,
+                BaseRowId = p.BaseRowId,
+                BaseSeatId = p.BaseSeatId,
+                BaseSectionId = p.BaseSectionId,
+                BaseZoneId = p.BaseZoneId,
+                Id = p.Id,
+                PriceTypes = p.PriceTypes,
+                Prices = p.Prices
+            }).ToList()
+        };
+        try
+        {
+            var response = await PriceReferenceService.SavePriceReferenceAsync(request);
+            _priceReferenceId = response.Id;
+            _dirtyPriceIds.Clear();
         }
-        else
+        catch (ApiException<ProblemDetails> ex)
         {
-            var result = await ScheduleService.CreateScheduleAsync(request);
-            ScheduleId = result.Id;
+            _pricesValidator.LoadServerErrors(ex);
+            if (_pricesForm != null)
+            {
+                _pricesFormContext.SetForm(_pricesForm);
+                await _pricesFormContext.ValidateAsync();
+            }
+            var validationResult = await _pricesValidator.ValidateAsync(EventState.PricesInfo);
+            _pricesValid = validationResult.IsValid && !_pricesValidator.ServerErrors.Any();
+            StateHasChanged();
+            throw;
         }
     }
 
-    private async Task SavePricesAsync(PricesRequest request)
+    private async Task SaveAdditionalChargesAsync()
     {
-        if (_isEdit)
+        if(_priceReferenceId is null)
         {
-            await PriceService.UpdatePricesAsync(ScheduleId.Value, request);
+            return;
         }
-        else
-        {
-            await PriceService.CreatePricesAsync(request);
-        }
-    }   
 
-    private async Task AddImage(IBrowserFile file, MediaType mediaType, int order = 0)
+        try
+        {
+            await AdditionalChargesService.SyncChargesAsync(_priceReferenceId.Value, EventState.AdditionalChargesInfo.AdditionalCharges.Select(x => new AdditionalChargeRequest
+            {
+                Id = x.Id,
+                PriceReferenceId = _priceReferenceId.Value,
+                Name = x.Name,
+                FeeType = x.FeeType,
+                Value = x.Value.Value
+            }).ToList());
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _additionalChargesInfoValidator.LoadServerErrors(ex);
+            if (_additionalChargesForm != null)
+            {
+                _additionalChargesFormContext.SetForm(_additionalChargesForm);
+                await _additionalChargesFormContext.ValidateAsync();
+            }
+            var validationResult = await _additionalChargesInfoValidator.ValidateAsync(EventState.AdditionalChargesInfo);
+            _additionalChargesValid = validationResult.IsValid && !_additionalChargesInfoValidator.ServerErrors.Any();
+            StateHasChanged();
+            throw;
+        }
+    }
+
+    private async Task AddImage(IBrowserFile file, AdminMediaType mediaType, int order = 0)
     {
         if (file == null)
         {
@@ -1599,9 +1914,11 @@
         if (file.Size > _maxFileSize)
         {
             // TODO: Internationalization
-            Snackbar.Add($"El archivo '{file.Name}' supera el límite de 10MB.", Severity.Error);
+            Snackbar.Add($"El archivo '{file.Name}' supera el límite de 10MB.", MudBlazor.Severity.Error);
             return;
         }
+
+        _imageHasChanges = true;
 
         using var stream = file.OpenReadStream(_maxFileSize);
         using var memoryStream = new MemoryStream();
@@ -1612,13 +1929,13 @@
         var imageInfo = await Image.IdentifyAsync(memoryStream);
         if (imageInfo == null)
         {
-            Snackbar.Add($"El archivo '{file.Name}' no es una imagen válida.", Severity.Error);
+            Snackbar.Add($"El archivo '{file.Name}' no es una imagen válida.", MudBlazor.Severity.Error);
             return;
         }
 
         if (imageInfo.Width < _minWidth || imageInfo.Height < _minHeight)
         {
-            Snackbar.Add($"La imagen '{file.Name}' mide {imageInfo.Width}x{imageInfo.Height}px. El mínimo es {_minWidth}x{_minHeight}px.", Severity.Warning);
+            Snackbar.Add($"La imagen '{file.Name}' mide {imageInfo.Width}x{imageInfo.Height}px. El mínimo es {_minWidth}x{_minHeight}px.", MudBlazor.Severity.Warning);
             return;
         }
 
@@ -1627,25 +1944,25 @@
         var src = $"data:{file.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
 
         var newImage = new ImageModel
-            {
-                Name = file.Name,
-                FileBytes = fileBytes,
-                ContentType = file.ContentType,
-                Src = src,
-                Order = order,
-                MediaType = mediaType
-            };
+        {
+            Name = file.Name,
+            FileBytes = fileBytes,
+            ContentType = file.ContentType,
+            Src = src,
+            Order = order,
+            MediaType = mediaType
+        };
 
         switch (mediaType)
         {
-            case MediaType.Banner:
-                newImage.Id = _bannerImage?.Id;
-                _bannerImage = newImage;
+            case AdminMediaType.Banner:
+                newImage.Id = EventState.ImagesInfo.BannerImage?.Id;
+                EventState.ImagesInfo.BannerImage = newImage;
                 await _bannerImageUpload.ClearAsync();
                 break;
-            case MediaType.Sponsor:
-                newImage.Id = _sponsorImages[order]?.Id;
-                _sponsorImages[order] = newImage;
+            case AdminMediaType.Sponsor:
+                newImage.Id = EventState.ImagesInfo.SponsorImages[order]?.Id;
+                EventState.ImagesInfo.SponsorImages[order] = newImage;
                 await _sponsorUploads[order].ClearAsync();
                 break;
             default:
@@ -1653,39 +1970,30 @@
         }
     }
 
-    private async Task DeleteImageAsync(MediaType mediaType, int order = 0)
+    private async Task DeleteImageAsync(AdminMediaType mediaType, int order = 0)
     {
+        _imageHasChanges = true;
         switch (mediaType)
         {
-            case MediaType.Banner:
-                if (_bannerImage != null)
+            case AdminMediaType.Banner:
+                if (EventState.ImagesInfo.BannerImage != null)
                 {
-                    if (_bannerImage.Id.HasValue)
-                    {
-                        await MediaService.DeleteMediaAsync(_bannerImage.Id.Value);
-                    }
-
-                    _bannerImage = null;
+                    EventState.ImagesInfo.BannerImage = null;
                     await _bannerImageUpload.ClearAsync();
                 }
                 break;
-            case MediaType.Sponsor:
-                var image = _sponsorImages[order];
+            case AdminMediaType.Sponsor:
+                var image = EventState.ImagesInfo.SponsorImages[order];
                 if(image != null)
                 {
-                    if (image.Id.HasValue)
-                    {
-                        await MediaService.DeleteMediaAsync(image.Id.Value);
-                    }
-
-                    _sponsorImages[order] = null;
+                    EventState.ImagesInfo.SponsorImages[order] = null;
                     await _sponsorUploads[order].ClearAsync();
                 }
                 break;
             default:
                 return;
-        }        
-    }   
+        }
+    }
 
     private async Task UploadGalleryImagesAsync(IReadOnlyList<IBrowserFile> files)
     {
@@ -1694,11 +2002,13 @@
             return;
         }
 
+        _imageHasChanges = true;
+
         foreach (var file in files)
         {
             if (file.Size > _maxFileSize)
             {
-                Snackbar.Add($"El archivo '{file.Name}' supera el límite de 10MB.", Severity.Error);
+                Snackbar.Add($"El archivo '{file.Name}' supera el límite de 10MB.", MudBlazor.Severity.Error);
                 continue;
             }
 
@@ -1715,13 +2025,13 @@
                 var imageInfo = await Image.IdentifyAsync(memoryStream);
                 if (imageInfo == null)
                 {
-                    Snackbar.Add($"El archivo '{file.Name}' no es una imagen válida.", Severity.Error);
+                    Snackbar.Add($"El archivo '{file.Name}' no es una imagen válida.", MudBlazor.Severity.Error);
                     continue;
                 }
 
                 if (imageInfo.Width < _minWidth || imageInfo.Height < _minHeight)
                 {
-                    Snackbar.Add($"La imagen '{file.Name}' mide {imageInfo.Width}x{imageInfo.Height}px. El mínimo es {_minWidth}x{_minHeight}px.", Severity.Warning);
+                    Snackbar.Add($"La imagen '{file.Name}' mide {imageInfo.Width}x{imageInfo.Height}px. El mínimo es {_minWidth}x{_minHeight}px.", MudBlazor.Severity.Warning);
                     continue;
                 }
 
@@ -1729,30 +2039,21 @@
 
                 src = $"data:{file.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
 
-                if (_galleryImages.ContainsKey(file.Name))
+                EventState.ImagesInfo.GalleryImages.Add(new ImageModel
                 {
-                    _galleryImages[file.Name].FileBytes = fileBytes;
-                    _galleryImages[file.Name].Src = src;
-                    _galleryImages[file.Name].ContentType = file.ContentType;
-                }
-                else
-                {
-                    _galleryImages.Add(file.Name, new ImageModel
-                    {
-                        Name = file.Name,
-                        FileBytes = fileBytes,
-                        ContentType = file.ContentType,
-                        Src = src,
-                        MediaType = MediaType.Gallery
-                    });
-                }
+                    Name = file.Name,
+                    FileBytes = fileBytes,
+                    ContentType = file.ContentType,
+                    Src = src,
+                    MediaType = AdminMediaType.Gallery
+                });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred while trying to read the file '{file.Name}'. Error: {ex.Message}");
-                Snackbar.Add($"Error al procesar '{file.Name}': El formato podría no estar soportado.", Severity.Error);
+                Snackbar.Add($"Error al procesar '{file.Name}': El formato podría no estar soportado.", MudBlazor.Severity.Error);
                 continue;
-            }           
+            }
         }
 
         if (_galleryUpload != null)
@@ -1760,45 +2061,42 @@
             await _galleryUpload.ClearAsync();
         }
 
-        _carousel.MoveTo(_galleryImages.Count - 1);
+        if (_carousel is not null)
+        {
+            _carousel.MoveTo(EventState.ImagesInfo.GalleryImages.Count - 1);
+        }
     }
 
-    private async Task RemoveGalleryImageAsync(string fileName)
+    private async Task RemoveGalleryImageAsync(ImageModel image)
     {
-        ImageModel? file = _galleryImages.GetValueOrDefault(fileName);
-
         try
         {
-            if (file is not null && file.Id.HasValue)
-            {
-                await MediaService.DeleteMediaAsync(file.Id.Value);
-            }
-
-            _galleryImages.Remove(fileName);
+            EventState.ImagesInfo.GalleryImages.Remove(image);
             await Task.Delay(1);
-            _carousel.MoveTo(Math.Max(_galleryImages.Count - 1, 0));
+            _imageHasChanges = true;
+
+            if (_carousel is not null && EventState.ImagesInfo.GalleryImages.Count > 0)
+            {
+                _carousel.MoveTo(Math.Max(EventState.ImagesInfo.GalleryImages.Count - 1, 0));
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"An error ocurred while trying to remove a gallery image. Error: {ex.Message}");
-            Snackbar.Add($"Ocurrio un error al tratar de eliminar la imgen '{fileName}'.", Severity.Error);
+            Snackbar.Add($"Ocurrio un error al tratar de eliminar la imgen '{image.Name}'.", MudBlazor.Severity.Error);
         }
 
     }
 
     private async Task CleanGalleryImagesAsync()
     {
-        foreach (ImageModel galleryImage in _galleryImages.Values)
-        {
-            if (galleryImage.Id.HasValue)
-            {
-                await MediaService.DeleteMediaAsync(galleryImage.Id.Value);
-            }
-        }
-
-        _galleryImages.Clear();
+        _imageHasChanges = true;
+        EventState.ImagesInfo.GalleryImages.Clear();
         await Task.Delay(1);
-        _carousel.MoveTo(0);
+        if (_carousel is not null)
+        {
+            _carousel.MoveTo(0);
+        }
     }
 
     private void SetDragClass()
@@ -1815,52 +2113,86 @@
         }
     }
 
-    private async Task SaveImageAsync(ImageModel? image)
+    private async Task SaveEventMediaAsync()
     {
+        if (EventId is null || EventId <= 0)
+        {
+            return;
+        }
+
+        var items = new List<EventMediaDesiredItem>();
+        var files = new List<FileParameter>();
+        var streams = new List<MemoryStream>();
+
         try
         {
-            if (image == null || image.FileBytes == null || !image.FileBytes.Any())
+            AddDesiredMediaItem(items, files, streams, EventState.ImagesInfo.BannerImage, AdminMediaType.Banner, 0);
+
+            foreach (var (image, order) in EventMediaOrderer.CompactSponsors(EventState.ImagesInfo.SponsorImages))
             {
-                return;
+                AddDesiredMediaItem(items, files, streams, image, AdminMediaType.Sponsor, order);
             }
 
-            using var uploadStream = new MemoryStream(image.FileBytes);
+            foreach (var (index, image) in EventState.ImagesInfo.GalleryImages.Index())
+            {
+                AddDesiredMediaItem(items, files, streams, image, AdminMediaType.Gallery, index);
+            }
 
-            if (image.Id.HasValue)
-            {
-                await MediaService.UpdateMediaAsync(image.Id.Value, new FileParameter(
-                uploadStream,
-                image.Name,
-                image.ContentType), image.MediaType, image.Order);
-            }
-            else
-            {
-                image.Id = await MediaService.UploadMediaAsync(EventId.Value, AdminSaleType.Event, image.MediaType, image.Order, new FileParameter(
-                    uploadStream,
-                    image.Name,
-                    image.ContentType));
-            }
+            await MediaService.ReconcileEventMediaAsync(EventId.Value, items, files);
         }
-        catch (ApiException apiEx)
+        finally
         {
-            if (apiEx.StatusCode != StatusCodes.Status201Created
-                && apiEx.StatusCode != StatusCodes.Status204NoContent)
+            foreach (var stream in streams)
             {
-                throw;
+                stream.Dispose();
             }
         }
     }
 
-    private async Task SaveGalleryImagesAsync()
+    private static void AddDesiredMediaItem(
+        List<EventMediaDesiredItem> items,
+        List<FileParameter> files,
+        List<MemoryStream> streams,
+        ImageModel? image,
+        AdminMediaType mediaType,
+        int order)
     {
-        foreach (var (index, image) in _galleryImages.Values.Index())
+        if (image is null)
         {
-            image.Order = index;
-            await SaveImageAsync(image);
+            return;
+        }
+
+        image.Order = order;
+
+        if (image.FileBytes is { Length: > 0 })
+        {
+            var stream = new MemoryStream(image.FileBytes);
+            var fileIndex = files.Count;
+
+            streams.Add(stream);
+            files.Add(new FileParameter(stream, image.Name, image.ContentType));
+            items.Add(new EventMediaDesiredItem
+            {
+                MediaType = mediaType,
+                Order = order,
+                FileIndex = fileIndex
+            });
+
+            return;
+        }
+
+        if (image.Id.HasValue)
+        {
+            items.Add(new EventMediaDesiredItem
+            {
+                MediaType = mediaType,
+                Order = order,
+                ExistingMediaId = image.Id.Value
+            });
         }
     }
 
-    private void OnSectionChanged(PriceForm price, long? sectionId)
+    private void OnSectionChanged(PriceInfoModel price, long? sectionId)
     {
         price.BaseSectionId = sectionId;
 
@@ -1869,7 +2201,7 @@
         StateHasChanged();
     }
 
-    private void OnRowChanged(PriceForm price, long? rowId)
+    private void OnRowChanged(PriceInfoModel price, long? rowId)
     {
         price.BaseRowId = rowId;
 
@@ -1883,11 +2215,16 @@
 
         if (sections == null || sections.Count() == 0)
         {
-            Snackbar.Add(L["NoSectionsInZone"], Severity.Warning);
+            Snackbar.Add(L["NoSectionsInZone"], MudBlazor.Severity.Warning);
             return;
         }
 
-        _prices.Add(new PriceForm { BaseZoneId = zoneId, BaseSectionId = sections.FirstOrDefault()?.Id });
+        EventState.PricesInfo.Prices.Add(new PriceInfoModel { BaseZoneId = zoneId, BaseSectionId = sections.FirstOrDefault()?.Id });
+    }
+
+    private void MarkPriceAsDirty(long priceId)
+    {
+        _dirtyPriceIds.Add(priceId);
     }
 
     private IEnumerable<BaseSectionResponse>GetSectionsFor(long? zoneId)
@@ -1974,7 +2311,7 @@
 
     private async Task LoadPrices()
     {
-        if(ScheduleId == null || _selectedVenueMap == null)
+        if (EventId == null || EventState.EventInfo.SelectedVenueMap == null)
         {
             InitializeEmptyPrices();
             return;
@@ -1982,26 +2319,22 @@
 
         try
         {
-            PricesResponse priceResponse = await PriceService.GetPricesByScheduleAndVenueAsync(ScheduleId.Value, _selectedVenueMap.Id);
+            PriceReferenceResponse priceResponse = await PriceReferenceService.GetPriceReferenceAsync(AdminSaleType.Event, EventId.Value, EventState.EventInfo.SelectedVenueMap.Id);
 
-            _prices = priceResponse.Prices.Select(x => new PriceForm
+            _priceReferenceId = priceResponse.Id;
+
+            EventState.PricesInfo.Prices = priceResponse.PriceSegments.Select(x => new PriceInfoModel
             {
                 Id = x.Id,
                 BaseZoneId = x.BaseZoneId,
                 BaseSectionId = x.BaseSectionId,
                 BaseRowId = x.BaseRowId,
                 BaseSeatId = x.BaseSeatId,
-                ItemPrice = x.ItemPrice,
-                PriceTypes = x.PriceTypes.ToDictionary(pt => pt.Name, pt => pt.Price)
+                PriceTypes = x.PriceTypes?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new(),
+                Prices = x.Prices?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new()
             }).ToList();
 
-            foreach (var priceType in priceResponse.PriceTypes)
-            {
-                if (!PriceTypes.Contains(priceType.Name))
-                {
-                    PriceTypes.Add(priceType.Name);
-                }
-            }
+            PriceTypes = EventState.PricesInfo.Prices.FirstOrDefault()?.PriceTypes ?? new Dictionary<string, bool> { { "General", true } };
         }
         catch (ApiException apiEx)
         {
@@ -2012,14 +2345,42 @@
         }
     }
 
+    private async Task LoadAdditionalCharges()
+    {
+        if (_priceReferenceId == null)
+        {
+            return;
+        }
+        try
+        {
+            var charges = await AdditionalChargesService.GetChargesByPriceReferenceIdAsync(_priceReferenceId.Value);
+            EventState.AdditionalChargesInfo.AdditionalCharges = charges.Select(x => new AdditionalChargeInfoModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                FeeType = x.FeeType,
+                Value = x.Value
+            }).ToList();
+        }
+        catch (ApiException apiEx)
+        {
+            if (apiEx.StatusCode != StatusCodes.Status404NotFound)
+            {
+                EventState.AdditionalChargesInfo.AdditionalCharges = [];
+            }
+        }
+    }
+
     private void InitializeEmptyPrices()
     {
+        EventState.PricesInfo.Prices.Clear();
+        _priceReferenceId = null;
+
         if (_layout.Zones is not null && _layout.Zones.Count > 0)
         {
-            _prices.Clear();
             foreach (var zone in _layout.Zones)
             {
-                _prices.Add(new PriceForm
+                EventState.PricesInfo.Prices.Add(new PriceInfoModel
                 {
                    BaseZoneId = zone.Id
                 });
@@ -2029,29 +2390,31 @@
 
     private void AddPriceType(string type)
     {
-        if (!string.IsNullOrWhiteSpace(type) && !PriceTypes.Contains(type))
+        if (!string.IsNullOrWhiteSpace(type) && !PriceTypes.ContainsKey(type))
         {
-            PriceTypes.Add(type);
+            PriceTypes.Add(type, false);
         }
     }
 
     private void EditPriceType(string oldName, string newName)
     {
-        if (string.IsNullOrWhiteSpace(newName) || PriceTypes.Contains(newName))
+        if (string.IsNullOrWhiteSpace(newName) || PriceTypes.ContainsKey(newName))
         {
             return;
         }
-        int index = PriceTypes.IndexOf(oldName);
-        if (index != -1)
+        if (PriceTypes.ContainsKey(oldName))
         {
-            PriceTypes[index] = newName;
-            foreach (var price in _prices)
+            bool isPrimary = PriceTypes[oldName];
+            PriceTypes.Remove(oldName);
+            PriceTypes[newName] = isPrimary;
+
+            foreach (var price in EventState.PricesInfo.Prices)
             {
-                if (price.PriceTypes.ContainsKey(oldName))
+                if (price.Prices.ContainsKey(oldName))
                 {
-                    decimal? value = price.PriceTypes[oldName];
-                    price.PriceTypes.Remove(oldName);
-                    price.PriceTypes[newName] = value;
+                    decimal value = price.Prices[oldName];
+                    price.Prices.Remove(oldName);
+                    price.Prices[newName] = value;
                 }
             }
         }
@@ -2061,7 +2424,7 @@
     {
         PriceTypes.Remove(_priceTypeName);
 
-        foreach (var price in _prices)
+        foreach (var price in EventState.PricesInfo.Prices)
         {
             if (price.PriceTypes.ContainsKey(_priceTypeName))
             {
@@ -2070,17 +2433,25 @@
         }
     }
 
-    private decimal? GetPriceTypeValue(PriceForm row, string key)
+    private decimal? GetPriceTypeValue(PriceInfoModel row, string key)
     {
-        return row.PriceTypes.TryGetValue(key, out var value) ? value : null;
+        return row.Prices.TryGetValue(key, out var value) ? value : null;
     }
 
-    private void SetPriceTypeValue(PriceForm row, string key, decimal? newValue)
+    private void SetPriceTypeValue(PriceInfoModel row, string key, decimal? newValue)
     {
-        row.PriceTypes[key] = newValue;
+        if (newValue.HasValue)
+        {
+            row.Prices[key] = newValue.Value;
+        }
+        else
+        {
+            row.Prices.Remove(key);
+        }
+        MarkPriceAsDirty(row.Id ?? 0);
     }
 
-    private async Task DeletePriceAsync(PriceForm price)
+    private async Task DeletePriceAsync(PriceInfoModel price)
     {
         var confirmed = await DialogService.ShowConfirmDeleteAsync(
         L["DeleteDialogTitle", L["Price"]],
@@ -2090,12 +2461,12 @@
 
         try
         {
-            _prices.Remove(price);
+            EventState.PricesInfo.Prices.Remove(price);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error deleting event: {ex.Message}");
-            Snackbar.Add(L["DeleteError"], Severity.Error);
+            Snackbar.Add(L["DeleteError"], MudBlazor.Severity.Error);
         }
     }
 
@@ -2138,7 +2509,9 @@
     {
         try
         {
-            FileResponse? file = await PriceService.DownloadPricesCsvAsync(ScheduleId, _selectedVenueMap?.Id ?? default);
+            // FileResponse? file = await PriceService.DownloadPricesCsvAsync(ScheduleId, EventState.EventInfo.SelectedVenueMap?.Id ?? default);
+
+            FileResponse? file = null;
 
             if (file is null)
             {
@@ -2152,7 +2525,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error trying to get file: {ex.Message}");
-            Snackbar.Add(L["ErrorDownloadingPricesTemplate"], Severity.Error);
+            Snackbar.Add(L["ErrorDownloadingPricesTemplate"], MudBlazor.Severity.Error);
         }
     }
 
@@ -2173,18 +2546,18 @@
 
             await JS.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
 
-            Snackbar.Add(L["SuccesfulFileDownload"], Severity.Success);
+            Snackbar.Add(L["SuccesfulFileDownload"], MudBlazor.Severity.Success);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error downloading file: {ex.Message}");
-            Snackbar.Add(L["ErrorDownloadingPricesTemplate"], Severity.Error);
+            Snackbar.Add(L["ErrorDownloadingPricesTemplate"], MudBlazor.Severity.Error);
         }
     }
 
     private async Task OpenPriceImportDialog()
     {
-        var parameters = new DialogParameters<PriceImportDialog> {{ x => x.VenueMapId, _selectedVenueMap.Id } };
+        var parameters = new DialogParameters<PriceImportDialog> { { x => x.EventId, EventId }, { x => x.VenueMapId, EventState.EventInfo.SelectedVenueMap.Id } };
         var dialog = await DialogService.ShowAsync<PriceImportDialog>(parameters);
 
         var result = await dialog.Result;
@@ -2192,24 +2565,341 @@
         if (!result.Canceled)
         {
             Console.WriteLine(result.Data);
-            IEnumerable<PriceResponse> priceResponses = (IEnumerable<PriceResponse>)result.Data;
-            _prices = priceResponses.Select(x => new PriceForm()
+            IEnumerable<PriceSegmentResponse> priceResponses = (IEnumerable<PriceSegmentResponse>)result.Data;
+
+            EventState.PricesInfo.Prices = priceResponses.Select(x => new PriceInfoModel()
             {
                 BaseZoneId = x.BaseZoneId,
                 BaseSectionId = x.BaseSectionId,
                 BaseRowId = x.BaseRowId,
                 BaseSeatId = x.BaseSeatId,
-                ItemPrice = x.ItemPrice,
-                PriceTypes = x.PriceTypes.ToDictionary(pt => pt.Name, pt => pt.Price)
+                PriceTypes = x.PriceTypes?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new(),
+                Prices = x.Prices?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new()
             }).ToList();
 
-            foreach (var priceType in _prices.SelectMany(x => x.PriceTypes))
+            foreach (var priceType in EventState.PricesInfo.Prices.SelectMany(x => x.PriceTypes))
             {
-                if (!PriceTypes.Contains(priceType.Key))
+                if (!PriceTypes.ContainsKey(priceType.Key))
                 {
-                    PriceTypes.Add(priceType.Key);
+                    PriceTypes.Add(priceType.Key, priceType.Value);
                 }
             }
+        }
+    }
+
+    private async Task NewAdditionalChargeAsync()
+    {
+        var elem = new AdditionalChargeInfoModel();
+        EventState.AdditionalChargesInfo.AdditionalCharges.Insert(0, elem);
+        StateHasChanged();
+    }
+
+    private void DeleteAdditionalCharge(AdditionalChargeInfoModel item)
+    {
+        EventState.AdditionalChargesInfo.AdditionalCharges.Remove(item);
+    }
+
+    private Task<DataGridEditFormAction> CommittedItemChanges(AdditionalChargeInfoModel item)
+    {
+        return Task.FromResult(DataGridEditFormAction.Close);
+    }
+
+    // TODO: Remove, this is a temporary solution to MudSelect expecting a single record in a Multiselection field
+    private async Task<IEnumerable<string>> ValidateCategories(IEnumerable<AdminEventCategoryResult> incomingValues)
+    {
+        EventState.EventInfo.SelectedCategories = incomingValues?.ToList() ?? new List<AdminEventCategoryResult>();
+
+        var result = await _eventInfoValidator.ValidateAsync(
+            ValidationContext<EventInfoModel>.CreateWithOptions(
+                EventState.EventInfo,
+                x => x.IncludeProperties("SelectedCategories")
+            )
+        );
+
+        var errors = result.IsValid
+            ? new List<string>()
+            : result.Errors.Select(e => e.ErrorMessage).ToList();
+
+        if (_eventInfoValidator.ServerErrors.TryGetValue("SelectedCategories", out var serverErrors))
+        {
+            errors.AddRange(serverErrors);
+
+            _eventInfoValidator.ServerErrors.Remove("SelectedCategories");
+        }
+
+        return errors;
+    }
+
+    private async Task<IEnumerable<string>> ValidateSpecificPrice(Dictionary<string, bool> priceTypes, string key, decimal? newValue)
+    {
+        var errors = new List<string>();
+
+        bool isBasePrice = priceTypes != null &&
+                         priceTypes.TryGetValue(key, out var basePrice) &&
+                         basePrice;
+
+        if (isBasePrice)
+        {
+            if (newValue == null || newValue <= 0)
+            {
+                errors.Add("Price must be greater than 0.");
+            }
+        }
+
+        return errors;
+    }
+
+    private async Task<IEnumerable<string>> ValidateGridCell<TValue>(AdditionalChargeInfoModel item, string propertyName, TValue newValue)
+    {
+        var propertyInfo = typeof(AdditionalChargeInfoModel).GetProperty(propertyName);
+        if (propertyInfo == null) return Array.Empty<string>();
+
+        var originalValue = propertyInfo.GetValue(item);
+        propertyInfo.SetValue(item, newValue);
+
+        var context = ValidationContext<AdditionalChargeInfoModel>.CreateWithOptions(item, x => x.IncludeProperties(propertyName));
+        var result = await _additionalChargeInfoValidator.ValidateAsync(context);
+
+        propertyInfo.SetValue(item, originalValue);
+
+        if (!result.IsValid)
+        {
+            return result.Errors.Select(x => x.ErrorMessage);
+        }
+
+        return Array.Empty<string>();
+    }
+
+    public class EventFormModel()
+    {
+        public EventInfoModel EventInfo { get; set; } = new();
+        public ScheduleInfoModel ScheduleInfo { get; set; } = new();
+        public PricesInfoModel PricesInfo { get; set; } = new();
+        public AdditionalChargesInfoModel AdditionalChargesInfo { get; set; } = new();
+        public ImagesInfoModel ImagesInfo { get; set; } = new();
+    }
+
+    public record EventInfoModel()
+    {
+        public VenueResponse? SelectedVenue { get; set; }
+        public VenueMapResponse? SelectedVenueMap { get; set; }
+        public long? OrganizerId { get; set; }
+        public string Name { get; set; } = null!;
+        public string? Subtitle { get; set; }
+        public string? ShortDescription { get; set; }
+        public string? LongDescription { get; set; }
+        public AgeRestriction? AgeRestriction { get; set; }
+        public string? SecurityPolicies { get; set; }
+        public string? AdditionalComments { get; set; }
+
+        public IReadOnlyCollection<AdminEventCategoryResult> SelectedCategories { get; set; } = [];
+    }
+
+    public record ScheduleInfoModel()
+    {
+        public DateTime? StartDate { get; set; }
+        public TimeSpan? StartTime { get; set; }
+        public DateTime? EndDate { get; set; }
+        public TimeSpan? EndTime { get; set; }
+        public DateTime? PublishedDate { get; set; }
+        public TimeSpan? PublishedTime { get; set; }
+        public DateTime? PreSaleDate { get; set; }
+        public TimeSpan? PreSaleTime { get; set; }
+        public DateTime? PreSaleEndDate { get; set; }
+        public TimeSpan? PreSaleEndTime { get; set; }
+        public DateTime? OnSaleDate { get; set; }
+        public TimeSpan? OnSaleTime { get; set; }
+        public DateTime? OffSaleDate { get; set; }
+        public TimeSpan? OffSaleTime { get; set; }
+        public DateTime? GateOpenDate { get; set; }
+        public TimeSpan? GateOpenTime { get; set; }
+        public AgeRestriction? AgeRestriction { get; set; }
+        public string? ExternalEventKey { get; set; }
+        public string? SecurityPolicies { get; set; }
+        public string? AdditionalComments { get; set; }
+        public int? HoldExpirationInMinutes { get; set; }
+    }
+
+    public record PricesInfoModel()
+    {
+        public List<PriceInfoModel> Prices { get; set; } = [];
+    }
+
+    public record PriceInfoModel()
+    {
+        public long? Id { get; set; }
+        public long? BaseZoneId { get; set; }
+        public long? BaseSectionId { get; set; }
+        public long? BaseRowId { get; set; }
+        public long? BaseSeatId { get; set; }
+        public Dictionary<string, bool> PriceTypes { get; set; } = [];
+        public Dictionary<string, decimal> Prices { get; set; } = [];
+
+        public bool IsZonePrice => BaseSectionId is null && BaseRowId is null && BaseSeatId is null;
+    }
+
+    public record AdditionalChargesInfoModel()
+    {
+        public HashSet<long> ChargesToDelete { get; set; } = [];
+        public List<AdditionalChargeInfoModel> AdditionalCharges { get; set; } = [];
+    }
+
+    public record AdditionalChargeInfoModel()
+    {
+        public long? Id { get; set; }
+        public string Name { get; set; }
+        public FeeType FeeType { get; set; }
+        public decimal? Value { get; set; }
+        public Guid UiId { get; set; } = new Guid();
+
+        public virtual bool Equals(AdditionalChargeInfoModel? other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            return UiId == other.UiId;
+        }
+
+        public override int GetHashCode()
+        {
+            return UiId.GetHashCode();
+        }
+    }
+
+    public record ImagesInfoModel()
+    {
+        public ImageModel? BannerImage { get; set; }
+        public ImageModel?[] SponsorImages { get; set; } = new ImageModel?[2];
+        public List<ImageModel> GalleryImages { get; set; } = [];
+    }
+
+    public class EventFormValidator : MudServerValidatorBase<EventFormModel>
+    {
+        public EventFormValidator(AppLocalizer<EventEdit> L)
+        {
+            RuleFor(x => x.EventInfo).SetValidator(new EventInfoValidator(L));
+            RuleFor(x => x.PricesInfo).SetValidator(new PricesInfoValidator(L));
+            RuleFor(x => x.ScheduleInfo).SetValidator(new ScheduleInfoValidator(L));
+            RuleFor(x => x.ImagesInfo).SetValidator(new ImagesInfoValidator(L));
+        }
+    }
+
+    public class EventInfoValidator : MudServerValidatorBase<EventInfoModel>
+    {
+        public EventInfoValidator(AppLocalizer<EventEdit> L)
+        {
+            ApiToClientMap["VenueMapId"] = "SelectedVenueMap";
+            ApiToClientMap["CategoryIds"] = "SelectedCategories";
+
+            RuleFor(x => x.Name)
+                .NotEmpty()
+                .WithName(L["Name"]);
+            RuleFor(x => x.SelectedVenue)
+                .NotEmpty()
+                .WithName(L["Venue"]);
+            RuleFor(x => x.SelectedVenueMap)
+                .NotEmpty()
+                .WithName(L["Map"]);
+            RuleFor(x => x.SelectedCategories)
+                .NotEmpty()
+                .WithName(L["EventType"]);
+        }
+    }
+
+    public class PricesInfoValidator : MudServerValidatorBase<PricesInfoModel>
+    {
+        public PricesInfoValidator(AppLocalizer<EventEdit> L)
+        {
+            RuleForEach(x => x.Prices).SetValidator(new PriceInfoValidator(L));
+        }
+    }
+
+    public class PriceInfoValidator : MudServerValidatorBase<PriceInfoModel>
+    {
+        public PriceInfoValidator(AppLocalizer<EventEdit> L)
+        {
+            RuleForEach(x => x.PriceTypes)
+            .Must((model, priceKvp) =>
+            {
+                var key = priceKvp.Key;
+
+                var isBasePrice = priceKvp.Value;
+
+                if (!isBasePrice)
+                {
+                    return true;
+                }
+
+                model.Prices.TryGetValue(key, out var currentPrice);
+
+                return currentPrice > 0;
+            })
+            .WithMessage((model, priceKvp) => $"The price for {priceKvp.Key} must be greater than 0.");
+        }
+    }
+
+    public class AdditionalChargesInfoValidator : MudServerValidatorBase<AdditionalChargesInfoModel>
+    {
+        public AdditionalChargesInfoValidator(AppLocalizer<EventEdit> L)
+        {
+            RuleForEach(x => x.AdditionalCharges).SetValidator(new AdditionalChargeInfoValidator(L));
+        }
+    }
+
+    public class AdditionalChargeInfoValidator : MudServerValidatorBase<AdditionalChargeInfoModel>
+    {
+        public AdditionalChargeInfoValidator(AppLocalizer<EventEdit> L)
+        {
+            RuleFor(x => x.Name)
+                .NotEmpty()
+                .WithName(L["FeeName"]);
+            RuleFor(x => x.FeeType)
+                .IsInEnum()
+                .Must(type => type is FeeType.Fixed or FeeType.Percentage)
+                .WithName(L["FeeType"]);
+            RuleFor(x => x.Value)
+                .NotEmpty()
+                .GreaterThan(0)
+                .WithName(L["FeeAmount"]);
+        }
+    }
+
+    public class ScheduleInfoValidator : MudServerValidatorBase<ScheduleInfoModel>
+    {
+        public ScheduleInfoValidator(AppLocalizer<EventEdit> L)
+        {
+            RuleFor(x => x.StartDate)
+                .NotEmpty()
+                .WithName(L["StartDate"]);
+            RuleFor(x => x.StartTime)
+                .NotEmpty()
+                .WithName(L["Time"]);
+            RuleFor(x => x.EndDate)
+                .NotEmpty()
+                .WithName(L["EndDate"]);
+            RuleFor(x => x.EndTime)
+                .NotEmpty()
+                .WithName(L["Time"]);
+            RuleFor(x => x.OnSaleDate)
+                .NotEmpty()
+                .WithName(L["StartDate"]);
+            RuleFor(x => x.OnSaleTime)
+                .NotEmpty()
+                .WithName(L["Time"]);
+            RuleFor(x => x.OffSaleDate)
+                .NotEmpty()
+                .WithName(L["EndDate"]);
+            RuleFor(x => x.OffSaleTime)
+                .NotEmpty()
+                .WithName(L["Time"]);
+        }
+    }
+
+    public class ImagesInfoValidator : MudServerValidatorBase<ImagesInfoModel>
+    {
+        public ImagesInfoValidator(AppLocalizer<EventEdit> L)
+        {
+
         }
     }
 }

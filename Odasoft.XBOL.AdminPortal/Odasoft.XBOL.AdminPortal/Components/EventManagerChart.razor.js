@@ -66,6 +66,7 @@ export async function renderChart(containerId, config, dotNetHelper) {
         "HandleSeatSelected",
         obj.id,
         obj.pricing?.price ?? 0,
+        obj.pricing?.priceListItemId ?? 0,
         obj.category?.label,
         obj.forSale ?? true,
         obj.extraData?.reason ?? null,

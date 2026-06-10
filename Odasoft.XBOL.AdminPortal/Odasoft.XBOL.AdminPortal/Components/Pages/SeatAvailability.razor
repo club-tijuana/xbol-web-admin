@@ -1,5 +1,6 @@
 @page "/events/{Id:long}/key/{ExternalKey}/availability"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Orders.Create)]
 @using Odasoft.XBOL.AdminPortal.Components.Shared
 @using Microsoft.Extensions.Options
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared

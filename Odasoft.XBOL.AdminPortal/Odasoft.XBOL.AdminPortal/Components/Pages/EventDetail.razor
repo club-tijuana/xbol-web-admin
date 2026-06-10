@@ -1,22 +1,22 @@
 @page "/events/{EventId:long}"
 @page "/events/{EventId:long}/{Tab}"
-@page "/events/{EventId:long}/schedule/{ScheduleId:long}"
-@page "/events/{EventId:long}/schedule/{ScheduleId:long}/{Tab}"
-@attribute [Authorize]
+@page "/events/{EventId:long}/schedules/{ScheduleId:long}"
+@page "/events/{EventId:long}/schedules/{ScheduleId:long}/{Tab}"
+@using Odasoft.XBOL.Auth
+@attribute [RequireAnyPermission(AdminPermissions.Events.Read, AdminPermissions.Events.ReadCurrent)]
 
 @using Odasoft.XBOL.AdminPortal.Components.Pages.EventDetails;
 @using Odasoft.XBOL.AdminPortal.Components.Shared;
 @using Odasoft.XBOL.AdminPortal.Extensions;
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared;
 @using Odasoft.XBOL.Business;
-@using Odasoft.XBOL.Business.Services;
 
 @inject AppLocalizer<EventDetail> L;
 @inject IEventService _eventService;
-@inject MediaService _mediaService;
 @inject NavigationManager _navigationManager;
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
+@inject AdminMediaUrlResolver MediaUrlResolver;
 
 <PageTitle>@(_event?.Name ?? "")</PageTitle>
 
@@ -64,10 +64,12 @@
                             Class="border-secondary-lighten" Color="Color.Secondary">
                 <MudToggleItem Value="@TabSales" Text="@L["TabSales"].Value.ToUpper()"
                                Class="@($"px-4 {(_selectedTab == TabSales ? "bg-secondary-darken" : "")}")" />
-                <MudToggleItem Value="@TabSuitesSales" Text="@L["TabSuitesSales"].Value.ToUpper()"
-                               Class="@($"px-4 {(_selectedTab == TabSuitesSales ? "bg-secondary-darken" : "")}")" />
+@*                 <MudToggleItem Value="@TabSuitesSales" Text="@L["TabSuitesSales"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabSuitesSales ? "bg-secondary-darken" : "")}")" /> *@
                 <MudToggleItem Value="@TabPolicies" Text="@L["TabPolicies"].Value.ToUpper()"
                                Class="@($"px-4 {(_selectedTab == TabPolicies ? "bg-secondary-darken" : "")}")" />
+                <MudToggleItem Value="@TabGallery" Text="@L["TabGallery"].Value.ToUpper()"
+                               Class="@($"px-4 {(_selectedTab == TabGallery ? "bg-secondary-darken" : "")}")" />
             </MudToggleGroup>
             <MudStack Row Spacing="2">
                 <MudButton StartIcon="@Icons.Material.Outlined.LocalActivity"
@@ -97,13 +99,17 @@
             }
             else if (_selectedTab == TabPolicies)
             {
-                <ScheduleAndPolicies Event="_event" EventSchedule="_eventSchedule" />
+                <ScheduleAndPolicies ScheduleDetails="_scheduleAndPolicies" />
+            }
+            else if (_selectedTab == TabGallery)
+            {
+                <Gallery Media="_event?.Media" />
             }
         }
     }
 </LoadingContainer>
 
-@code {
+    @code {
     [Parameter] public long EventId { get; set; }
     [Parameter] public long? ScheduleId { get; set; }
     [Parameter] public string? Tab { get; set; }
@@ -111,6 +117,7 @@
     private const string TabSales = "sales";
     private const string TabSuitesSales = "suites-sales";
     private const string TabPolicies = "policies";
+    private const string TabGallery = "gallery";
 
     private string _selectedTab = TabPolicies;
     private long _selectedSchedule;
@@ -119,10 +126,19 @@
     private EventInfoDTO? _event;
     private EventScheduleDTO? _eventSchedule;
     private ImageHeroBannerViewModel _banner = new();
+    private ScheduleAndPoliciesViewModel _scheduleAndPolicies = new();
 
     protected override async Task OnInitializedAsync()
     {
 
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadEventAsync();
+        }
     }
 
     protected override async Task OnParametersSetAsync()
@@ -131,22 +147,20 @@
         {
             TabSuitesSales => TabSuitesSales,
             TabPolicies => TabPolicies,
+            TabGallery => TabGallery,
             _ => TabSales
         };
 
         _selectedSchedule = ScheduleId ?? 0;
 
-        // TODO: Fix loading and reload data if any id is different
-        if (_event is null || _eventSchedule is null)
-        {
-            await LoadEventAsync();
-        }
+        _eventSchedule = _event?.Schedules?.FirstOrDefault(x => x.Id == _selectedSchedule);
+        await SetObjects();
     }
 
     private void OnScheduleChanged(long scheduleId)
     {
         _selectedSchedule = scheduleId;
-        _navigationManager.NavigateTo($"./events/{EventId}/schedule/{_selectedSchedule}/{_selectedTab}", replace: true);
+        _navigationManager.NavigateTo($"./events/{EventId}/schedules/{_selectedSchedule}/{_selectedTab}", replace: true);
     }
 
     private void OnTabChanged(string tab)
@@ -167,20 +181,8 @@
             _event = await _eventService.GetEventByIdAsync(EventId);
             _eventSchedule = _event?.Schedules?.First(x => ScheduleId is null || x.Id == ScheduleId);
             OnScheduleChanged(_eventSchedule?.Id ?? 0);
-            var banners = await _mediaService.GetReferenceMediaByMediaTypeAsync(EventId, AdminSaleType.Event, MediaType.Banner);
 
-            var banner = banners.FirstOrDefault();
-
-            _banner = new()
-            {
-                Title = _event.Name,
-                Subtitle = _event.Subtitle,
-                StartDateTime = _eventSchedule?.StartDateTime.UtcDateTime,
-                EndDateTime = _eventSchedule?.EndDateTime.UtcDateTime,
-                ImageUrl = banner is not null && banner.Url is not null ? banner.Url : _event.BannerImageUrl,
-                Venue = _event.VenueName,
-                ExternalKey = _eventSchedule?.ExternalEventKey,
-            };
+            await SetObjects();
         }
         catch (Exception ex)
         {
@@ -193,6 +195,37 @@
             _loading = false;
             StateHasChanged();
         }
+    }
+
+    private async Task SetObjects()
+    {
+        _scheduleAndPolicies = new()
+        {
+            StartDateTime = _eventSchedule?.StartDateTime,
+            EndDateTime = _eventSchedule?.EndDateTime,
+            PreSaleStartDate = _eventSchedule?.PreSaleStartDate,
+            PreSaleEndDate = _eventSchedule?.PreSaleEndDate,
+            OnSaleDate = _eventSchedule?.OnSaleDate,
+            OffSaleDate = _eventSchedule?.OffSaleDate,
+            PublishedDate = _eventSchedule?.PublishedDate,
+            GateOpenDate = _eventSchedule?.GateOpenDate,
+            AgeRestriction = _event?.AgeRestriction,
+            SecurityPolicies = _event?.SecurityPolicies,
+            AdditionalComments = _event?.AdditionalComments
+        };
+
+        _banner = new()
+        {
+            Title = _event?.Name,
+            Subtitle = _event?.Subtitle,
+            StartDateTime = _eventSchedule?.StartDateTime.UtcDateTime,
+            EndDateTime = _eventSchedule?.EndDateTime.UtcDateTime,
+            ImageUrl = MediaUrlResolver.Resolve(_event?.Media?.Banner?.Url)
+                ?? MediaUrlResolver.Resolve(_event?.BannerImageUrl),
+            Venue = _event?.VenueName,
+            ExternalKey = _eventSchedule?.ExternalEventKey,
+            EventStatus = _event?.Status
+        };
     }
 
     private async Task DeleteEventAsync()

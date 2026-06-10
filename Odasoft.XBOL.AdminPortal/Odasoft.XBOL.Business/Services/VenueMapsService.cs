@@ -24,7 +24,7 @@ namespace Odasoft.XBOL.Business.Services
             return await _adminClient.GetVenueMapLayoutByIdAsync(venueMapId);
         }
 
-        public async Task<Chart> GetMapChart(string mapKey)
+        public async Task<ChartResponse> GetMapChart(string mapKey)
         {
             return await _adminClient.GetVenueMapChartByKeyAsync(mapKey);
         }
@@ -42,6 +42,11 @@ namespace Odasoft.XBOL.Business.Services
         public async Task DeleteVenueMapAsync(long venueMapId)
         {
             await _adminClient.DeleteVenueMapAsync(venueMapId);
+        }
+
+        public async Task SyncChartAsync(long venueMapId)
+        {
+            await _adminClient.SyncChartAsync(new SyncChartRequest { VenueMapId = venueMapId });
         }
     }
 }

@@ -27,6 +27,9 @@
   <data name="Search" xml:space="preserve">
     <value>Search...</value>
   </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filter</value>
+  </data>
   <data name="FilterVenue" xml:space="preserve">
     <value>Venue</value>
   </data>
@@ -35,6 +38,9 @@
   </data>
   <data name="FilterDateRange" xml:space="preserve">
     <value>Date Range</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>MM/DD/YYYY</value>
   </data>
   <data name="FilterClear" xml:space="preserve">
     <value>Clear</value>

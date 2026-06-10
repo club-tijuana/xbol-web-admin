@@ -1,12 +1,14 @@
 @page "/reports"
 
+@using Odasoft.XBOL.Auth
 @using Odasoft.XBOL.AdminPortal.ViewModels.Reports
+@attribute [RequireAnyPermission(AdminPermissions.Reports.Sales.SelfRead, AdminPermissions.Reports.Sales.CashiersRead, AdminPermissions.Reports.Sales.WebRead)]
 @using Odasoft.XBOL.AdminPortal.Services.Contracts
-@using Odasoft.XBOL.Business
 @using System.Globalization
 @using System.Text.Json
+@using ReportFilter = Odasoft.XBOL.AdminPortal.ViewModels.Reports.ReportFilter
 
-@inject IAdminClient _adminClient
+@inject Odasoft.XBOL.Business.IAdminClient _adminClient
 @inject IExecutiveReportsApiClient _reportsClient
 @inject ISnackbar _snackbar
 @inject IJSRuntime _jsRuntime
@@ -14,8 +16,6 @@
 <PageTitle>Reportes</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
-
-
 
     <MudPaper Class="pa-4 mb-4" Elevation="1">
         <MudText Typo="Typo.h4" Class="mb-4 text-secondary">Reportes</MudText>
@@ -28,10 +28,16 @@
                     <MudSelectItem T="string" Value="opt.Value">@opt.Label</MudSelectItem>
                 }
             </MudSelect>
-            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.FileDownload"
-                       Disabled="@(string.IsNullOrEmpty(_selectedReportType) || _downloading)" OnClick="DownloadReportAsync">
-                Exportar Excel
-            </MudButton>
+            <MudStack Row Spacing="2">
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.FileDownload"
+                           Disabled="@(string.IsNullOrEmpty(_selectedReportType) || _downloading)" OnClick="DownloadReportAsync">
+                    Exportar Excel
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                           Disabled="@(string.IsNullOrEmpty(_selectedReportType) || _downloadingPdf)" OnClick="DownloadPdfReportAsync">
+                    Exportar PDF
+                </MudButton>
+            </MudStack>
         </MudStack>
     </MudPaper>
 
@@ -50,6 +56,29 @@
                     }
                 </MudSelect>
             </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="Guid?" Label="Cajero" Value="_filter.CashierId" ValueChanged="OnCashierSelectedAsync"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Style="width:100%"
+                           Disabled="@(_selectedEventId == null || _loadingCashiers)" Clearable>
+                    @foreach (var cashier in _cashiers)
+                    {
+                        <MudSelectItem T="Guid?" Value="Guid.Parse(cashier.Value)">@cashier.Label</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            @if (_selectedReportType == "7")
+            {
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="long?" Label="Cliente" Value="_filter.ClientId" ValueChanged="OnClientSelectedAsync"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel Style="width:100%"
+                               Disabled="@_loadingClients" Clearable>
+                        @foreach (var client in _clients)
+                        {
+                            <MudSelectItem T="long?" Value="long.Parse(client.Value)">@client.Label</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
         </MudGrid>
         <MudStack Row Justify="Justify.FlexEnd" Spacing="2" Class="mt-3">
             <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Clear" OnClick="ClearFiltersAsync">
@@ -82,7 +111,7 @@
 
     <MudPaper Elevation="1">
         <MudDataGrid T="ReportRow" @ref="_dataGrid" ServerData="LoadServerDataAsync" Dense Hover
-                     SortMode="SortMode.None">
+                     SortMode="SortMode.None" RowStyleFunc="GetRowStyle">
             <Columns>
                 @foreach (var col in _visibleColumns)
                 {
@@ -145,7 +174,6 @@
             </PagerContent>
         </MudDataGrid>
     </MudPaper>
-
 </MudContainer>
 
 @code {
@@ -154,6 +182,7 @@
     private MudDataGrid<ReportRow>? _dataGrid;
     private bool _loadingReportTypes;
     private bool _downloading;
+    private bool _downloadingPdf;
 
     private IReadOnlyList<ReportTypeOption> _reportTypes = [];
     private string? _selectedReportType;
@@ -161,13 +190,19 @@
     private List<EventSelectItem> _events = [];
     private long? _selectedEventId;
 
+    private IReadOnlyList<SelectOption> _cashiers = [];
+    private bool _loadingCashiers;
+
+    private IReadOnlyList<SelectOption> _clients = [];
+    private bool _loadingClients;
+
     private DateRange _dateRange = new();
 
     private List<ReportSummaryItem> _summaries = [];
     private List<ReportColumnDefinition> _columns = [];
     private IEnumerable<ReportColumnDefinition> _visibleColumns => _columns.Where(c => c.Visible);
 
-    private readonly ReportFilter _filter = new() { Page = 1, PageSize = 50 };
+    private readonly AdminReportFilter _filter = new() { Page = 1, PageSize = 50 };
 
     protected override async Task OnInitializedAsync()
     {
@@ -214,6 +249,17 @@
         _summaries = [];
         _columns = [];
         _filter.Page = 1;
+
+        if (value == "7")
+        {
+            if (_clients.Count == 0)
+                await LoadClientsAsync();
+        }
+        else
+        {
+            _filter.ClientId = null;
+        }
+
         if (_dataGrid != null && !string.IsNullOrEmpty(_selectedReportType) && _filter.EventId > 0)
             await _dataGrid.ReloadServerData();
     }
@@ -222,15 +268,73 @@
     {
         _selectedEventId = eventId;
         _filter.EventId = eventId ?? 0;
+        _filter.CashierId = null;
+        _cashiers = [];
+        if (eventId.HasValue)
+            await LoadCashiersAsync(eventId.Value);
         if (_dataGrid != null && !string.IsNullOrEmpty(_selectedReportType))
+            await _dataGrid.ReloadServerData();
+    }
+
+    private async Task LoadCashiersAsync(long eventId)
+    {
+        _loadingCashiers = true;
+        try
+        {
+            _cashiers = await _reportsClient.GetCashiersAsync(eventId);
+        }
+        catch
+        {
+            _snackbar.Add("Error cargando cajeros", Severity.Error);
+        }
+        finally
+        {
+            _loadingCashiers = false;
+        }
+    }
+
+    private async Task OnCashierSelectedAsync(Guid? cashierId)
+    {
+        _filter.CashierId = cashierId;
+        _filter.Page = 1;
+        if (_dataGrid != null && !string.IsNullOrEmpty(_selectedReportType) && _filter.EventId > 0)
+            await _dataGrid.ReloadServerData();
+    }
+
+    private async Task LoadClientsAsync()
+    {
+        _loadingClients = true;
+        try
+        {
+            _clients = await _reportsClient.GetClientsAsync();
+        }
+        catch
+        {
+            _snackbar.Add("Error cargando clientes", Severity.Error);
+        }
+        finally
+        {
+            _loadingClients = false;
+        }
+    }
+
+    private async Task OnClientSelectedAsync(long? clientId)
+    {
+        _filter.ClientId = clientId;
+        _filter.Page = 1;
+        if (_dataGrid != null && !string.IsNullOrEmpty(_selectedReportType) && _filter.EventId > 0)
             await _dataGrid.ReloadServerData();
     }
 
     private void OnDateRangeChanged(DateRange range)
     {
         _dateRange = range;
-        _filter.StartDate = range.Start;
-        _filter.EndDate = range.End;
+        _filter.StartDate = range.Start.HasValue
+            ? new DateTimeOffset(range.Start.Value, TimeSpan.Zero)
+            : (DateTimeOffset?)null;
+        _filter.EndDate = range.End.HasValue
+            ? new DateTimeOffset(range.End.Value, TimeSpan.Zero)
+            : (DateTimeOffset?)null;
     }
 
     private async Task GenerateReportAsync()
@@ -246,6 +350,8 @@
         _selectedEventId = null;
         _filter.EventId = 0;
         _filter.CashierId = null;
+        _cashiers = [];
+        _filter.ClientId = null;
         _dateRange = new DateRange();
         _filter.StartDate = null;
         _filter.EndDate = null;
@@ -256,6 +362,8 @@
             await _dataGrid.ReloadServerData();
     }
 
+    private static readonly string AccountsReceivableReportType = "8";
+
     private bool ValidateFilters()
     {
         if (string.IsNullOrEmpty(_selectedReportType))
@@ -263,9 +371,14 @@
             _snackbar.Add("Selecciona un tipo de reporte", Severity.Warning);
             return false;
         }
-        if (_filter.EventId <= 0)
+        if (_filter.EventId <= 0 && _selectedReportType != AccountsReceivableReportType)
         {
             _snackbar.Add("Selecciona un evento", Severity.Warning);
+            return false;
+        }
+        if (_selectedReportType == "7" && !_filter.ClientId.HasValue)
+        {
+            _snackbar.Add("Selecciona un cliente", Severity.Warning);
             return false;
         }
         if (_filter.StartDate.HasValue && _filter.EndDate.HasValue && _filter.StartDate > _filter.EndDate)
@@ -279,7 +392,7 @@
     private async Task OnColumnSortClickAsync(string columnKey)
     {
         if (string.Equals(_filter.SortBy, columnKey, StringComparison.OrdinalIgnoreCase))
-            _filter.SortDirection = _filter.SortDirection == "Descending" ? "Ascending" : "Descending";
+            _filter.SortDirection = _filter.SortDirection == "Ascending" ? "Descending" : "Ascending";
         else
         {
             _filter.SortBy = columnKey;
@@ -292,7 +405,11 @@
 
     private async Task<GridData<ReportRow>> LoadServerDataAsync(GridState<ReportRow> state, CancellationToken token)
     {
-        if (string.IsNullOrEmpty(_selectedReportType) || _filter.EventId <= 0)
+        if (string.IsNullOrEmpty(_selectedReportType))
+            return new GridData<ReportRow> { Items = [], TotalItems = 0 };
+        if (_filter.EventId <= 0 && _selectedReportType != AccountsReceivableReportType)
+            return new GridData<ReportRow> { Items = [], TotalItems = 0 };
+        if (_selectedReportType == "7" && !_filter.ClientId.HasValue)
             return new GridData<ReportRow> { Items = [], TotalItems = 0 };
 
         _filter.Page = state.Page + 1;
@@ -323,11 +440,7 @@
 
     private async Task DownloadReportAsync()
     {
-        if (string.IsNullOrEmpty(_selectedReportType))
-        {
-            _snackbar.Add("Selecciona un tipo de reporte", Severity.Warning);
-            return;
-        }
+        if (!ValidateFilters()) return;
         _downloading = true;
         try
         {
@@ -344,6 +457,28 @@
         finally
         {
             _downloading = false;
+        }
+    }
+
+    private async Task DownloadPdfReportAsync()
+    {
+        if (!ValidateFilters()) return;
+        _downloadingPdf = true;
+        try
+        {
+            var bytes = await _reportsClient.DownloadPdfReportAsync(_filter);
+            using var stream = new MemoryStream(bytes);
+            using var streamRef = new DotNetStreamReference(stream);
+            var reportLabel = _reportTypes.FirstOrDefault(r => r.Value == _selectedReportType)?.Label ?? "Reporte";
+            await _jsRuntime.InvokeVoidAsync("downloadFileFromStream", $"{reportLabel}.pdf", streamRef);
+        }
+        catch
+        {
+            _snackbar.Add("Error descargando PDF", Severity.Error);
+        }
+        finally
+        {
+            _downloadingPdf = false;
         }
     }
 
@@ -379,7 +514,7 @@
                 break;
 
             case "datetime":
-                var dt = GetDateTimeValue(row, col.Key);
+                var dt = GetDateTimeOffsetValue(row, col.Key);
                 builder.AddContent(9, dt?.ToString("dd/MM/yyyy HH:mm", MxCulture));
                 break;
 
@@ -412,11 +547,11 @@
         return null;
     }
 
-    private static DateTime? GetDateTimeValue(ReportRow row, string key)
+    private static DateTimeOffset? GetDateTimeOffsetValue(ReportRow row, string key)
     {
         if (!row.TryGetValue(key, out var el) || el.ValueKind != JsonValueKind.String) return null;
         var s = el.GetString();
-        return DateTime.TryParse(s, null, DateTimeStyles.RoundtripKind, out var dt) ? dt : null;
+        return DateTimeOffset.TryParse(s, null, DateTimeStyles.RoundtripKind, out var dto) ? dto : null;
     }
 
     private static string? GetAlignStyle(string? align) => align switch
@@ -451,6 +586,12 @@
         "TrendingUp" => Icons.Material.Filled.TrendingUp,
         _ => Icons.Material.Filled.Analytics
     };
+
+    private static string GetRowStyle(ReportRow row, int _)
+    {
+        bool isTotals = row.TryGetValue("isTotalsRow", out var v) && v.ValueKind == JsonValueKind.True;
+        return isTotals ? "font-weight:bold; background-color:#D9D9D9;" : string.Empty;
+    }
 
     private record EventSelectItem(long Id, string Name);
 }
