@@ -81,7 +81,7 @@
 
         @if (_selectedTab == TabSales)
         {
-            <EventScheduleSales SaleType="AdminSaleType.Bundle" ReferenceId="BundleId" />
+            <EventScheduleSales SaleType="SaleType" ReferenceId="BundleId" />
         }
         else if (_selectedTab == TabSuitesSales)
         {
@@ -121,6 +121,8 @@
     private ImageHeroBannerViewModel _banner = new();
     private ScheduleAndPoliciesViewModel _scheduleAndPolicies = new();
     private EventMediaSetResponse _media = new();
+
+    private AdminSaleType SaleType => _bundle?.BundleType == BundleType.SeasonPass ? AdminSaleType.SeasonPass : AdminSaleType.Bundle;
 
     protected override async Task OnInitializedAsync()
     {

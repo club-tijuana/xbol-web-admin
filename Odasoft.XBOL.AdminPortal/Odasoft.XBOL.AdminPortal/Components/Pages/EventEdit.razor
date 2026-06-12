@@ -10,6 +10,8 @@
 @using Microsoft.Net.Http.Headers
 @using Odasoft.XBOL.AdminPortal.Extensions
 @using Odasoft.XBOL.AdminPortal.States
+@using Odasoft.XBOL.AdminPortal.ViewModels.Event
+@using Odasoft.XBOL.AdminPortal.Validators
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
 @using Odasoft.XBOL.Business.ModelValidators
@@ -1180,33 +1182,33 @@
     private MudForm _descriptionForm = default!;
     private bool _descriptionFormValid = true;
     private bool _descriptionFormCompleted = false;
-    private EventInfoValidator _eventInfoValidator;
+    private EventInfoValidator<EventEdit> _eventInfoValidator;
     private FormContext _descriptionFormContext = default!;
 
     private MudForm _scheduleForm = default!;
     private bool _scheduleValid = true;
     private bool _scheduleCompleted = false;
-    private ScheduleInfoValidator _scheduleValidator;
+    private ScheduleInfoValidator<EventEdit> _scheduleValidator;
     private FormContext _scheduleFormContext = default!;
 
     private MudForm _pricesForm = default!;
     private bool _pricesValid = true;
     private bool _pricesCompleted = false;
-    private PricesInfoValidator _pricesValidator;
+    private PricesInfoValidator<EventEdit> _pricesValidator;
     private FormContext _pricesFormContext = default!;
 
     private MudForm _additionalChargesForm = default!;
     private bool _additionalChargesValid = true;
     private bool _additionalChargesCompleted = false;
-    private AdditionalChargesInfoValidator _additionalChargesInfoValidator;
-    private AdditionalChargeInfoValidator _additionalChargeInfoValidator;
+    private AdditionalChargesInfoValidator<EventEdit> _additionalChargesInfoValidator;
+    private AdditionalChargeInfoValidator<EventEdit> _additionalChargeInfoValidator;
     private FormContext _additionalChargesFormContext = default!;
     private MudDataGrid<AdditionalChargeInfoModel> _additionalChargesGrid = default!;
 
     private MudForm _imagesForm = default!;
     private bool _imagesValid = true;
     private bool _imagesCompleted = false;
-    private ImagesInfoValidator _imagesValidator;
+    private ImagesInfoValidator<EventEdit> _imagesValidator;
     private FormContext _imagesFormContext = default!;
 
     private bool IsFormReadyToSubmit => _descriptionFormValid && _scheduleValid && _pricesValid && _imagesValid && _additionalChargesValid;
@@ -2668,238 +2670,5 @@
         }
 
         return Array.Empty<string>();
-    }
-
-    public class EventFormModel()
-    {
-        public EventInfoModel EventInfo { get; set; } = new();
-        public ScheduleInfoModel ScheduleInfo { get; set; } = new();
-        public PricesInfoModel PricesInfo { get; set; } = new();
-        public AdditionalChargesInfoModel AdditionalChargesInfo { get; set; } = new();
-        public ImagesInfoModel ImagesInfo { get; set; } = new();
-    }
-
-    public record EventInfoModel()
-    {
-        public VenueResponse? SelectedVenue { get; set; }
-        public VenueMapResponse? SelectedVenueMap { get; set; }
-        public long? OrganizerId { get; set; }
-        public string Name { get; set; } = null!;
-        public string? Subtitle { get; set; }
-        public string? ShortDescription { get; set; }
-        public string? LongDescription { get; set; }
-        public AgeRestriction? AgeRestriction { get; set; }
-        public string? SecurityPolicies { get; set; }
-        public string? AdditionalComments { get; set; }
-
-        public IReadOnlyCollection<AdminEventCategoryResult> SelectedCategories { get; set; } = [];
-    }
-
-    public record ScheduleInfoModel()
-    {
-        public DateTime? StartDate { get; set; }
-        public TimeSpan? StartTime { get; set; }
-        public DateTime? EndDate { get; set; }
-        public TimeSpan? EndTime { get; set; }
-        public DateTime? PublishedDate { get; set; }
-        public TimeSpan? PublishedTime { get; set; }
-        public DateTime? PreSaleDate { get; set; }
-        public TimeSpan? PreSaleTime { get; set; }
-        public DateTime? PreSaleEndDate { get; set; }
-        public TimeSpan? PreSaleEndTime { get; set; }
-        public DateTime? OnSaleDate { get; set; }
-        public TimeSpan? OnSaleTime { get; set; }
-        public DateTime? OffSaleDate { get; set; }
-        public TimeSpan? OffSaleTime { get; set; }
-        public DateTime? GateOpenDate { get; set; }
-        public TimeSpan? GateOpenTime { get; set; }
-        public AgeRestriction? AgeRestriction { get; set; }
-        public string? ExternalEventKey { get; set; }
-        public string? SecurityPolicies { get; set; }
-        public string? AdditionalComments { get; set; }
-        public int? HoldExpirationInMinutes { get; set; }
-    }
-
-    public record PricesInfoModel()
-    {
-        public List<PriceInfoModel> Prices { get; set; } = [];
-    }
-
-    public record PriceInfoModel()
-    {
-        public long? Id { get; set; }
-        public long? BaseZoneId { get; set; }
-        public long? BaseSectionId { get; set; }
-        public long? BaseRowId { get; set; }
-        public long? BaseSeatId { get; set; }
-        public Dictionary<string, bool> PriceTypes { get; set; } = [];
-        public Dictionary<string, decimal> Prices { get; set; } = [];
-
-        public bool IsZonePrice => BaseSectionId is null && BaseRowId is null && BaseSeatId is null;
-    }
-
-    public record AdditionalChargesInfoModel()
-    {
-        public HashSet<long> ChargesToDelete { get; set; } = [];
-        public List<AdditionalChargeInfoModel> AdditionalCharges { get; set; } = [];
-    }
-
-    public record AdditionalChargeInfoModel()
-    {
-        public long? Id { get; set; }
-        public string Name { get; set; }
-        public FeeType FeeType { get; set; }
-        public decimal? Value { get; set; }
-        public Guid UiId { get; set; } = new Guid();
-
-        public virtual bool Equals(AdditionalChargeInfoModel? other)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-
-            return UiId == other.UiId;
-        }
-
-        public override int GetHashCode()
-        {
-            return UiId.GetHashCode();
-        }
-    }
-
-    public record ImagesInfoModel()
-    {
-        public ImageModel? BannerImage { get; set; }
-        public ImageModel?[] SponsorImages { get; set; } = new ImageModel?[2];
-        public List<ImageModel> GalleryImages { get; set; } = [];
-    }
-
-    public class EventFormValidator : MudServerValidatorBase<EventFormModel>
-    {
-        public EventFormValidator(AppLocalizer<EventEdit> L)
-        {
-            RuleFor(x => x.EventInfo).SetValidator(new EventInfoValidator(L));
-            RuleFor(x => x.PricesInfo).SetValidator(new PricesInfoValidator(L));
-            RuleFor(x => x.ScheduleInfo).SetValidator(new ScheduleInfoValidator(L));
-            RuleFor(x => x.ImagesInfo).SetValidator(new ImagesInfoValidator(L));
-        }
-    }
-
-    public class EventInfoValidator : MudServerValidatorBase<EventInfoModel>
-    {
-        public EventInfoValidator(AppLocalizer<EventEdit> L)
-        {
-            ApiToClientMap["VenueMapId"] = "SelectedVenueMap";
-            ApiToClientMap["CategoryIds"] = "SelectedCategories";
-
-            RuleFor(x => x.Name)
-                .NotEmpty()
-                .WithName(L["Name"]);
-            RuleFor(x => x.SelectedVenue)
-                .NotEmpty()
-                .WithName(L["Venue"]);
-            RuleFor(x => x.SelectedVenueMap)
-                .NotEmpty()
-                .WithName(L["Map"]);
-            RuleFor(x => x.SelectedCategories)
-                .NotEmpty()
-                .WithName(L["EventType"]);
-        }
-    }
-
-    public class PricesInfoValidator : MudServerValidatorBase<PricesInfoModel>
-    {
-        public PricesInfoValidator(AppLocalizer<EventEdit> L)
-        {
-            RuleForEach(x => x.Prices).SetValidator(new PriceInfoValidator(L));
-        }
-    }
-
-    public class PriceInfoValidator : MudServerValidatorBase<PriceInfoModel>
-    {
-        public PriceInfoValidator(AppLocalizer<EventEdit> L)
-        {
-            RuleForEach(x => x.PriceTypes)
-            .Must((model, priceKvp) =>
-            {
-                var key = priceKvp.Key;
-
-                var isBasePrice = priceKvp.Value;
-
-                if (!isBasePrice)
-                {
-                    return true;
-                }
-
-                model.Prices.TryGetValue(key, out var currentPrice);
-
-                return currentPrice > 0;
-            })
-            .WithMessage((model, priceKvp) => $"The price for {priceKvp.Key} must be greater than 0.");
-        }
-    }
-
-    public class AdditionalChargesInfoValidator : MudServerValidatorBase<AdditionalChargesInfoModel>
-    {
-        public AdditionalChargesInfoValidator(AppLocalizer<EventEdit> L)
-        {
-            RuleForEach(x => x.AdditionalCharges).SetValidator(new AdditionalChargeInfoValidator(L));
-        }
-    }
-
-    public class AdditionalChargeInfoValidator : MudServerValidatorBase<AdditionalChargeInfoModel>
-    {
-        public AdditionalChargeInfoValidator(AppLocalizer<EventEdit> L)
-        {
-            RuleFor(x => x.Name)
-                .NotEmpty()
-                .WithName(L["FeeName"]);
-            RuleFor(x => x.FeeType)
-                .IsInEnum()
-                .Must(type => type is FeeType.Fixed or FeeType.Percentage)
-                .WithName(L["FeeType"]);
-            RuleFor(x => x.Value)
-                .NotEmpty()
-                .GreaterThan(0)
-                .WithName(L["FeeAmount"]);
-        }
-    }
-
-    public class ScheduleInfoValidator : MudServerValidatorBase<ScheduleInfoModel>
-    {
-        public ScheduleInfoValidator(AppLocalizer<EventEdit> L)
-        {
-            RuleFor(x => x.StartDate)
-                .NotEmpty()
-                .WithName(L["StartDate"]);
-            RuleFor(x => x.StartTime)
-                .NotEmpty()
-                .WithName(L["Time"]);
-            RuleFor(x => x.EndDate)
-                .NotEmpty()
-                .WithName(L["EndDate"]);
-            RuleFor(x => x.EndTime)
-                .NotEmpty()
-                .WithName(L["Time"]);
-            RuleFor(x => x.OnSaleDate)
-                .NotEmpty()
-                .WithName(L["StartDate"]);
-            RuleFor(x => x.OnSaleTime)
-                .NotEmpty()
-                .WithName(L["Time"]);
-            RuleFor(x => x.OffSaleDate)
-                .NotEmpty()
-                .WithName(L["EndDate"]);
-            RuleFor(x => x.OffSaleTime)
-                .NotEmpty()
-                .WithName(L["Time"]);
-        }
-    }
-
-    public class ImagesInfoValidator : MudServerValidatorBase<ImagesInfoModel>
-    {
-        public ImagesInfoValidator(AppLocalizer<EventEdit> L)
-        {
-
-        }
     }
 }
