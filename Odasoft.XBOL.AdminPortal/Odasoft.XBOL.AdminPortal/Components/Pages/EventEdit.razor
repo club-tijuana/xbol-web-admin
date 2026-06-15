@@ -1691,6 +1691,11 @@
                 await SaveEventMediaAsync();
             }
 
+            if (_eventStatus == AdminEventStatus.ChangesRequested)
+            {
+                await EventService.ResubmitEventAsync(EventId.Value);
+            }
+
             Snackbar.Add(L["UpdateSuccess", L["Event"]], MudBlazor.Severity.Success);
             Navigation.NavigateTo("./events");
         }

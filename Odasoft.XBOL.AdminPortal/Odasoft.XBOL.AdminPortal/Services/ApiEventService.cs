@@ -287,5 +287,17 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
 
     public async Task RejectEventAsync(long id) => await adminClient.RejectEventAsync(id);
 
+    public async Task ResubmitEventAsync(long id) => await adminClient.ResubmitEventAsync(id);
+
     public async Task PublishEventAsync(long id) => await adminClient.PublishEventAsync(id);
+
+    public async Task SubmitBundleAsync(long id) => await adminClient.SubmitBundleAsync(id);
+
+    public async Task ResubmitBundleAsync(long id) => await adminClient.ResubmitBundleAsync(id);
+
+    public async Task ApproveBundleAsync(long id) => await adminClient.ApproveBundleAsync(id);
+
+    public async Task RejectBundleAsync(long id) => await adminClient.RejectBundleAsync(id);
+
+    public async Task PublishBundleAsync(long id) => await adminClient.PublishBundleAsync(id);
 }

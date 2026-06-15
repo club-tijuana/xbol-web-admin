@@ -226,9 +226,13 @@
     private string BuildCatalogItemUrl(EventViewModel item)
     {
         var bundleSegment = item.IsBundle ? item.Status == AdminEventStatus.Published ? "/bundles" : $"/bundles/{item.BundleType?.ToString().ToLower()}" : string.Empty;
-        var reviewSegment = item.Status != AdminEventStatus.Published ? "/review" : string.Empty;
+        var workflowSegment = item.Status == AdminEventStatus.PendingReview ? "/review"
+            : item.Status == AdminEventStatus.ChangesRequested ? "/edit"
+            : item.Status == AdminEventStatus.Draft ? "/edit"
+            : item.Status == AdminEventStatus.Approved ? "/edit"
+            : string.Empty;
 
-        return $"./events{bundleSegment}/{item.Id}{reviewSegment}";
+        return $"./events{bundleSegment}/{item.Id}{workflowSegment}";
     }
 
     private async Task OnCatalogPageChanged(int page)

@@ -36,7 +36,7 @@
         {
             if(IsBundle)
             {
-                await EventService.UpdateBundleAsync(EventId, new BundleUpdateRequest() { Status = Business.AdminEventStatus.Approved});
+                await EventService.ApproveBundleAsync(EventId);
             }
             else
             {
@@ -58,7 +58,7 @@
         {
             if(IsBundle)
             {
-                await EventService.UpdateBundleAsync(EventId, new BundleUpdateRequest() { Status = Business.AdminEventStatus.ChangesRequested });
+                await EventService.RejectBundleAsync(EventId);
             }
             else
             {

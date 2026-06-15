@@ -83,6 +83,49 @@ public sealed class BundleRouteRegressionTests
         Assert.DoesNotContain("UploadLogo", source, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Catalog_routes_pending_review_to_review_and_changes_requested_to_edit()
+    {
+        var source = ReadAppSource("Components/Pages/Events.razor");
+
+        Assert.Contains("item.Status == AdminEventStatus.PendingReview", source, StringComparison.Ordinal);
+        Assert.Contains("item.Status == AdminEventStatus.ChangesRequested", source, StringComparison.Ordinal);
+        Assert.Contains("\"/review\"", source, StringComparison.Ordinal);
+        Assert.Contains("\"/edit\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("item.Status != AdminEventStatus.Published ? \"/review\"", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Review_dialog_uses_explicit_bundle_workflow_endpoints()
+    {
+        var source = ReadAppSource("Components/Dialogs/ReviewEventDialog.razor");
+
+        Assert.Contains("ApproveBundleAsync(EventId)", source, StringComparison.Ordinal);
+        Assert.Contains("RejectBundleAsync(EventId)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("UpdateBundleAsync(EventId, new BundleUpdateRequest()", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_create_uses_explicit_workflow_endpoints()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("SubmitBundleAsync(BundleId.Value)", source, StringComparison.Ordinal);
+        Assert.Contains("ResubmitBundleAsync(BundleId.Value)", source, StringComparison.Ordinal);
+        Assert.Contains("PublishBundleAsync(BundleId.Value)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("SaveBundleAsync(AdminEventStatus.PendingReview)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("UpdateBundleAsync(BundleId.Value, new BundleUpdateRequest() { Status", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Event_edit_resubmits_changes_requested_events_after_save()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+
+        Assert.Contains("_eventStatus == AdminEventStatus.ChangesRequested", source, StringComparison.Ordinal);
+        Assert.Contains("ResubmitEventAsync(EventId.Value)", source, StringComparison.Ordinal);
+    }
+
     private static string ReadAppSource(string relativePath)
     {
         var path = Path.Combine(GetAppSourceRoot(), relativePath);

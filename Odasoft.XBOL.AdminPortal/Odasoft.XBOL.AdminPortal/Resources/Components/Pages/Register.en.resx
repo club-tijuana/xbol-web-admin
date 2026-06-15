@@ -113,7 +113,7 @@
     <value>Could not complete registration.</value>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Complete admin registration</value>
+    <value>Complete registration</value>
   </data>
   <data name="TogglePasswordVisibility" xml:space="preserve">
     <value>Show or hide password</value>

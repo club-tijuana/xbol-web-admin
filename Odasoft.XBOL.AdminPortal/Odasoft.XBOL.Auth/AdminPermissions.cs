@@ -20,6 +20,11 @@ public static class AdminPermissions
         public const string Delete = "clients.delete";
     }
 
+    public static class Docs
+    {
+        public const string Read = "docs.read";
+    }
+
     public static class CreditAccounts
     {
         public const string Read = "credit_accounts.read";
@@ -113,6 +118,11 @@ public static class AdminPermissions
         public const string Block = "seats.block";
         public const string Hold = "seats.hold";
         public const string Book = "seats.book";
+    }
+
+    public static class Support
+    {
+        public const string Read = "support.read";
     }
 
     public static class Seasons
@@ -222,6 +232,11 @@ public static class AdminPermissions
         public const string Delete = "venue_maps.delete";
     }
 
+    public static class Worker
+    {
+        public const string Dashboard = "worker.dashboard";
+    }
+
     public static readonly IReadOnlyList<AdminPermissionDefinition> All =
     [
         Definition(Auth.InvitationsCreate),
@@ -230,6 +245,7 @@ public static class AdminPermissions
         Definition(Clients.Create),
         Definition(Clients.Update),
         Definition(Clients.Delete),
+        Definition(Docs.Read),
         Definition(CreditAccounts.Read),
         Definition(CreditAccounts.Create),
         Definition(CreditAccounts.Update),
@@ -323,7 +339,9 @@ public static class AdminPermissions
         Definition(VenueMaps.Read),
         Definition(VenueMaps.Create),
         Definition(VenueMaps.Update),
-        Definition(VenueMaps.Delete)
+        Definition(VenueMaps.Delete),
+        Definition(Worker.Dashboard, "worker", "dashboard"),
+        Definition(Support.Read)
     ];
 
     public static readonly IReadOnlyList<string> AllCodes =

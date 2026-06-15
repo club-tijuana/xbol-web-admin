@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Odasoft.XBOL.Auth;
 using Odasoft.XBOL.Common.Options;
 using System.Diagnostics;
 using System.Net;
@@ -14,7 +15,8 @@ public static class WorkerDashboardProxyEndpointConfiguration
 {
     public static IEndpointRouteBuilder MapWorkerDashboardProxyEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/worker").RequireAuthorization();
+        var group = endpoints.MapGroup("/worker")
+            .RequireAuthorization(PermissionPolicy.Build(AdminPermissions.Worker.Dashboard));
 
         group.MapMethods("", WorkerDashboardProxy.Methods, ProxyRootAsync);
         group.MapMethods("/{**path}", WorkerDashboardProxy.Methods, ProxyPathAsync);

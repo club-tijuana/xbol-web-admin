@@ -83,7 +83,7 @@ public sealed class ApiDocsProxyTests
     }
 
     [Fact]
-    public void Api_docs_route_requires_authorization()
+    public void Api_docs_route_requires_docs_permission()
     {
         var source = File.ReadAllText(
             Path.Combine(
@@ -96,6 +96,10 @@ public sealed class ApiDocsProxyTests
                 "Extensions",
                 "ApiDocsProxyEndpointConfiguration.cs"));
 
-        Assert.Contains("MapGroup(\"/docs/{service}\").RequireAuthorization()", source, StringComparison.Ordinal);
+        Assert.Contains("MapGroup(\"/docs/{service}\")", source, StringComparison.Ordinal);
+        Assert.Contains(
+            ".RequireAuthorization(PermissionPolicy.Build(AdminPermissions.Docs.Read))",
+            source,
+            StringComparison.Ordinal);
     }
 }

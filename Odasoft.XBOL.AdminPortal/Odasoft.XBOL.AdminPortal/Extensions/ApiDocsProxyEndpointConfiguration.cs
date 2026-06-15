@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Odasoft.XBOL.Auth;
 using Odasoft.XBOL.Common.Options;
 using System.Diagnostics;
 using System.Net;
@@ -14,7 +15,8 @@ public static class ApiDocsProxyEndpointConfiguration
 {
     public static IEndpointRouteBuilder MapApiDocsProxyEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/docs/{service}").RequireAuthorization();
+        var group = endpoints.MapGroup("/docs/{service}")
+            .RequireAuthorization(PermissionPolicy.Build(AdminPermissions.Docs.Read));
 
         group.MapMethods("", ApiDocsProxy.Methods, RedirectToIndexAsync);
         group.MapMethods("/", ApiDocsProxy.Methods, RedirectToIndexAsync);

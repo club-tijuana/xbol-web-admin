@@ -708,4 +708,13 @@
   <data name="AccessDeniedGoToDashboard" xml:space="preserve">
     <value>Go to Dashboard</value>
   </data>
+  <data name="SeeTermsAndConditions" xml:space="preserve">
+    <value>See terms</value>
+  </data>
+  <data name="TermsAndConditions" xml:space="preserve">
+    <value>Terms and conditions</value>
+  </data>
+  <data name="Accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
 </root>

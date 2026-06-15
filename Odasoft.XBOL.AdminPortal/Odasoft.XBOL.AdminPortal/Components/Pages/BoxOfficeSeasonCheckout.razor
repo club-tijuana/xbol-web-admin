@@ -320,9 +320,13 @@
                     </MudRadioGroup>
                 </MudItem>
                 <MudItem xs="12" Class="d-flex justify-end">
-                    <MudSwitch @bind-Value="_request.AcceptTermsAndConditions" For="@(() => _request.AcceptTermsAndConditions)" UncheckedColor="Color.Secondary" Color="Color.Primary">
-                        <MudText Typo="Typo.body1" Color="Color.Secondary">@L["AcceptTermsAndConditions"]</MudText>
-                    </MudSwitch>
+                    <MudStack AlignItems="AlignItems.End">
+                        <MudSwitch @bind-Value="_request.AcceptTermsAndConditions" For="@(() => _request.AcceptTermsAndConditions)" UncheckedColor="Color.Secondary" Color="Color.Primary">
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">@L["AcceptTermsAndConditions"].</MudText>
+                        </MudSwitch>
+                        <MudLink Typo="Typo.body1" EndIcon="@Icons.Material.Filled.OpenInNew" OnClick="OpenTermsAndConditions">@L["SeeTermsAndConditions"]</MudLink>
+                    </MudStack>
+                    
                 </MudItem>
                 <MudItem xs="12" Class="d-flex justify-end">
                     <MudButton Variant="Variant.Filled"
@@ -467,8 +471,8 @@
             {
                 _request.FullName = $"{client.Name} {client.LastName}";
                 _request.PhoneRegionCodeId = client.PhoneRegionCodeId;
-                _request.PhoneNumber = client.PhoneNumber;
-                _request.Email = client.Email;
+                _request.PhoneNumber = string.IsNullOrWhiteSpace(client.PhoneNumber) ? _request.PhoneNumber : client.PhoneNumber;
+                _request.Email = string.IsNullOrWhiteSpace(client.Email) ? _request.Email : client.Email;
                 _request.ClientId = client.Id;
                 _request.City = client.City;
                 _request.Neighborhood = client.Neighbourhood;
@@ -481,12 +485,12 @@
             // If the client is not found, we don't want to show an error, we just want to clear the form
             if (ex.StatusCode != StatusCodes.Status404NotFound)
             {
-                Console.WriteLine($"Unexpected error searching for client: {ex.Message}");
+                Logger.LogError(ex, "Unexpected error searching for client");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Unexpected error searching for client: {ex.Message}");
+            Logger.LogError(ex, "Unexpected error searching for client");
         }
 
     }
@@ -743,6 +747,11 @@
             _isSubmitting = false;
             _loadingState.Hide();
         }
+    }
+
+    private async Task OpenTermsAndConditions()
+    {
+        var dialog = await _dialogService.ShowAsync<TermsAndConditionsDialog>(L["TermsAndConditions"]);
     }
 
     private async Task OpenDateTimeDialog()

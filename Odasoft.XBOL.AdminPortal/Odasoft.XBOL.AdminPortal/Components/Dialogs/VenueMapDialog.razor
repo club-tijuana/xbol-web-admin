@@ -47,7 +47,7 @@
         _request.VenueId = VenueId;
 
         ICollection<VenueMapResponse> venueMaps = await _venueMapsService.GetVenueMapsByVenueAsync(VenueId);
-        _existingMaps = venueMaps.Select(vm => vm.Name!).ToList();
+        _existingMaps = venueMaps.Where(vm => vm.Id != VenueMapId.GetValueOrDefault()).Select(vm => vm.Name!).ToList();
 
         if (VenueMapId.HasValue)
         {

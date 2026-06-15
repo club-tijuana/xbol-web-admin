@@ -1,6 +1,7 @@
 @page "/support/"
 @page "/support/{OrderLocalizer}"
-@attribute [Authorize]
+@using Odasoft.XBOL.Auth
+@attribute [RequirePermission(AdminPermissions.Support.Read)]
 
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;

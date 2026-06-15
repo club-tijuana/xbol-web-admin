@@ -350,10 +350,13 @@
                             </MudGrid>
                         </MudRadioGroup>
                     </MudItem>
-                    <MudItem xs="12" Class="d-flex justify-end">
-                        <MudSwitch @bind-Value="_request.AcceptTermsAndConditions" For="@(() => _request.AcceptTermsAndConditions)" UncheckedColor="Color.Secondary" Color="Color.Primary">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">@L["AcceptTermsAndConditions"]</MudText>
-                        </MudSwitch>
+                    <MudItem xs="12" Class="d-flex justify-end">                        
+                        <MudStack AlignItems="AlignItems.End">
+                            <MudSwitch @bind-Value="_request.AcceptTermsAndConditions" For="@(() => _request.AcceptTermsAndConditions)" UncheckedColor="Color.Secondary" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">@L["AcceptTermsAndConditions"].</MudText>
+                            </MudSwitch>
+                            <MudLink Typo="Typo.subtitle2" EndIcon="@Icons.Material.Filled.OpenInNew" OnClick="OpenTermsAndConditions">@L["SeeTermsAndConditions"]</MudLink>
+                        </MudStack>
                     </MudItem>
                     <MudItem xs="12" Class="d-flex justify-end">
                         <MudButton Variant="Variant.Filled"
@@ -991,6 +994,11 @@
             ExpirationDate = selected;
             _request.PaymentLinkExpiresAt = selected;
         }
+    }
+
+    private async Task OpenTermsAndConditions()
+    {
+        var dialog = await _dialogService.ShowAsync<TermsAndConditionsDialog>(L["TermsAndConditions"]);
     }
 
     public async ValueTask DisposeAsync()
