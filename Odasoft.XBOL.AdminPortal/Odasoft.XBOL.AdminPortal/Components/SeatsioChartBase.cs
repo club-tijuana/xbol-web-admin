@@ -8,7 +8,7 @@ public abstract class SeatsioChartBase : ComponentBase, IAsyncDisposable
     [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
 
     [Parameter][EditorRequired] public string SecretKey { get; set; } = default!;
-    [Parameter][EditorRequired] public string EventKey { get; set; } = default!;
+    [Parameter][EditorRequired] public string[] EventKeys { get; set; } = [];
     [Parameter][EditorRequired] public long EventId { get; set; }
     [Parameter] public string Language { get; set; } = "es";
 

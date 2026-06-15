@@ -1,6 +1,7 @@
 @using FluentValidation;
 @using Microsoft.Extensions.Options;
 @using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.AdminPortal.Validators
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
@@ -694,7 +695,7 @@
             {
                 ExpiresAt = _request.PaymentLinkExpiresAt
             },
-            TicketType = ItemType.Ticket,
+            TicketType = ItemType.Ticket
         };
 
         try
@@ -717,7 +718,7 @@
                 _navigation.NavigateTo("./box-office");
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 
@@ -771,127 +772,5 @@
     {
         _cartState.OnChange -= StateHasChanged;
         await ReleaseTokenAsync();
-    }
-
-    public class EventClientForm()
-    {
-        public string? CountryPhoneISO { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? Email { get; set; }
-        public string? FullName { get; set; }
-        public string? City { get; set; }
-        public string? Neighborhood { get; set; }
-        public string? Gender { get; set; }
-        public DateTime? Birthday { get; set; }
-    }
-
-    public class PaymentInfoForm()
-    {
-        public decimal? CardAmount { get; set; }
-        public decimal? CashAmount { get; set; }
-        public decimal? DolarAmount { get; set; }
-        public decimal? CreditAmount { get; set; }
-        public decimal? OtherAmount { get; set; }
-    }
-
-    public class BookingFormFluentValidator : AbstractValidator<BookingForm>
-    {
-        public BookingFormFluentValidator()
-        {
-            RuleFor(x => x.PhoneRegionCodeId)
-                .NotNull().WithMessage("El codigo de país es requerido.");
-
-            RuleFor(x => x.PhoneNumber)
-                .NotEmpty().WithMessage("El número de teléfono es requerido.")
-                .Matches(@"^\d{10}$").WithMessage("El número de teléfono debe tener 10 dígitos.");
-
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("El correo electrónico es requerido.")
-                .EmailAddress().WithMessage("El correo electrónico no es válido.");
-
-            RuleFor(x => x.TicketType)
-                .NotEmpty()
-                .WithMessage("El Tipo de entrada es requerido.");
-
-            RuleFor(x => x.CardAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto de tarjeta no puede ser negativo.");
-
-            RuleFor(x => x.CashAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto de efectivo no puede ser negativo.");
-
-            RuleFor(x => x.DolarAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto en dólares no puede ser negativo.");
-
-            RuleFor(x => x.CreditAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto de crédito no puede ser negativo.");
-
-            RuleFor(x => x.OtherAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto de otros métodos no puede ser negativo.");
-
-            RuleFor(x => x.DeliveryType)
-                .NotEmpty().WithMessage("Elige método de entrega");
-
-            RuleFor(x => x.AcceptTermsAndConditions)
-                .Equal(true).WithMessage("Debes aceptar los términos y condiciones.");
-
-            RuleFor(x => x)
-                .Custom((model, context) =>
-                {
-                    var totalPaidMx =
-                        (model.CardAmount ?? 0)
-                        + (model.CashAmount ?? 0)
-                        + ((model.DolarAmount ?? 0) * model.ExchangeRate)
-                        + (model.OtherAmount ?? 0);
-
-                    var totalChangeMx =
-                        (model.MXNAmount ?? 0)
-                        + ((model.USDAmount ?? 0) * model.ExchangeRate);
-
-                    var overpayment =
-                        totalPaidMx - model.TotalPrice;
-
-                    if (overpayment <= 0)
-                    {
-                        return;
-                    }
-
-                    var remaining =
-                        overpayment - totalChangeMx;
-
-                    if (remaining > 0.01m)
-                    {
-                        context.AddFailure(
-                            nameof(model.MXNAmount),
-                            $"Falta devolver {remaining:C2} de cambio.");
-
-                        context.AddFailure(
-                            nameof(model.USDAmount),
-                            $"Falta devolver {remaining:C2} de cambio.");
-                    }
-
-                    if (remaining < -0.01m)
-                    {
-                        context.AddFailure(
-                            nameof(model.MXNAmount),
-                            $"El cambio excede por {Math.Abs(remaining ?? 0):C2}.");
-
-                        context.AddFailure(
-                            nameof(model.USDAmount),
-                            $"El cambio excede por {Math.Abs(remaining ?? 0):C2}.");
-                    }
-                });
-        }
-
-        public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
-        {
-            var result = await ValidateAsync(ValidationContext<BookingForm>.CreateWithOptions((BookingForm)model, x => x.IncludeProperties(propertyName)));
-
-            if (result.IsValid)
-            {
-                return Array.Empty<string>();
-            }
-
-            return result.Errors.Select(e => e.ErrorMessage);
-        };
     }
 }

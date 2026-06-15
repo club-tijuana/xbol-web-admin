@@ -122,7 +122,7 @@
             else if (!string.IsNullOrWhiteSpace(_seasonKey))
             {
                 <SeatingChart SecretKey="@_secretKey"
-                              EventKey="@_seasonKey"
+                              EventKeys="@(new[] {_seasonKey})"
                               EventId="SeasonId"
                               Prices="_prices"
                               SelectedSeats="SelectedSeats"

@@ -33,7 +33,7 @@ export async function renderChart(containerId, config, dotNetHelper) {
     divId: containerId,
     secretKey: config.secretKey,
     mode: config.mode,
-    event: config.event,
+    events: config.events,
     session: config.session,
     holdToken: config.holdToken,
     pricing: {

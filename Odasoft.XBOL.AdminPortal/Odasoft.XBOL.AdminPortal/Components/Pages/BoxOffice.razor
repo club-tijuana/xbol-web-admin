@@ -123,9 +123,9 @@
 
     private async Task GoToSeats(EventViewModel e)
     {
-        if (e.IsSeason == true)
+        if (e.IsSeason == true || e.IsBundle == true)
         {
-            Navigation.NavigateTo($"./box-office/seasons/{e.Id}/seats");
+            Navigation.NavigateTo($"./box-office/bundles/{e.Id}/seats");
         }
         else
         {
@@ -147,7 +147,7 @@
 
             if(canRenew.CanRenew == true)
             {
-                Navigation.NavigateTo($"./box-office/seasons/renovate/{canRenew.NewSeasonId}/{canRenew.Reference}");
+                Navigation.NavigateTo($"./box-office/bundles/renovate/{canRenew.NewSeasonId}/{canRenew.Reference}");
             }
             else if(!string.IsNullOrWhiteSpace(canRenew.Reference))
             {

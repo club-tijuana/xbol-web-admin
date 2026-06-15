@@ -31,7 +31,7 @@
         <MudItem xs="7">
             <SeatingChart @ref="_seatingChart"
                           SecretKey="@_secretKey"
-                          EventKey="@ExternalKey"
+                          EventKeys="@(new[] {ExternalKey})"
                           EventId="EventId"
                           Prices="Prices ?? []"
                           Session="@(_hasActiveHold ? "manual" : "none")"

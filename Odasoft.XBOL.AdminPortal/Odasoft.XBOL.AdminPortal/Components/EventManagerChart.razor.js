@@ -39,7 +39,7 @@ export async function renderChart(containerId, config, dotNetHelper) {
   const chart = new seatsio.EventManager({
     divId: containerId,
     secretKey: config.secretKey,
-    event: config.event,
+    events: config.events,
     language: config.language,
     mode: config.mode,
     objectIcon: (obj, defaultIcon, extraConfig) => {

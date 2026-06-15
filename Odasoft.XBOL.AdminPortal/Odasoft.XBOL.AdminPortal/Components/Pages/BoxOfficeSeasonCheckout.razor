@@ -1,6 +1,7 @@
 @using FluentValidation;
 @using Microsoft.Extensions.Options;
 @using Odasoft.XBOL.AdminPortal.States;
+@using Odasoft.XBOL.AdminPortal.Validators
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
@@ -32,8 +33,8 @@
                 <MudText Typo="Typo.h5"><b>@_eventInfo.Name</b></MudText>
                 <MudStack Row>
                     <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600
-                    ;">@_eventInfo.Venue</MudText>
-                    <MudText Typo="Typo.body1">@_eventInfo.StartDate?.ToString("dd/MM/yyyy h:mm tt")</MudText>
+                    ;">@_eventInfo.VenueName</MudText>
+                    <MudText Typo="Typo.body1">@_eventInfo.StartDate.ToString("dd/MM/yyyy h:mm tt")</MudText>
                 </MudStack>
             </MudStack>
             <MudButton OnClick="ReturnAsync" Variant="Variant.Filled" DropShadow="false" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
@@ -344,11 +345,11 @@
 @code {
     [Parameter]
     [EditorRequired]
-    public SeasonResult _eventInfo { get; set; }
+    public SeatManagementDetailDTO _eventInfo { get; set; }
 
     [EditorRequired]
     [Parameter]
-    public string EventKey { get; set; }
+    public string[] EventKeys { get; set; }
 
     [Parameter]
     public EventCallback OnReturn { get; set; }
@@ -442,9 +443,9 @@
             // TODO: Move this to a proper service
             var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
             {
-                EventScheduleId = _cartState.CurrentEventId.Value,
+                Id = _cartState.CurrentEventId.Value,
                 Seats = _cartState.SelectedSeatsKeys,
-                SaleType = SaleType.SeasonPass
+                SaleType = SaleType.Bundle
             });
 
             _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
@@ -673,7 +674,7 @@
         _isSubmitting = true;
         _loadingState.Show();
 
-        var request = new SeasonBookingRequest
+        var request = new BookSeatsBody
         {
             Seats = _cartState.FinalSeatsSelection.Select(s => new BookingSeatRequest
             {
@@ -682,7 +683,7 @@
                 PriceListItemId = s.PriceListItemId
             }).ToList(),
             HoldToken = _cartState.HoldToken ?? "",
-            SeasonKey = EventKey,
+            BundleId = _cartState.CurrentEventId.Value,
             ClientContact = new ClientInfoRequest
             {
                 Id = _request.ClientId,
@@ -711,14 +712,14 @@
             {
                 ExpiresAt = _request.PaymentLinkExpiresAt
             },
-            TicketType = ItemType.SeasonPass,
+            TicketType = ItemType.BundlePass,
             ReferenceOrderId = OrderInfo?.OrderId
         };
 
         try
         {
             // TODO: Move to a proper service
-            var result = await _adminClient.BookSeasonSeatsAsync(request);
+            var result = await _adminClient.BookSeatsByIdAsync(request);
 
             _persistentDialogState.SetBookingResult(result);
 
@@ -735,7 +736,7 @@
                 _navigation.NavigateTo("./box-office");
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 
@@ -789,127 +790,5 @@
     {
         _cartState.OnChange -= StateHasChanged;
         await ReleaseTokenAsync();
-    }
-
-    public class EventClientForm()
-    {
-        public string? CountryPhoneISO { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? Email { get; set; }
-        public string? FullName { get; set; }
-        public string? City { get; set; }
-        public string? Neighborhood { get; set; }
-        public string? Gender { get; set; }
-        public DateTime? Birthday { get; set; }
-    }
-
-    public class PaymentInfoForm()
-    {
-        public decimal? CardAmount { get; set; }
-        public decimal? CashAmount { get; set; }
-        public decimal? DolarAmount { get; set; }
-        public decimal? CreditAmount { get; set; }
-        public decimal? OtherAmount { get; set; }
-    }
-
-    public class BookingFormFluentValidator : AbstractValidator<BookingForm>
-    {
-        public BookingFormFluentValidator()
-        {
-            RuleFor(x => x.PhoneRegionCodeId)
-                .NotNull().WithMessage("El codigo de país es requerido.");
-
-            RuleFor(x => x.PhoneNumber)
-                .NotEmpty().WithMessage("El número de teléfono es requerido.")
-                .Matches(@"^\d{10}$").WithMessage("El número de teléfono debe tener 10 dígitos.");
-
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("El correo electrónico es requerido.")
-                .EmailAddress().WithMessage("El correo electrónico no es válido.");
-
-            RuleFor(x => x.TicketType)
-                .NotEmpty()
-                .WithMessage("El Tipo de entrada es requerido.");
-
-            RuleFor(x => x.CardAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto de tarjeta no puede ser negativo.");
-
-            RuleFor(x => x.CashAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto de efectivo no puede ser negativo.");
-
-            RuleFor(x => x.DolarAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto en dólares no puede ser negativo.");
-
-            RuleFor(x => x.CreditAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto de crédito no puede ser negativo.");
-
-            RuleFor(x => x.OtherAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("El monto de otros métodos no puede ser negativo.");
-
-            RuleFor(x => x.DeliveryType)
-                .NotEmpty().WithMessage("Elige método de entrega");
-
-            RuleFor(x => x.AcceptTermsAndConditions)
-                .Equal(true).WithMessage("Debes aceptar los términos y condiciones.");
-
-            RuleFor(x => x)
-                .Custom((model, context) =>
-                {
-                    var totalPaidMx =
-                        (model.CardAmount ?? 0)
-                        + (model.CashAmount ?? 0)
-                        + ((model.DolarAmount ?? 0) * model.ExchangeRate)
-                        + (model.OtherAmount ?? 0);
-
-                    var totalChangeMx =
-                        (model.MXNAmount ?? 0)
-                        + ((model.USDAmount ?? 0) * model.ExchangeRate);
-
-                    var overpayment =
-                        totalPaidMx - model.TotalPrice;
-
-                    if (overpayment <= 0)
-                    {
-                        return;
-                    }
-
-                    var remaining =
-                        overpayment - totalChangeMx;
-
-                    if (remaining > 0.01m)
-                    {
-                        context.AddFailure(
-                            nameof(model.MXNAmount),
-                            $"Falta devolver {remaining:C2} de cambio.");
-
-                        context.AddFailure(
-                            nameof(model.USDAmount),
-                            $"Falta devolver {remaining:C2} de cambio.");
-                    }
-
-                    if (remaining < -0.01m)
-                    {
-                        context.AddFailure(
-                            nameof(model.MXNAmount),
-                            $"El cambio excede por {Math.Abs(remaining ?? 0):C2}.");
-
-                        context.AddFailure(
-                            nameof(model.USDAmount),
-                            $"El cambio excede por {Math.Abs(remaining ?? 0):C2}.");
-                    }
-                });
-        }
-
-        public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
-        {
-            var result = await ValidateAsync(ValidationContext<BookingForm>.CreateWithOptions((BookingForm)model, x => x.IncludeProperties(propertyName)));
-
-            if (result.IsValid)
-            {
-                return Array.Empty<string>();
-            }
-
-            return result.Errors.Select(e => e.ErrorMessage);
-        };
     }
 }

@@ -1965,10 +1965,13 @@
 
     private async Task SendToReviewAsync()
     {
+        if(BundleId is null)
+        {
+            return;
+        }
         try
         {
-            // TODO: Do validation of all forms
-            await SaveBundleAsync(AdminEventStatus.PendingReview);
+            await EventService.SubmitBundleAsync(BundleId.Value);
             Snackbar.Add(L["EventSentToReview"], MudBlazor.Severity.Success);
             Navigation.NavigateTo("./events");
         }
@@ -1995,9 +1998,13 @@
 
     private async Task PublishAsync()
     {
+        if (BundleId is null)
+        {
+            return;
+        }
         try
         {
-            await EventService.UpdateBundleAsync(BundleId.Value, new BundleUpdateRequest() { Status = Business.AdminEventStatus.Published });
+            await EventService.PublishBundleAsync(BundleId.Value);
             Snackbar.Add(L["EventPublished"], MudBlazor.Severity.Success);
             Navigation.NavigateTo("./events");
         }

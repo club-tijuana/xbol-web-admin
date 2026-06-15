@@ -1,5 +1,5 @@
-@page "/box-office/seasons/{SeasonId:long}/seats"
-@page "/box-office/seasons/renovate/{SeasonId:long}/{OrderReference}"
+@page "/box-office/bundles/{BundleId:long}/seats"
+@page "/box-office/bundles/renovate/{BundleId:long}/{OrderReference}"
 @using Odasoft.XBOL.Auth
 @attribute [RequirePermission(AdminPermissions.Orders.Create)]
 @using Microsoft.Extensions.Options
@@ -39,8 +39,8 @@
                     <MudStack>
                         <MudText Typo="Typo.h5"><b>@_eventName</b></MudText>
                         <MudStack Row>
-                            <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600;">@_eventInfo?.Venue</MudText>
-                            <MudText Typo="Typo.body1">@_eventInfo?.StartDate?.ToString("dd/MM/yyyy h:mm tt")</MudText>
+                            <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600;">@_eventInfo?.VenueName</MudText>
+                            <MudText Typo="Typo.body1">@_eventInfo?.StartDate.ToString("dd/MM/yyyy h:mm tt")</MudText>
                         </MudStack>
                     </MudStack>
                     <MudButton Variant="Variant.Filled"
@@ -54,7 +54,7 @@
                     </MudButton>
                 </MudItem>
                 <MudItem xs="7">
-                    <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKey="@_eventKey" EventId="SeasonId" Prices="_eventInfo?.Prices" SelectedSeats="@CartState.SelectedSeatsKeys" />
+                    <SeatingChart @ref="_seatingChart" SecretKey="@_secretKey" EventKeys="@_eventKeys" EventId="BundleId" Prices="_eventInfo?.Prices" SelectedSeats="@CartState.SelectedSeatsKeys" />
                 </MudItem>
                 <MudItem xs="4" Class="mt-8">
                     <BoxOfficeOrderSummary Chart="_seatingChart" />
@@ -64,7 +64,7 @@
         else if (_currentStep == 2)
         {
             <BoxOfficeSeasonCheckout OnReturn="PreviousStep"
-                                     EventKey="@_eventKey"
+                                     EventKeys="@_eventKeys"
                                      _eventInfo="_eventInfo"
                                      IsRenewal="IsRenewal"
                                      OrderInfo="OrderInfo">
@@ -78,14 +78,14 @@
     public string? OrderReference { get; set; }
 
     [Parameter]
-    public long SeasonId { get; set; }
+    public long BundleId { get; set; }
 
     private bool IsRenewal => !string.IsNullOrEmpty(OrderReference);
     private OrderRenewalInfoResponse? OrderInfo { get; set; }
 
     private SeatingChart? _seatingChart;
     private string _secretKey = string.Empty;
-    private string _eventKey = string.Empty;
+    private string[] _eventKeys = [];
     private string _eventName = string.Empty;
     private bool _loading = true;
     private bool _holdProcessing => CartState.IsHoldCallsInProgress;
@@ -93,7 +93,7 @@
 
     private int _currentStep = 1;
 
-    private SeasonResult? _eventInfo;
+    private SeatManagementDetailDTO? _eventInfo;
 
     protected override async Task OnInitializedAsync()
     {
@@ -154,12 +154,16 @@
 
         try
         {
-            _eventInfo = await AdminClient.GetSeasonByIdAsync(SeasonId);
+            _eventInfo = await AdminClient.GetSeatManagementDetailByIdAsync(new SeatManagementDetailRequest
+            {
+                EventId = BundleId,
+                SaleType = AdminSaleType.Bundle
+            });
             _eventName = _eventInfo.Name ?? string.Empty;
-            _eventKey = _eventInfo.ExternalSeasonKey ?? string.Empty;
+            _eventKeys = _eventInfo.ExternalKeys?.ToArray() ?? [];
             _secretKey = SeatsOptions.Value.SecretKey;
 
-            CartState.SetEvent(SeasonId);
+            CartState.SetEvent(BundleId);
             CartState.ClearTokenAsync();
         }
         catch (Exception ex)
