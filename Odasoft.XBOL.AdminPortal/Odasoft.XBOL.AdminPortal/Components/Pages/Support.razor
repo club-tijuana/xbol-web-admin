@@ -62,39 +62,36 @@
                     <MudText Typo="Typo.caption" Color="Color.Warning">Correo electrónico</MudText>
                     <MudText Typo="Typo.body1">@_orderInfoResponse.Email</MudText>
                 </MudItem>
-                @if (_orderInfoResponse.PaymentLink != null)
+                @if (_orderInfoResponse.Status == OrderStatus.Pending && _orderInfoResponse.PaymentLink != null)
                 {
                     <MudItem xs="12" md="6" lg="2" Style="display: flex; flex-direction: column; align-items: start">
                         <MudMenu Label="LINK DE PAGO" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.ArrowDropDown">
-                            <MudMenuItem 
-                                Icon="@Icons.Material.Outlined.ContentCopy" 
-                                IconColor="@Color.Secondary" 
-                                OnClick="CopyPaymentLink"
-                                Disabled="
-                                    _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
-                                         || _orderInfoResponse.Status != OrderStatus.Pending
-                                ">
-                                Copiar
+                            <MudMenuItem Icon="@Icons.Material.Outlined.ContentCopy"
+                                         IconColor="@Color.Secondary"
+                                         OnClick="CopyPaymentLink"
+                                         Disabled="
+                                         _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
+                                              || _orderInfoResponse.Status != OrderStatus.Pending
+                            ">
+                            Copiar
                             </MudMenuItem>
-                            <MudMenuItem
-                                Icon="@Icons.Material.Outlined.Cancel"
-                                IconColor="@Color.Secondary"
-                                OnClick="CancelPaymentLink"
-                                Disabled="
-                                    _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
-                                         || _orderInfoResponse.Status != OrderStatus.Pending
-                                ">
-                                Cancelar
+                            <MudMenuItem Icon="@Icons.Material.Outlined.Cancel"
+                                         IconColor="@Color.Secondary"
+                                         OnClick="CancelPaymentLink"
+                                         Disabled="
+                                         _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
+                                              || _orderInfoResponse.Status != OrderStatus.Pending
+                            ">
+                            Cancelar
                             </MudMenuItem>
-                            <MudMenuItem
-                                Icon="@Icons.Material.Outlined.Refresh"
-                                IconColor="@Color.Secondary"
+                            <MudMenuItem Icon="@Icons.Material.Outlined.Refresh"
+                                         IconColor="@Color.Secondary"
                                          OnClick="RegeneratePaymentLink"
-                                Disabled="
-                                    _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
-                                    || _orderInfoResponse.Status != OrderStatus.Pending
-                                ">
-                                Regenerar
+                                         Disabled="
+                                         _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
+                                         || _orderInfoResponse.Status != OrderStatus.Pending
+                            ">
+                            Regenerar
                             </MudMenuItem>
                         </MudMenu>
                     </MudItem>
@@ -111,7 +108,8 @@
 
             @if (_activeTabIndex == 0)
             {
-                <MudMenu Label="ACCIONES DE SELECCIÓN" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.ArrowDropDown" Disabled="@(_selectedItems.Count == 0)">
+                <MudMenu Label="ACCIONES DE SELECCIÓN" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.ArrowDropDown"
+                         Disabled="@(_orderInfoResponse.Status == OrderStatus.Cancelled || _orderInfoResponse.Status == OrderStatus.Refunded || _selectedItems.Count == 0)">
                     <MudMenuItem Icon="@Icons.Material.Outlined.ConfirmationNumber" IconColor="Color.Secondary" OnClick="ReissueTicketsAsync">Reemitir boletos</MudMenuItem>
                     <MudMenuItem Icon="@Icons.Material.Outlined.Send" IconColor="Color.Secondary" OnClick="SendTicketsAsync">Enviar boletaje individual</MudMenuItem>
                     <MudMenuItem Icon="@Icons.Material.Outlined.CardGiftcard" IconColor="Color.Secondary" OnClick="SendCourtesiesAsync">Reenviar cortesías</MudMenuItem>
@@ -139,14 +137,14 @@
                     <RowTemplate>
                         <MudTd Style="background-color: #fff8e1;">@context.OrderDateTime?.ToString("dd/MM/yyyy hh:mm tt")</MudTd>
                         <MudTd Style="background-color: #fff8e1;">@context.ItemQuantity</MudTd>
-                        <MudTd Style="background-color: #fff8e1;">@(context.Channel.HasValue? _localizer[context.Channel?.ToString()] : "N/A")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.Channel.HasValue ? _localizer[context.Channel?.ToString()] : "N/A")</MudTd>
                         <MudTd Style="background-color: #fff8e1;">@context.Seller</MudTd>
-                        <MudTd Style="background-color: #fff8e1;">@(context.PaymentMethod.HasValue? _localizer[context.PaymentMethod.ToString()] : "N/A")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.PaymentMethod.HasValue ? _localizer[context.PaymentMethod.ToString()] : "N/A")</MudTd>
                         <MudTd Style="background-color: #fff8e1;">@(context.Total?.ToString("C"))</MudTd>
                     </RowTemplate>
                 </MudTable>
 
-                <MudTable Items="@_orderItems" MultiSelection="true" Elevation="0" RowDisabledFunc="@(element => element.IsCancelled ?? false)" @bind-SelectedItems="_selectedItems">
+                <MudTable Items="@_orderItems" MultiSelection="true" Elevation="0" RowDisabledFunc="@IsRowDisabled" @bind-SelectedItems="_selectedItems">
                     <HeaderContent>
                         <MudTh>Zona</MudTh>
                         <MudTh>Sección</MudTh>
@@ -190,7 +188,7 @@
     }
 </MudContainer>
 
-    @code {
+@code {
     [Parameter]
     public string? OrderLocalizer { get; set; }
 
@@ -269,7 +267,7 @@
 
     private async void CancelPaymentLink()
     {
-        if (_orderInfoResponse.PaymentLinkCode == null) 
+        if (_orderInfoResponse.PaymentLinkCode == null)
         {
             return;
         }
@@ -532,5 +530,16 @@
                 NewEmail = _newEmail,
                 Seats = seats
             });
+    }
+
+    private bool IsRowDisabled(OrderItemResponse item)
+    {
+        if (_orderInfoResponse.Status == OrderStatus.Cancelled
+            || (item.IsCancelled.HasValue && item.IsCancelled.Value))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

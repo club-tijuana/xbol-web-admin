@@ -23239,7 +23239,9 @@
       "PaymentLinkResponse": {
         "required": [
           "code",
-          "link"
+          "expirationDate",
+          "link",
+          "status"
         ],
         "type": "object",
         "properties": {
@@ -23255,6 +23257,10 @@
                 "$ref": "#/components/schemas/PaymentLinkStatus"
               }
             ]
+          },
+          "expirationDate": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -24597,6 +24603,14 @@
           "purchaseDate": {
             "type": "string",
             "format": "date-time"
+          },
+          "paymentLink": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentLinkResponse"
+              }
+            ],
+            "nullable": true
           },
           "bundleId": {
             "type": "integer",

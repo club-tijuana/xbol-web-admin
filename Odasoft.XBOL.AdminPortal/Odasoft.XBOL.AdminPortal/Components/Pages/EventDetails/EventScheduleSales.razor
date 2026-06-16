@@ -2,8 +2,10 @@
 @using Odasoft.XBOL.Business.Services;
 
 @inject AppLocalizer<EventScheduleSales> _localizer;
+@inject PaymentLinkService _paymentLinkService;
 @inject SalesService _salesService;
 
+@inject IJSRuntime JSRuntime;
 @inject ISnackbar _snackbar;
 
 <MudCard Elevation="3">
@@ -40,7 +42,7 @@
 
                                         <MudSelect T="PaymentType?" Label="Método de pago" @bind-SelectedValues="_selectedPaymentTypes" Variant="Variant.Outlined"
                                                    Margin="Margin.Dense" MultiSelection="true" ShrinkLabel
-                                                   ToStringFunc="@(pt => pt.HasValue ? _localizer[pt.Value.ToString()] : "")">
+                                                   ToStringFunc="@(pt => pt.HasValue ? _localizer[pt.Value.ToString()].Value : "")">
                                             @foreach (var payment in _paymentTypes)
                                             {
                                                 <MudSelectItem T="PaymentType?" Value="@payment">
@@ -122,15 +124,26 @@
 
                 <TemplateColumn Title="Estatus" Sortable="false">
                     <CellTemplate>
-                        @if (context.Item.OrderStatus.ToString() == "Pending")
+                        @if (context.Item.OrderStatus == OrderStatus.Pending)
                         {
-                            <div class="d-flex flex-column align-start">
-                                <MudChip Size="Size.Small" Style="background-color: #FFF3E0; color: #E65100; font-weight: 500; border-radius: 12px;">Pendiente</MudChip>
-                                @if (context.Item.ExpirationDate.HasValue)
+                            if (context.Item.ExpirationDate.HasValue)
+                            {
+                                if (context.Item.ExpirationDate > DateTimeOffset.UtcNow)
                                 {
-                                    <MudText Typo="Typo.caption" Style="color: #9E9E9E; font-size: 0.7rem; margin-top: 2px;">Exp. @context.Item.ExpirationDate.Value.ToString("dd/MM/yyyy")</MudText>
+                                    <div class="d-flex flex-column align-start">
+                                        <MudChip Size="Size.Small" Style="background-color: #FFF8E1; color: #F78E21; font-weight: 500; border-radius: 12px;">Pendiente</MudChip>
+                                        <MudText Typo="Typo.caption" Style="color: #9E9E9E; font-size: 0.7rem; margin-top: 2px;">Exp. @context.Item.ExpirationDate.Value.ToString("dd/MM/yyyy")</MudText>
+                                    </div>
                                 }
-                            </div>
+                                else
+                                {
+                                    <MudChip Size="Size.Small" Style="background-color: #E94035; color: white; font-weight: 500; border-radius: 12px;">Expirado</MudChip>
+                                }
+                            }
+                        }
+                        else if (context.Item.OrderStatus == OrderStatus.Cancelled)
+                        {
+                            <MudChip Size="Size.Small" Style="background-color: #E1E1E1; font-weight: 500; border-radius: 12px;">Cancelado</MudChip>
                         }
                         else
                         {
@@ -150,11 +163,15 @@
                 <TemplateColumn Sortable="false">
                     <CellTemplate>
                         <MudStack Row Spacing="0" Justify="Justify.FlexEnd" @onclick:stopPropagation="true">
-                            @if (context.Item.OrderStatus.ToString() == "Pending")
+                            @if (context.Item.OrderStatus == OrderStatus.Pending
+                                && context.Item.PaymentLink != null
+                                && context.Item.PaymentLink.ExpirationDate > DateTimeOffset.UtcNow)
                             {
-                                <MudIconButton Icon="@Icons.Material.Outlined.Block" Size="Size.Small" Style="color: #757575;" />
+                                <MudIconButton Icon="@Icons.Material.Outlined.Block" Size="Size.Small" Style="color: #757575;" OnClick="@(() => CancelPaymentLinkAsync(context.Item.PaymentLink?.Code))" />
+
+                                <MudIconButton Icon="@Icons.Material.Outlined.ContentCopy" Size="Size.Small" Style="color: #757575;" OnClick="@(() => CopyPaymentLinkAsync(context.Item.PaymentLink?.Link))" />
                             }
-                            <MudIconButton Icon="@Icons.Material.Outlined.ContentCopy" Size="Size.Small" Style="color: #757575;" />
+
                             <MudIconButton Icon="@(context.Item.ShowDetails.HasValue && context.Item.ShowDetails.Value ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
                                            Size="Size.Small"
                                            OnClick="@(() => ToggleDetails(context.Item))" />
@@ -194,7 +211,7 @@
 <style>
 
     .selected-row {
-        background-color: #FFFDE7 !important;
+        background-color: #FFF8E1 !important;
     }
 
     .mud-table-row.selected-row > td {
@@ -203,7 +220,7 @@
 
     .mud-table-root .mud-table-cell {
         padding-top: 0px !important;
-        padding-bottom: 0px !important;        
+        padding-bottom: 0px !important;
     }
 
     .mud-table-cell .mud-icon-button {
@@ -304,5 +321,23 @@
     private async Task ApplyFiltersAsync()
     {
         await _dataGrid.ReloadServerData();
+    }
+
+    private async Task CancelPaymentLinkAsync(string? code)
+    {
+        if (string.IsNullOrWhiteSpace(code) == false)
+        {
+            await _paymentLinkService.Cancel(code);
+
+            await _dataGrid.ReloadServerData();
+        }
+    }
+
+    private async Task CopyPaymentLinkAsync(string? paymentLink)
+    {
+        if (string.IsNullOrWhiteSpace(paymentLink) == false)
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", paymentLink);
+        }
     }
 }
