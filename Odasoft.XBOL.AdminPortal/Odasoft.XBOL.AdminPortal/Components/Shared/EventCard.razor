@@ -83,14 +83,24 @@
                     </MudTooltip>
                 </MudItem>
                 <MudItem>
-                    <MudTooltip Text="@L["Availability"]" Placement="Placement.Top">
-                        <MudIconButton
+                    @if (Event.IsBundle && Event.BundleType != BundleType.SeasonPass)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Outlined.ChevronRight"
+                                       Size="Size.Medium"
+                                       Color="Color.Secondary"
+                                       OnClick="@(() => _navigationManager.NavigateTo($"./events/bundles/{Event.Id}"))" />
+                    }
+                    else
+                    {
+                        <MudTooltip Text="@L["Availability"]" Placement="Placement.Top">
+                            <MudIconButton
                             Icon="@Icons.Material.Outlined.Map"
                             Size="Size.Medium"
                             Color="Color.Secondary"
                             OnClick="@(() => _navigationManager.NavigateTo($"./events/{Event.Id}/key/{Event.ExternalEventKey}/availability"))"
-                            Disabled="@(Event.IsBundle || Event.Status != AdminEventStatus.Published || Event.ExternalEventKey is null)" />
-                    </MudTooltip>
+                            Disabled="@(Event.Status != AdminEventStatus.Published || Event.ExternalEventKey is null)" />
+                        </MudTooltip>
+                    }
                 </MudItem>
             </MudGrid>
         </MudCardActions>

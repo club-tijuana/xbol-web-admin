@@ -56,7 +56,7 @@
                                          Color="Color.Primary"
                                          Disabled="@(item.IsSold == true)" />
                         }
-                        <MudText Typo="Typo.body1" Color="Color.Secondary">@($"{item.Category?.ToUpper() ?? string.Empty} SECCIÓN {item.SeatId}")</MudText>
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">@($"{item.SeatId.ToUpper()}")</MudText>
                     </MudStack>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                         <MudText Typo="Typo.body1" Color="Color.Secondary">@item.Price.ToString(FormatConstants.CURRENCY)</MudText>

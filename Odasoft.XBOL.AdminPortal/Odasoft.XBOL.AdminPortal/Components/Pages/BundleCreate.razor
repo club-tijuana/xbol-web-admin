@@ -7,6 +7,7 @@
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
 @using Odasoft.XBOL.Common.Constants
+@using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.AdminPortal.ViewModels
 @using Odasoft.XBOL.AdminPortal.ViewModels.Event
 @using Odasoft.XBOL.AdminPortal.Validators
@@ -26,6 +27,7 @@
 @inject ILogger<BundleCreate> Logger
 @inject AdminMediaUrlResolver MediaUrlResolver
 @inject IDialogService DialogService
+@inject LoadingState LoadingState;
 
 <style>
     .mud-stepper .mud-stepper-content {
@@ -1554,7 +1556,7 @@
 
         _saving = true;
         _datesFormContext.SetSaving(true);
-
+        LoadingState.Show();
         try
         {
             await SaveBundleAsync();
@@ -1586,6 +1588,7 @@
         {
             _saving = false;
             _datesFormContext.SetSaving(false);
+            LoadingState.Hide();
         }
     }
 
@@ -2002,6 +2005,7 @@
         {
             return;
         }
+        LoadingState.Show();
         try
         {
             await EventService.PublishBundleAsync(BundleId.Value);
@@ -2012,6 +2016,10 @@
         {
             Logger.LogError(ex, "Failed to publish event");
             Snackbar.Add(L["ErrorPublishingEvent"], MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            LoadingState.Hide();
         }
     }
 

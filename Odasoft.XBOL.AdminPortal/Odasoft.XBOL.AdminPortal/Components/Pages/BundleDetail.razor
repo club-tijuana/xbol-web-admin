@@ -34,7 +34,7 @@
                            Class="text-uppercase" OnClick="DeleteBundleAsync">
                     @L["DeleteItem", L["Bundle"]]
                 </MudButton>
-                <MudButton StartIcon="@Icons.Material.Outlined.Edit" Href="@($"./events/bundles/{BundleId}/edit")"
+                <MudButton StartIcon="@Icons.Material.Outlined.Edit" Href="@($"./events/bundles/{_bundle?.BundleType?.ToString().ToLower()}/{BundleId}/edit")"
                            Color="Color.Secondary" Variant="Variant.Filled" Class="text-uppercase">
                     @L["Edit"]
                 </MudButton>
