@@ -16,7 +16,7 @@ namespace Odasoft.XBOL.AdminPortal.Validators
             RuleFor(x => x.FeeType)
                 .IsInEnum()
                 .Must(type => type is FeeType.Fixed or FeeType.Percentage)
-                .WithName(L["FeeType"]);
+                .WithName(L["Type"]);
             RuleFor(x => x.Value)
                 .NotEmpty()
                 .GreaterThan(0)

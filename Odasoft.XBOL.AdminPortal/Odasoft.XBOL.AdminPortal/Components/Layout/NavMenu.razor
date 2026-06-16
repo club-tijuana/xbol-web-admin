@@ -1,6 +1,8 @@
 @using Odasoft.XBOL.Common.Constants
 @using Odasoft.XBOL.Auth
+@using Odasoft.XBOL.Business
 @inject AppLocalizer<NavMenu> _localizer;
+@inject IAdminClient AdminClient;
 
 <MudNavMenu>
     <AuthorizeView>
@@ -29,13 +31,16 @@
     </AuthorizeView>
     <AuthorizeView Policy="@PermissionPolicy.BuildAny(AdminPermissions.Seasons.Read, AdminPermissions.SeasonPasses.Read)">
         <Authorized>
-            <MudNavGroup Title="Pases de temporada" IconColor="Color.Primary" Class="nav-link pt-1" Icon="@Icons.Material.Filled.EventSeat" Expanded="false">
+            <MudNavGroup Title="@_localizer["SeasonPasses"]" IconColor="Color.Primary" Class="nav-link pt-1" Icon="@Icons.Material.Filled.EventSeat" Expanded="false">
                 <MudNavLink Href="./season-schedules" Class="nav-link pt-1" Disabled>
-                    Configuración de venta
+                    @_localizer["SalesConfiguration"]
                 </MudNavLink>
-                <MudNavLink Href="./season-pass" Class="nav-link pt-1">
-                    Xolopass
-                </MudNavLink>
+                @foreach (var bundle in _seasonPassBundles)
+                {
+                    <MudNavLink Href="@($"./season-pass/{bundle.Id}")" Class="nav-link pt-1">
+                        @bundle.Name
+                    </MudNavLink>
+                }
             </MudNavGroup>
         </Authorized>
     </AuthorizeView>
@@ -97,3 +102,48 @@
         </Authorized>
     </AuthorizeView>
 </MudNavMenu>
+
+@code {
+    private List<BundleListItemDTO> _seasonPassBundles = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadSeasonPassBundlesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading season pass navigation: {ex.Message}");
+        }
+    }
+
+    private async Task LoadSeasonPassBundlesAsync()
+    {
+        const int pageSize = 100;
+        var bundles = new List<BundleListItemDTO>();
+
+        for (var page = 1; ; page++)
+        {
+            var response = await AdminClient.GetBundlesAsync(
+                AdminEventStatus.Published,
+                BundleType.SeasonPass,
+                null,
+                "startDate",
+                true,
+                page,
+                pageSize);
+
+            var pageItems = response.Items?
+                .Where(bundle => bundle.Id.HasValue)
+                .ToList() ?? [];
+
+            bundles.AddRange(pageItems);
+
+            if (pageItems.Count < pageSize)
+                break;
+        }
+
+        _seasonPassBundles = bundles;
+    }
+}

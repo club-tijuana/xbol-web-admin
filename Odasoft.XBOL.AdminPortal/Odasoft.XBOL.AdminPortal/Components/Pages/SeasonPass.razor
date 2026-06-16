@@ -1,4 +1,5 @@
 @page "/season-pass"
+@page "/season-pass/{BundleId:long}"
 
 @using Odasoft.XBOL.Auth
 @attribute [RequirePermission(AdminPermissions.SeasonPasses.Read)]
@@ -19,14 +20,14 @@
 <SectionContent SectionName="nav-header">
     <PageActionBar>
         <RightContent>
-            <MudTooltip Text="@L["ActionDisabledNotOnSale"]" Placement="Placement.Bottom" Disabled="@_isSelectedBundleSellable">
+            <MudTooltip Text="@L["ActionDisabledNotOnSale"]" Placement="Placement.Bottom" Disabled="@_canBuySelectedBundle">
                 <MudButton StartIcon="@Icons.Material.Filled.Add"
                            OnClick="@GoToCheckoutSeasonpass"
                            Color="Color.Primary"
                            Variant="Variant.Filled"
                            Class="text-uppercase"
-                           Disabled="@(!_isSelectedBundleSellable)">
-                    Comprar Xolopass
+                           Disabled="@(!_canBuySelectedBundle)">
+                    @L["BuySeasonPass"]
                 </MudButton>
             </MudTooltip>
         </RightContent>
@@ -39,31 +40,10 @@
             <MudGrid Class="align-center">
                 <MudItem xs="12" sm="12" md="12" lg="12">
                     <MudText Class="pl-lg-4" Typo="Typo.h5">@L["PageTitle"]</MudText>
-                </MudItem>
-                <MudItem xs="12" sm="12" md="12" lg="8">
-                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
-                        <MudSelect T="long?" Label="Xolopass" @bind-Value="_selectedBundleId"
-                                   @bind-Value:after="OnBundleChanged"
-                                   ToStringFunc="GetBundleLabel"
-                                   Placeholder="Seleccione un Xolopass"
-                                   Margin="Margin.Dense"
-                                   Variant="Variant.Outlined" ShrinkLabel>
-                            @foreach (var bundle in _bundleSelectorItems)
-                            {
-                                <MudSelectItem T="long?" Value="@bundle.Id">
-                                    <MudText Typo="Typo.body2">@bundle.Name</MudText>
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                        <MudTooltip Text="@L["RenovationModeDisabledNoDestination"]" Placement="Placement.Bottom" Disabled="@_hasRenewalSource">
-                            <MudSwitch Color="@Color.Primary" UncheckedColor="@Color.Default"
-                                       ThumbIcon="@(_renewalMode ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
-                                       ThumbIconColor="@Color.Default"
-                                       @bind-Value="_renewalMode" @bind-Value:after="OnRenewalModeChanged"
-                                       Disabled="@(!_hasRenewalSource)"
-                                       Label="Ver modo renovación" />
-                        </MudTooltip>
-                    </MudStack>
+                    @if (SelectedBundle is not null)
+                    {
+                        <MudText Class="pl-lg-4" Typo="Typo.body2" Color="Color.Secondary">@SelectedBundle.Name</MudText>
+                    }
                 </MudItem>
                 <MudItem xs="12" sm="6" md="12" lg="4">
                     <MudStack Row AlignItems="AlignItems.Center">
@@ -124,12 +104,6 @@
                     </CellTemplate>
                 </TemplateColumn>
 
-                <TemplateColumn Title="Tipo" Sortable="false" Filterable="false">
-                    <CellTemplate>
-                        <MudText Typo="Typo.body2">@GetSaleTypeText(context.Item)</MudText>
-                    </CellTemplate>
-                </TemplateColumn>
-
                 <TemplateColumn Sortable="false" Filterable="false">
                     <HeaderTemplate>
                         @L["ColumnQuantity"]
@@ -149,40 +123,37 @@
                     </CellTemplate>
                 </TemplateColumn>
 
-                @if (_renewalMode)
-                {
-                    <TemplateColumn Title="@L["ColumnActions"]" Filterable="false" Sortable="false">
-                        <CellTemplate>
-                            <MudStack Row Spacing="2">
-                                <MudTooltip Text="@GetTooltipText(context.Item)" Placement="Placement.Top">
-                                    <MudIconButton Disabled="@(!CanRenew(context.Item))"
-                                                   Icon="@Icons.Material.Outlined.ShoppingCart"
-                                                   Size="Size.Medium"
-                                                   OnClick="@(() => OnRenewClick(context.Item))" />
-                                </MudTooltip>
-                            </MudStack>
-                        </CellTemplate>
-                    </TemplateColumn>
-                }
+                <TemplateColumn Title="@L["ColumnActions"]" Filterable="false" Sortable="false">
+                    <CellTemplate>
+                        <MudStack Row Spacing="2">
+                            <MudTooltip Text="@GetTooltipText(context.Item)" Placement="Placement.Top">
+                                <MudIconButton Disabled="@(!CanRenew(context.Item))"
+                                               Icon="@Icons.Material.Outlined.ShoppingCart"
+                                               Size="Size.Medium"
+                                               Href="@GetRenewalCheckoutPath(context.Item)" />
+                            </MudTooltip>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
             </Columns>
             <ChildRowRenderer>
                 <tr class="mud-table-row">
                     <th class="mud-table-cell" colspan="2">
                         <div class="mud-typography mud-typography-subtitle2 d-flex justify-center align-center">
-                            Asiento
+                            @L["Seat"]
                         </div>
                     </th>
                     <th class="mud-table-cell" colspan="2">
                         <div class="mud-typography mud-typography-subtitle2 d-flex justify-center align-center">
-                            Precio
+                            @L["Price"]
                         </div>
                     </th>
                     <th class="mud-table-cell" colspan="1">
                         <div class="mud-typography mud-typography-subtitle2 d-flex justify-center align-center">
-                            Estatus
+                            @L["Status"]
                         </div>
                     </th>
-                    <th class="mud-table-cell" colspan="@(_renewalMode ? 2 : 1)">
+                    <th class="mud-table-cell" colspan="2">
                     </th>
                 </tr>
                 @foreach (var item in context.Item.Items ?? [])
@@ -203,7 +174,7 @@
                                 @GetItemStatus(item)
                             </div>
                         </td>
-                        <td class="mud-table-cell mud-table-child-content" colspan="@(_renewalMode ? 2 : 1)">
+                        <td class="mud-table-cell mud-table-child-content" colspan="2">
                         </td>
                     </tr>
                 }
@@ -216,43 +187,34 @@
 </MudCard>
 
 @code {
+    [Parameter] public long? BundleId { get; set; }
+
     private bool _loading;
     private string searchString = "";
     private bool _initialized;
-    private bool _renewalMode = true;
     private MudDataGrid<SaleResponse> _dataGrid = default!;
-    private List<BundleListItemDTO> _bundleSelectorItems = new();
+    private List<BundleListItemDTO> _seasonPassBundles = [];
     private long? _selectedBundleId;
 
     private BundleListItemDTO? SelectedBundle =>
         _selectedBundleId is long id
-            ? _bundleSelectorItems.FirstOrDefault(bundle => bundle.Id == id)
+            ? _seasonPassBundles.FirstOrDefault(bundle => bundle.Id == id)
             : null;
 
-    private bool _hasRenewalSource => SelectedBundle?.PreviousBundleId is not null;
     private bool _isSelectedBundleSellable => IsBundleSellingNow(SelectedBundle);
     private bool _isSelectedBundleRenewable => IsBundleRenewingNow(SelectedBundle);
+    private bool _canBuySelectedBundle =>
+        _isSelectedBundleSellable
+        && SelectedBundle?.IsBookable == true
+        && !string.IsNullOrWhiteSpace(SelectedBundle?.ExternalKey);
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var bundlesResponse = await AdminClient.GetBundlesAsync(
-                AdminEventStatus.Published,
-                BundleType.SeasonPass,
-                null,
-                "startDate",
-                true,
-                1,
-                100);
-
-            _bundleSelectorItems = bundlesResponse.Items?
-                .Where(bundle => bundle.Id.HasValue && !string.IsNullOrWhiteSpace(bundle.ExternalKey))
-                .ToList() ?? [];
-
-            _selectedBundleId = _bundleSelectorItems.FirstOrDefault()?.Id;
-            _renewalMode = _hasRenewalSource;
+            await LoadSeasonPassBundlesAsync();
             _initialized = true;
+            SelectBundleFromRoute(navigateWhenMissing: true);
         }
         catch (Exception ex)
         {
@@ -261,28 +223,15 @@
         }
     }
 
-    private async Task OnBundleChanged()
+    protected override async Task OnParametersSetAsync()
     {
-        if (!_hasRenewalSource)
-        {
-            _renewalMode = false;
-        }
+        if (!_initialized)
+            return;
 
-        if (_dataGrid is not null)
-        {
-            await _dataGrid.ReloadServerData();
-            StateHasChanged();
-        }
-    }
+        var previousSelectedBundleId = _selectedBundleId;
+        SelectBundleFromRoute(navigateWhenMissing: true);
 
-    private async Task OnRenewalModeChanged()
-    {
-        if (!_hasRenewalSource)
-        {
-            _renewalMode = false;
-        }
-
-        if (_dataGrid is not null)
+        if (_dataGrid is not null && previousSelectedBundleId != _selectedBundleId)
         {
             await _dataGrid.ReloadServerData();
         }
@@ -290,7 +239,7 @@
 
     private async Task<GridData<SaleResponse>> FetchFromServer(GridState<SaleResponse> state)
     {
-        if (_selectedBundleId is not long bundleId)
+        if (SelectedBundle?.Id is not long bundleId)
         {
             return new GridData<SaleResponse>
             {
@@ -304,7 +253,7 @@
         var result = await SalesService.GetSalesAsync(
             AdminSaleType.Bundle,
             bundleId,
-            _renewalMode,
+            true,
             null,
             null,
             [],
@@ -367,26 +316,30 @@
     {
         if (SelectedBundle is not { Id: long id } bundle || string.IsNullOrWhiteSpace(bundle.ExternalKey))
             return;
-        if (!_isSelectedBundleSellable)
+        if (!_canBuySelectedBundle)
             return;
 
         NavigationManager.NavigateTo($"./season-pass/{id}/key/{bundle.ExternalKey}/booking");
     }
 
-    private void OnRenewClick(SaleResponse item)
+    private string? GetRenewalCheckoutPath(SaleResponse item)
     {
         if (SelectedBundle is not { Id: long id } bundle || string.IsNullOrWhiteSpace(bundle.ExternalKey))
-            return;
+            return null;
         if (!CanRenew(item) || string.IsNullOrWhiteSpace(item.OrderReference))
-            return;
+            return null;
 
         var reference = Uri.EscapeDataString(item.OrderReference);
-        NavigationManager.NavigateTo($"./season-pass/{id}/key/{bundle.ExternalKey}/checkout?renewal={reference}");
+        var route = item.RenewalRequiresSeatSelection == true
+            ? "booking"
+            : "checkout";
+        return $"./season-pass/{id}/key/{bundle.ExternalKey}/{route}?renewal={reference}";
     }
 
     private bool CanRenew(SaleResponse item) =>
-        _renewalMode
-        && _isSelectedBundleRenewable
+        _isSelectedBundleRenewable
+        && SelectedBundle?.IsBookable == true
+        && !string.IsNullOrWhiteSpace(SelectedBundle?.ExternalKey)
         && item.CanRenew == true
         && item.AlreadyRenewed != true;
 
@@ -395,45 +348,34 @@
         if (!_isSelectedBundleRenewable)
             return L["ActionDisabledNotOnSale"];
         if (item.AlreadyRenewed == true)
-            return "Renovación completada";
+            return L["RenewalCompleted"];
         if (item.CanRenew != true)
-            return "No disponible para renovación";
+            return L["RenewalUnavailable"];
         return L["ActionBoletos"];
-    }
-
-    private string GetSaleTypeText(SaleResponse item)
-    {
-        if (_renewalMode)
-            return item.CanRenew == true ? "Renovable" : "No renovable";
-
-        return string.IsNullOrWhiteSpace(item.RelatedOrderReference) ? "Nuevo" : "Renovación";
-    }
-
-    private string GetBundleLabel(long? id)
-    {
-        if (id is null)
-            return "";
-
-        return _bundleSelectorItems.FirstOrDefault(bundle => bundle.Id == id)?.Name ?? "";
     }
 
     private static bool IsBundleSellingNow(BundleListItemDTO? bundle)
     {
         if (bundle is null) return false;
-        var now = DateTimeOffset.UtcNow;
-        var saleStart = bundle.OnSaleDate;
-        if (saleStart is null) return false;
-        return saleStart <= now && (bundle.OffSaleDate is null || now < bundle.OffSaleDate);
+        return SeasonPassPurchaseWindow.CanBuy(
+            bundle.OnSaleDate,
+            bundle.OffSaleDate,
+            bundle.PreviousBundleId.HasValue,
+            bundle.RenewalEndDate,
+            bundle.IsBookable == true,
+            DateTimeOffset.UtcNow);
     }
 
     private static bool IsBundleRenewingNow(BundleListItemDTO? bundle)
     {
         if (bundle?.PreviousBundleId is null) return false;
-        var now = DateTimeOffset.UtcNow;
-        var renewalStart = bundle.RenewalStartDate ?? bundle.OnSaleDate;
-        if (renewalStart is null) return false;
-        var renewalEnd = bundle.RenewalEndDate ?? bundle.OffSaleDate;
-        return renewalStart <= now && (renewalEnd is null || now < renewalEnd);
+        return SeasonPassPurchaseWindow.CanRenew(
+            bundle.OnSaleDate,
+            bundle.OffSaleDate,
+            bundle.RenewalStartDate,
+            bundle.RenewalEndDate,
+            bundle.IsBookable == true,
+            DateTimeOffset.UtcNow);
     }
 
     private static string GetSeatLabel(SaleDetailResponse item)
@@ -445,13 +387,73 @@
     }
 
     private decimal GetItemPrice(SaleDetailResponse item) =>
-        _renewalMode ? item.RenewalPrice ?? item.Price ?? 0 : item.Price ?? 0;
+        item.RenewalPrice ?? item.Price ?? 0;
 
-    private static string GetItemStatus(SaleDetailResponse item)
+    private string GetItemStatus(SaleDetailResponse item)
     {
         if (item.IsRenewed == true)
-            return "Renovado";
+            return L["RenewalCompleted"];
 
-        return item.BundlePassStatus?.ToString() ?? "";
+        return L["Renewable"];
+    }
+
+    private async Task LoadSeasonPassBundlesAsync()
+    {
+        const int pageSize = 100;
+        var bundles = new List<BundleListItemDTO>();
+
+        for (var page = 1; ; page++)
+        {
+            var response = await AdminClient.GetBundlesAsync(
+                AdminEventStatus.Published,
+                BundleType.SeasonPass,
+                null,
+                "startDate",
+                true,
+                page,
+                pageSize);
+
+            var pageItems = response.Items?
+                .Where(bundle => bundle.Id.HasValue)
+                .ToList() ?? [];
+
+            bundles.AddRange(pageItems);
+
+            if (pageItems.Count < pageSize)
+                break;
+        }
+
+        _seasonPassBundles = bundles;
+    }
+
+    private void SelectBundleFromRoute(bool navigateWhenMissing)
+    {
+        if (BundleId.HasValue && _seasonPassBundles.Any(bundle => bundle.Id == BundleId))
+        {
+            _selectedBundleId = BundleId;
+            return;
+        }
+
+        var defaultBundle = GetDefaultBundle();
+        _selectedBundleId = defaultBundle?.Id;
+
+        if (navigateWhenMissing && defaultBundle?.Id is long id && BundleId != id)
+        {
+            NavigationManager.NavigateTo($"./season-pass/{id}", replace: true);
+        }
+    }
+
+    private BundleListItemDTO? GetDefaultBundle()
+    {
+        return _seasonPassBundles
+            .Where(IsBundleRenewingNow)
+            .OrderBy(bundle => bundle.RenewalEndDate ?? DateTimeOffset.MaxValue)
+            .ThenBy(bundle => bundle.StartDate ?? DateTimeOffset.MaxValue)
+            .ThenBy(bundle => bundle.Id ?? long.MaxValue)
+            .FirstOrDefault()
+            ?? _seasonPassBundles
+                .OrderByDescending(bundle => bundle.StartDate ?? DateTimeOffset.MinValue)
+                .ThenByDescending(bundle => bundle.Id ?? 0)
+                .FirstOrDefault();
     }
 }

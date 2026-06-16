@@ -1,4 +1,5 @@
 @using Odasoft.XBOL.Business
+@using Odasoft.XBOL.AdminPortal.Services
 @inject AppLocalizer<EventCard> L
 @inject NavigationManager _navigationManager;
 
@@ -68,7 +69,7 @@
                             Icon="@Icons.Material.Outlined.ShoppingCart"
                             Size="Size.Medium"
                             Color="Color.Secondary"
-                            Disabled="@(Event.Status != AdminEventStatus.Published || Event.ExternalEventKey is null)"
+                            Disabled="@(!CanBook())"
                             OnClick="@(() => _navigationManager.NavigateTo(GetBookingRoute()))" />
                     </MudTooltip>
                 </MudItem>
@@ -119,6 +120,26 @@
                 ? $"./season-pass/{Event.Id}/key/{Event.ExternalEventKey}/booking"
                 : $""
             : $"./events/{Event.Id}/key/{Event.ExternalEventKey}/booking";
+    }
+
+    private bool CanBook()
+    {
+        if (Event.Status != AdminEventStatus.Published || string.IsNullOrWhiteSpace(Event.ExternalEventKey))
+            return false;
+
+        if (!Event.IsBundle)
+            return true;
+
+        if (Event.BundleType != BundleType.SeasonPass)
+            return false;
+
+        return SeasonPassPurchaseWindow.CanBuy(
+            Event.OnSaleDate,
+            Event.OffSaleDate,
+            Event.HasRenewalWindow,
+            Event.RenewalEndDate,
+            Event.IsBookable,
+            DateTimeOffset.UtcNow);
     }
 
     private string GetEditRoute()

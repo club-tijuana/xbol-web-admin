@@ -52,7 +52,12 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
             e.BundleType,
             e.Code,
             e.EventScheduleId,
-            e.VenueMapId
+            e.VenueMapId,
+            e.BundleSaleWindow?.OnSaleDate,
+            e.BundleSaleWindow?.OffSaleDate,
+            e.BundleSaleWindow?.RenewalStartDate,
+            e.BundleSaleWindow?.RenewalEndDate,
+            e.IsBookable == true
         )).ToArray() ?? [];
 
         return new GridData<EventViewModel>

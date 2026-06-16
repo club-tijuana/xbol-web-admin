@@ -147,7 +147,7 @@
                 </MudGrid>
             </MudItem>
             <MudItem xs="4">
-                <OrderSummary AllowRemoval="false" AllowPartialUpdate="@IsRenewal" />
+                <OrderSummary AllowRemoval="false" AllowPartialUpdate="@PreserveRenewalSeats" />
             </MudItem>
             <MudItem xs="4">
                 @if (TicketType == "Boleto")
@@ -422,6 +422,9 @@
 
     [Parameter]
     public bool IsRenewal { get; set; }
+
+    [Parameter]
+    public bool PreserveRenewalSeats { get; set; }
 
     [Parameter]
     public DateTimeOffset? ReleaseDate { get; set; }
@@ -908,13 +911,20 @@
         catch (ApiException apiEx) when (apiEx.StatusCode == StatusCodes.Status422UnprocessableEntity
                                           && OnSeatsConflicted.HasDelegate)
         {
-            Logger.LogError(apiEx, "Seat conflict on book");
-            _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
-
             var conflicts = ParseSeatConflicts(apiEx.Response);
-            await ExpireHoldTokenAsync();
-            await OnSeatsConflicted.InvokeAsync(conflicts);
-            await OnBookingFailed.InvokeAsync(apiEx);
+            if (conflicts.Count > 0)
+            {
+                Logger.LogError(apiEx, "Seat conflict on book");
+                _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
+
+                await ExpireHoldTokenAsync();
+                await OnSeatsConflicted.InvokeAsync(conflicts);
+                await OnBookingFailed.InvokeAsync(apiEx);
+                return;
+            }
+
+            Logger.LogError(apiEx, "Booking validation failed");
+            _snackbar.Add(GetApiErrorMessage(apiEx.Response), MudBlazor.Severity.Error);
         }
         catch (Exception ex)
         {
@@ -964,6 +974,36 @@
             Logger.LogWarning(ex, "Failed to parse SeatsIoErrorResponse");
             return [];
         }
+    }
+
+    private string GetApiErrorMessage(string? responseBody)
+    {
+        if (string.IsNullOrWhiteSpace(responseBody))
+        {
+            return L["Seats_PaymentError"];
+        }
+
+        try
+        {
+            var parsed = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
+            var detail = parsed.Value<string>("detail");
+            if (!string.IsNullOrWhiteSpace(detail))
+            {
+                return detail;
+            }
+
+            var title = parsed.Value<string>("title");
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                return title;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to parse API error response");
+        }
+
+        return L["Seats_PaymentError"];
     }
 
     private async Task OpenDateTimeDialog()

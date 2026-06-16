@@ -17571,6 +17571,9 @@
             "type": "string",
             "nullable": true
           },
+          "isBookable": {
+            "type": "boolean"
+          },
           "startDate": {
             "type": "string",
             "format": "date-time",
@@ -17760,6 +17763,9 @@
           "externalKey": {
             "type": "string",
             "nullable": true
+          },
+          "isBookable": {
+            "type": "boolean"
           },
           "startDate": {
             "type": "string",
@@ -20689,6 +20695,9 @@
             "nullable": true
           },
           "isSeason": {
+            "type": "boolean"
+          },
+          "isBookable": {
             "type": "boolean"
           }
         },
@@ -24671,6 +24680,9 @@
             "type": "boolean"
           },
           "canRenew": {
+            "type": "boolean"
+          },
+          "renewalRequiresSeatSelection": {
             "type": "boolean"
           },
           "relatedOrderReference": {

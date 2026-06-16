@@ -5,6 +5,7 @@
 @using Odasoft.XBOL.Auth
 @attribute [RequirePermission(AdminPermissions.Orders.Create)]
 @using Odasoft.XBOL.AdminPortal.Components.Shared
+@using Odasoft.XBOL.AdminPortal.Services
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.AdminPortal.ViewModels.Shared
 @using Odasoft.XBOL.Business
@@ -66,7 +67,7 @@
                           ExternalKey="@ExternalKey"
                           Prices="@_detail?.Prices"
                           PreselectedSeats="@_preselectedSeats"
-                          IsRenewal="@(_renewalPrefill is not null)"
+                          IsRenewal="@_preserveRenewalSeats"
                           OnSeatsHeld="GoToCheckoutStep" />
         </div>
     }
@@ -80,6 +81,7 @@
                            ReferenceOrderId="@_renewalPrefill?.RelatedOrderId"
                            Prefill="@_renewalPrefill?.ClientContact"
                            IsRenewal="@(_renewalPrefill is not null)"
+                           PreserveRenewalSeats="@_preserveRenewalSeats"
                            ReleaseDate="@_releaseDate"
                            OnRequiresSeats="GoToBookingStep"
                            OnReturnToChart="GoToBookingStep"
@@ -114,22 +116,42 @@
     private SeasonRenewalPrefill? _renewalPrefill;
     private DateTimeOffset? _releaseDate;
     private List<ConflictedSeat> _conflictedSeats = [];
+    private bool _preserveRenewalSeats;
+    private bool _renewalRequiresSeatSelection;
 
     protected override async Task OnInitializedAsync()
     {
-        _successUrl = Navigation.Uri.Contains("/season-pass/") ? "./season-pass" : "./events";
+        _successUrl = Navigation.Uri.Contains("/season-pass/")
+            ? $"./season-pass/{Id}"
+            : "./events";
 
         var uri = new Uri(Navigation.Uri);
         var path = uri.AbsolutePath.TrimEnd('/');
         var queryDict = QueryHelpers.ParseQuery(uri.Query);
+        var hasRenewalReference = queryDict.TryGetValue("renewal", out var renewalRef)
+                                  && !string.IsNullOrWhiteSpace(renewalRef);
 
-        // Renewal entry: load prefill once for both /booking and /checkout
-        // landings. Populates CartState so the /checkout deep-link branch
-        // below promotes to step 2; populates _preselectedSeats so the
-        // /booking landing pre-selects prior seats on the chart.
-        if (queryDict.TryGetValue("renewal", out var renewalRef) && !string.IsNullOrWhiteSpace(renewalRef))
+        if (!await EnsureSeasonPassBookingAllowedAsync(hasRenewalReference))
         {
-            await LoadRenewalPrefillAsync(renewalRef!);
+            return;
+        }
+
+        if (hasRenewalReference)
+        {
+            await LoadRenewalPrefillAsync(renewalRef!, _preserveRenewalSeats);
+
+            if (_renewalPrefill is null)
+            {
+                return;
+            }
+
+            if (_renewalRequiresSeatSelection && path.EndsWith("/checkout", StringComparison.OrdinalIgnoreCase))
+            {
+                var reference = Uri.EscapeDataString(renewalRef.ToString());
+                Navigation.NavigateTo($"./season-pass/{Id}/key/{ExternalKey}/booking?renewal={reference}", replace: true);
+                _loading = false;
+                return;
+            }
         }
 
         // In-circuit /checkout deep-link: when CartState already carries
@@ -150,13 +172,82 @@
         await LoadData();
     }
 
-    private async Task LoadRenewalPrefillAsync(string orderReference)
+    private async Task<bool> EnsureSeasonPassBookingAllowedAsync(bool hasRenewalReference)
+    {
+        if (!Navigation.Uri.Contains("/season-pass/", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        try
+        {
+            var bundle = await AdminClient.GetBundleByIdAsync(Id);
+            var externalKeyMatches = string.Equals(bundle.ExternalKey, ExternalKey, StringComparison.Ordinal)
+                || bundle.Schedules?.Any(schedule => string.Equals(schedule.ExternalEventKey, ExternalKey, StringComparison.Ordinal)) == true;
+            var now = DateTimeOffset.UtcNow;
+            var protectedRenewalOpen = SeasonPassPurchaseWindow.IsRenewalOpen(
+                bundle.OnSaleDate,
+                bundle.OffSaleDate,
+                bundle.RenewalStartDate,
+                bundle.RenewalEndDate,
+                bundle.IsBookable == true,
+                now);
+
+            _preserveRenewalSeats = hasRenewalReference && protectedRenewalOpen;
+            _renewalRequiresSeatSelection = hasRenewalReference
+                && SeasonPassPurchaseWindow.RequiresSeatSelectionForRenewal(bundle.RenewalEndDate, now);
+
+            var isAllowed = externalKeyMatches
+                && bundle.IsBookable == true
+                && (hasRenewalReference
+                    ? SeasonPassPurchaseWindow.CanRenew(
+                        bundle.OnSaleDate,
+                        bundle.OffSaleDate,
+                        bundle.RenewalStartDate,
+                        bundle.RenewalEndDate,
+                        bundle.IsBookable == true,
+                        now)
+                    : SeasonPassPurchaseWindow.CanBuy(
+                        bundle.OnSaleDate,
+                        bundle.OffSaleDate,
+                        bundle.PreviousBundleId.HasValue,
+                        bundle.RenewalEndDate,
+                        bundle.IsBookable == true,
+                        now));
+
+            if (isAllowed)
+            {
+                return true;
+            }
+
+            _snackbar.Add(L["ActionDisabledNotOnSale"], Severity.Warning);
+            Navigation.NavigateTo($"./season-pass/{Id}", replace: true);
+            _loading = false;
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to validate season pass bundle {BundleId} booking access", Id);
+            _snackbar.Add(L["ErrorLoadingEvent"], Severity.Error);
+            Navigation.NavigateTo("./season-pass", replace: true);
+            _loading = false;
+            return false;
+        }
+    }
+
+    private async Task LoadRenewalPrefillAsync(string orderReference, bool preserveSeats)
     {
         try
         {
-            if (Navigation.Uri.Contains("/season-pass/", StringComparison.OrdinalIgnoreCase)
-                && await TryLoadBundleRenewalPrefillAsync(orderReference))
+            if (Navigation.Uri.Contains("/season-pass/", StringComparison.OrdinalIgnoreCase))
             {
+                if (await TryLoadBundleRenewalPrefillAsync(orderReference, preserveSeats))
+                {
+                    return;
+                }
+
+                _snackbar.Add(L["RenewalNotPendingWarning"], Severity.Warning);
+                Navigation.NavigateTo("./season-pass");
                 return;
             }
 
@@ -170,12 +261,10 @@
                 return;
             }
 
-            CartState.SetEvent(Id);
-            CartState.SelectedSeats = [.. _renewalPrefill.Seats];
-
-            _preselectedSeats = _renewalPrefill.Seats
-                .Select(s => s.SeatId)
-                .ToList();
+            if (preserveSeats)
+            {
+                ApplyRenewalSeatsToCart(_renewalPrefill);
+            }
 
             if (info.CurrentSeasonId is long seasonId)
             {
@@ -198,7 +287,7 @@
         }
     }
 
-    private async Task<bool> TryLoadBundleRenewalPrefillAsync(string orderReference)
+    private async Task<bool> TryLoadBundleRenewalPrefillAsync(string orderReference, bool preserveSeats)
     {
         SaleResponse? sale;
         try
@@ -240,15 +329,23 @@
             return true;
         }
 
-        CartState.SetEvent(Id);
-        CartState.SelectedSeats = [.. _renewalPrefill.Seats];
-
-        _preselectedSeats = _renewalPrefill.Seats
-            .Select(s => s.SeatId)
-            .ToList();
+        if (preserveSeats)
+        {
+            ApplyRenewalSeatsToCart(_renewalPrefill);
+        }
 
         _releaseDate = sale.RenewalStartDate ?? sale.RenewalOnSaleDate;
         return true;
+    }
+
+    private void ApplyRenewalSeatsToCart(SeasonRenewalPrefill prefill)
+    {
+        CartState.SetEvent(Id);
+        CartState.SelectedSeats = [.. prefill.Seats];
+
+        _preselectedSeats = prefill.Seats
+            .Select(s => s.SeatId)
+            .ToList();
     }
 
     private static SeasonRenewalPrefill ProjectRenewalPrefill(OrderRenewalInfoResponse info)
@@ -313,7 +410,9 @@
 
         return new SeasonRenewalPrefill(
             RelatedOrderId: sale.OrderId,
-            PendingRenewal: sale.CanRenew == true && sale.AlreadyRenewed != true && seats.Count > 0,
+            PendingRenewal: sale.CanRenew == true
+                && sale.AlreadyRenewed != true
+                && (sale.RenewalRequiresSeatSelection == true || seats.Count > 0),
             ClientContact: contact,
             Seats: seats);
     }
@@ -382,6 +481,9 @@
             ? Id
             : null;
 
+    private bool IsSeasonPassRoute =>
+        Navigation.Uri.Contains("/season-pass/", StringComparison.OrdinalIgnoreCase);
+
     private void GoToCheckoutStep(HoldToken _)
     {
         _step = 2;
@@ -438,6 +540,12 @@
     {
         if (_step == 2)
         {
+            if (IsSeasonPassRoute)
+            {
+                Navigation.NavigateTo($"./season-pass/{Id}");
+                return;
+            }
+
             GoToBookingStep();
             return;
         }

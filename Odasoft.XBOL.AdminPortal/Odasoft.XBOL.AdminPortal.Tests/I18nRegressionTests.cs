@@ -86,6 +86,18 @@ public sealed class I18nRegressionTests
         Assert.DoesNotContain("PlaceholderEnd=\"DD/MM/AAAA\"", bundleSchedulesGrid, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Additional_charge_validator_uses_existing_localized_type_label()
+    {
+        Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/SharedResource.resx", "Type")));
+        Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/SharedResource.en.resx", "Type")));
+        Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/SharedResource.es.resx", "Type")));
+
+        var source = ReadAppSource("Validators/AdditionalChargeInfoValidator.cs");
+        Assert.Contains(".WithName(L[\"Type\"])", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("L[\"FeeType\"]", source, StringComparison.Ordinal);
+    }
+
     private static string? ResourceValue(string relativePath, string key)
     {
         var source = ReadAppSource(relativePath);

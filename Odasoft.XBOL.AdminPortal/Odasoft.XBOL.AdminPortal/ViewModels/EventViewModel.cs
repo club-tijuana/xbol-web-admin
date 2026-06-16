@@ -21,9 +21,15 @@ public record EventViewModel(
     BundleType? BundleType = null,
     string? Code = null,
     long? EventScheduleId = null,
-    long? VenueMapId = null
+    long? VenueMapId = null,
+    DateTimeOffset? OnSaleDate = null,
+    DateTimeOffset? OffSaleDate = null,
+    DateTimeOffset? RenewalStartDate = null,
+    DateTimeOffset? RenewalEndDate = null,
+    bool IsBookable = false
 )
 {
     public string Availability => $"{Available:D3}/{Total:D3}";
     public bool IsBundle => ItemType == EventCatalogItemType.Bundle;
+    public bool HasRenewalWindow => RenewalStartDate.HasValue || RenewalEndDate.HasValue;
 }

@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Xolopass</value>
+    <value>Pase de Temporada</value>
   </data>
   <data name="ColumnDateTime" xml:space="preserve">
     <value>Fecha y hora</value>
@@ -221,5 +221,32 @@
   </data>
   <data name="FilterRenewalType" xml:space="preserve">
     <value>Tipo</value>
+  </data>
+  <data name="BuySeasonPass" xml:space="preserve">
+    <value>Comprar Pase de Temporada</value>
+  </data>
+  <data name="Seat" xml:space="preserve">
+    <value>Asiento</value>
+  </data>
+  <data name="Price" xml:space="preserve">
+    <value>Precio</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Estatus</value>
+  </data>
+  <data name="RenewalCompleted" xml:space="preserve">
+    <value>Renovación completada</value>
+  </data>
+  <data name="RenewalUnavailable" xml:space="preserve">
+    <value>No disponible para renovación</value>
+  </data>
+  <data name="Renewable" xml:space="preserve">
+    <value>Renovable</value>
+  </data>
+  <data name="ErrorLoadingFilters" xml:space="preserve">
+    <value>Error al cargar los pases de temporada</value>
+  </data>
+  <data name="ErrorLoadingSeasonPasses" xml:space="preserve">
+    <value>Error al cargar los pases de temporada</value>
   </data>
 </root>

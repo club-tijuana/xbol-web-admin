@@ -231,6 +231,9 @@
   <data name="ErrorLoadingEvents" xml:space="preserve">
     <value>Error al cargar eventos</value>
   </data>
+  <data name="ActionDisabledNotOnSale" xml:space="preserve">
+    <value>Pase no disponible para venta</value>
+  </data>
   <data name="Event" xml:space="preserve">
     <value>Evento</value>
   </data>
@@ -716,5 +719,11 @@
   </data>
   <data name="Accept" xml:space="preserve">
     <value>Aceptar</value>
+  </data>
+  <data name="SeasonPasses" xml:space="preserve">
+    <value>Pases de temporada</value>
+  </data>
+  <data name="SalesConfiguration" xml:space="preserve">
+    <value>Configuración de venta</value>
   </data>
 </root>

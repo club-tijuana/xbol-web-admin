@@ -131,7 +131,7 @@
                         <MudStack Row Spacing="2">
                             <MudTooltip Text="@L["ActionBoletos"]" Placement="Placement.Top">
                                 <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart" Size="Size.Medium"
-                                               Disabled="@(context.Item.ExternalEventKey is null)"
+                                               Disabled="@(!CanBook(context.Item))"
                                                OnClick="@(() => Navigation.NavigateTo(GetBookingRoute(context.Item)))" />
                             </MudTooltip>
                             <MudTooltip Text="@L["ColumnAvailability"]" Placement="Placement.Top">
@@ -239,5 +239,22 @@
         return item.IsBundle
             ? $"./season-pass/{item.Id}/key/{item.ExternalEventKey}/booking"
             : $"./events/{item.Id}/key/{item.ExternalEventKey}/booking";
+    }
+
+    private static bool CanBook(EventViewModel item)
+    {
+        if (string.IsNullOrWhiteSpace(item.ExternalEventKey))
+            return false;
+
+        if (!item.IsBundle || item.BundleType != Odasoft.XBOL.Business.BundleType.SeasonPass)
+            return true;
+
+        return SeasonPassPurchaseWindow.CanBuy(
+            item.OnSaleDate,
+            item.OffSaleDate,
+            item.HasRenewalWindow,
+            item.RenewalEndDate,
+            item.IsBookable,
+            DateTimeOffset.UtcNow);
     }
 }

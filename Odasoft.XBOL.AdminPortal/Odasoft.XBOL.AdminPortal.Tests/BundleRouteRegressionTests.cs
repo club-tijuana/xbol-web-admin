@@ -20,6 +20,45 @@ public sealed class BundleRouteRegressionTests
     }
 
     [Fact]
+    public void Season_pass_page_is_selected_bundle_route_without_inline_bundle_selector()
+    {
+        var source = ReadAppSource("Components/Pages/SeasonPass.razor");
+
+        Assert.Contains("@page \"/season-pass/{BundleId:long}\"", source, StringComparison.Ordinal);
+        Assert.Contains("[Parameter] public long? BundleId", source, StringComparison.Ordinal);
+        Assert.Contains("AdminSaleType.Bundle", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Label=\"Xolopass\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Seleccione un Xolopass", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Ver modo renovaci\u00f3n", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("_renewalMode", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Nav_menu_lists_published_season_pass_bundles_under_season_passes()
+    {
+        var source = ReadAppSource("Components/Layout/NavMenu.razor");
+
+        Assert.Contains("IAdminClient AdminClient", source, StringComparison.Ordinal);
+        Assert.Contains("GetBundlesAsync(", source, StringComparison.Ordinal);
+        Assert.Contains("BundleType.SeasonPass", source, StringComparison.Ordinal);
+        Assert.Contains("_localizer[\"SeasonPasses\"]", source, StringComparison.Ordinal);
+        Assert.Contains("_localizer[\"SalesConfiguration\"]", source, StringComparison.Ordinal);
+        Assert.Contains("@bundle.Name", source, StringComparison.Ordinal);
+        Assert.Contains("./season-pass/{bundle.Id}", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("NoSeasonPasses", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Xolopass", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Season_pass_checkout_go_back_returns_to_selected_season_pass_page()
+    {
+        var source = ReadAppSource("Components/Pages/Booking.razor");
+
+        Assert.Contains("IsSeasonPassRoute", source, StringComparison.Ordinal);
+        Assert.Contains("Navigation.NavigateTo($\"./season-pass/{Id}\")", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Admin_component_navigation_targets_are_base_relative()
     {
         var componentRoot = Path.Combine(GetAppSourceRoot(), "Components");
