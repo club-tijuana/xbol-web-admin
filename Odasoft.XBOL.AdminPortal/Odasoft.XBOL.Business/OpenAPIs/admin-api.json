@@ -6360,6 +6360,7 @@
           {
             "name": "scheduleId",
             "in": "path",
+            "description": "The unique identifier of the event schedule to retrieve.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -17139,11 +17140,6 @@
                 "$ref": "#/components/schemas/Bundle"
               }
             ],
-            "nullable": true
-          },
-          "holdExpirationInMinutes": {
-            "type": "integer",
-            "format": "int32",
             "nullable": true
           },
           "bundleEventSchedules": {
