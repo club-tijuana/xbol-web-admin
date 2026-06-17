@@ -24,6 +24,7 @@
 @inject ClientsService _clientService;
 @inject CatalogsService _catalogsService;
 @inject ILogger<SeasonPassCheckout> Logger;
+@inject PersistentDialogState _persistentDialogState;
 
 <SectionContent SectionName="nav-header">
     <PageActionBar>
@@ -174,6 +175,7 @@
     private List<SeatInfo> _selectedSeats { get; set; } = [];
     private bool _showValidationError = false;
     private bool _isSubmitting = false;
+    private DateTimeOffset? _releaseDate;
     private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
 
     protected override async Task OnInitializedAsync()
@@ -293,6 +295,7 @@
                         var season = await _seasonService.GetSeasonByIdAsync(SeasonId);
                         _prices = season.Prices?.ToList() ?? new();
                         _seasonBanner = await _seasonService.GetSeasonBannerAsync(SeasonId);
+                        _releaseDate = season.OnSaleDate;
 
                         if (_clientSeasonEvent.AlreadyRenewed is true)
                         {
@@ -357,12 +360,16 @@
 
             BookingResult result = await _seasonPassService.BookSeasonAsync(_request);
 
-            _snackbar.Add("Xolopass pagado con exito.", configure: c =>
+            RenewalConfirmation? confirmation = null;
+            if (IsRenovation)
             {
-                c.SnackbarVariant = Variant.Text;
-                c.Icon = Icons.Custom.Uncategorized.AlertSuccess;
-                c.IconColor = Color.Success;
-            });
+                var secured = _cartState.SelectedSeats
+                    .Select(s => new RenewalSeatLine(s.SeatId, s.Category))
+                    .ToList();
+                confirmation = new RenewalConfirmation(secured, new List<RenewalSeatLine>(), _releaseDate);
+            }
+
+            _persistentDialogState.SetBookingResult(result, confirmation);
 
             _navigationManager.NavigateTo("./xolopass");
         }

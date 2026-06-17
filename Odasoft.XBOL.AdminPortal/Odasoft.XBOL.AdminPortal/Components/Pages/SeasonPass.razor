@@ -405,7 +405,7 @@
         for (var page = 1; ; page++)
         {
             var response = await AdminClient.GetBundlesAsync(
-                AdminEventStatus.Published,
+                null,
                 BundleType.SeasonPass,
                 null,
                 "startDate",

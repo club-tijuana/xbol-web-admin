@@ -71,6 +71,7 @@
   <data name="BundleLogoDescription" xml:space="preserve"><value>Square image used as the package poster.</value></data>
   <data name="BundleSchedule" xml:space="preserve"><value>Bundle schedule</value></data>
   <data name="Categories" xml:space="preserve"><value>Categories</value></data>
+  <data name="CategoriesRequired" xml:space="preserve"><value>At least one category is required.</value></data>
   <data name="Code" xml:space="preserve"><value>Code</value></data>
   <data name="CompletePreviousStepsWarning" xml:space="preserve"><value>Complete the previous steps before continuing.</value></data>
   <data name="Create" xml:space="preserve"><value>Create</value></data>

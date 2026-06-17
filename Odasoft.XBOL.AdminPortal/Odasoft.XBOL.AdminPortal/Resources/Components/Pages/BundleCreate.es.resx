@@ -64,6 +64,9 @@
   <data name="Categories" xml:space="preserve">
     <value>Categorías</value>
   </data>
+  <data name="CategoriesRequired" xml:space="preserve">
+    <value>Al menos una categoría es obligatoria.</value>
+  </data>
   <data name="Code" xml:space="preserve">
     <value>Código</value>
   </data>

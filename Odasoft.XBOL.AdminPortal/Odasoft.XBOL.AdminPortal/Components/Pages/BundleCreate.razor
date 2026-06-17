@@ -147,6 +147,10 @@
                                                        T="AdminEventCategoryResult"
                                                        MultiSelection="true"
                                                        @bind-SelectedValues="_selectedCategories"
+                                                       Validation="@ValidateCategories"
+                                                       Required
+                                                       RequiredError="@L["CategoriesRequired"].Value"
+                                                       Class="required"
                                                        Variant="Variant.Outlined"
                                                        Margin="Margin.Dense"
                                                        ToStringFunc="@(category => category?.DisplayName ?? string.Empty)">
@@ -957,6 +961,13 @@
     private List<ListItem> _organizers = [];
     private List<AdminEventCategoryResult> _eventCategories = [];
     private IReadOnlyCollection<AdminEventCategoryResult> _selectedCategories = [];
+
+    private IEnumerable<string> ValidateCategories(IReadOnlyCollection<AdminEventCategoryResult>? values)
+    {
+        if (values is null || values.Count == 0)
+            yield return L["CategoriesRequired"].Value;
+    }
+
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
     private List<FeeType> _feeTypes = Enum.GetValues<FeeType>().ToList();
     private List<EventViewModel> _candidateEvents = [];
@@ -1568,7 +1579,7 @@
             await SaveBundleMediaAsync(BundleId.Value);
 
             Snackbar.Add(L["CreateSuccess"], MudBlazor.Severity.Success);
-            Navigation.NavigateTo(_bundleType == BundleType.SeasonPass ? "/events/passes" : "/events/packages");
+            Navigation.NavigateTo(_bundleType == BundleType.SeasonPass ? "./events/passes" : "./events/packages");
         }
         catch (ApiException<ValidationProblemDetails> ex)
         {
