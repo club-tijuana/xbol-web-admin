@@ -316,8 +316,8 @@
   <data name="SearchEvents" xml:space="preserve">
     <value>Buscar...</value>
   </data>
-  <data name="SelectEvents" xml:space="preserve">
-    <value>Selecciona al menos un evento.</value>
+  <data name="EventAlreadyPublished" xml:space="preserve">
+    <value>Los eventos ya publicados en seats.io no se pueden agregar a un pase de temporada.</value>
   </data>
   <data name="SelectVenueMapFirst" xml:space="preserve">
     <value>Selecciona un mapa para buscar eventos.</value>

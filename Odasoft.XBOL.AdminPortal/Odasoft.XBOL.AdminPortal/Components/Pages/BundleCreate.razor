@@ -1937,17 +1937,28 @@
 
     private bool ValidateSelectedEvents(bool showWarning = true)
     {
-        if (_selectedEventsByScheduleId.Count > 0)
+        if (_selectedEventsByScheduleId.Count == 0)
         {
             return true;
         }
 
-        if (showWarning)
+        if (_bundleType == BundleType.SeasonPass)
         {
-            Snackbar.Add(L["SelectEvents"], MudBlazor.Severity.Warning);
+            var published = _selectedEventsByScheduleId.Values
+                .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e.ExternalEventKey));
+
+            if (published is not null)
+            {
+                if (showWarning)
+                {
+                    Snackbar.Add(L["EventAlreadyPublished"], MudBlazor.Severity.Warning);
+                }
+
+                return false;
+            }
         }
 
-        return false;
+        return true;
     }
 
     private async Task GoBackAsync()

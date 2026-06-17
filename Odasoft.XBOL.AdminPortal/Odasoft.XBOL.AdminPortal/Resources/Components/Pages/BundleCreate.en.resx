@@ -139,7 +139,7 @@
   <data name="RequiredFieldsNote" xml:space="preserve"><value>*Required fields</value></data>
   <data name="SearchEvents" xml:space="preserve"><value>Search...</value></data>
   <data name="SecurityPolicies" xml:space="preserve"><value>Security policies</value></data>
-  <data name="SelectEvents" xml:space="preserve"><value>Select at least one event.</value></data>
+  <data name="EventAlreadyPublished" xml:space="preserve"><value>Events already published in seats.io cannot be added to a season pass.</value></data>
   <data name="SelectVenueMapFirst" xml:space="preserve"><value>Select a map to search events.</value></data>
   <data name="SelectedCount" xml:space="preserve"><value>{0} selected</value></data>
   <data name="ShortDescription" xml:space="preserve"><value>Summary</value></data>
