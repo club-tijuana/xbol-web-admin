@@ -16,6 +16,7 @@
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
 @inject AdminMediaUrlResolver MediaUrlResolver;
+@inject ILogger<BundleDetail> Logger
 
 <PageTitle>@(_bundle?.Name ?? "")</PageTitle>
 
@@ -198,7 +199,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading bundle '{BundleId}': {ex.Message}");
+            Logger.LogError(ex, $"Error loading bundle '{BundleId}'");
             _error = true;
             _snackbar.Add(L["ErrorLoading"], Severity.Error);
         }
@@ -225,7 +226,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error deleting bundle: {ex.Message}");
+            Logger.LogError(ex, "Error deleting bundle");
             _snackbar.Add(L["DeleteError"], Severity.Error);
         }
     }

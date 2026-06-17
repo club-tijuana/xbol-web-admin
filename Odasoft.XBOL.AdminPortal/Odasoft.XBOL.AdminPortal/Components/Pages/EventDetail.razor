@@ -17,6 +17,7 @@
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
 @inject AdminMediaUrlResolver MediaUrlResolver;
+@inject ILogger<EventDetail> Logger
 
 <PageTitle>@(_event?.Name ?? "")</PageTitle>
 
@@ -186,7 +187,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading event '{EventId}': {ex.Message}");
+            Logger.LogError(ex, $"Error loading event '{EventId}'");
             _error = true;
             _snackbar.Add(L["ErrorLoading"], Severity.Error);
         }
@@ -244,7 +245,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error deleting event: {ex.Message}");
+            Logger.LogError(ex, "Error deleting event");
             _snackbar.Add(L["DeleteError"], Severity.Error);
         }
     }

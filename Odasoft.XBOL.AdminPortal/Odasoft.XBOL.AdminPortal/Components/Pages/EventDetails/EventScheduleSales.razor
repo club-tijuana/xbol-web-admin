@@ -4,6 +4,7 @@
 @inject AppLocalizer<EventScheduleSales> _localizer;
 @inject PaymentLinkService _paymentLinkService;
 @inject SalesService _salesService;
+@inject ILogger<EventScheduleSales> Logger
 
 @inject IJSRuntime JSRuntime;
 @inject ISnackbar _snackbar;
@@ -282,7 +283,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching sales. {ex.Message}");
+            Logger.LogError(ex, "Error fetching sales");
             _snackbar.Add("Ocurrió un error al cargar las ventas.", Severity.Error);
             return new GridData<SaleResponse> { TotalItems = 0, Items = new List<SaleResponse>() };
         }

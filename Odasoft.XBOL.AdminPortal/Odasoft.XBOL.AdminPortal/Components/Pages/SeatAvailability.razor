@@ -283,7 +283,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading seat management data: {ex.Message}");
+            Logger.LogError(ex, "Error loading seat management data");
             _error = true;
         }
         finally
