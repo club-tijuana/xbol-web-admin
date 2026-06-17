@@ -10913,7 +10913,7 @@
       }
     },
     "/api/seat-management": {
-      "get": {
+      "post": {
         "tags": [
           "SeatManagement"
         ],
@@ -20592,6 +20592,20 @@
           "isPaymentLink": {
             "type": "boolean",
             "nullable": true
+          },
+          "sessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderRefId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "transactionRefId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -24957,6 +24971,20 @@
           },
           "isPaymentLink": {
             "type": "boolean",
+            "nullable": true
+          },
+          "sessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderRefId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "transactionRefId": {
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           }
         },
