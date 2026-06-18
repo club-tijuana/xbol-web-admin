@@ -402,6 +402,7 @@
                                     <AdminDatePicker @bind-Date="_startDate"
                                                      Label="@L["StartDate"].Value"
                                                      Field="@_datesFormContext.Field("StartDate")"
+                                                     Validation="@ValidateStartDate"
                                                      Required />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -411,12 +412,15 @@
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
+                                                   RequiredError="@L["RequiredField"].Value"
+                                                   Validation="@ValidateStartTime"
                                                    Required />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="_endDate"
                                                      Label="@L["EndDate"].Value"
                                                      Field="@_datesFormContext.Field("EndDate")"
+                                                     Validation="@ValidateEndDate"
                                                      Required />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -426,6 +430,8 @@
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
+                                                   RequiredError="@L["RequiredField"].Value"
+                                                   Validation="@ValidateEndTime"
                                                    Required />
                                 </MudItem>
 
@@ -439,6 +445,7 @@
                                     <AdminDatePicker @bind-Date="_onSaleDate"
                                                      Label="@L["OnSaleDate"].Value"
                                                      Field="@_datesFormContext.Field("OnSaleDate")"
+                                                     Validation="@ValidateOnSaleDate"
                                                      Required />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -448,12 +455,15 @@
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
+                                                   RequiredError="@L["RequiredField"].Value"
+                                                   Validation="@ValidateOnSaleTime"
                                                    Required />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="_offSaleDate"
                                                      Label="@L["OffSaleDate"].Value"
                                                      Field="@_datesFormContext.Field("OffSaleDate")"
+                                                     Validation="@ValidateOffSaleDate"
                                                      Required />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -463,6 +473,8 @@
                                                    Margin="Margin.Dense"
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
+                                                   RequiredError="@L["RequiredField"].Value"
+                                                   Validation="@ValidateOffSaleTime"
                                                    Required />
                                 </MudItem>
 
@@ -475,7 +487,8 @@
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="_publishedDate"
                                                      Label="@L["PublishedDate"].Value"
-                                                     Field="@_datesFormContext.Field("PublishedDate")" />
+                                                     Field="@_datesFormContext.Field("PublishedDate")"
+                                                     Validation="@ValidatePublishedDate" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="_publishedTime"
@@ -488,7 +501,8 @@
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="_preSaleDate"
                                                      Label="@L["PreSaleDate"].Value"
-                                                     Field="@_datesFormContext.Field("PreSaleDate")" />
+                                                     Field="@_datesFormContext.Field("PreSaleDate")"
+                                                     Validation="@ValidatePreSaleDate" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="_preSaleTime"
@@ -510,7 +524,8 @@
                                     <MudItem xs="12" md="3">
                                         <AdminDatePicker @bind-Date="_renewalStartDate"
                                                          Label="@L["RenewalStartDate"].Value"
-                                                         Field="@_datesFormContext.Field("RenewalStartDate")" />
+                                                         Field="@_datesFormContext.Field("RenewalStartDate")"
+                                                         Validation="@ValidateRenewalStartDate" />
                                     </MudItem>
                                     <MudItem xs="12" md="2">
                                         <MudTimePicker @bind-Time="_renewalStartTime"
@@ -523,7 +538,8 @@
                                     <MudItem xs="12" md="3">
                                         <AdminDatePicker @bind-Date="_renewalEndDate"
                                                          Label="@L["RenewalEndDate"].Value"
-                                                         Field="@_datesFormContext.Field("RenewalEndDate")" />
+                                                         Field="@_datesFormContext.Field("RenewalEndDate")"
+                                                         Validation="@ValidateRenewalEndDate" />
                                     </MudItem>
                                     <MudItem xs="12" md="2">
                                         <MudTimePicker @bind-Time="_renewalEndTime"
@@ -896,6 +912,7 @@
     private bool _eventsFormValid = true;
     private bool _eventsFormValidationAttempted;
     private bool _eventsFormCompleted;
+    private bool _validateActiveStepAfterRender;
 
     private MudForm _pricesForm = default!;
     private bool _pricesFormValid = true;
@@ -1028,6 +1045,153 @@
     private bool DatesStepHasError => _datesFormValidationAttempted && !_datesFormValid;
     private bool EventsStepHasError => _eventsFormValidationAttempted && !_eventsFormValid;
 
+    private readonly record struct BundleSubmitValidationResult(bool IsValid, int FirstInvalidStepIndex);
+
+    private static readonly HashSet<string> DescriptionValidationFields = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Name",
+        "Subtitle",
+        "Code",
+        "ShortDescription",
+        "LongDescription",
+        "LandingUrl",
+        "VenueMapId",
+        "OrganizerId",
+        "CategoryIds",
+        "BundleType",
+        "BundlePricingType"
+    };
+
+    private static readonly HashSet<string> DateValidationFields = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "StartDate",
+        "EndDate",
+        "PublishedDate",
+        "PreSaleDate",
+        "OnSaleDate",
+        "OffSaleDate",
+        "RenewalStartDate",
+        "RenewalEndDate"
+    };
+
+    private IEnumerable<string> ValidateStartDate(DateTime? value) =>
+        ValidateRequiredDatePair(value);
+
+    private IEnumerable<string> ValidateStartTime(TimeSpan? value) =>
+        ValidateRequiredTimePair(value);
+
+    private IEnumerable<string> ValidateEndDate(DateTime? value)
+    {
+        foreach (var error in ValidateRequiredDatePair(value))
+        {
+            yield return error;
+        }
+
+        foreach (var error in ValidateDateOrder(
+            DateTimeHelpers.ToDateTimeOffset(_startDate, _startTime),
+            DateTimeHelpers.ToDateTimeOffset(value, _endTime),
+            L["EndAfterStart"].Value))
+        {
+            yield return error;
+        }
+    }
+
+    private IEnumerable<string> ValidateEndTime(TimeSpan? value) =>
+        ValidateRequiredTimePair(value);
+
+    private IEnumerable<string> ValidatePublishedDate(DateTime? value) =>
+        Enumerable.Empty<string>();
+
+    private IEnumerable<string> ValidatePreSaleDate(DateTime? value)
+    {
+        foreach (var error in ValidateDateOrder(
+            DateTimeHelpers.ToDateTimeOffset(_publishedDate, _publishedTime),
+            DateTimeHelpers.ToDateTimeOffset(value, _preSaleTime),
+            L["PreSaleAfterPublished"].Value))
+        {
+            yield return error;
+        }
+    }
+
+    private IEnumerable<string> ValidateOnSaleDate(DateTime? value)
+    {
+        foreach (var error in ValidateRequiredDatePair(value))
+        {
+            yield return error;
+        }
+
+        foreach (var error in ValidateDateOrder(
+            DateTimeHelpers.ToDateTimeOffset(_preSaleDate, _preSaleTime),
+            DateTimeHelpers.ToDateTimeOffset(value, _onSaleTime),
+            L["OnSaleAfterPreSale"].Value))
+        {
+            yield return error;
+        }
+    }
+
+    private IEnumerable<string> ValidateOnSaleTime(TimeSpan? value) =>
+        ValidateRequiredTimePair(value);
+
+    private IEnumerable<string> ValidateOffSaleDate(DateTime? value)
+    {
+        foreach (var error in ValidateRequiredDatePair(value))
+        {
+            yield return error;
+        }
+
+        foreach (var error in ValidateDateOrder(
+            DateTimeHelpers.ToDateTimeOffset(_onSaleDate, _onSaleTime),
+            DateTimeHelpers.ToDateTimeOffset(value, _offSaleTime),
+            L["OffSaleAfterOnSale"].Value))
+        {
+            yield return error;
+        }
+    }
+
+    private IEnumerable<string> ValidateOffSaleTime(TimeSpan? value) =>
+        ValidateRequiredTimePair(value);
+
+    private IEnumerable<string> ValidateRenewalStartDate(DateTime? value) =>
+        Enumerable.Empty<string>();
+
+    private IEnumerable<string> ValidateRenewalEndDate(DateTime? value)
+    {
+        foreach (var error in ValidateDateOrder(
+            DateTimeHelpers.ToDateTimeOffset(_renewalStartDate, _renewalStartTime),
+            DateTimeHelpers.ToDateTimeOffset(value, _renewalEndTime),
+            L["RenewalEndAfterRenewalStart"].Value))
+        {
+            yield return error;
+        }
+    }
+
+    private IEnumerable<string> ValidateRequiredDatePair(DateTime? value)
+    {
+        if (!value.HasValue)
+        {
+            yield return L["RequiredField"].Value;
+        }
+    }
+
+    private IEnumerable<string> ValidateRequiredTimePair(TimeSpan? value)
+    {
+        if (!value.HasValue)
+        {
+            yield return L["RequiredField"].Value;
+        }
+    }
+
+    private static IEnumerable<string> ValidateDateOrder(
+        DateTimeOffset? earlier,
+        DateTimeOffset? later,
+        string errorMessage)
+    {
+        if (earlier.HasValue && later.HasValue && later.Value <= earlier.Value)
+        {
+            yield return errorMessage;
+        }
+    }
+
     private IEnumerable<EventViewModel> CandidateEventsForSelection
     {
         get
@@ -1108,6 +1272,12 @@
         if (firstRender)
         {
             await InitializeFormAsync();
+        }
+
+        if (_validateActiveStepAfterRender)
+        {
+            _validateActiveStepAfterRender = false;
+            await ValidateCurrentStepAsync(showSelectedEventsWarning: false);
         }
     }
 
@@ -1606,34 +1776,12 @@
 
     private async Task SubmitAsync()
     {
-        if (!await ValidateStepAsync(EventsStepIndex))
+        var validation = await ValidateAllStepsForSubmitAsync();
+        if (!validation.IsValid)
         {
-            return;
-        }
-
-        if (!await ValidateStepAsync(0))
-        {
-            _activeIndex = 0;
-            return;
-        }
-
-        if (HasPriceStep)
-        {
-            await EnsurePriceRowsLoadedAsync();
-
-            if (!await ValidateStepAsync(PriceStepIndex) || !ValidatePriceScopes())
-            {
-                _pricesFormValidationAttempted = true;
-                _pricesFormValid = false;
-                _pricesFormCompleted = false;
-                _activeIndex = PriceStepIndex;
-                return;
-            }
-        }
-
-        if (!await ValidateStepAsync(DatesStepIndex))
-        {
-            _activeIndex = DatesStepIndex;
+            _activeIndex = validation.FirstInvalidStepIndex;
+            _validateActiveStepAfterRender = true;
+            Snackbar.Add(L["InvalidForm"], MudBlazor.Severity.Warning);
             return;
         }
 
@@ -1661,6 +1809,7 @@
         }
         catch (ApiException<ValidationProblemDetails> ex)
         {
+            ApplyValidationProblemDetails(ex.Result);
             Snackbar.Add(ex.Result.Title ?? L["ErrorSaving"], MudBlazor.Severity.Error);
         }
         catch (ApiException<ProblemDetails> ex)
@@ -1678,6 +1827,126 @@
             _saving = false;
             _datesFormContext.SetSaving(false);
             LoadingState.Hide();
+        }
+    }
+
+    private async Task<BundleSubmitValidationResult> ValidateAllStepsForSubmitAsync()
+    {
+        var firstInvalidStepIndex = -1;
+
+        var descriptionStepValid = await ValidateStepAsync(0);
+        if (!descriptionStepValid)
+        {
+            firstInvalidStepIndex = 0;
+        }
+
+        if (HasPriceStep)
+        {
+            await EnsurePriceRowsLoadedAsync();
+
+            var priceStepValid = await ValidateStepAsync(PriceStepIndex);
+            var priceScopesValid = ValidatePriceScopes();
+            if (!priceStepValid || !priceScopesValid)
+            {
+                _pricesFormValidationAttempted = true;
+                _pricesFormValid = false;
+                _pricesFormCompleted = false;
+                firstInvalidStepIndex = FirstInvalidStep(firstInvalidStepIndex, PriceStepIndex);
+            }
+
+            var additionalChargesStepValid = await ValidateStepAsync(AdditionalChargesStepIndex);
+            if (!additionalChargesStepValid)
+            {
+                firstInvalidStepIndex = FirstInvalidStep(firstInvalidStepIndex, AdditionalChargesStepIndex);
+            }
+        }
+
+        var datesStepValid = ValidateDateFieldsForSubmit();
+        if (!datesStepValid)
+        {
+            firstInvalidStepIndex = FirstInvalidStep(firstInvalidStepIndex, DatesStepIndex);
+        }
+
+        var imagesStepValid = await ValidateStepAsync(ImagesStepIndex);
+        if (!imagesStepValid)
+        {
+            firstInvalidStepIndex = FirstInvalidStep(firstInvalidStepIndex, ImagesStepIndex);
+        }
+
+        var eventsStepValid = await ValidateStepAsync(EventsStepIndex);
+        if (!eventsStepValid)
+        {
+            firstInvalidStepIndex = FirstInvalidStep(firstInvalidStepIndex, EventsStepIndex);
+        }
+
+        return new BundleSubmitValidationResult(
+            firstInvalidStepIndex < 0,
+            firstInvalidStepIndex < 0 ? _activeIndex : firstInvalidStepIndex);
+    }
+
+    private bool ValidateDateFieldsForSubmit()
+    {
+        _datesFormValidationAttempted = true;
+
+        var hasErrors =
+            ValidateStartDate(_startDate).Any() ||
+            ValidateStartTime(_startTime).Any() ||
+            ValidateEndDate(_endDate).Any() ||
+            ValidateEndTime(_endTime).Any() ||
+            ValidatePublishedDate(_publishedDate).Any() ||
+            ValidatePreSaleDate(_preSaleDate).Any() ||
+            ValidateOnSaleDate(_onSaleDate).Any() ||
+            ValidateOnSaleTime(_onSaleTime).Any() ||
+            ValidateOffSaleDate(_offSaleDate).Any() ||
+            ValidateOffSaleTime(_offSaleTime).Any() ||
+            ValidateRenewalStartDate(_renewalStartDate).Any() ||
+            ValidateRenewalEndDate(_renewalEndDate).Any();
+
+        _datesFormValid = !hasErrors;
+        _datesFormCompleted = _datesFormValid;
+
+        return _datesFormValid;
+    }
+
+    private static int FirstInvalidStep(int current, int candidate) =>
+        current < 0 ? candidate : Math.Min(current, candidate);
+
+    private static string NormalizeValidationFieldName(string fieldName)
+    {
+        return fieldName.Contains('.')
+            ? fieldName[(fieldName.LastIndexOf('.') + 1)..]
+            : fieldName;
+    }
+
+    private void ApplyValidationProblemDetails(ValidationProblemDetails problem)
+    {
+        _descriptionFormContext.HandleValidationProblemDetails(problem);
+        _datesFormContext.HandleValidationProblemDetails(problem);
+        _additionalChargesFormContext.HandleValidationProblemDetails(problem);
+
+        var invalidFields = problem.Errors?.Keys
+            .Select(NormalizeValidationFieldName)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
+
+        if (invalidFields.Count == 0)
+        {
+            return;
+        }
+
+        if (invalidFields.Overlaps(DescriptionValidationFields))
+        {
+            _descriptionFormValidationAttempted = true;
+            _descriptionFormValid = false;
+            _descriptionFormCompleted = false;
+            _activeIndex = 0;
+        }
+
+        if (invalidFields.Overlaps(DateValidationFields))
+        {
+            _datesFormValidationAttempted = true;
+            _datesFormValid = false;
+            _datesFormCompleted = false;
+            _activeIndex = DatesStepIndex;
         }
     }
 

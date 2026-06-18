@@ -38,8 +38,32 @@ public class FormContext
     {
         _serverErrors.Clear();
 
-        if (ex.Result.AdditionalProperties != null &&
-            ex.Result.AdditionalProperties.TryGetValue("errors", out var errorsObj) &&
+        LoadErrorsFromAdditionalProperties(ex.Result.AdditionalProperties);
+
+        _form?.ValidateAsync();
+    }
+
+    internal void HandleValidationProblemDetails(ValidationProblemDetails problem)
+    {
+        _serverErrors.Clear();
+
+        if (problem.Errors is not null)
+        {
+            foreach (var (fieldName, errors) in problem.Errors)
+            {
+                AddFieldErrors(fieldName, errors);
+            }
+        }
+
+        LoadErrorsFromAdditionalProperties(problem.AdditionalProperties);
+
+        _form?.ValidateAsync();
+    }
+
+    private void LoadErrorsFromAdditionalProperties(IDictionary<string, object>? additionalProperties)
+    {
+        if (additionalProperties != null &&
+            additionalProperties.TryGetValue("errors", out var errorsObj) &&
             errorsObj is JObject errorsJson)
         {
             foreach (var property in errorsJson.Properties())
@@ -47,12 +71,27 @@ public class FormContext
                 var errorMessages = property.Value.ToObject<List<string>>();
                 if (errorMessages != null)
                 {
-                    _serverErrors[property.Name] = errorMessages;
+                    AddFieldErrors(property.Name, errorMessages);
                 }
             }
         }
+    }
 
-        _form?.ValidateAsync();
+    private void AddFieldErrors(string fieldName, IEnumerable<string> errors)
+    {
+        var normalizedFieldName = NormalizeFieldName(fieldName);
+        var errorMessages = errors.ToList();
+        if (errorMessages.Count > 0)
+        {
+            _serverErrors[normalizedFieldName] = errorMessages;
+        }
+    }
+
+    private static string NormalizeFieldName(string fieldName)
+    {
+        return fieldName.Contains('.')
+            ? fieldName[(fieldName.LastIndexOf('.') + 1)..]
+            : fieldName;
     }
 
     internal async Task<bool> ValidateAsync()

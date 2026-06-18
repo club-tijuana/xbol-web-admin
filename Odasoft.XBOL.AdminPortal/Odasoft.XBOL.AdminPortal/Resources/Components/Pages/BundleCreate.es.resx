@@ -148,6 +148,9 @@
   <data name="ErrorSaving" xml:space="preserve">
     <value>Error al crear el paquete.</value>
   </data>
+  <data name="EndAfterStart" xml:space="preserve">
+    <value>La fecha de termino debe ser posterior a la fecha de inicio.</value>
+  </data>
   <data name="Event" xml:space="preserve">
     <value>Evento</value>
   </data>
@@ -244,6 +247,9 @@
   <data name="InvalidImage" xml:space="preserve">
     <value>El archivo '{0}' no es una imagen válida.</value>
   </data>
+  <data name="InvalidForm" xml:space="preserve">
+    <value>Revisa los campos marcados antes de guardar.</value>
+  </data>
   <data name="TicketsSale" xml:space="preserve">
     <value>Venta de boletos</value>
   </data>
@@ -258,6 +264,9 @@
   </data>
   <data name="PreSaleDate" xml:space="preserve">
     <value>Inicio de preventa</value>
+  </data>
+  <data name="PreSaleAfterPublished" xml:space="preserve">
+    <value>El inicio de preventa debe ser posterior a la fecha de publicación.</value>
   </data>
   <data name="PreSaleTime" xml:space="preserve">
     <value>Hora de preventa</value>
@@ -276,6 +285,9 @@
   </data>
   <data name="RenewalEndDate" xml:space="preserve">
     <value>Fin de renovación</value>
+  </data>
+  <data name="RenewalEndAfterRenewalStart" xml:space="preserve">
+    <value>El fin de renovación debe ser posterior al inicio de renovación.</value>
   </data>
   <data name="RenewalEndTime" xml:space="preserve">
     <value>Hora de fin de renovación</value>
@@ -331,11 +343,17 @@
   <data name="OffSaleDate" xml:space="preserve">
     <value>Fin de venta</value>
   </data>
+  <data name="OffSaleAfterOnSale" xml:space="preserve">
+    <value>El fin de venta debe ser posterior al inicio de venta.</value>
+  </data>
   <data name="OffSaleTime" xml:space="preserve">
     <value>Hora de fin de venta</value>
   </data>
   <data name="OnSaleDate" xml:space="preserve">
     <value>Inicio de venta</value>
+  </data>
+  <data name="OnSaleAfterPreSale" xml:space="preserve">
+    <value>El inicio de venta debe ser posterior al inicio de preventa.</value>
   </data>
   <data name="OnSaleTime" xml:space="preserve">
     <value>Hora de inicio de venta</value>

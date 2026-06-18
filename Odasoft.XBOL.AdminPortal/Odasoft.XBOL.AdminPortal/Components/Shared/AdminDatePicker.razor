@@ -18,6 +18,7 @@
     [Parameter] public FieldBinding? Field { get; set; }
     [Parameter] public bool Required { get; set; }
     [Parameter] public Expression<Func<DateTime?>>? For { get; set; }
+    [Parameter] public Func<DateTime?, IEnumerable<string>>? Validation { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -41,11 +42,30 @@
             }
         }
 
-        if (Field != null)
+        if (Field != null || Validation != null)
         {
-            attributes["Validation"] = Field.ValidationFor<DateTime?>();
+            attributes["Validation"] = (Func<DateTime?, IEnumerable<string>>)ValidateDate;
         }
 
         return attributes;
+    }
+
+    private IEnumerable<string> ValidateDate(DateTime? value)
+    {
+        if (Validation != null)
+        {
+            foreach (var error in Validation(value))
+            {
+                yield return error;
+            }
+        }
+
+        if (Field != null)
+        {
+            foreach (var error in Field.ValidationFor<DateTime?>()(value))
+            {
+                yield return error;
+            }
+        }
     }
 }
