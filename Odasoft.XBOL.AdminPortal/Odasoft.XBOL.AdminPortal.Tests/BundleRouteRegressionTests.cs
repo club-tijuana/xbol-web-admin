@@ -157,6 +157,23 @@ public sealed class BundleRouteRegressionTests
     }
 
     [Fact]
+    public void Bundle_edit_load_preserves_selected_categories_and_saved_prices()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("values?.Any(category => category.Id.HasValue) != true", source, StringComparison.Ordinal);
+        Assert.Contains("SelectBundleCategories(bundleResult.Categories)", source, StringComparison.Ordinal);
+        Assert.Contains("if (!_eventCategories.Any(category => category.Id == bundleCategory.Id))", source, StringComparison.Ordinal);
+        Assert.Contains("_loadingBundleDataForEdit = true", source, StringComparison.Ordinal);
+        Assert.Contains("shouldInitializePrices && !_loadingBundleDataForEdit", source, StringComparison.Ordinal);
+        Assert.Contains("if (_selectedVenueMap is not null && _venueMapLayout is null)", source, StringComparison.Ordinal);
+        Assert.Contains("await EnsurePriceRowsLoadedAsync()", source, StringComparison.Ordinal);
+        Assert.Contains("if (_selectedVenueMap?.Id != venueMapId)", source, StringComparison.Ordinal);
+        Assert.Contains("initializePrices && _prices.Count == 0", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("_eventCategories = bundleResult.Categories?.ToList() ?? []", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Event_edit_resubmits_changes_requested_events_after_save()
     {
         var source = ReadAppSource("Components/Pages/EventEdit.razor");

@@ -961,11 +961,33 @@
     private List<ListItem> _organizers = [];
     private List<AdminEventCategoryResult> _eventCategories = [];
     private IReadOnlyCollection<AdminEventCategoryResult> _selectedCategories = [];
+    private bool _loadingBundleDataForEdit;
 
     private IEnumerable<string> ValidateCategories(IReadOnlyCollection<AdminEventCategoryResult>? values)
     {
-        if (values is null || values.Count == 0)
+        if (values?.Any(category => category.Id.HasValue) != true)
+        {
             yield return L["CategoriesRequired"].Value;
+        }
+    }
+
+    private void SelectBundleCategories(IEnumerable<AdminEventCategoryResult>? bundleCategories)
+    {
+        var bundleCategoryList = bundleCategories?
+            .Where(category => category.Id.HasValue)
+            .ToList() ?? new List<AdminEventCategoryResult>();
+
+        foreach (var bundleCategory in bundleCategoryList)
+        {
+            if (!_eventCategories.Any(category => category.Id == bundleCategory.Id))
+            {
+                _eventCategories.Add(bundleCategory);
+            }
+        }
+
+        _selectedCategories = _eventCategories
+            .Where(category => category.Id.HasValue && bundleCategoryList.Any(bundleCategory => bundleCategory.Id == category.Id))
+            .ToList();
     }
 
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
@@ -1188,12 +1210,13 @@
             _ageRestriction = bundleResult.AgeRestriction;
             _securityPolicies = bundleResult.SecurityPolicies;
             _additionalComments = bundleResult.AdditionalComments;
-            _eventCategories = bundleResult.Categories?.ToList() ?? [];
+            SelectBundleCategories(bundleResult.Categories);
             _organizerId = bundleResult.OrganizerId;
             _bundleStatus = bundleResult.Status;
+            _loadingBundleDataForEdit = true;
 
-            await OnVenueSelected(_venues.FirstOrDefault(v => v.Id == bundleResult.VenueId));
-            await OnVenueMapSelected(_venueMaps.FirstOrDefault(m => m.Id == bundleResult.VenueMapId));
+            await OnVenueSelectedAsync(_venues.FirstOrDefault(v => v.Id == bundleResult.VenueId), shouldInitializePrices: false);
+            await OnVenueMapSelectedAsync(_venueMaps.FirstOrDefault(m => m.Id == bundleResult.VenueMapId), shouldInitializePrices: false);
 
             _startDate = DateTimeHelpers.ToNullableDateTime(bundleResult.StartDate);
             _startTime = DateTimeHelpers.ToNullableTimeSpan(bundleResult.StartDate);
@@ -1227,7 +1250,10 @@
                 }
             }
 
-            _venueMapLayout = await VenueMapsService.GetVenueMapLayoutByIdAsync(_selectedVenueMap?.Id ?? 0);
+            if (_selectedVenueMap is not null && _venueMapLayout is null)
+            {
+                _venueMapLayout = await VenueMapsService.GetVenueMapLayoutByIdAsync(_selectedVenueMap.Id);
+            }
 
             await LoadPricesAsync();
             await LoadAdditionalChargesAsync();
@@ -1246,6 +1272,7 @@
         finally
         {
             _loading = false;
+            _loadingBundleDataForEdit = false;
             StateHasChanged();
         }
     }
@@ -1314,6 +1341,11 @@
 
     private async Task OnVenueSelected(VenueResponse? venue)
     {
+        await OnVenueSelectedAsync(venue, shouldInitializePrices: true);
+    }
+
+    private async Task OnVenueSelectedAsync(VenueResponse? venue, bool shouldInitializePrices)
+    {
         _selectedVenue = venue;
         _selectedVenueMap = null;
         _venueMaps = [];
@@ -1321,8 +1353,11 @@
         _selectedEventsByScheduleId.Clear();
         _visibleSelectedEvents.Clear();
         _venueMapLayout = null;
-        _prices = [];
-        _priceTypes = [];
+        if (shouldInitializePrices && !_loadingBundleDataForEdit)
+        {
+            _prices = [];
+            _priceTypes = [];
+        }
 
         if (venue is null)
         {
@@ -1342,31 +1377,67 @@
 
     private async Task OnVenueMapSelected(VenueMapResponse? venueMap)
     {
+        await OnVenueMapSelectedAsync(venueMap, shouldInitializePrices: true);
+    }
+
+    private async Task OnVenueMapSelectedAsync(VenueMapResponse? venueMap, bool shouldInitializePrices)
+    {
         _selectedVenueMap = venueMap;
         _selectedEventsByScheduleId.Clear();
         _visibleSelectedEvents.Clear();
         _venueMapLayout = null;
-        _prices = [];
-        _priceTypes = [];
+        if (shouldInitializePrices && !_loadingBundleDataForEdit)
+        {
+            _prices = [];
+            _priceTypes = [];
+        }
         if (venueMap is not null && HasPriceStep)
         {
-            await LoadVenueMapLayoutAsync(venueMap.Id);
+            await LoadVenueMapLayoutAsync(venueMap.Id, initializePrices: shouldInitializePrices && !_loadingBundleDataForEdit);
         }
 
         await LoadCandidateEventsAsync(_eventSearch);
     }
 
-    private async Task LoadVenueMapLayoutAsync(long venueMapId)
+    private async Task LoadVenueMapLayoutAsync(long venueMapId, bool initializePrices = true)
     {
         try
         {
-            _venueMapLayout = await VenueMapsService.GetVenueMapLayoutByIdAsync(venueMapId);
-            InitializeEmptyPrices();
+            var layout = await VenueMapsService.GetVenueMapLayoutByIdAsync(venueMapId);
+            if (_selectedVenueMap?.Id != venueMapId)
+            {
+                return;
+            }
+
+            _venueMapLayout = layout;
+            if (initializePrices && _prices.Count == 0)
+            {
+                InitializeEmptyPrices();
+            }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to load venue map layout for venue map {VenueMapId}", venueMapId);
             Snackbar.Add(L["ErrorLoadingVenueMapLayout"], MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task EnsurePriceRowsLoadedAsync()
+    {
+        if (!HasPriceStep || _selectedVenueMap is null || _loadingBundleDataForEdit)
+        {
+            return;
+        }
+
+        if (_venueMapLayout?.VenueMapId != _selectedVenueMap.Id)
+        {
+            await LoadVenueMapLayoutAsync(_selectedVenueMap.Id, initializePrices: _prices.Count == 0);
+            return;
+        }
+
+        if (_prices.Count == 0)
+        {
+            InitializeEmptyPrices();
         }
     }
 
@@ -1510,6 +1581,11 @@
 
     private async Task ValidateAndGoNextAsync()
     {
+        if (_activeIndex == 0)
+        {
+            await EnsurePriceRowsLoadedAsync();
+        }
+
         await _stepper.NextStepAsync();
     }
 
@@ -1543,6 +1619,8 @@
 
         if (HasPriceStep)
         {
+            await EnsurePriceRowsLoadedAsync();
+
             if (!await ValidateStepAsync(PriceStepIndex) || !ValidatePriceScopes())
             {
                 _pricesFormValidationAttempted = true;
