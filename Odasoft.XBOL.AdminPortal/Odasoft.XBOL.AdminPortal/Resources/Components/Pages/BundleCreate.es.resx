@@ -262,6 +262,9 @@
   <data name="PreSaleTime" xml:space="preserve">
     <value>Hora de preventa</value>
   </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publicar</value>
+  </data>
   <data name="RenewalWindow" xml:space="preserve">
     <value>Ventana de renovación</value>
   </data>
@@ -282,6 +285,36 @@
   </data>
   <data name="AdditionalComments" xml:space="preserve">
     <value>Comentarios adicionales</value>
+  </data>
+  <data name="AdditionalCharges" xml:space="preserve">
+    <value>Cargos adicionales</value>
+  </data>
+  <data name="AddAdditionalCharge" xml:space="preserve">
+    <value>Añadir cargo</value>
+  </data>
+  <data name="ErrorPublishingEvent" xml:space="preserve">
+    <value>Hubo un error al publicar el evento</value>
+  </data>
+  <data name="ErrorSendingEventToReview" xml:space="preserve">
+    <value>Hubo un error al enviar el evento a revisión</value>
+  </data>
+  <data name="EventPublished" xml:space="preserve">
+    <value>Evento publicado</value>
+  </data>
+  <data name="EventSentToReview" xml:space="preserve">
+    <value>Evento enviado a revisión</value>
+  </data>
+  <data name="FeeAmount" xml:space="preserve">
+    <value>Cantidad</value>
+  </data>
+  <data name="FeeName" xml:space="preserve">
+    <value>Nombre del cargo</value>
+  </data>
+  <data name="FinishReview" xml:space="preserve">
+    <value>Terminar revisión</value>
+  </data>
+  <data name="Fixed" xml:space="preserve">
+    <value>Fijo</value>
   </data>
   <data name="Map" xml:space="preserve">
     <value>Mapa</value>
@@ -310,6 +343,9 @@
   <data name="Organizer" xml:space="preserve">
     <value>Organizador</value>
   </data>
+  <data name="Percentage" xml:space="preserve">
+    <value>Porcentaje</value>
+  </data>
   <data name="RequiredField" xml:space="preserve">
     <value>Campo requerido</value>
   </data>
@@ -321,6 +357,9 @@
   </data>
   <data name="EventAlreadyPublished" xml:space="preserve">
     <value>Los eventos ya publicados en seats.io no se pueden agregar a un pase de temporada.</value>
+  </data>
+  <data name="SendToReview" xml:space="preserve">
+    <value>Enviar a revisión</value>
   </data>
   <data name="SelectVenueMapFirst" xml:space="preserve">
     <value>Selecciona un mapa para buscar eventos.</value>
