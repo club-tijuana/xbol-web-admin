@@ -68,7 +68,7 @@
     <MudCardContent Class="pa-0">
         <MudDataGrid T="SaleResponse" @ref="_dataGrid"
                      ServerData="ServerReload"
-                     ExpandSingleRow="true"
+                     ExpandSingleRow="false"
                      Loading="_loading"
                      Filterable="true"
                      FilterMode="DataGridFilterMode.Simple"
@@ -228,8 +228,9 @@
         if (!_initialized)
             return;
 
-        var previousSelectedBundleId = _selectedBundleId;
         SelectBundleFromRoute(navigateWhenMissing: true);
+
+        var previousSelectedBundleId = _seasonPassBundles.Find(bp => bp.Id == _selectedBundleId)?.PreviousBundleId ?? _selectedBundleId;
 
         if (_dataGrid is not null && previousSelectedBundleId != _selectedBundleId)
         {
