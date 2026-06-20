@@ -833,7 +833,7 @@
                                             <MudTh>@L["Availability"]</MudTh>
                                         </HeaderContent>
                                         <RowTemplate>
-                                            <MudTd DataLabel="@L["DateTime"]">@context.DateTime.ToString(FormatConstants.DATE_TIME)</MudTd>
+                                            <MudTd DataLabel="@L["DateTime"]">@context.StartDateTime.ToString(FormatConstants.DATE_TIME)</MudTd>
                                             <MudTd DataLabel="@L["Event"]">
                                                 <MudStack Spacing="0">
                                                     <MudText Typo="Typo.subtitle2">@context.EventName</MudText>
@@ -1222,7 +1222,7 @@
                     item.Categories.Contains(_eventSearch, StringComparison.OrdinalIgnoreCase));
             }
 
-            return query.OrderBy(item => item.DateTime);
+            return query.OrderBy(item => item.StartDateTime);
         }
     }
 
@@ -1677,7 +1677,7 @@
             }
 
             _candidateEvents = matchingEvents
-                .OrderBy(item => item.DateTime)
+                .OrderBy(item => item.StartDateTime)
                 .ToList();
             RefreshVisibleSelectedEvents();
         }
@@ -2016,7 +2016,7 @@
                 RenewalStartDate = DateTimeHelpers.ToDateTimeOffset(_renewalStartDate, _renewalStartTime),
                 RenewalEndDate = DateTimeHelpers.ToDateTimeOffset(_renewalEndDate, _renewalEndTime),
                 EventScheduleIds = _selectedEventsByScheduleId.Values
-                    .OrderBy(item => item.DateTime)
+                    .OrderBy(item => item.StartDateTime)
                     .Select(item => item.EventScheduleId!.Value)
                     .ToList(),
                 Prices = BuildPriceRequests()

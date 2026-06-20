@@ -6,7 +6,8 @@ namespace Odasoft.XBOL.AdminPortal.ViewModels;
 
 public record EventViewModel(
     long Id,
-    DateTime DateTime,
+    DateTime StartDateTime,
+    DateTime? EndDateTime,
     string EventName,
     string Categories,
     string Venue,

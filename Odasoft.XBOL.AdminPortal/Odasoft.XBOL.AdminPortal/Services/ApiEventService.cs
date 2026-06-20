@@ -38,6 +38,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         var items = response.Items?.Select(e => new EventViewModel(
             e.Id ?? 0,
             e.ScheduledStartDate?.DateTime ?? default,
+            e.ScheduledEndDate?.DateTime,
             e.Name ?? "",
             FormatCategories(e.Categories),
             e.VenueName ?? "",
@@ -94,6 +95,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
             e.EventId ?? 0,
             e.EventScheduleId ?? 0,
             e.ScheduledStartDate?.DateTime ?? default,
+            e.ScheduledEndDate?.DateTime,
             e.Name ?? "",
             FormatCategories(e.Categories),
             e.VenueName ?? "",
@@ -136,6 +138,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         var items = response.Items?.Select(e => new EventViewModel(
             e.EventId ?? 0,
             e.ScheduledStartDate?.DateTime ?? default,
+            e.ScheduledEndDate?.DateTime,
             e.Name ?? "",
             FormatCategories(e.Categories),
             e.VenueName ?? "",
@@ -183,6 +186,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         var items = response.Items?.Select(e => new EventViewModel(
             e.Id,
             e.ScheduledStartDate.DateTime,
+            e.ScheduledEndDate.DateTime,
             e.Name ?? "",
             FormatCategories(e.Categories),
             e.VenueName ?? "",
@@ -204,48 +208,6 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
     public async Task<EventInfoDTO> GetEventByIdAsync(long id) => await adminClient.GetEventByIdAsync(id);
 
     public async Task<BundleDTO> GetBundleByIdAsync(long id) => await adminClient.GetBundleByIdAsync(id);
-
-    public async Task<GridData<EventViewModel>> GetEventsOnSaleAsync(
-        int page,
-        int pageSize,
-        string? sortColumn,
-        bool sortDescending,
-        string? search = null,
-        EventFilterParameters? filters = null)
-    {
-        var response = await adminClient.GetEventsOnSaleAsync(
-            venues: filters?.Venues != null && filters.Venues.Count > 0 ? string.Join(",", filters.Venues) : null,
-            categories: filters?.Categories != null && filters.Categories.Count > 0 ? string.Join(",", filters.Categories) : null,
-            startDate: filters?.DateFrom,
-            endDate: filters?.DateTo,
-            search: search,
-            sortBy: sortColumn,
-            descending: sortDescending,
-            page: page + 1,
-            pageSize: pageSize
-        );
-
-        var items = response.Items?.Select(e => new EventViewModel(
-            e.Id,
-            e.ScheduledStartDate.DateTime,
-            e.Name ?? "",
-            FormatCategories(e.Categories),
-            e.VenueName ?? "",
-            e.AvailableSeats,
-            e.TotalSeats,
-            e.Status,
-            e.ExternalEventKey,
-            mediaUrlResolver.Resolve(e.PosterImageUrl),
-            mediaUrlResolver.Resolve(e.BannerImageUrl),
-            e.IsSeason
-        )).ToArray() ?? [];
-
-        return new GridData<EventViewModel>
-        {
-            TotalItems = response.TotalCount,
-            Items = items
-        };
-    }
 
     public async Task<List<AdminEventCategoryResult>> GetCategoriesAsync()
     {

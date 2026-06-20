@@ -93,13 +93,15 @@
                 <MudAlert Severity="Severity.Normal" Class="mx-4">@L["NoEventsFound"]</MudAlert>
             </NoRecordsContent>
             <Columns>
-                <PropertyColumn Property="x => x.DateTime" Sortable="true" Filterable="false"
+                <PropertyColumn Property="x => x.StartDateTime" Sortable="true" Filterable="false"
                                 InitialDirection="MudSortDirection.Descending">
                     <HeaderTemplate>
                         <span Class="pl-lg-4">@L["ColumnDateTime"]</span>
                     </HeaderTemplate>
                     <CellTemplate>
-                        <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.DateTime.ToString(FormatConstants.DATE_TIME)</MudText>
+                        <MudText Typo="Typo.body2" Class="pl-lg-4">
+                            @EventDisplayDateHelper.GetDateRange(context.Item.StartDateTime, context.Item.EndDateTime)
+                            </MudText>
                     </CellTemplate>
                 </PropertyColumn>
 

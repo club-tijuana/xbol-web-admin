@@ -30,7 +30,7 @@
                     <MudTooltip Text="@(Event.EventName)">
                         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="truncate-text"><b>@(Event.EventName)</b></MudText>
                     </MudTooltip>
-                    <MudText Typo="Typo.caption">@(Event.DateTime.ToString("d MMM yyyy"))</MudText>
+                    <MudText Typo="Typo.caption">@(Event.IsBundle ? EventDisplayDateHelper.GetDateRange(Event.StartDateTime, Event.EndDateTime) : Event.StartDateTime.ToString("d MMM yyyy"))</MudText>
                 </MudStack>
             </MudItem>
             <MudItem xs="6" Class="d-flex justify-end align-end">
