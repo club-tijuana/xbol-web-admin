@@ -65,7 +65,7 @@
         @if (TotalPages > 1)
         {
             <MudItem xs="12" Class="d-flex justify-center mt-4">
-                <MudPagination Color="Color.Primary" Count="TotalPages" @bind-Selected="@_page" />
+                <MudPagination Color="Color.Primary" Count="TotalPages" Selected="@_page" SelectedChanged="OnPageChanged" />
             </MudItem>
         }
     </MudGrid>
@@ -76,7 +76,7 @@
     private bool _error = false;
     private string _errorMessage = string.Empty;
     private int _page = QueryParamsConstants.DEFAULT_PAGE;
-    private int _pageSize = QueryParamsConstants.DEFAULT_PAGE_SIZE;
+    private int _pageSize = 12;
     private int _totalItems = 0;
 
     private int TotalPages => (int)Math.Ceiling((double)_totalItems / _pageSize);
@@ -84,6 +84,11 @@
     private IEnumerable<EventViewModel> Events { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadEvents();
+    }
+
+    private async Task LoadEvents()
     {
         _isLoading = true;
         try
@@ -93,8 +98,6 @@
             pageSize: _pageSize,
             sortColumn: "startDate",
             sortDescending: false,
-            search: null,
-            filters: null,
             upcoming: true,
             status: AdminEventStatus.Published);
 
@@ -112,6 +115,12 @@
         {
             _isLoading = false;
         }
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        _page = page;
+        await LoadEvents();
     }
 
     private Task ShowOrderDetail(string reference)
