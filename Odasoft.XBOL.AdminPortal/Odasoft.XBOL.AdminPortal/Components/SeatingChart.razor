@@ -137,12 +137,18 @@
     }
 
     [JSInvokable]
-    public async Task HandleSeatSelected(string seatId, decimal price, long priceListItemId, string? category = null, string? selectedTicketType = null)
+    public async Task HandleSeatSelected(string seatId, decimal price, long priceListItemId, string? category, string? selectedTicketType, decimal originalPrice, List<SeatFeeInfo> fees)
     {
+        var normalizedFees = fees
+            .Select(f => f with { ChargeCategory = string.IsNullOrEmpty(f.ChargeCategory) ? "Fee" : f.ChargeCategory })
+            .ToList();
+
         SeatInfo seat = new SeatInfo
         {
             SeatId = seatId,
             Price = price,
+            OriginalPrice = originalPrice,
+            Fees = normalizedFees,
             PriceListItemId = priceListItemId,
             Category = category,
             SelectedTicketType = selectedTicketType,

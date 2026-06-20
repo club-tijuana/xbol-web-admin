@@ -9,6 +9,7 @@ namespace Odasoft.XBOL.AdminPortal.States
         public bool IsHoldCallsInProgress { get; private set; }
         public DateTime? HoldExpirationTime { get; private set; }
 
+
         private List<SeatInfo> selectedSeats = [];
         private decimal totalPrice;
         private long? currentEventId;
@@ -28,6 +29,22 @@ namespace Odasoft.XBOL.AdminPortal.States
             get => totalPrice;
             private set => totalPrice = value;
         }
+
+        public decimal SubTotal => FinalSeatsSelection
+            .Sum(s => s.OriginalPrice > 0 ? s.OriginalPrice : s.Price);
+
+        public decimal TotalFees => FinalSeatsSelection
+            .SelectMany(s => s.Fees)
+            .Sum(f => f.FeeAmount);
+
+        public decimal TotalTaxes => FinalSeatsSelection
+            .SelectMany(s => s.Fees)
+            .Where(f => f.ChargeCategory == "Tax")
+            .Sum(f => f.FeeAmount);
+
+        public decimal TotalCommissions => TotalFees - TotalTaxes;
+
+        public bool HasFeeBreakdown => FinalSeatsSelection.Any(s => s.Fees.Count > 0);
 
         public List<SeatInfo> SelectedSeats
         {
@@ -78,6 +95,8 @@ namespace Odasoft.XBOL.AdminPortal.States
                 {
                     existingSeat.IsSelected = true;
                     existingSeat.Price = item.Price;
+                    existingSeat.OriginalPrice = item.OriginalPrice;
+                    existingSeat.Fees = item.Fees;
                     RecalculateState();
                 }
             }
@@ -174,6 +193,8 @@ namespace Odasoft.XBOL.AdminPortal.States
     {
         public required string SeatId { get; set; }
         public decimal Price { get; set; }
+        public decimal OriginalPrice { get; set; }
+        public List<SeatFeeInfo> Fees { get; set; } = [];
         public string? Category { get; set; }
         public string? SelectedTicketType { get; set; }
         public bool? IsSold { get; set; }
@@ -184,4 +205,6 @@ namespace Odasoft.XBOL.AdminPortal.States
         public long? SourceOrderItemId { get; set; }
         public long? PriceListItemId { get; set; }
     }
+
+    public record SeatFeeInfo(string FeeName, string FeeType, string ChargeCategory, decimal FeeAmount);
 }

@@ -48,6 +48,8 @@ export async function renderChart(containerId, config, dotNetHelper) {
     onObjectSelected: obj => {
       let price = 0;
       let priceListItemId = 0;
+      let originalPrice = 0;
+      let fees = [];
       let pricingRule = config.pricing.find(p => p.objects && p.objects.includes(obj.id));
 
       if (!pricingRule) {
@@ -55,11 +57,16 @@ export async function renderChart(containerId, config, dotNetHelper) {
       }
 
       if (pricingRule) {
+        originalPrice = pricingRule.originalPrice ?? 0;
+        fees = pricingRule.fees ?? [];
+
         if (obj.selectedTicketType && pricingRule.ticketTypes) {
           const ticket = pricingRule.ticketTypes.find(t => t.ticketType === obj.selectedTicketType);
           if (ticket) {
             price = ticket.price;
             priceListItemId = ticket.priceListItemId;
+            // For ticket types, originalPrice is derived from the rule-level fee breakdown
+            originalPrice = originalPrice > 0 ? originalPrice : price - (pricingRule.fee ?? 0);
           }
         } else {
           price = pricingRule.price;
@@ -69,7 +76,7 @@ export async function renderChart(containerId, config, dotNetHelper) {
         price = obj.pricing?.price ?? 0;
       }
 
-      dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, price, priceListItemId, obj.category?.label, obj.selectedTicketType);
+      dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, price, priceListItemId, obj.category?.label, obj.selectedTicketType, originalPrice, fees);
     },
     onObjectDeselected: obj => {
       dotNetHelper.invokeMethodAsync('HandleSeatDeselected', obj.id);
