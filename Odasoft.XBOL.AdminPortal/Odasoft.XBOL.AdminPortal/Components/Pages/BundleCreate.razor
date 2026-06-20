@@ -258,6 +258,12 @@
                                                 }
                                             </MudSelect>
                                         </MudItem>
+                                        @if (_selectedVenueMap is not null)
+                                        {
+                                            <MudItem xs="12" Class="d-flex justify-center">
+                                                <MudImage Src="@_selectedVenueMap.ThumbnailUrl" Alt="@_selectedVenueMap.Name" Class="rounded-lg" Height="400" />
+                                            </MudItem>
+                                        }
                                     </MudGrid>
                                 </MudItem>
                             </MudGrid>
