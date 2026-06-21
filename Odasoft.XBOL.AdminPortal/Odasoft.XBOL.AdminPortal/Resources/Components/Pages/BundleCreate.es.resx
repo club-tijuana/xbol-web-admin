@@ -322,6 +322,15 @@
   <data name="FeeName" xml:space="preserve">
     <value>Nombre del cargo</value>
   </data>
+  <data name="ChargeCategory" xml:space="preserve">
+    <value>Categoría</value>
+  </data>
+  <data name="Fee" xml:space="preserve">
+    <value>Cargo</value>
+  </data>
+  <data name="Tax" xml:space="preserve">
+    <value>Impuesto</value>
+  </data>
   <data name="FinishReview" xml:space="preserve">
     <value>Terminar revisión</value>
   </data>

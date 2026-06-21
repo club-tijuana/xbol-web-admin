@@ -17,6 +17,10 @@ namespace Odasoft.XBOL.AdminPortal.Validators
                 .IsInEnum()
                 .Must(type => type is FeeType.Fixed or FeeType.Percentage)
                 .WithName(L["Type"]);
+            RuleFor(x => x.ChargeCategory)
+                .IsInEnum()
+                .Must(category => category is ChargeCategory.Fee or ChargeCategory.Tax)
+                .WithName(L["ChargeCategory"]);
             RuleFor(x => x.Value)
                 .NotEmpty()
                 .GreaterThan(0)

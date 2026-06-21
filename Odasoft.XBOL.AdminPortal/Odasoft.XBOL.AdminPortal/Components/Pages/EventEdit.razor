@@ -518,6 +518,31 @@
                                                 </EditTemplate>
                                             </PropertyColumn>
 
+                                            <PropertyColumn Property="x => x.ChargeCategory" Title="@L["ChargeCategory"]">
+                                                <EditTemplate>
+                                                    @{
+                                                        var item = context.Item;
+                                                    }
+                                                    <MudSelect @key="item.UiId"
+                                                               T="ChargeCategory"
+                                                               @bind-Value="item.ChargeCategory"
+                                                               Variant="Variant.Outlined"
+                                                               Margin="Margin.Dense"
+                                                               For="@(() => item.ChargeCategory)"
+                                                               ToStringFunc="@(category => L[category.ToString()].Value)"
+                                                               Validation="@(new Func<ChargeCategory, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.ChargeCategory), val)))"
+                                                               Disabled="@(_isReview)">
+
+                                                        @foreach (var category in _chargeCategories)
+                                                        {
+                                                            <MudSelectItem T="ChargeCategory" Value="category">
+                                                                @L[category.ToString()]
+                                                            </MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                </EditTemplate>
+                                            </PropertyColumn>
+
                                             <PropertyColumn Property="x => x.Value" Title="@L["FeeAmount"]">
                                                 <EditTemplate>
                                                     @{
@@ -1216,6 +1241,7 @@
     private List<AdminEventCategoryResult> _eventCategories = [];
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
     private List<FeeType> _feeTypes = Enum.GetValues<FeeType>().ToList();
+    private List<ChargeCategory> _chargeCategories = Enum.GetValues<ChargeCategory>().ToList();
     private List<VenueResponse> _venues = [];
     private List<VenueMapResponse> _venueMaps = [];
     private List<ListItem> _organizers = [];
@@ -1893,6 +1919,7 @@
                 PriceReferenceId = _priceReferenceId.Value,
                 Name = x.Name,
                 FeeType = x.FeeType,
+                ChargeCategory = x.ChargeCategory,
                 Value = x.Value.Value
             }).ToList());
         }
@@ -2366,6 +2393,7 @@
                 Id = x.Id,
                 Name = x.Name,
                 FeeType = x.FeeType,
+                ChargeCategory = x.ChargeCategory,
                 Value = x.Value
             }).ToList();
         }
