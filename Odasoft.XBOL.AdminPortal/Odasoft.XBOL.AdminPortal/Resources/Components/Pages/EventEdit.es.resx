@@ -342,6 +342,15 @@
   <data name="FeeAmount" xml:space="preserve">
     <value>Cantidad</value>
   </data>
+  <data name="ChargeCategory" xml:space="preserve">
+    <value>Categoría</value>
+  </data>
+  <data name="Fee" xml:space="preserve">
+    <value>Cargo</value>
+  </data>
+  <data name="Tax" xml:space="preserve">
+    <value>Impuesto</value>
+  </data>
   <data name="ReviewDescription" xml:space="preserve">
     <value>Favor de revisar que toda la información ingresada sea correcta. Al terminar presione 'Terminar revisión' si todo está en orden presione 'Aprobar'; de lo contrario, 'Requiere cambios' para realizar las correcciones necesarias.</value>
   </data>

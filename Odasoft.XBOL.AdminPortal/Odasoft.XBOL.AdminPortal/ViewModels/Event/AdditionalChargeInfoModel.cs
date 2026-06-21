@@ -7,6 +7,7 @@ namespace Odasoft.XBOL.AdminPortal.ViewModels.Event
         public long? Id { get; set; }
         public string Name { get; set; }
         public FeeType FeeType { get; set; }
+        public ChargeCategory ChargeCategory { get; set; } = ChargeCategory.Fee;
         public decimal? Value { get; set; }
         public Guid UiId { get; set; } = new Guid();
 

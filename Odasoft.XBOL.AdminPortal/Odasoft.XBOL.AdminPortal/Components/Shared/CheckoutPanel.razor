@@ -155,7 +155,7 @@
                     <MudGrid class="d-flex gap-4 align-center mb-3">
                         <MudItem xs="12">
 
-                            <MudToggleGroup T="int" @bind-Value="_value">
+                            <MudToggleGroup T="int" @bind-Value="_value" @bind-Value:after="OnTogglePaymentTypeChanged">
 
                                 <MudToggleItem T="int" Value="1" Text="Caja" />
                                 <MudToggleItem T="int" Value="2" Text="Link de pago" />
@@ -247,6 +247,31 @@
                         </MudItem>
                         <MudItem xs="12">
                             <div class="order-summary">
+                                @if (_cartState.HasFeeBreakdown)
+                                {
+                                    <div class="d-flex justify-space-between summary-item">
+                                        <MudText Typo="Typo.caption">Subtotal</MudText>
+                                        <MudText Typo="Typo.caption">@_cartState.SubTotal.ToString(FormatConstants.CURRENCY)</MudText>
+                                    </div>
+                                    @if (_cartState.TotalCommissions > 0)
+                                    {
+                                        <div class="d-flex justify-space-between summary-item">
+                                            <MudText Typo="Typo.caption">Comisiones</MudText>
+                                            <MudText Typo="Typo.caption">@_cartState.TotalCommissions.ToString(FormatConstants.CURRENCY)</MudText>
+                                        </div>
+                                    }
+                                    @if (_cartState.TotalTaxes > 0)
+                                    {
+                                        <div class="d-flex justify-space-between summary-item">
+                                            <MudText Typo="Typo.caption">Impuestos</MudText>
+                                            <MudText Typo="Typo.caption">@_cartState.TotalTaxes.ToString(FormatConstants.CURRENCY)</MudText>
+                                        </div>
+                                    }
+                                    <div class="d-flex justify-space-between summary-item">
+                                        <MudText Typo="Typo.caption"><b>Total</b></MudText>
+                                        <MudText Typo="Typo.caption"><b>@_cartState.TotalPrice.ToString(FormatConstants.CURRENCY)</b></MudText>
+                                    </div>
+                                }
                                 <div class="d-flex justify-space-between summary-item">
                                     <MudText Typo="Typo.caption">
                                         Tipo de cambio
@@ -524,7 +549,7 @@
         _value == 2 &&
         !HasValidPaymentLinkExpiration;
 
-    private DateTime? ExpirationDate { get; set; } = DateTime.Now;
+    private DateTime? ExpirationDate { get; set; }
 
     private string ExpirationDateText =>
         ExpirationDate?.ToString("dd/MM/yy - HH:mm 'hrs'") ?? "";
@@ -798,6 +823,7 @@
         if (_value == 1)
         {
             _request.PaymentLinkExpiresAt = null;
+            ExpirationDate = null;
         }
         else
         {
@@ -824,6 +850,9 @@
         _request.PendingPay = PendingPay;
         _request.ExchangeRate = exchangeRate.Rate ?? 0;
         _request.TotalPrice = _cartState.TotalPrice;
+        _request.SubTotal = _cartState.SubTotal;
+        _request.TotalFees = _cartState.TotalCommissions;
+        _request.TotalTaxes = _cartState.TotalTaxes;
 
         await _form.ValidateAsync();
 

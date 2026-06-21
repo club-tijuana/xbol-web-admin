@@ -16180,6 +16180,13 @@
               }
             ]
           },
+          "chargeCategory": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChargeCategory"
+              }
+            ]
+          },
           "value": {
             "type": "number",
             "format": "decimal"
@@ -16189,6 +16196,7 @@
       },
       "AdditionalChargeResponse": {
         "required": [
+          "chargeCategory",
           "feeType",
           "id",
           "name",
@@ -16211,6 +16219,13 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/FeeType"
+              }
+            ]
+          },
+          "chargeCategory": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChargeCategory"
               }
             ]
           },
@@ -21469,6 +21484,13 @@
           }
         },
         "additionalProperties": false
+      },
+      "ChargeCategory": {
+        "enum": [
+          "Fee",
+          "Tax"
+        ],
+        "type": "string"
       },
       "FeeType": {
         "enum": [

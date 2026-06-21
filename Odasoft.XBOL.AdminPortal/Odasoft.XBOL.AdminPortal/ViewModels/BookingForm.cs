@@ -26,5 +26,8 @@ public class BookingForm
     public decimal? PendingPay { get; set; }
     public decimal? ExchangeRate { get; set; }
     public decimal? TotalPrice { get; set; }
+    public decimal? SubTotal { get; set; }
+    public decimal? TotalFees { get; set; }
+    public decimal? TotalTaxes { get; set; }
     public DateTimeOffset? PaymentLinkExpiresAt { get; set; }
 }
