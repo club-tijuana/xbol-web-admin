@@ -113,6 +113,9 @@
   <data name="Events" xml:space="preserve"><value>Events</value></data>
   <data name="FeeAmount" xml:space="preserve"><value>Amount</value></data>
   <data name="FeeName" xml:space="preserve"><value>Fee name</value></data>
+  <data name="ChargeCategory" xml:space="preserve"><value>Category</value></data>
+  <data name="Fee" xml:space="preserve"><value>Fee</value></data>
+  <data name="Tax" xml:space="preserve"><value>Tax</value></data>
   <data name="FileTooLarge" xml:space="preserve"><value>The file '{0}' exceeds the {1}MB limit.</value></data>
   <data name="FinishReview" xml:space="preserve"><value>Finish review</value></data>
   <data name="Fixed" xml:space="preserve"><value>Fixed</value></data>
