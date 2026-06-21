@@ -192,7 +192,7 @@
     private HashSet<OrderItemResponse> _selectedItems = [];
     private int DynamicLg => _orderInfoResponse.PaymentLink != null ? 2 : 3;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         if (!string.IsNullOrWhiteSpace(OrderLocalizer))
         {
@@ -212,7 +212,7 @@
 
         OrderInfoResponse? searchResult = await _supportService.SearchOrderByReferenceAsync(_searchQuery.Trim());
 
-        if (searchResult == null)
+        if (searchResult == null || searchResult.OrderId == null)
         {
             ClearData();
             return;
@@ -374,7 +374,8 @@
             }
 
             _snackbar.Add("Ocurrió un error al reenviar el recibo.", Severity.Error);
-        }    }
+        }
+    }
 
     private async Task ReissueTicketsAsync()
     {
@@ -390,7 +391,8 @@
             }
 
             _snackbar.Add("Ocurrió un error al reemitir los boletos.", Severity.Error);
-        }    }
+        }
+    }
 
     private async Task SendTicketsAsync()
     {
@@ -406,7 +408,8 @@
             }
 
             _snackbar.Add("Ocurrió un error al enviar los boletos.", Severity.Error);
-        }        ;
+        }
+        ;
     }
 
     private async Task SendCourtesiesAsync()

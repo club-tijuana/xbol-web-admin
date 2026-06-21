@@ -101,7 +101,7 @@
                 @foreach (var section in GetSectionsFor(context.BaseZoneId))
                 {
                     <MudSelectItem T="long?" Value="section.Id">
-                        @section.Name
+                        @(section.Name)
                     </MudSelectItem>
                 }
             </AdminSelect>
