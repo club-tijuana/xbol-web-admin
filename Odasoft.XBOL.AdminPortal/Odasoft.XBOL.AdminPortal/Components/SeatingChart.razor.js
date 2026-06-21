@@ -29,6 +29,26 @@ export {
 export async function renderChart(containerId, config, dotNetHelper) {
   await ensureSeatsioLoaded();
 
+  // Strip application-internal fields that SeatsIO's schema rejects at runtime.
+  // Keep config.pricing intact for the onObjectSelected closure (needs priceListItemId, fees, etc.).
+  const seatsioSafePricing = config.pricing.map(p => {
+    const entry = {};
+    if (p.category != null) entry.category = p.category;
+    if (p.objects)          entry.objects = p.objects;
+    if (p.price != null)    entry.price = p.price;
+    if (p.fee != null)      entry.fee = p.fee;
+    if (p.ticketTypes) {
+      entry.ticketTypes = p.ticketTypes.map(({ ticketType, price, label, description, fee }) => {
+        const t = { ticketType, price };
+        if (label != null)       t.label = label;
+        if (description != null) t.description = description;
+        if (fee != null)         t.fee = fee;
+        return t;
+      });
+    }
+    return entry;
+  });
+
   const chart = new seatsio.EventManager({
     divId: containerId,
     secretKey: config.secretKey,
@@ -37,7 +57,7 @@ export async function renderChart(containerId, config, dotNetHelper) {
     session: config.session,
     holdToken: config.holdToken,
     pricing: {
-      prices: config.pricing,
+      prices: seatsioSafePricing,
       priceFormatter: price => '$' + price,
       allFeesIncluded: true
     },
