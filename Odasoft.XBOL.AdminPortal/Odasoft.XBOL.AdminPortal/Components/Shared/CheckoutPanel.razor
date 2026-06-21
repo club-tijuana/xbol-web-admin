@@ -914,7 +914,7 @@
             var conflicts = ParseSeatConflicts(apiEx.Response);
             if (conflicts.Count > 0)
             {
-                Logger.LogError(apiEx, "Seat conflict on book");
+                LogBookingApiException(apiEx, "seat conflict");
                 _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 
                 await ExpireHoldTokenAsync();
@@ -923,8 +923,19 @@
                 return;
             }
 
-            Logger.LogError(apiEx, "Booking validation failed");
+            LogBookingApiException(apiEx, "validation failure");
             _snackbar.Add(GetApiErrorMessage(apiEx.Response), MudBlazor.Severity.Error);
+
+            await ExpireHoldTokenAsync();
+            await OnBookingFailed.InvokeAsync(apiEx);
+        }
+        catch (ApiException apiEx)
+        {
+            LogBookingApiException(apiEx, "unexpected API failure");
+            _snackbar.Add(GetApiErrorMessage(apiEx.Response), MudBlazor.Severity.Error);
+
+            await ExpireHoldTokenAsync();
+            await OnBookingFailed.InvokeAsync(apiEx);
         }
         catch (Exception ex)
         {
@@ -939,6 +950,16 @@
             _isSubmitting = false;
             _loadingState.Hide();
         }
+    }
+
+    private void LogBookingApiException(ApiException apiEx, string failureKind)
+    {
+        Logger.LogError(
+            apiEx,
+            "Booking API failure ({FailureKind}). StatusCode={StatusCode} ResponseBody={ResponseBody}",
+            failureKind,
+            apiEx.StatusCode,
+            apiEx.Response);
     }
 
     private List<ConflictedSeat> ParseSeatConflicts(string? responseBody)
