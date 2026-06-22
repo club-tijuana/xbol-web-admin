@@ -119,6 +119,42 @@ public sealed class BundleCreateValidationRegressionTests
     }
 
     [Fact]
+    public void Bundle_create_media_errors_are_shown_on_images_step()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("HasError=\"ImagesStepHasError\"", source, StringComparison.Ordinal);
+        Assert.Contains("ImagesStepHasError => _imagesStepValidationAttempted && !_imagesStepValid", source, StringComparison.Ordinal);
+        Assert.Contains("_imageValidationErrors", source, StringComparison.Ordinal);
+        Assert.Contains("_activeIndex = ImagesStepIndex;", source, StringComparison.Ordinal);
+        Assert.Contains("HandleMediaValidationFailure", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_create_rejects_too_small_images_before_upload()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("private const int MinImageWidth = 1920;", source, StringComparison.Ordinal);
+        Assert.Contains("private const int MinImageHeight = 1080;", source, StringComparison.Ordinal);
+        Assert.Contains("imageInfo.Width < MinImageWidth || imageInfo.Height < MinImageHeight", source, StringComparison.Ordinal);
+        Assert.Contains("L[\"ImageTooSmall\", file.Name, imageInfo.Width, imageInfo.Height, MinImageWidth, MinImageHeight]", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_create_media_upload_failure_uses_media_specific_message()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("if (!await TrySaveBundleMediaAsync(BundleId.Value))", source, StringComparison.Ordinal);
+        Assert.Contains("await SaveBundleMediaAsync(bundleId);", source, StringComparison.Ordinal);
+        Assert.Contains("catch (ApiException<ValidationProblemDetails> ex)", source, StringComparison.Ordinal);
+        Assert.Contains("catch (ApiException ex) when (TryReadValidationProblemDetails(ex, out var problem))", source, StringComparison.Ordinal);
+        Assert.Contains("Snackbar.Add(FormatMediaErrorToast(", source, StringComparison.Ordinal);
+        Assert.Contains("L[\"ErrorSavingMedia\"]", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Bundle_create_empty_event_selection_remains_valid()
     {
         var source = ReadAppSource("Components/Pages/BundleCreate.razor");

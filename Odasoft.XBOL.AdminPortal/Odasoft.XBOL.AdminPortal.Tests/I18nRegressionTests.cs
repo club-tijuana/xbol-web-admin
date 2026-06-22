@@ -59,7 +59,9 @@ public sealed class I18nRegressionTests
             "GalleryUploadHint",
             "GalleryUploadHintDetails",
             "GalleryPreview",
-            "Clear"
+            "Clear",
+            "ImageTooSmall",
+            "ErrorSavingMedia"
         ];
 
         foreach (var key in keys)

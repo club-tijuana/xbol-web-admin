@@ -132,6 +132,8 @@
   <data name="GalleryUploadHint" xml:space="preserve"><value>Drag images here or click to browse</value></data>
   <data name="GalleryUploadHintDetails" xml:space="preserve"><value>PNG or JPG files up to {0}MB are recommended.</value></data>
   <data name="InvalidImage" xml:space="preserve"><value>The file '{0}' is not a valid image.</value></data>
+  <data name="ImageTooSmall" xml:space="preserve"><value>The image '{0}' is {1}x{2}px. Minimum size is {3}x{4}px.</value></data>
+  <data name="ErrorSavingMedia" xml:space="preserve"><value>The bundle was saved, but the image could not be uploaded.</value></data>
   <data name="InvalidForm" xml:space="preserve"><value>Review the highlighted fields before saving.</value></data>
   <data name="GoBack" xml:space="preserve"><value>Back</value></data>
   <data name="HorizontalImagePreview" xml:space="preserve"><value>Horizontal preview</value></data>

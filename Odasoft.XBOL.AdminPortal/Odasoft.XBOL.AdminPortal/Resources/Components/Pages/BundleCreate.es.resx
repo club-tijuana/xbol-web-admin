@@ -274,6 +274,12 @@
   <data name="InvalidImage" xml:space="preserve">
     <value>El archivo '{0}' no es una imagen válida.</value>
   </data>
+  <data name="ImageTooSmall" xml:space="preserve">
+    <value>La imagen '{0}' mide {1}x{2}px. El mínimo es {3}x{4}px.</value>
+  </data>
+  <data name="ErrorSavingMedia" xml:space="preserve">
+    <value>El paquete se guardó, pero no se pudo cargar la imagen.</value>
+  </data>
   <data name="InvalidForm" xml:space="preserve">
     <value>Revisa los campos marcados antes de guardar.</value>
   </data>

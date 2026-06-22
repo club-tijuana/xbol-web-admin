@@ -4,6 +4,7 @@
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Components.Forms
+@using Newtonsoft.Json
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
 @using Odasoft.XBOL.Common.Constants
@@ -683,6 +684,7 @@
                     </MudStep>
 
                     <MudStep Title="@L["Images"]"
+                             HasError="ImagesStepHasError"
                              @bind-Completed="_imagesStepCompleted">
                         <MudGrid Spacing="6">
                             <MudItem xs="12">
@@ -694,6 +696,18 @@
                                         <MudText Typo="Typo.caption">@L["EventBannerDimensions"]</MudText>
                                         <MudText Typo="Typo.caption">@L["EventBannerDescription"]</MudText>
                                     </MudStack>
+
+                                    @if (_imageValidationErrors.Count > 0)
+                                    {
+                                        <MudAlert Severity="MudBlazor.Severity.Error" Variant="Variant.Outlined">
+                                            <MudStack Spacing="1">
+                                                @foreach (var error in _imageValidationErrors)
+                                                {
+                                                    <MudText Typo="Typo.body2">@error</MudText>
+                                                }
+                                            </MudStack>
+                                        </MudAlert>
+                                    }
 
                                     <MudFileUpload @ref="_bannerImageUpload"
                                                    T="IBrowserFile"
@@ -1085,7 +1099,10 @@
     private AdditionalChargesInfoValidator<BundleCreate> _additionalChargesInfoValidator;
     private AdditionalChargeInfoValidator<BundleCreate> _additionalChargeInfoValidator;
 
+    private bool _imagesStepValidationAttempted;
+    private bool _imagesStepValid = true;
     private bool _imagesStepCompleted;
+    private readonly List<string> _imageValidationErrors = [];
 
     private bool _loading = true;
     private bool _loadingEvents;
@@ -1177,6 +1194,8 @@
     private ImageModel? _bannerImage;
     private List<ImageModel> _galleryImages = [];
     private const long MaxImageFileSize = 10 * 1024 * 1024;
+    private const int MinImageWidth = 1920;
+    private const int MinImageHeight = 1080;
     private const string DefaultDragClass = "relative d-flex flex-column p-r gap-2 rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
     private string _dragClass = DefaultDragClass;
     private bool _dragging = false;
@@ -1199,6 +1218,7 @@
     private bool PriceStepHasError => _pricesFormValidationAttempted && !_pricesFormValid;
     private bool AdditionalChargesStepHasError => _additionalChargesFormValidationAttempted && !_additionalChargesFormValid;
     private bool DatesStepHasError => _datesFormValidationAttempted && !_datesFormValid;
+    private bool ImagesStepHasError => _imagesStepValidationAttempted && !_imagesStepValid;
     private bool EventsStepHasError => _eventsFormValidationAttempted && !_eventsFormValid;
 
     private readonly record struct BundleSubmitValidationResult(bool IsValid, int FirstInvalidStepIndex);
@@ -1992,7 +2012,10 @@
 
             await SaveAdditionalChargesAsync();
 
-            await SaveBundleMediaAsync(BundleId.Value);
+            if (!await TrySaveBundleMediaAsync(BundleId.Value))
+            {
+                return;
+            }
 
             Snackbar.Add(L["CreateSuccess"], MudBlazor.Severity.Success);
             Navigation.NavigateTo(GetBundleSaveSuccessRoute());
@@ -2210,6 +2233,11 @@
             _datesFormValid = false;
             _datesFormCompleted = false;
             _activeIndex = DatesStepIndex;
+        }
+
+        if (invalidFields.Contains("MediaFile"))
+        {
+            HandleMediaValidationFailure(problem);
         }
     }
 
@@ -2451,6 +2479,16 @@
                 ? "application/octet-stream"
                 : file.ContentType;
 
+            if (imageInfo.Width < MinImageWidth || imageInfo.Height < MinImageHeight)
+            {
+                var message = L["ImageTooSmall", file.Name, imageInfo.Width, imageInfo.Height, MinImageWidth, MinImageHeight].Value;
+                SetImageValidationErrors([message]);
+                Snackbar.Add(message, MudBlazor.Severity.Warning);
+                return null;
+            }
+
+            ClearImageValidationErrors();
+
             return new ImageModel
             {
                 Name = file.Name,
@@ -2465,6 +2503,129 @@
             Logger.LogWarning(ex, "Rejected invalid bundle image file {FileName}", file.Name);
             Snackbar.Add(L["InvalidImage", file.Name], MudBlazor.Severity.Error);
             return null;
+        }
+    }
+
+    private async Task<bool> TrySaveBundleMediaAsync(long bundleId)
+    {
+        try
+        {
+            await SaveBundleMediaAsync(bundleId);
+            ClearImageValidationErrors();
+            return true;
+        }
+        catch (ApiException<ValidationProblemDetails> ex)
+        {
+            HandleMediaValidationFailure(ex.Result);
+            return false;
+        }
+        catch (ApiException ex) when (TryReadValidationProblemDetails(ex, out var problem))
+        {
+            HandleMediaValidationFailure(problem);
+            return false;
+        }
+    }
+
+    private void HandleMediaValidationFailure(ValidationProblemDetails problem)
+    {
+        var errors = GetMediaValidationErrors(problem);
+        if (errors.Count == 0)
+        {
+            errors.Add(problem.Detail ?? problem.Title ?? L["ErrorSaving"].Value);
+        }
+
+        SetImageValidationErrors(errors);
+        Snackbar.Add(FormatMediaErrorToast(errors), MudBlazor.Severity.Error);
+    }
+
+    private void SetImageValidationErrors(IEnumerable<string> errors)
+    {
+        _imageValidationErrors.Clear();
+        _imageValidationErrors.AddRange(errors.Where(error => !string.IsNullOrWhiteSpace(error)));
+        _imagesStepValidationAttempted = true;
+        _imagesStepValid = _imageValidationErrors.Count == 0;
+        _imagesStepCompleted = _imagesStepValid;
+
+        if (!_imagesStepValid)
+        {
+            _activeIndex = ImagesStepIndex;
+        }
+
+        StateHasChanged();
+    }
+
+    private void ClearImageValidationErrors()
+    {
+        if (_imageValidationErrors.Count == 0 && _imagesStepValid)
+        {
+            return;
+        }
+
+        _imageValidationErrors.Clear();
+        _imagesStepValidationAttempted = false;
+        _imagesStepValid = true;
+        _imagesStepCompleted = true;
+        StateHasChanged();
+    }
+
+    private string FormatMediaErrorToast(IReadOnlyList<string> errors)
+    {
+        var firstError = errors.FirstOrDefault();
+        return string.IsNullOrWhiteSpace(firstError)
+            ? L["ErrorSavingMedia"].Value
+            : $"{L["ErrorSavingMedia"].Value} {firstError}";
+    }
+
+    private static List<string> GetMediaValidationErrors(ValidationProblemDetails problem)
+    {
+        var errors = new List<string>();
+
+        if (problem.Errors is not null)
+        {
+            foreach (var (fieldName, fieldErrors) in problem.Errors)
+            {
+                if (IsMediaValidationField(fieldName))
+                {
+                    errors.AddRange(fieldErrors.Where(error => !string.IsNullOrWhiteSpace(error)));
+                }
+            }
+        }
+
+        return errors;
+    }
+
+    private static bool IsMediaValidationField(string fieldName)
+    {
+        var normalizedFieldName = fieldName.Contains('.')
+            ? fieldName[(fieldName.LastIndexOf('.') + 1)..]
+            : fieldName;
+
+        return normalizedFieldName.Equals("MediaFile", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryReadValidationProblemDetails(ApiException ex, out ValidationProblemDetails problem)
+    {
+        problem = default!;
+
+        if (string.IsNullOrWhiteSpace(ex.Response))
+        {
+            return false;
+        }
+
+        try
+        {
+            var parsed = JsonConvert.DeserializeObject<ValidationProblemDetails>(ex.Response);
+            if (parsed?.Errors is null || parsed.Errors.Count == 0)
+            {
+                return false;
+            }
+
+            problem = parsed;
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
         }
     }
 
