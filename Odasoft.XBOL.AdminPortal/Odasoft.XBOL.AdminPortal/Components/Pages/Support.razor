@@ -196,7 +196,7 @@
     {
         if (!string.IsNullOrWhiteSpace(OrderLocalizer))
         {
-            _searchText = OrderLocalizer;
+            _searchText = OrderLocalizer;   
             _searchQuery = OrderLocalizer;
 
             await SearchOrderAsync();
@@ -226,6 +226,7 @@
         _orderInfo.Add(searchResult);
         _orderItems = searchResult.Items?.Count() > 0 ? searchResult.Items.ToList() : [];
         _activeTabIndex = 0;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task DoSearchAsync()
