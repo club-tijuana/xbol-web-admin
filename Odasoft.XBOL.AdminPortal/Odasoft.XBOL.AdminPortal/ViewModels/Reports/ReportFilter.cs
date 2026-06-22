@@ -4,7 +4,6 @@ public class ReportFilter
 {
     public string ReportType { get; set; } = string.Empty;
     public long EventId { get; set; }
-    public string CatalogItemType { get; set; } = "Event";
     public Guid? CashierId { get; set; }
     public long? ClientId { get; set; }
     public int Page { get; set; } = 1;
