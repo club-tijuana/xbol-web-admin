@@ -18,6 +18,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         EventCatalogItemType? itemType = null,
         BundleType? bundleType = null,
         bool? upcoming = null,
+        bool? buyableOnly = null,
         AdminEventStatus? status = null)
     {
         var response = await adminClient.GetEventCatalogItemsAsync(
@@ -29,6 +30,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
             startDate: ToOffset(filters?.DateFrom),
             endDate: ToEndOffset(filters?.DateTo),
             upcoming: upcoming,
+            buyableOnly: buyableOnly,
             sortBy: sortColumn,
             descending: sortDescending,
             page: page + 1,

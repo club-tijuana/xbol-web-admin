@@ -120,6 +120,9 @@
   <data name="Availability" xml:space="preserve">
     <value>Disponibilidad</value>
   </data>
+  <data name="CannotBookSeasonPass" xml:space="preserve">
+    <value>El pase de temporada no está disponible para venta en taquilla.</value>
+  </data>
   <data name="ErrorLoadingEvents" xml:space="preserve">
     <value>Hubo un error al cargar los eventos.</value>
   </data>

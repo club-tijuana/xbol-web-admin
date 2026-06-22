@@ -4894,6 +4894,13 @@
             }
           },
           {
+            "name": "BuyableOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "SortBy",
             "in": "query",
             "schema": {

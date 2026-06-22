@@ -736,8 +736,17 @@
                 _navigation.NavigateTo("./box-office");
             }
         }
+        catch (ApiException apiEx)
+        {
+            LogBookingApiException(apiEx, "API failure");
+            _snackbar.Add(GetApiErrorMessage(apiEx.Response), MudBlazor.Severity.Error);
+
+            await ReleaseTokenAsync();
+            await OnReturn.InvokeAsync();
+        }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to book season pass seats");
             _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 
             await ReleaseTokenAsync();
@@ -748,6 +757,46 @@
             _isSubmitting = false;
             _loadingState.Hide();
         }
+    }
+
+    private void LogBookingApiException(ApiException apiEx, string failureKind)
+    {
+        Logger.LogError(
+            apiEx,
+            "Season pass booking API failure ({FailureKind}). StatusCode={StatusCode} ResponseBody={ResponseBody}",
+            failureKind,
+            apiEx.StatusCode,
+            apiEx.Response);
+    }
+
+    private string GetApiErrorMessage(string? responseBody)
+    {
+        if (string.IsNullOrWhiteSpace(responseBody))
+        {
+            return L["Seats_PaymentError"];
+        }
+
+        try
+        {
+            var parsed = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
+            var detail = parsed.Value<string>("detail");
+            if (!string.IsNullOrWhiteSpace(detail))
+            {
+                return detail;
+            }
+
+            var title = parsed.Value<string>("title");
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                return title;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to parse API error response");
+        }
+
+        return L["Seats_PaymentError"];
     }
 
     private async Task OpenTermsAndConditions()

@@ -99,6 +99,7 @@
             sortColumn: "startDate",
             sortDescending: false,
             upcoming: true,
+            buyableOnly: true,
             status: AdminEventStatus.Published);
 
             Events = result.Items;
@@ -134,6 +135,18 @@
     {
         if (e.IsSeason == true || e.IsBundle == true)
         {
+            if (!SeasonPassPurchaseWindow.CanBuy(
+                    e.OnSaleDate,
+                    e.OffSaleDate,
+                    e.HasRenewalWindow,
+                    e.RenewalEndDate,
+                    e.IsBookable,
+                    DateTimeOffset.UtcNow))
+            {
+                Snackbar.Add(L["CannotBookSeasonPass"], Severity.Warning);
+                return;
+            }
+
             Navigation.NavigateTo($"./box-office/bundles/{e.Id}/seats");
         }
         else

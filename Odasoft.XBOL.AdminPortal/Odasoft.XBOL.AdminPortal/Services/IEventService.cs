@@ -29,6 +29,7 @@ public interface IEventService
         EventCatalogItemType? itemType = null,
         BundleType? bundleType = null,
         bool? upcoming = null,
+        bool? buyableOnly = null,
         AdminEventStatus? status = null
     );
 
