@@ -302,7 +302,8 @@
                                 Items="EventState.PricesInfo.Prices"
                                 GroupBy="_groupDefinition"
                                 Elevation="0"
-                                FixedHeader>
+                                FixedHeader
+                                Class="event-price-editor-table">
                                 <ToolBarContent>
                                     <MudText Typo="Typo.h5">@L["Zones"]</MudText>
                                     <MudSpacer />
@@ -354,8 +355,8 @@
                                     <MudTh />
                                 </HeaderContent>
                                 <RowTemplate>
-                                    <MudTd></MudTd>
-                                    <MudTd>
+                                    <MudTd Style="vertical-align: top;"></MudTd>
+                                    <MudTd Style="vertical-align: top;">
                                         <AdminSelect T="long?"
                                                      Value="@context.BaseSectionId"
                                                      ValueChanged="@((long? newValue) => OnSectionChanged(context, newValue))"
@@ -369,7 +370,7 @@
                                             }
                                         </AdminSelect>
                                     </MudTd>
-                                    <MudTd>
+                                    <MudTd Style="vertical-align: top;">
                                         <AdminSelect T="long?"
                                                      Value="@context.BaseRowId"
                                                      ValueChanged="@((long? newValue) => OnRowChanged(context, newValue))"
@@ -384,7 +385,7 @@
                                             }
                                         </AdminSelect>
                                     </MudTd>
-                                    <MudTd>
+                                    <MudTd Style="vertical-align: top;">
                                         <AdminSelect T="long?"
                                                      @bind-Value="@context.BaseSeatId"
                                                      Disabled="@(context.IsZonePrice || _isReview)"
@@ -400,19 +401,24 @@
                                     </MudTd>
                                     @foreach (var priceType in PriceTypes)
                                     {
-                                        <MudTd DataLabel="@priceType.Key">
-                                            <AdminNumericField T="decimal?"
-                                                               Value="@GetPriceTypeValue(context, priceType.Key)"
-                                                               ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType.Key, newValue))"
-                                                               Validation="@(new Func<decimal?, Task<IEnumerable<string>>>(val => ValidateSpecificPrice(PriceTypes, priceType.Key, val)))"
-                                                               Clearable="@true"
-                                                               Format="N2"
-                                                               Adornment="@Adornment.Start"
-                                                               AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                                               Placeholder="0.00"
-                                                               HideSpinButtons="@true"
-                                                               Immediate="@false"
-                                                               Disabled="@_isReview" />
+                                        <MudTd DataLabel="@priceType.Key" Style="vertical-align: top;">
+                                            <MudStack Row AlignItems="AlignItems.Start" Spacing="1" Class="price-cell">
+                                                <AdminNumericField T="decimal?"
+                                                                   Value="@GetPriceTypeValue(context, priceType.Key)"
+                                                                   ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType.Key, newValue))"
+                                                                   Validation="@(new Func<decimal?, Task<IEnumerable<string>>>(val => ValidateSpecificPrice(PriceTypes, priceType.Key, val)))"
+                                                                   Clearable="@true"
+                                                                   Format="N2"
+                                                                   Adornment="@Adornment.Start"
+                                                                   AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                                                   Placeholder="0.00"
+                                                                   HideSpinButtons="@true"
+                                                                   Disabled="@_isReview" />
+                                                <div class="price-copy-action">
+                                                    <PriceCopyButton Disabled="@_isReview"
+                                                                     OnClick="@(() => CopyPriceTypeToAll(context, priceType.Key))" />
+                                                </div>
+                                            </MudStack>
                                         </MudTd>
                                     }
                                     <MudTd></MudTd>
@@ -2478,12 +2484,34 @@
         if (newValue.HasValue)
         {
             row.Prices[key] = newValue.Value;
+            row.PriceTypes.TryAdd(key, PriceTypes.TryGetValue(key, out var isBasePrice) && isBasePrice);
         }
         else
         {
             row.Prices.Remove(key);
         }
         MarkPriceAsDirty(row.Id ?? 0);
+    }
+
+    private bool CanCopyPriceType(PriceInfoModel source, string priceType)
+    {
+        var value = GetPriceTypeValue(source, priceType);
+
+        return value.HasValue && value.Value > 0;
+    }
+
+    private void CopyPriceTypeToAll(PriceInfoModel source, string priceType)
+    {
+        var value = GetPriceTypeValue(source, priceType);
+        if (!CanCopyPriceType(source, priceType) || !value.HasValue)
+        {
+            return;
+        }
+
+        foreach (var price in EventState.PricesInfo.Prices)
+        {
+            SetPriceTypeValue(price, priceType, value);
+        }
     }
 
     private async Task DeletePriceAsync(PriceInfoModel price)

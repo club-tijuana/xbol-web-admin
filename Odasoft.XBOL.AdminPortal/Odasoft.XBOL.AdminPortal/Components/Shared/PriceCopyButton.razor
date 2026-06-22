@@ -1,0 +1,15 @@
+@inject IStringLocalizer<SharedResource> L
+
+<MudTooltip Text="@L["CopyToAll"]" Placement="Placement.Top">
+    <MudIconButton Icon="@Icons.Material.Outlined.ContentCopy"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   Disabled="@Disabled"
+                   aria-label="@L["CopyToAll"]"
+                   OnClick="OnClick" />
+</MudTooltip>
+
+@code {
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+}

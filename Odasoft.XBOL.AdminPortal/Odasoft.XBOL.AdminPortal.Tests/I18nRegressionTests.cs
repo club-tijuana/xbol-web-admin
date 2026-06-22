@@ -72,6 +72,26 @@ public sealed class I18nRegressionTests
     }
 
     [Fact]
+    public void Bundle_create_events_builder_copy_is_localized()
+    {
+        string[] keys =
+        [
+            "BundleLineup",
+            "BundleLineupHelp",
+            "AvailableEventsToAdd",
+            "AvailableEventsToAddHelp",
+            "NoEventsSelected",
+            "NoEventsSelectedHelp"
+        ];
+
+        foreach (var key in keys)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/BundleCreate.en.resx", key)));
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/BundleCreate.es.resx", key)));
+        }
+    }
+
+    [Fact]
     public void New_catalog_grids_use_localized_date_placeholders()
     {
         Assert.Equal("MM/DD/YYYY", ResourceValue("Resources/Components/EventsDataGrid.en.resx", "DatePlaceholder"));

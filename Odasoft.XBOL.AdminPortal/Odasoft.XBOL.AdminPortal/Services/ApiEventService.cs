@@ -148,7 +148,8 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
             e.ExternalEventKey,
             ItemType: EventCatalogItemType.Event,
             EventScheduleId: e.EventScheduleId,
-            VenueMapId: e.VenueMapId
+            VenueMapId: e.VenueMapId,
+            ScheduleStatus: e.Status
         )).ToArray() ?? [];
 
         return new GridData<EventViewModel>
@@ -221,6 +222,37 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
 
     public async Task UpdateEventAsync(long id, EventRequest request) => await adminClient.UpdateEventAsync(id, request);
     public async Task UpdateBundleAsync(long id, BundleUpdateRequest request) => await adminClient.UpdateBundleAsync(id, request);
+    public async Task AddBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds)
+    {
+        if (eventScheduleIds.Count == 0)
+        {
+            return;
+        }
+
+        await adminClient.AddBundleEventSchedulesAsync(bundleId, new BundleEventScheduleAddRequest
+        {
+            Items = eventScheduleIds
+                .Select((eventScheduleId, index) => new BundleEventScheduleItem
+                {
+                    EventScheduleId = eventScheduleId,
+                    SortOrder = index
+                })
+                .ToList()
+        });
+    }
+
+    public async Task RemoveBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds)
+    {
+        if (eventScheduleIds.Count == 0)
+        {
+            return;
+        }
+
+        await adminClient.RemoveBundleEventSchedulesAsync(bundleId, new BundleEventScheduleRemoveRequest
+        {
+            EventScheduleIds = eventScheduleIds.ToList()
+        });
+    }
 
     public async Task DeleteEventAsync(long id)
             => await adminClient.DeleteEventAsync(id);

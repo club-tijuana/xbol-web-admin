@@ -72,6 +72,8 @@ public interface IEventService
     Task<BundleDTO> GetBundleByIdAsync(long id);
     Task DeleteBundleAsync(long id);
     Task UpdateBundleAsync(long id, BundleUpdateRequest request);
+    Task AddBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds);
+    Task RemoveBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds);
     Task SubmitBundleAsync(long id);
     Task ResubmitBundleAsync(long id);
     Task ApproveBundleAsync(long id);

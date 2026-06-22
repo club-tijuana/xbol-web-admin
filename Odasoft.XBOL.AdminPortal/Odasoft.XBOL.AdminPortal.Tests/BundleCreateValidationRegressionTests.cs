@@ -68,7 +68,7 @@ public sealed class BundleCreateValidationRegressionTests
     {
         var source = ReadAppSource("Components/Pages/BundleCreate.razor");
 
-        Assert.Contains("if (_selectedEventsByScheduleId.Count == 0)", source, StringComparison.Ordinal);
+        Assert.Contains("if (_eventSelection.Count == 0)", source, StringComparison.Ordinal);
         Assert.Contains("return true;", source, StringComparison.Ordinal);
         Assert.DoesNotContain("_selectedEventsByScheduleId.Count == 0)\n        {\n            return false;", source, StringComparison.Ordinal);
     }

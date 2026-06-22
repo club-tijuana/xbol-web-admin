@@ -79,6 +79,33 @@
   <data name="BundleEvents" xml:space="preserve">
     <value>Eventos del paquete</value>
   </data>
+  <data name="AvailableEvents" xml:space="preserve">
+    <value>Eventos disponibles</value>
+  </data>
+  <data name="SelectedEvents" xml:space="preserve">
+    <value>Eventos seleccionados</value>
+  </data>
+  <data name="BundleLineup" xml:space="preserve">
+    <value>Contenido del paquete</value>
+  </data>
+  <data name="BundleLineupHelp" xml:space="preserve">
+    <value>Eventos que quedarán incluidos en este paquete.</value>
+  </data>
+  <data name="AvailableEventsToAdd" xml:space="preserve">
+    <value>Eventos disponibles para agregar</value>
+  </data>
+  <data name="AvailableEventsToAddHelp" xml:space="preserve">
+    <value>Funciones elegibles del mapa de recinto seleccionado.</value>
+  </data>
+  <data name="NoEventsSelected" xml:space="preserve">
+    <value>Aún no hay eventos en el paquete.</value>
+  </data>
+  <data name="NoEventsSelectedHelp" xml:space="preserve">
+    <value>Agrega eventos desde la lista disponible de abajo.</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Quitar</value>
+  </data>
   <data name="RequiredFieldsNote" xml:space="preserve">
     <value>*Campos obligatorios</value>
   </data>

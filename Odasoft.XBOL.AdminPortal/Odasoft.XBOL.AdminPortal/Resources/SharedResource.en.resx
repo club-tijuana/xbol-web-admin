@@ -726,4 +726,7 @@
   <data name="SalesConfiguration" xml:space="preserve">
     <value>Sales configuration</value>
   </data>
+  <data name="CopyToAll" xml:space="preserve">
+    <value>Copy to all</value>
+  </data>
 </root>

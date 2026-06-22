@@ -27,7 +27,8 @@ public record EventViewModel(
     DateTimeOffset? OffSaleDate = null,
     DateTimeOffset? RenewalStartDate = null,
     DateTimeOffset? RenewalEndDate = null,
-    bool IsBookable = false
+    bool IsBookable = false,
+    ScheduleStatus? ScheduleStatus = null
 )
 {
     public string Availability => $"{Available:D3}/{Total:D3}";

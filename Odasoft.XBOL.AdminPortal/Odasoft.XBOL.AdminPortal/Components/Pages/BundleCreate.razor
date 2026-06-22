@@ -56,6 +56,65 @@
     .bundle-create-banner-preview {
         max-width: 100%;
     }
+
+    .bundle-events-target {
+        border-color: var(--mud-palette-primary);
+        background: color-mix(in srgb, var(--mud-palette-primary) 6%, transparent);
+    }
+
+    .bundle-events-source {
+        border-color: var(--mud-palette-lines-default);
+        background: var(--mud-palette-background);
+    }
+
+    .bundle-events-selected-list {
+        display: grid;
+        gap: 8px;
+    }
+
+    .bundle-events-selected-row {
+        display: grid;
+        grid-template-columns: minmax(150px, 190px) minmax(220px, 1fr) minmax(180px, 260px) auto;
+        gap: 16px;
+        align-items: center;
+        padding: 12px 16px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 6px;
+        background: var(--mud-palette-surface);
+    }
+
+    .bundle-events-selected-empty {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        min-height: 88px;
+        padding: 18px;
+        border: 1px dashed var(--mud-palette-primary);
+        border-radius: 6px;
+        background: var(--mud-palette-surface);
+    }
+
+    .bundle-events-source-table .mud-table-cell:last-child {
+        width: 1%;
+        white-space: nowrap;
+    }
+
+    @@media (max-width: 900px) {
+        .bundle-events-selected-row {
+            grid-template-columns: 1fr auto;
+        }
+
+        .bundle-events-selected-row-date,
+        .bundle-events-selected-row-main,
+        .bundle-events-selected-row-venue {
+            grid-column: 1;
+        }
+
+        .bundle-events-selected-row-action {
+            grid-column: 2;
+            grid-row: 1 / span 3;
+        }
+    }
 </style>
 
 <PageTitle>@_pageTitle</PageTitle>
@@ -810,7 +869,7 @@
                                 <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
                                     <MudText Typo="Typo.h6">@L["BundleEvents"]</MudText>
                                     <MudChip T="string" Color="Color.Secondary" Variant="Variant.Outlined" Size="Size.Small">
-                                        @L["SelectedCount", _selectedEventsByScheduleId.Count]
+                                        @L["SelectedCount", _eventSelection.Count]
                                     </MudChip>
                                 </MudStack>
 
@@ -840,39 +899,123 @@
                                 }
                                 else
                                 {
-                                    <MudTable T="EventViewModel"
-                                              Items="@CandidateEventsForSelection"
-                                              MultiSelection="true"
-                                              SelectedItems="_visibleSelectedEvents"
-                                              SelectedItemsChanged="OnVisibleSelectedEventsChanged"
-                                              Dense
-                                              Hover
-                                              Elevation="0">
-                                        <NoRecordsContent>
-                                            <MudAlert Severity="MudBlazor.Severity.Info" Class="mx-4 my-3">@L["NoEventsFound"]</MudAlert>
-                                        </NoRecordsContent>
-                                        <HeaderContent>
-                                            <MudTh>@L["DateTime"]</MudTh>
-                                            <MudTh>@L["Event"]</MudTh>
-                                            <MudTh>@L["Venue"]</MudTh>
-                                            <MudTh>@L["Availability"]</MudTh>
-                                        </HeaderContent>
-                                        <RowTemplate>
-                                            <MudTd DataLabel="@L["DateTime"]">@context.StartDateTime.ToString(FormatConstants.DATE_TIME)</MudTd>
-                                            <MudTd DataLabel="@L["Event"]">
-                                                <MudStack Spacing="0">
-                                                    <MudText Typo="Typo.subtitle2">@context.EventName</MudText>
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Categories</MudText>
+                                    <MudStack Spacing="4">
+                                        <MudPaper Outlined Elevation="0" Class="bundle-events-target pa-4">
+                                            <MudStack Spacing="2">
+                                                <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                                        <MudIcon Icon="@Icons.Material.Outlined.Inventory2" Color="Color.Primary" />
+                                                        <MudText Typo="Typo.subtitle1" Class="fw-bold">
+                                                            @L["BundleLineup"]
+                                                        </MudText>
+                                                    </MudStack>
+                                                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
+                                                        @L["SelectedCount", _eventSelection.Count]
+                                                    </MudChip>
                                                 </MudStack>
-                                            </MudTd>
-                                            <MudTd DataLabel="@L["Venue"]">@context.Venue</MudTd>
-                                            <MudTd DataLabel="@L["Availability"]">
-                                                <EventAvailability Available="@context.Available"
-                                                                   Total="@context.Total"
-                                                                   ExternalKey="@context.ExternalEventKey" />
-                                            </MudTd>
-                                        </RowTemplate>
-                                    </MudTable>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    @L["BundleLineupHelp"]
+                                                </MudText>
+
+                                                @if (_eventSelection.Count == 0)
+                                                {
+                                                    <div class="bundle-events-selected-empty">
+                                                        <MudIcon Icon="@Icons.Material.Outlined.MoveToInbox" Color="Color.Primary" />
+                                                        <MudStack Spacing="0">
+                                                            <MudText Typo="Typo.subtitle2">@L["NoEventsSelected"]</MudText>
+                                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["NoEventsSelectedHelp"]</MudText>
+                                                        </MudStack>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="bundle-events-selected-list">
+                                                        @foreach (var item in SelectedEvents)
+                                                        {
+                                                            <div class="bundle-events-selected-row">
+                                                                <div class="bundle-events-selected-row-date">
+                                                                    <MudText Typo="Typo.body2">@item.StartDateTime.ToString(FormatConstants.DATE_TIME)</MudText>
+                                                                </div>
+                                                                <div class="bundle-events-selected-row-main">
+                                                                    <MudText Typo="Typo.subtitle2">@item.EventName</MudText>
+                                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Categories</MudText>
+                                                                </div>
+                                                                <div class="bundle-events-selected-row-venue">
+                                                                    <MudText Typo="Typo.body2">@item.Venue</MudText>
+                                                                </div>
+                                                                <div class="bundle-events-selected-row-action">
+                                                                    <MudTooltip Text="@L["Remove"]">
+                                                                        <MudIconButton Icon="@Icons.Material.Outlined.RemoveCircleOutline"
+                                                                                       Color="Color.Secondary"
+                                                                                       Size="Size.Small"
+                                                                                       Disabled="@(!CanRemoveSelectedEvent(item))"
+                                                                                       OnClick="@(() => RemoveSelectedEvent(item))" />
+                                                                    </MudTooltip>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </MudStack>
+                                        </MudPaper>
+
+                                        <MudPaper Outlined Elevation="0" Class="bundle-events-source pa-4">
+                                            <MudStack Spacing="2">
+                                                <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                                    <MudIcon Icon="@Icons.Material.Outlined.PlaylistAdd" Color="Color.Secondary" />
+                                                    <MudText Typo="Typo.subtitle1" Class="text-secondary-darken fw-bold">
+                                                        @L["AvailableEventsToAdd"]
+                                                    </MudText>
+                                                </MudStack>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    @L["AvailableEventsToAddHelp"]
+                                                </MudText>
+                                                <MudTable T="EventViewModel"
+                                                          Items="@AvailableCandidateEvents"
+                                                          Dense
+                                                          Hover
+                                                          Elevation="0"
+                                                          Class="bundle-events-source-table">
+                                                    <NoRecordsContent>
+                                                        <MudAlert Severity="MudBlazor.Severity.Info" Class="mx-4 my-3">@L["NoEventsFound"]</MudAlert>
+                                                    </NoRecordsContent>
+                                                    <HeaderContent>
+                                                        <MudTh>@L["DateTime"]</MudTh>
+                                                        <MudTh>@L["Event"]</MudTh>
+                                                        <MudTh>@L["Venue"]</MudTh>
+                                                        <MudTh>@L["Availability"]</MudTh>
+                                                        <MudTh />
+                                                    </HeaderContent>
+                                                    <RowTemplate>
+                                                        <MudTd DataLabel="@L["DateTime"]">@context.StartDateTime.ToString(FormatConstants.DATE_TIME)</MudTd>
+                                                        <MudTd DataLabel="@L["Event"]">
+                                                            <MudStack Spacing="0">
+                                                                <MudText Typo="Typo.subtitle2">@context.EventName</MudText>
+                                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Categories</MudText>
+                                                            </MudStack>
+                                                        </MudTd>
+                                                        <MudTd DataLabel="@L["Venue"]">@context.Venue</MudTd>
+                                                        <MudTd DataLabel="@L["Availability"]">
+                                                            <EventAvailability Available="@context.Available"
+                                                                               Total="@context.Total"
+                                                                               ExternalKey="@context.ExternalEventKey" />
+                                                        </MudTd>
+                                                        <MudTd>
+                                                            <MudTooltip Text="@L["Add"]">
+                                                                <MudButton StartIcon="@Icons.Material.Outlined.Add"
+                                                                           Color="Color.Primary"
+                                                                           Size="Size.Small"
+                                                                           Variant="Variant.Text"
+                                                                           OnClick="@(() => AddSelectedEvent(context))">
+                                                                    @L["Add"]
+                                                                </MudButton>
+                                                            </MudTooltip>
+                                                        </MudTd>
+                                                    </RowTemplate>
+                                                </MudTable>
+                                            </MudStack>
+                                        </MudPaper>
+                                    </MudStack>
                                 }
                             </MudStack>
                         </MudForm>
@@ -1042,8 +1185,7 @@
     private List<FeeType> _feeTypes = Enum.GetValues<FeeType>().ToList();
     private List<ChargeCategory> _chargeCategories = Enum.GetValues<ChargeCategory>().ToList();
     private List<EventViewModel> _candidateEvents = [];
-    private Dictionary<long, EventViewModel> _selectedEventsByScheduleId = [];
-    private HashSet<EventViewModel> _visibleSelectedEvents = [];
+    private readonly BundleEventSelectionState _eventSelection = new();
     private VenueMapLayoutResponse? _venueMapLayout;
     private List<PriceForm> _prices = [];
     private List<string> _priceTypes = [];
@@ -1237,7 +1379,16 @@
 
             if (_bundleType == BundleType.SeasonPass)
             {
-                query = query.Where(item => string.IsNullOrWhiteSpace(item.ExternalEventKey));
+                query = query.Where(item =>
+                    string.IsNullOrWhiteSpace(item.ExternalEventKey) &&
+                    item.ScheduleStatus == ScheduleStatus.Draft);
+            }
+            else
+            {
+                query = query.Where(item =>
+                    item.ScheduleStatus == ScheduleStatus.Draft ||
+                    (item.ScheduleStatus == ScheduleStatus.OnSale &&
+                     !string.IsNullOrWhiteSpace(item.ExternalEventKey)));
             }
 
             if (!string.IsNullOrWhiteSpace(_eventSearch))
@@ -1252,36 +1403,35 @@
         }
     }
 
-    private void RefreshVisibleSelectedEvents()
+    private IEnumerable<EventViewModel> AvailableCandidateEvents =>
+        _eventSelection.AvailableEvents(CandidateEventsForSelection);
+
+    private IEnumerable<EventViewModel> SelectedEvents =>
+        _eventSelection.SelectedEvents;
+
+    private bool IsPublishedSeasonPass =>
+        _bundleType == BundleType.SeasonPass &&
+        _bundleStatus == AdminEventStatus.Published;
+
+    private void AddSelectedEvent(EventViewModel item)
     {
-        _visibleSelectedEvents = CandidateEventsForSelection
-            .Where(item => item.EventScheduleId is long scheduleId &&
-                           _selectedEventsByScheduleId.ContainsKey(scheduleId))
-            .ToHashSet();
+        _eventSelection.Add(item);
     }
 
-    private void OnVisibleSelectedEventsChanged(HashSet<EventViewModel> selectedEvents)
+    private void RemoveSelectedEvent(EventViewModel item)
     {
-        var visibleScheduleIds = CandidateEventsForSelection
-            .Where(item => item.EventScheduleId.HasValue)
-            .Select(item => item.EventScheduleId!.Value)
-            .ToHashSet();
-
-        foreach (var scheduleId in visibleScheduleIds)
+        if (!CanRemoveSelectedEvent(item))
         {
-            _selectedEventsByScheduleId.Remove(scheduleId);
+            return;
         }
 
-        foreach (var item in selectedEvents)
-        {
-            if (item.EventScheduleId is long scheduleId)
-            {
-                _selectedEventsByScheduleId[scheduleId] = item;
-            }
-        }
-
-        _visibleSelectedEvents = selectedEvents;
+        _eventSelection.Remove(item);
     }
+
+    private bool CanRemoveSelectedEvent(EventViewModel item) =>
+        !IsPublishedSeasonPass ||
+        item.EventScheduleId is not long scheduleId ||
+        !_eventSelection.IsPersisted(scheduleId);
 
     protected override void OnInitialized()
     {
@@ -1460,11 +1610,7 @@
             await LoadPricesAsync();
             await LoadAdditionalChargesAsync();
 
-            var scheduleIds = bundleResult.Schedules.Select(x => x.Id).ToList();
-
-            var selectedEvents = _candidateEvents.Where(x => scheduleIds.Contains(x.EventScheduleId ?? 0)).ToHashSet();
-
-            OnVisibleSelectedEventsChanged(selectedEvents);
+            _eventSelection.LoadPersisted(await LoadPersistedBundleEventsAsync(BundleId.Value));
         }
         catch (Exception ex)
         {
@@ -1542,6 +1688,47 @@
         }
     }
 
+    private async Task<List<EventViewModel>> LoadPersistedBundleEventsAsync(long bundleId)
+    {
+        const int pageSize = 100;
+        var page = 0;
+        var selectedEvents = new List<EventViewModel>();
+        GridData<BundleScheduleViewModel> schedules;
+
+        do
+        {
+            schedules = await EventService.GetBundleScheduleItemsAsync(
+                bundleId,
+                page,
+                pageSize,
+                sortColumn: "startDate",
+                sortDescending: false);
+
+            selectedEvents.AddRange(schedules.Items.Select(ToEventViewModel));
+            page++;
+        } while (page * pageSize < schedules.TotalItems);
+
+        return selectedEvents;
+    }
+
+    private static EventViewModel ToEventViewModel(BundleScheduleViewModel schedule)
+    {
+        return new EventViewModel(
+            schedule.EventId,
+            schedule.StartDateTime,
+            schedule.EndDateTime,
+            schedule.EventName,
+            schedule.Categories,
+            schedule.Venue,
+            schedule.Available,
+            schedule.Total,
+            null,
+            schedule.ExternalEventKey,
+            ItemType: EventCatalogItemType.Event,
+            EventScheduleId: schedule.EventScheduleId,
+            ScheduleStatus: schedule.Status);
+    }
+
     private async Task OnVenueSelected(VenueResponse? venue)
     {
         await OnVenueSelectedAsync(venue, shouldInitializePrices: true);
@@ -1553,8 +1740,10 @@
         _selectedVenueMap = null;
         _venueMaps = [];
         _candidateEvents = [];
-        _selectedEventsByScheduleId.Clear();
-        _visibleSelectedEvents.Clear();
+        if (!IsPublishedSeasonPass)
+        {
+            _eventSelection.ClearSelection();
+        }
         _venueMapLayout = null;
         if (shouldInitializePrices && !_loadingBundleDataForEdit)
         {
@@ -1586,8 +1775,10 @@
     private async Task OnVenueMapSelectedAsync(VenueMapResponse? venueMap, bool shouldInitializePrices)
     {
         _selectedVenueMap = venueMap;
-        _selectedEventsByScheduleId.Clear();
-        _visibleSelectedEvents.Clear();
+        if (!IsPublishedSeasonPass)
+        {
+            _eventSelection.ClearSelection();
+        }
         _venueMapLayout = null;
         if (shouldInitializePrices && !_loadingBundleDataForEdit)
         {
@@ -1706,7 +1897,6 @@
             _candidateEvents = matchingEvents
                 .OrderBy(item => item.StartDateTime)
                 .ToList();
-            RefreshVisibleSelectedEvents();
         }
         catch (Exception ex)
         {
@@ -1848,7 +2038,7 @@
         catch (ApiException<ProblemDetails> ex)
         {
             _datesFormContext.HandleApiException(ex);
-            Snackbar.Add(ex.Result.Title ?? L["ErrorSaving"], MudBlazor.Severity.Error);
+            Snackbar.Add(ex.Result.Detail ?? ex.Result.Title ?? L["ErrorSaving"], MudBlazor.Severity.Error);
         }
         catch (Exception ex)
         {
@@ -2012,6 +2202,8 @@
                 RenewalEndDate = DateTimeHelpers.ToDateTimeOffset(_renewalEndDate, _renewalEndTime),
                 Status = status
             });
+
+            await SaveBundleEventSchedulesAsync(BundleId.Value);
         }
         else
         {
@@ -2042,8 +2234,7 @@
                 OffSaleDate = DateTimeHelpers.ToDateTimeOffset(_offSaleDate, _offSaleTime),
                 RenewalStartDate = DateTimeHelpers.ToDateTimeOffset(_renewalStartDate, _renewalStartTime),
                 RenewalEndDate = DateTimeHelpers.ToDateTimeOffset(_renewalEndDate, _renewalEndTime),
-                EventScheduleIds = _selectedEventsByScheduleId.Values
-                    .OrderBy(item => item.StartDateTime)
+                EventScheduleIds = SelectedEvents
                     .Select(item => item.EventScheduleId!.Value)
                     .ToList(),
                 Prices = BuildPriceRequests()
@@ -2055,7 +2246,25 @@
             }
 
             BundleId = bundleId;
+            _eventSelection.AcceptCurrentSelectionAsPersisted();
         }
+    }
+
+    private async Task SaveBundleEventSchedulesAsync(long bundleId)
+    {
+        var delta = _eventSelection.GetDelta(skipRemovals: IsPublishedSeasonPass);
+
+        if (delta.RemovedEventScheduleIds.Count > 0)
+        {
+            await EventService.RemoveBundleEventSchedulesAsync(bundleId, delta.RemovedEventScheduleIds);
+        }
+
+        if (delta.AddedEventScheduleIds.Count > 0)
+        {
+            await EventService.AddBundleEventSchedulesAsync(bundleId, delta.AddedEventScheduleIds);
+        }
+
+        _eventSelection.AcceptCurrentSelectionAsPersisted();
     }
 
     private async Task SavePricesAsync()
@@ -2329,15 +2538,18 @@
 
     private bool ValidateSelectedEvents(bool showWarning = true)
     {
-        if (_selectedEventsByScheduleId.Count == 0)
+        if (_eventSelection.Count == 0)
         {
             return true;
         }
 
         if (_bundleType == BundleType.SeasonPass)
         {
-            var published = _selectedEventsByScheduleId.Values
-                .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e.ExternalEventKey));
+            var published = SelectedEvents
+                .FirstOrDefault(e =>
+                    e.EventScheduleId is long scheduleId &&
+                    !_eventSelection.IsPersisted(scheduleId) &&
+                    !string.IsNullOrWhiteSpace(e.ExternalEventKey));
 
             if (published is not null)
             {
@@ -2355,7 +2567,7 @@
 
     private async Task GoBackAsync()
     {
-        Navigation.NavigateTo(_bundleType == BundleType.SeasonPass ? "./events/passes" : "./events/packages");
+        Navigation.NavigateTo("./events/upcoming");
         await Task.CompletedTask;
     }
 
@@ -2377,7 +2589,14 @@
         }
         try
         {
-            await EventService.SubmitBundleAsync(BundleId.Value);
+            if (_bundleStatus == AdminEventStatus.ChangesRequested)
+            {
+                await EventService.ResubmitBundleAsync(BundleId.Value);
+            }
+            else
+            {
+                await EventService.SubmitBundleAsync(BundleId.Value);
+            }
             Snackbar.Add(L["EventSentToReview"], MudBlazor.Severity.Success);
             Navigation.NavigateTo("./events");
         }

@@ -67,6 +67,15 @@
   <data name="Availability" xml:space="preserve"><value>Availability</value></data>
   <data name="BannerImageUrl" xml:space="preserve"><value>Banner URL</value></data>
   <data name="BundleEvents" xml:space="preserve"><value>Bundle events</value></data>
+  <data name="AvailableEvents" xml:space="preserve"><value>Available events</value></data>
+  <data name="SelectedEvents" xml:space="preserve"><value>Selected events</value></data>
+  <data name="BundleLineup" xml:space="preserve"><value>Package contents</value></data>
+  <data name="BundleLineupHelp" xml:space="preserve"><value>Events that will be included in this package.</value></data>
+  <data name="AvailableEventsToAdd" xml:space="preserve"><value>Available events to add</value></data>
+  <data name="AvailableEventsToAddHelp" xml:space="preserve"><value>Eligible event schedules from the selected venue map.</value></data>
+  <data name="NoEventsSelected" xml:space="preserve"><value>No events in the package yet.</value></data>
+  <data name="NoEventsSelectedHelp" xml:space="preserve"><value>Add events from the available list below.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
   <data name="BundleBanner" xml:space="preserve"><value>Banner image</value></data>
   <data name="BundleBannerDescription" xml:space="preserve"><value>Main horizontal image for catalog and detail pages.</value></data>
   <data name="BundleLogo" xml:space="preserve"><value>Logo image</value></data>

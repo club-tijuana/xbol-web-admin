@@ -9,7 +9,8 @@
 <MudTable Items="Prices"
           GroupBy="_groupDefinition"
           Elevation="0"
-          FixedHeader>
+          FixedHeader
+          Class="bundle-price-editor-table">
     <ToolBarContent>
         <MudText Typo="Typo.h5">@L["Zones"]</MudText>
     </ToolBarContent>
@@ -142,30 +143,42 @@
             </MudTd>
         }
         <MudTd>
-            <AdminNumericField T="decimal?"
-                               Value="@GetPriceTypeValue(context, DefaultPriceTypeName)"
-                               ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, DefaultPriceTypeName, newValue))"
-                               Format="N2"
-                               Adornment="@Adornment.Start"
-                               AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                               Placeholder="0.00"
-                               HideSpinButtons
-                               Required />
+            <MudStack Row AlignItems="AlignItems.Start" Spacing="1" Class="price-cell">
+                <AdminNumericField T="decimal?"
+                                   Value="@GetPriceTypeValue(context, DefaultPriceTypeName)"
+                                   ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, DefaultPriceTypeName, newValue))"
+                                   Format="N2"
+                                   Adornment="@Adornment.Start"
+                                   AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                   Placeholder="0.00"
+                                   HideSpinButtons
+                                   Required />
+                <div class="price-copy-action">
+                    <PriceCopyButton Disabled="@(!CanCopyPriceType(context, DefaultPriceTypeName))"
+                                     OnClick="@(() => CopyPriceTypeToAll(context, DefaultPriceTypeName))" />
+                </div>
+            </MudStack>
         </MudTd>
         @if (AllowAlternativePriceTypes)
         {
             @foreach (var priceType in PriceTypes)
             {
                 <MudTd DataLabel="@priceType">
-                    <AdminNumericField T="decimal?"
-                                       Value="@GetPriceTypeValue(context, priceType)"
-                                       ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType, newValue))"
-                                       Clearable
-                                       Format="N2"
-                                       Adornment="@Adornment.Start"
-                                       AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                       Placeholder="0.00"
-                                       HideSpinButtons />
+                    <MudStack Row AlignItems="AlignItems.Start" Spacing="1" Class="price-cell">
+                        <AdminNumericField T="decimal?"
+                                           Value="@GetPriceTypeValue(context, priceType)"
+                                           ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType, newValue))"
+                                           Clearable
+                                           Format="N2"
+                                           Adornment="@Adornment.Start"
+                                           AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                           Placeholder="0.00"
+                                           HideSpinButtons />
+                        <div class="price-copy-action">
+                            <PriceCopyButton Disabled="@(!CanCopyPriceType(context, priceType))"
+                                             OnClick="@(() => CopyPriceTypeToAll(context, priceType))" />
+                        </div>
+                    </MudStack>
                 </MudTd>
             }
             <MudTd />
@@ -346,6 +359,27 @@
         else
         {
             row.Prices.Remove(key);
+        }
+    }
+
+    private static bool CanCopyPriceType(PriceForm source, string priceType)
+    {
+        var value = GetPriceTypeValue(source, priceType);
+
+        return value.HasValue && value.Value > 0;
+    }
+
+    private void CopyPriceTypeToAll(PriceForm source, string priceType)
+    {
+        var value = GetPriceTypeValue(source, priceType);
+        if (!CanCopyPriceType(source, priceType) || !value.HasValue)
+        {
+            return;
+        }
+
+        foreach (var price in Prices)
+        {
+            SetPriceTypeValue(price, priceType, value);
         }
     }
 
