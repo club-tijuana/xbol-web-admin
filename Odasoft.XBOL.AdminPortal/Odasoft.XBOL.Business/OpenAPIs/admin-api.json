@@ -5440,115 +5440,6 @@
         }
       }
     },
-    "/api/events/on-sale": {
-      "get": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "Retrieves a paginated list of events that are currently available for sale that match the specified filter and sorting criteria.",
-        "operationId": "GetEventsOnSaleAsync",
-        "parameters": [
-          {
-            "name": "venues",
-            "in": "query",
-            "description": "A comma-separated list of venue identifiers used to filter events by their associated venues. If null or\r\n            empty, events from all venues are included.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "categories",
-            "in": "query",
-            "description": "A comma-separated list of category identifiers used to filter events by their associated categories. If null\r\n            or empty, events from all categories are included.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "startDate",
-            "in": "query",
-            "description": "The start date and time for filtering events. Only events occurring on or after this date are included. If\r\n            null, no lower date bound is applied.",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "description": "The end date and time for filtering events. Only events occurring on or before this date are included. If\r\n            null, no upper date bound is applied.",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "description": "A search term used to filter events by their title or description. If null or empty, no search filtering is\r\n            applied.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "in": "query",
-            "description": "The property name by which to sort the events. Valid options: 'name', 'category', 'venue'.\r\n            Defaults to schedule start date if null or unrecognized.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "descending",
-            "in": "query",
-            "description": "Indicates whether the sorting should be in descending order. If true, results are sorted in descending\r\n            order; otherwise, ascending order is used. If null, the default sort direction is applied.",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "The page number of results to retrieve. Must be a positive integer if specified. If null, the first page is\r\n            returned.",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "description": "The number of events to include per page. Must be a positive integer if specified. If null, a default page\r\n            size is used.",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventListItemDTOPagedResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventListItemDTOPagedResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventListItemDTOPagedResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/events/{eventId}": {
       "get": {
         "tags": [
@@ -18314,6 +18205,11 @@
             "type": "string",
             "format": "date-time"
           },
+          "scheduledEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -18791,20 +18687,17 @@
           },
           "phoneRegionCodeId": {
             "type": "integer",
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           },
           "phoneRegionCode": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/PhoneRegionCode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "phoneNumber": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "taxId": {
             "type": "string",
@@ -19443,6 +19336,9 @@
         "type": "string"
       },
       "ClientInfoRequest": {
+        "required": [
+          "phoneNumber"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -19452,12 +19348,10 @@
           },
           "phoneRegionCodeId": {
             "type": "integer",
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           },
           "phoneNumber": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "email": {
             "type": "string",
@@ -19765,12 +19659,10 @@
           },
           "phoneRegionCodeId": {
             "type": "integer",
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           },
           "phoneNumber": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "email": {
             "type": "string",
@@ -20658,6 +20550,11 @@
             "type": "string",
             "format": "date-time"
           },
+          "scheduledEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -20896,6 +20793,7 @@
           "availableSeats",
           "id",
           "name",
+          "scheduledEndDate",
           "scheduledStartDate",
           "totalSeats"
         ],
@@ -20906,6 +20804,10 @@
             "format": "int64"
           },
           "scheduledStartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scheduledEndDate": {
             "type": "string",
             "format": "date-time"
           },
@@ -22082,16 +21984,14 @@
         "properties": {
           "clientId": {
             "type": "integer",
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           },
           "client": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/Client"
               }
-            ],
-            "nullable": true
+            ]
           },
           "userId": {
             "type": "string",
@@ -23064,6 +22964,13 @@
           "providerReference": {
             "type": "string"
           },
+          "paymentStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentStatus"
+              }
+            ]
+          },
           "transactionReference": {
             "type": "string",
             "format": "uuid"
@@ -23303,6 +23210,17 @@
           "Paid",
           "Expired",
           "Cancelled"
+        ],
+        "type": "string"
+      },
+      "PaymentStatus": {
+        "enum": [
+          "Pending",
+          "Captured",
+          "Failed",
+          "Cancelled",
+          "Expired",
+          "Refunded"
         ],
         "type": "string"
       },
@@ -26416,12 +26334,10 @@
           },
           "phoneRegionCodeId": {
             "type": "integer",
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           },
           "phoneNumber": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "email": {
             "type": "string",

@@ -223,7 +223,7 @@ else if (_selectedTab == TabPast)
             <MudDataGrid T="EventViewModel" @ref="_dataGrid" ServerData="ServerReload" Loading="_loading" Filterable="true"
                          FilterMode="DataGridFilterMode.Simple" Hover="true" Elevation="0">
                 <Columns>
-                    <PropertyColumn Property="x => x.DateTime" Sortable="true" Filterable="false"
+                    <PropertyColumn Property="x => x.StartDateTime" Sortable="true" Filterable="false"
                                     InitialDirection="MudSortDirection.Descending">
                         <HeaderTemplate>
                             <span Class="pl-lg-4">
@@ -231,7 +231,7 @@ else if (_selectedTab == TabPast)
                             </span>
                         </HeaderTemplate>
                         <CellTemplate>
-                            <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.DateTime</MudText>
+                            <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.StartDateTime</MudText>
                         </CellTemplate>
                     </PropertyColumn>
 

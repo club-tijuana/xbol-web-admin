@@ -100,13 +100,13 @@
             <Columns>
                 @if (IsVisible(EventColumn.DateTime))
                 {
-                    <PropertyColumn Property="x => x.DateTime" Sortable="true" Filterable="false"
+                    <PropertyColumn Property="x => x.StartDateTime" Sortable="true" Filterable="false"
                                     InitialDirection="MudSortDirection.Descending">
                         <HeaderTemplate>
                             <span Class="pl-lg-4">@L["ColumnDateTime"]</span>
                         </HeaderTemplate>
                         <CellTemplate>
-                            <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.DateTime</MudText>
+                            <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.StartDateTime</MudText>
                         </CellTemplate>
                     </PropertyColumn>
                 }

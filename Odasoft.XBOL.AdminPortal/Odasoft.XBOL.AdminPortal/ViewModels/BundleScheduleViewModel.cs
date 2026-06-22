@@ -5,7 +5,8 @@ namespace Odasoft.XBOL.AdminPortal.ViewModels;
 public record BundleScheduleViewModel(
     long EventId,
     long EventScheduleId,
-    DateTime DateTime,
+    DateTime StartDateTime,
+    DateTime? EndDateTime,
     string EventName,
     string Categories,
     string Venue,

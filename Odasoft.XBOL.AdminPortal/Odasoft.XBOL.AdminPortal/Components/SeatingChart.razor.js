@@ -73,7 +73,7 @@ export async function renderChart(containerId, config, dotNetHelper) {
       let pricingRule = config.pricing.find(p => p.objects && p.objects.includes(obj.id));
 
       if (!pricingRule) {
-        pricingRule = config.pricing.find(p => p.category === obj.category?.key);
+        pricingRule = config.pricing.find(p => String(p.category) === String(obj.category?.key));
       }
 
       if (pricingRule) {

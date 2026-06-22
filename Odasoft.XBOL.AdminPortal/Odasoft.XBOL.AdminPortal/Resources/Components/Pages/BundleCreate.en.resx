@@ -177,4 +177,25 @@
   <data name="UploadLogo" xml:space="preserve"><value>Upload logo</value></data>
   <data name="Venue" xml:space="preserve"><value>Venue</value></data>
   <data name="WebsiteGallery" xml:space="preserve"><value>Website gallery</value></data>
+  <data name="AdditionalCharges" xml:space="preserve">
+    <value>Additional charges</value>
+  </data>
+  <data name="AddAdditionalCharge" xml:space="preserve">
+    <value>Add charge</value>
+  </data>
+  <data name="FeeName" xml:space="preserve">
+    <value>Fee name</value>
+  </data>
+  <data name="Fixed" xml:space="preserve">
+    <value>Fixed</value>
+  </data>
+  <data name="Percentage" xml:space="preserve">
+    <value>Percentage</value>
+  </data>
+  <data name="FeeAmount" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="Timer" xml:space="preserve">
+    <value>Timer</value>
+  </data>
 </root>
