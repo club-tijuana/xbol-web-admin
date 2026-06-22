@@ -17,9 +17,12 @@ public class ExecutiveReportsApiClient(IAdminClient adminClient, HttpClient http
         return result.Select(o => new ReportTypeOption { Value = o.Value!, Label = o.Label! }).ToList();
     }
 
-    public async Task<IReadOnlyList<SelectOption>> GetCashiersAsync(long eventId, CancellationToken token = default)
+    public async Task<IReadOnlyList<SelectOption>> GetCashiersAsync(
+        long eventId,
+        EventCatalogItemType catalogItemType = EventCatalogItemType.Event,
+        CancellationToken token = default)
     {
-        var response = await httpClient.GetAsync($"api/executive-reports/cashiers?eventId={eventId}", token);
+        var response = await httpClient.GetAsync($"api/executive-reports/cashiers?eventId={eventId}&catalogItemType={catalogItemType}", token);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<IReadOnlyList<SelectOption>>(JsonOptions, token) ?? [];
     }
