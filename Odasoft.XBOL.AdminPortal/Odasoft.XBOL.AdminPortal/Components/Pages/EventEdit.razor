@@ -75,26 +75,12 @@
                 }
                 else
                 {
-                    @if (_eventStatus == AdminEventStatus.Published)
-                    {
-                        <MudButton StartIcon="@Icons.Material.Filled.Save"
-                                   Color="MudBlazor.Color.Tertiary"
-                                   Variant="Variant.Filled"
-                                   DropShadow="false"
-                                   OnClick="SavePublishedPriceListAsync"
-                                   Disabled="@(!CanSavePublishedPriceList)">
-                            @L["SavePriceList"]
-                        </MudButton>
-                    }
-                    @if (_eventStatus != AdminEventStatus.Published)
-                    {
-                        <MudButton StartIcon="@Icons.Material.Filled.Save"
-                                   Color="MudBlazor.Color.Tertiary"
-                                   Variant="Variant.Filled"
-                                   DropShadow="false"
-                                   OnClick="PublishAsync"
-                                   Disabled="_eventStatus != AdminEventStatus.Approved || _loading">@L["Publish"]</MudButton>
-                    }
+                    <MudButton StartIcon="@Icons.Material.Filled.Save"
+                               Color="MudBlazor.Color.Tertiary"
+                               Variant="Variant.Filled"
+                               DropShadow="false"
+                               OnClick="PublishAsync"
+                               Disabled="_eventStatus != AdminEventStatus.Approved || _loading">@L["Publish"]</MudButton>
                 }
             }
         </RightContent>
@@ -147,7 +133,7 @@
                                 <MudItem xs="12">
                                     <AdminSelect Label="@(L["Organizer"].Value)"
                                                @bind-Value="EventState.EventInfo.OrganizerId"
-                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                               Disabled="@_isReview"
                                                  For="@(() => EventState.EventInfo.OrganizerId)">
 
                                         @foreach (var organizer in _organizers)
@@ -165,13 +151,13 @@
                                                             Class="required"
                                                             Label="@L["Name"].Value"
                                                             For="@(() => EventState.EventInfo.Name)"
-                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                            Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <AdminTextField @bind-Value="EventState.EventInfo.Subtitle"
                                                             Label="@L["Subtitle"].Value"
                                                             For="@(() => EventState.EventInfo.Subtitle)"
-                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                            Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <MudSelect Label="@L["EventType"]"
@@ -182,7 +168,7 @@
                                                        Variant="Variant.Outlined"
                                                        Margin="Margin.Dense"
                                                        ToStringFunc="@(c => c?.DisplayName ?? "")"
-                                                       Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                       Disabled="@_isReview"
                                                        Class="required">
 
                                                 @foreach (var category in _eventCategories)
@@ -198,7 +184,7 @@
                                                             Label="@L["EventSummary"].Value"
                                                             For="@(() => EventState.EventInfo.ShortDescription)"
                                                             Lines="@(3)"
-                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                            Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <MudStack>
@@ -208,7 +194,7 @@
                                                 <MudPaper Outlined="true" Class="pa-0">
                                                     <RadzenHtmlEditor
                                                         @bind-Value="EventState.EventInfo.LongDescription" Style="min-height: 300px; width: 100%;"
-                                                          Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                          Disabled="@_isReview">
                                                         <RadzenHtmlEditorUndo Title="Deshacer" />
                                                         <RadzenHtmlEditorRedo Title="Rehacer" />
                                                         <RadzenHtmlEditorSeparator />
@@ -256,7 +242,7 @@
                                                          ValueChanged="OnVenueSelected"
                                                          For="@(() => EventState.EventInfo.SelectedVenue)"
                                                          Label="@L["Venue"].Value"
-                                                         Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                         Disabled="@_isReview">
                                                 @foreach (var venue in _venues)
                                                 {
                                                     <MudSelectItem T="VenueResponse?" Value="@venue">@venue.Name</MudSelectItem>
@@ -270,7 +256,7 @@
                                                          ValueChanged="OnVenueMapSelected"
                                                          For="@(() => EventState.EventInfo.SelectedVenueMap)"
                                                          Label="@L["Map"].Value"
-                                                         Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                         Disabled="@_isReview">
                                                 @foreach (var map in _venueMaps)
                                                 {
                                                     <MudSelectItem T="VenueMapResponse?" Value="@map">@map.Name</MudSelectItem>
@@ -613,7 +599,7 @@
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.StartDate"
                                                      Label="@L["StartDate"].Value"
                                                      For="@(() => EventState.ScheduleInfo.StartDate)"
-                                                     Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                     Disabled="@_isReview"
                                                      Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -624,7 +610,7 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.StartTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Disabled="@_isReview"
                                                    Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
@@ -632,7 +618,7 @@
                                         @bind-Date="EventState.ScheduleInfo.EndDate"
                                         Label="@L["EndDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.EndDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Disabled="@_isReview"
                                         Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -643,7 +629,7 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.EndTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Disabled="@_isReview"
                                                    Class="required" />
                                 </MudItem>
                                 <MudFlexBreak />
@@ -655,7 +641,7 @@
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.PreSaleDate"
                                         Label="@L["StartDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.PreSaleDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        Disabled="@_isReview" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="EventState.ScheduleInfo.PreSaleTime"
@@ -665,13 +651,13 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.PreSaleTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                   Disabled="@_isReview" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.PreSaleEndDate"
                                         Label="@L["EndDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.PreSaleEndDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        Disabled="@_isReview" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="EventState.ScheduleInfo.PreSaleEndTime"
@@ -681,7 +667,7 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.PreSaleEndTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                   Disabled="@_isReview" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12">
@@ -692,7 +678,7 @@
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OnSaleDate"
                                         Label="@L["StartDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.OnSaleDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Disabled="@_isReview"
                                         Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -703,14 +689,14 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.OnSaleTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Disabled="@_isReview"
                                                    Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OffSaleDate"
                                         Label="@L["EndDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.OffSaleDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Disabled="@_isReview"
                                         Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -721,7 +707,7 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.OffSaleTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Disabled="@_isReview"
                                                    Class="required" />
                                 </MudItem>
                                 <MudFlexBreak />
@@ -735,7 +721,7 @@
                                             <AdminDatePicker @bind-Date="EventState.ScheduleInfo.PublishedDate"
                                                 Label="@L["PublishDate"].Value"
                                                 For="@(() => EventState.ScheduleInfo.PublishedDate)"
-                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12" md="5">
                                             <MudTimePicker @bind-Time="EventState.ScheduleInfo.PublishedTime"
@@ -745,7 +731,7 @@
                                                            TimeFormat="h:mm tt"
                                                            AmPm="true"
                                                            For="@(() => EventState.ScheduleInfo.PublishedTime)"
-                                                           Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                           Disabled="@_isReview" />
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
@@ -759,7 +745,7 @@
                                             <AdminDatePicker @bind-Date="EventState.ScheduleInfo.GateOpenDate"
                                                 Label="@L["AccessDate"].Value"
                                                 For="@(() => EventState.ScheduleInfo.GateOpenDate)"
-                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12" md="4">
                                             <MudTimePicker @bind-Time="EventState.ScheduleInfo.GateOpenTime"
@@ -769,7 +755,7 @@
                                                            TimeFormat="h:mm tt"
                                                            AmPm="true"
                                                            For="@(() => EventState.ScheduleInfo.GateOpenTime)"
-                                                           Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                           Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12" md="3">
                                             <MudSelect Label="@L["AgeRestrictions"]"
@@ -779,7 +765,7 @@
                                                        Margin="Margin.Dense"
                                                        For="@(() => EventState.EventInfo.AgeRestriction)"
                                                        ToStringFunc="@(restriction => L[restriction.ToString()].Value)"
-                                                       Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                       Disabled="@_isReview">
 
                                                 @foreach (var restriction in _ageRestrictions)
                                                 {
@@ -799,7 +785,7 @@
                                                        Label="@L["TimeToPurchaseInMinutes"].Value"
                                                     For="@(() => EventState.ScheduleInfo.HoldExpirationInMinutes)"
                                                     HideSpinButtons="@true"
-                                                    Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                    Disabled="@_isReview" />
                                     </MudStack>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
@@ -813,7 +799,7 @@
                                             <RadzenHtmlEditor
                                                 @bind-Value="EventState.EventInfo.SecurityPolicies"
                                                 Style="min-height: 300px; width: 100%;"
-                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                Disabled="@_isReview">
                                                 <RadzenHtmlEditorUndo Title="Deshacer" />
                                                 <RadzenHtmlEditorRedo Title="Rehacer" />
                                                 <RadzenHtmlEditorSeparator />
@@ -858,7 +844,7 @@
                                             <RadzenHtmlEditor
                                                 @bind-Value="EventState.EventInfo.AdditionalComments"
                                                 Style="min-height: 300px; width: 100%;"
-                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                Disabled="@_isReview">
                                                 <RadzenHtmlEditorUndo Title="Deshacer" />
                                                 <RadzenHtmlEditorRedo Title="Rehacer" />
                                                 <RadzenHtmlEditorSeparator />
@@ -1186,7 +1172,7 @@
                             @L["Next"]
                         </MudButton>
                     }
-                    else if (_activeIndex == _maxIndex && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                    else if (_activeIndex == _maxIndex && !_isReview)
                     {
                         <MudButton OnClick="SubmitAsync"
                                    Variant="Variant.Filled"
@@ -1225,7 +1211,6 @@
     private HashSet<long> _dirtyPriceIds = new();
     private bool _pricesHaveChanges = false;
     private bool _additionalChargesHaveChanges = false;
-    private bool _savingPublishedPriceList = false;
     private bool _imageHasChanges = false;
 
     private MudForm _descriptionForm = default!;
@@ -1261,8 +1246,6 @@
     private FormContext _imagesFormContext = default!;
 
     private bool IsFormReadyToSubmit => _descriptionFormValid && _scheduleValid && _pricesValid && _imagesValid && _additionalChargesValid;
-    private bool HasPublishedPriceListChanges => _pricesHaveChanges || _additionalChargesHaveChanges;
-    private bool CanSavePublishedPriceList => !_loading && !_savingPublishedPriceList && !_isReview && _eventStatus == AdminEventStatus.Published && HasPublishedPriceListChanges;
 
     private List<AdminEventCategoryResult> _eventCategories = [];
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
@@ -1676,14 +1659,7 @@
             }
             else if (_activeIndex == _maxIndex)
             {
-                if (_eventStatus == AdminEventStatus.Published)
-                {
-                    await SavePublishedPriceListAsync();
-                }
-                else
-                {
-                    await SubmitAsync();
-                }
+                await SubmitAsync();
             }
         }
     }
@@ -1733,6 +1709,9 @@
         LoadingState.Show();
         try
         {
+            var pricesChanged = _pricesHaveChanges;
+            var additionalChargesChanged = _additionalChargesHaveChanges;
+
             await SaveEventAsync();
 
             if (_originalScheduleInfo != EventState.ScheduleInfo)
@@ -1753,6 +1732,8 @@
             {
                 await SaveEventMediaAsync();
             }
+
+            await RegeneratePublishedPriceListIfNeededAsync(pricesChanged, additionalChargesChanged);
 
             if (_eventStatus == AdminEventStatus.ChangesRequested)
             {
@@ -1785,76 +1766,14 @@
         }
     }
 
-    private async Task SavePublishedPriceListAsync()
+    private async Task RegeneratePublishedPriceListIfNeededAsync(bool pricesChanged, bool additionalChargesChanged)
     {
-        if (!CanSavePublishedPriceList || EventId is null)
+        if (_eventStatus != AdminEventStatus.Published || EventId is null || (!pricesChanged && !additionalChargesChanged))
         {
             return;
         }
 
-        if (!await ValidatePublishedPriceListAsync())
-        {
-            Snackbar.Add(L["InvalidForm"], MudBlazor.Severity.Warning);
-            return;
-        }
-
-        _savingPublishedPriceList = true;
-        LoadingState.Show();
-        try
-        {
-            await SavePricesAsync(force: true);
-            await SaveAdditionalChargesAsync();
-            await PriceReferenceService.GeneratePriceListAsync(AdminSaleType.Event, EventId.Value);
-
-            Snackbar.Add(L["UpdateSuccess", L["PriceList"]], MudBlazor.Severity.Success);
-        }
-        catch (ApiException<ValidationProblemDetails> ex)
-        {
-            Snackbar.Add(ex.Result.Title ?? L["ErrorSavingEvent"], MudBlazor.Severity.Error);
-        }
-        catch (ApiException<ProblemDetails> ex)
-        {
-            _pricesFormContext.HandleApiException(ex);
-            _pricesValidator.LoadServerErrors(ex);
-            await ValidatePublishedPriceListAsync();
-            Snackbar.Add(ex.Result.Title ?? L["ErrorSavingEvent"], MudBlazor.Severity.Error);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to save published event price list");
-            Snackbar.Add(L["ErrorSavingEvent"], MudBlazor.Severity.Error);
-        }
-        finally
-        {
-            _savingPublishedPriceList = false;
-            LoadingState.Hide();
-        }
-    }
-
-    private async Task<bool> ValidatePublishedPriceListAsync()
-    {
-        if (_pricesForm != null)
-        {
-            _pricesFormContext.SetForm(_pricesForm);
-            await _pricesFormContext.ValidateAsync();
-        }
-
-        var pricesResult = await _pricesValidator.ValidateAsync(EventState.PricesInfo);
-        _pricesValid = pricesResult.IsValid && !_pricesValidator.ServerErrors.Any();
-        _pricesCompleted = _pricesValid;
-
-        if (_additionalChargesForm != null)
-        {
-            _additionalChargesFormContext.SetForm(_additionalChargesForm);
-            await _additionalChargesFormContext.ValidateAsync();
-        }
-
-        var additionalChargesResult = await _additionalChargesInfoValidator.ValidateAsync(EventState.AdditionalChargesInfo);
-        _additionalChargesValid = additionalChargesResult.IsValid && !_additionalChargesInfoValidator.ServerErrors.Any();
-        _additionalChargesCompleted = _additionalChargesValid;
-
-        StateHasChanged();
-        return _pricesValid && _additionalChargesValid;
+        await PriceReferenceService.GeneratePriceListAsync(AdminSaleType.Event, EventId.Value);
     }
 
     private async Task SaveEventAsync()

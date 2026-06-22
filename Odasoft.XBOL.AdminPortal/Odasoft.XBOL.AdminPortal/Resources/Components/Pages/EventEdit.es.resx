@@ -357,10 +357,4 @@
   <data name="Timer" xml:space="preserve">
     <value>Temporizador</value>
   </data>
-  <data name="PriceList" xml:space="preserve">
-    <value>lista de precios</value>
-  </data>
-  <data name="SavePriceList" xml:space="preserve">
-    <value>Guardar lista de precios</value>
-  </data>
 </root>

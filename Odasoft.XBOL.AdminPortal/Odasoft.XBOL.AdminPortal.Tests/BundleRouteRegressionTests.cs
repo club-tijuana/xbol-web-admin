@@ -317,29 +317,48 @@ public sealed class BundleRouteRegressionTests
     }
 
     [Fact]
-    public void Published_event_edit_exposes_price_list_save_without_full_event_save()
+    public void Published_event_edit_uses_generic_save_without_price_list_action()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+
+        Assert.Contains("OnClick=\"PublishAsync\"", source, StringComparison.Ordinal);
+        Assert.Contains("Disabled=\"_eventStatus != AdminEventStatus.Approved || _loading\">@L[\"Publish\"]", source, StringComparison.Ordinal);
+        Assert.Contains("else if (_activeIndex == _maxIndex && !_isReview)", source, StringComparison.Ordinal);
+        Assert.Contains("OnClick=\"SubmitAsync\"", source, StringComparison.Ordinal);
+
+        Assert.DoesNotContain("SavePublishedPriceListAsync", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("CanSavePublishedPriceList", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("SavePriceList", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("else if (_activeIndex == _maxIndex && !(_isReview || _eventStatus == AdminEventStatus.Published))", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Published_event_edit_keeps_non_media_fields_editable()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+        var imagesStepStart = source.IndexOf("Title=\"@L[\"Images\"]\"", StringComparison.Ordinal);
+        Assert.True(imagesStepStart >= 0, "Images step should exist.");
+
+        var nonMediaSteps = source[..imagesStepStart];
+        var mediaStep = source[imagesStepStart..];
+
+        Assert.DoesNotContain("Disabled=\"@(_isReview || _eventStatus == AdminEventStatus.Published)", nonMediaSteps, StringComparison.Ordinal);
+        Assert.Contains("Disabled=\"@(_isReview || _eventStatus == AdminEventStatus.Published)", mediaStep, StringComparison.Ordinal);
+        Assert.Contains("FilesChanged=\"UploadGalleryImagesAsync\"", mediaStep, StringComparison.Ordinal);
+        Assert.Contains("FilesChanged=\"UploadGalleryImagesAsync\"\n                                                   Disabled=\"@(_isReview || _eventStatus == AdminEventStatus.Published)\"", mediaStep.Replace("\r\n", "\n", StringComparison.Ordinal), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Published_event_submit_regenerates_price_list_after_price_or_fee_changes()
     {
         var source = ReadAppSource("Components/Pages/EventEdit.razor");
         var priceReferenceService = ReadAppSource("../Odasoft.XBOL.Business/Services/PriceReferenceService.cs");
 
-        Assert.Contains("SavePublishedPriceListAsync", source, StringComparison.Ordinal);
-        Assert.Contains("_eventStatus == AdminEventStatus.Published", source, StringComparison.Ordinal);
-        Assert.Contains("CanSavePublishedPriceList", source, StringComparison.Ordinal);
-        Assert.Contains("await SavePricesAsync(force: true);", source, StringComparison.Ordinal);
-        Assert.Contains("await SaveAdditionalChargesAsync();", source, StringComparison.Ordinal);
+        Assert.Contains("await RegeneratePublishedPriceListIfNeededAsync(pricesChanged, additionalChargesChanged);", source, StringComparison.Ordinal);
+        Assert.Contains("_eventStatus != AdminEventStatus.Published", source, StringComparison.Ordinal);
+        Assert.Contains("!pricesChanged && !additionalChargesChanged", source, StringComparison.Ordinal);
         Assert.Contains("await PriceReferenceService.GeneratePriceListAsync(AdminSaleType.Event, EventId.Value);", source, StringComparison.Ordinal);
         Assert.Contains("GeneratePriceListAsync(AdminSaleType saleType, long referenceId)", priceReferenceService, StringComparison.Ordinal);
-
-        var methodStart = source.IndexOf("private async Task SavePublishedPriceListAsync()", StringComparison.Ordinal);
-        Assert.True(methodStart >= 0, "Published price list save method should exist.");
-
-        var nextMethodStart = source.IndexOf("\n    private ", methodStart + 1, StringComparison.Ordinal);
-        var methodBody = source.Substring(methodStart, nextMethodStart - methodStart);
-
-        Assert.DoesNotContain("SaveEventAsync", methodBody, StringComparison.Ordinal);
-        Assert.DoesNotContain("SaveEventScheduleAsync", methodBody, StringComparison.Ordinal);
-        Assert.DoesNotContain("SaveEventMediaAsync", methodBody, StringComparison.Ordinal);
-        Assert.DoesNotContain("ResubmitEventAsync", methodBody, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -349,7 +368,6 @@ public sealed class BundleRouteRegressionTests
 
         Assert.Contains("private bool _pricesHaveChanges = false;", source, StringComparison.Ordinal);
         Assert.Contains("private bool _additionalChargesHaveChanges = false;", source, StringComparison.Ordinal);
-        Assert.Contains("private bool HasPublishedPriceListChanges => _pricesHaveChanges || _additionalChargesHaveChanges;", source, StringComparison.Ordinal);
         Assert.Contains("_pricesHaveChanges = true;", source, StringComparison.Ordinal);
         Assert.Contains("_additionalChargesHaveChanges = true;", source, StringComparison.Ordinal);
         Assert.Contains("SavePricesAsync(force: false)", source, StringComparison.Ordinal);
