@@ -75,12 +75,26 @@
                 }
                 else
                 {
-                    <MudButton StartIcon="@Icons.Material.Filled.Save"
-                               Color="MudBlazor.Color.Tertiary"
-                               Variant="Variant.Filled"
-                               DropShadow="false"
-                               OnClick="PublishAsync"
-                               Disabled="_eventStatus != AdminEventStatus.Approved || _loading">@L["Publish"]</MudButton>
+                    @if (_eventStatus == AdminEventStatus.Published)
+                    {
+                        <MudButton StartIcon="@Icons.Material.Filled.Save"
+                                   Color="MudBlazor.Color.Tertiary"
+                                   Variant="Variant.Filled"
+                                   DropShadow="false"
+                                   OnClick="SavePublishedPriceListAsync"
+                                   Disabled="@(!CanSavePublishedPriceList)">
+                            @L["SavePriceList"]
+                        </MudButton>
+                    }
+                    @if (_eventStatus != AdminEventStatus.Published)
+                    {
+                        <MudButton StartIcon="@Icons.Material.Filled.Save"
+                                   Color="MudBlazor.Color.Tertiary"
+                                   Variant="Variant.Filled"
+                                   DropShadow="false"
+                                   OnClick="PublishAsync"
+                                   Disabled="_eventStatus != AdminEventStatus.Approved || _loading">@L["Publish"]</MudButton>
+                    }
                 }
             }
         </RightContent>
@@ -387,7 +401,8 @@
                                     </MudTd>
                                     <MudTd Style="vertical-align: top;">
                                         <AdminSelect T="long?"
-                                                     @bind-Value="@context.BaseSeatId"
+                                                     Value="@context.BaseSeatId"
+                                                     ValueChanged="@((long? newValue) => OnSeatChanged(context, newValue))"
                                                      Disabled="@(context.IsZonePrice || _isReview)"
                                                      Placeholder="@L["Select"].Value"
                                                      Clearable="@true">
@@ -1208,6 +1223,9 @@
     private EventInfoModel _originalEventInfo = new();
     private ScheduleInfoModel _originalScheduleInfo = new();
     private HashSet<long> _dirtyPriceIds = new();
+    private bool _pricesHaveChanges = false;
+    private bool _additionalChargesHaveChanges = false;
+    private bool _savingPublishedPriceList = false;
     private bool _imageHasChanges = false;
 
     private MudForm _descriptionForm = default!;
@@ -1243,6 +1261,8 @@
     private FormContext _imagesFormContext = default!;
 
     private bool IsFormReadyToSubmit => _descriptionFormValid && _scheduleValid && _pricesValid && _imagesValid && _additionalChargesValid;
+    private bool HasPublishedPriceListChanges => _pricesHaveChanges || _additionalChargesHaveChanges;
+    private bool CanSavePublishedPriceList => !_loading && !_savingPublishedPriceList && !_isReview && _eventStatus == AdminEventStatus.Published && HasPublishedPriceListChanges;
 
     private List<AdminEventCategoryResult> _eventCategories = [];
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
@@ -1626,10 +1646,11 @@
     {
         bool eventChanged = _originalEventInfo != EventState.EventInfo;
         bool scheduleChanged = _originalScheduleInfo != EventState.ScheduleInfo;
-        bool pricesChanged = _dirtyPriceIds.Any();
+        bool pricesChanged = _pricesHaveChanges;
+        bool additionalChargesChanged = _additionalChargesHaveChanges;
         bool imagesChanged = _imageHasChanges;
 
-        bool changed = eventChanged || scheduleChanged || pricesChanged || imagesChanged;
+        bool changed = eventChanged || scheduleChanged || pricesChanged || additionalChargesChanged || imagesChanged;
 
         if (changed)
         {
@@ -1655,7 +1676,14 @@
             }
             else if (_activeIndex == _maxIndex)
             {
-                await SubmitAsync();
+                if (_eventStatus == AdminEventStatus.Published)
+                {
+                    await SavePublishedPriceListAsync();
+                }
+                else
+                {
+                    await SubmitAsync();
+                }
             }
         }
     }
@@ -1711,12 +1739,15 @@
             {
                 await SaveEventScheduleAsync();
             }
-            if (_dirtyPriceIds.Any())
+            if (_pricesHaveChanges)
             {
-                await SavePricesAsync();
+                await SavePricesAsync(force: false);
             }
 
-            await SaveAdditionalChargesAsync();
+            if (_additionalChargesHaveChanges)
+            {
+                await SaveAdditionalChargesAsync();
+            }
 
             if (_imageHasChanges)
             {
@@ -1752,6 +1783,78 @@
             _imagesFormContext.SetSaving(false);
             LoadingState.Hide();
         }
+    }
+
+    private async Task SavePublishedPriceListAsync()
+    {
+        if (!CanSavePublishedPriceList || EventId is null)
+        {
+            return;
+        }
+
+        if (!await ValidatePublishedPriceListAsync())
+        {
+            Snackbar.Add(L["InvalidForm"], MudBlazor.Severity.Warning);
+            return;
+        }
+
+        _savingPublishedPriceList = true;
+        LoadingState.Show();
+        try
+        {
+            await SavePricesAsync(force: true);
+            await SaveAdditionalChargesAsync();
+            await PriceReferenceService.GeneratePriceListAsync(AdminSaleType.Event, EventId.Value);
+
+            Snackbar.Add(L["UpdateSuccess", L["PriceList"]], MudBlazor.Severity.Success);
+        }
+        catch (ApiException<ValidationProblemDetails> ex)
+        {
+            Snackbar.Add(ex.Result.Title ?? L["ErrorSavingEvent"], MudBlazor.Severity.Error);
+        }
+        catch (ApiException<ProblemDetails> ex)
+        {
+            _pricesFormContext.HandleApiException(ex);
+            _pricesValidator.LoadServerErrors(ex);
+            await ValidatePublishedPriceListAsync();
+            Snackbar.Add(ex.Result.Title ?? L["ErrorSavingEvent"], MudBlazor.Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to save published event price list");
+            Snackbar.Add(L["ErrorSavingEvent"], MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            _savingPublishedPriceList = false;
+            LoadingState.Hide();
+        }
+    }
+
+    private async Task<bool> ValidatePublishedPriceListAsync()
+    {
+        if (_pricesForm != null)
+        {
+            _pricesFormContext.SetForm(_pricesForm);
+            await _pricesFormContext.ValidateAsync();
+        }
+
+        var pricesResult = await _pricesValidator.ValidateAsync(EventState.PricesInfo);
+        _pricesValid = pricesResult.IsValid && !_pricesValidator.ServerErrors.Any();
+        _pricesCompleted = _pricesValid;
+
+        if (_additionalChargesForm != null)
+        {
+            _additionalChargesFormContext.SetForm(_additionalChargesForm);
+            await _additionalChargesFormContext.ValidateAsync();
+        }
+
+        var additionalChargesResult = await _additionalChargesInfoValidator.ValidateAsync(EventState.AdditionalChargesInfo);
+        _additionalChargesValid = additionalChargesResult.IsValid && !_additionalChargesInfoValidator.ServerErrors.Any();
+        _additionalChargesCompleted = _additionalChargesValid;
+
+        StateHasChanged();
+        return _pricesValid && _additionalChargesValid;
     }
 
     private async Task SaveEventAsync()
@@ -1871,8 +1974,13 @@
         }
     }
 
-    private async Task SavePricesAsync()
+    private async Task SavePricesAsync(bool force = false)
     {
+        if (!force && !_pricesHaveChanges)
+        {
+            return;
+        }
+
         var request = new PriceReferenceRequest
         {
             ReferenceId = EventId.Value,
@@ -1894,6 +2002,7 @@
             var response = await PriceReferenceService.SavePriceReferenceAsync(request);
             _priceReferenceId = response.Id;
             _dirtyPriceIds.Clear();
+            _pricesHaveChanges = false;
         }
         catch (ApiException<ProblemDetails> ex)
         {
@@ -1928,6 +2037,7 @@
                 ChargeCategory = x.ChargeCategory,
                 Value = x.Value.Value
             }).ToList());
+            _additionalChargesHaveChanges = false;
         }
         catch (ApiException<ProblemDetails> ex)
         {
@@ -2238,6 +2348,7 @@
 
         price.BaseRowId = null;
         price.BaseSeatId = null;
+        MarkPriceAsDirty(price.Id ?? 0);
         StateHasChanged();
     }
 
@@ -2246,7 +2357,14 @@
         price.BaseRowId = rowId;
 
         price.BaseSeatId = null;
+        MarkPriceAsDirty(price.Id ?? 0);
         StateHasChanged();
+    }
+
+    private void OnSeatChanged(PriceInfoModel price, long? seatId)
+    {
+        price.BaseSeatId = seatId;
+        MarkPriceAsDirty(price.Id ?? 0);
     }
 
     private void AddPrice(long zoneId)
@@ -2260,11 +2378,13 @@
         }
 
         EventState.PricesInfo.Prices.Add(new PriceInfoModel { BaseZoneId = zoneId, BaseSectionId = sections.FirstOrDefault()?.Id });
+        MarkPriceAsDirty(0);
     }
 
     private void MarkPriceAsDirty(long priceId)
     {
         _dirtyPriceIds.Add(priceId);
+        _pricesHaveChanges = true;
     }
 
     private IEnumerable<BaseSectionResponse>GetSectionsFor(long? zoneId)
@@ -2375,6 +2495,8 @@
             }).ToList();
 
             PriceTypes = EventState.PricesInfo.Prices.FirstOrDefault()?.PriceTypes ?? new Dictionary<string, bool> { { "General", true } };
+            _dirtyPriceIds.Clear();
+            _pricesHaveChanges = false;
         }
         catch (ApiException apiEx)
         {
@@ -2389,6 +2511,7 @@
     {
         if (_priceReferenceId == null)
         {
+            _additionalChargesHaveChanges = false;
             return;
         }
         try
@@ -2402,6 +2525,7 @@
                 ChargeCategory = x.ChargeCategory,
                 Value = x.Value
             }).ToList();
+            _additionalChargesHaveChanges = false;
         }
         catch (ApiException apiEx)
         {
@@ -2409,6 +2533,7 @@
             {
                 EventState.AdditionalChargesInfo.AdditionalCharges = [];
             }
+            _additionalChargesHaveChanges = false;
         }
     }
 
@@ -2416,6 +2541,8 @@
     {
         EventState.PricesInfo.Prices.Clear();
         _priceReferenceId = null;
+        _dirtyPriceIds.Clear();
+        _pricesHaveChanges = false;
 
         if (_layout.Zones is not null && _layout.Zones.Count > 0)
         {
@@ -2434,6 +2561,7 @@
         if (!string.IsNullOrWhiteSpace(type) && !PriceTypes.ContainsKey(type))
         {
             PriceTypes.Add(type, false);
+            MarkPriceAsDirty(0);
         }
     }
 
@@ -2458,6 +2586,7 @@
                     price.Prices[newName] = value;
                 }
             }
+            MarkPriceAsDirty(0);
         }
     }
 
@@ -2472,6 +2601,7 @@
                 price.PriceTypes.Remove(_priceTypeName);
             }
         }
+        MarkPriceAsDirty(0);
     }
 
     private decimal? GetPriceTypeValue(PriceInfoModel row, string key)
@@ -2525,6 +2655,7 @@
         try
         {
             EventState.PricesInfo.Prices.Remove(price);
+            MarkPriceAsDirty(price.Id ?? 0);
         }
         catch (Exception ex)
         {
@@ -2647,6 +2778,7 @@
                     PriceTypes.Add(priceType.Key, priceType.Value);
                 }
             }
+            MarkPriceAsDirty(0);
         }
     }
 
@@ -2654,16 +2786,19 @@
     {
         var elem = new AdditionalChargeInfoModel();
         EventState.AdditionalChargesInfo.AdditionalCharges.Insert(0, elem);
+        _additionalChargesHaveChanges = true;
         StateHasChanged();
     }
 
     private void DeleteAdditionalCharge(AdditionalChargeInfoModel item)
     {
         EventState.AdditionalChargesInfo.AdditionalCharges.Remove(item);
+        _additionalChargesHaveChanges = true;
     }
 
     private Task<DataGridEditFormAction> CommittedItemChanges(AdditionalChargeInfoModel item)
     {
+        _additionalChargesHaveChanges = true;
         return Task.FromResult(DataGridEditFormAction.Close);
     }
 

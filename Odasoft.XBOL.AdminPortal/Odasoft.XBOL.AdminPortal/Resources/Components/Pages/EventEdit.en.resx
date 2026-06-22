@@ -354,4 +354,10 @@
   <data name="Timer" xml:space="preserve">
     <value>Timer</value>
   </data>
+  <data name="PriceList" xml:space="preserve">
+    <value>price list</value>
+  </data>
+  <data name="SavePriceList" xml:space="preserve">
+    <value>Save price list</value>
+  </data>
 </root>

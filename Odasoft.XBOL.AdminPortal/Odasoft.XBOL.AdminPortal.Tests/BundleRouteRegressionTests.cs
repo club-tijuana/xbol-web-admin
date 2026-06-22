@@ -316,6 +316,46 @@ public sealed class BundleRouteRegressionTests
         Assert.Contains("ResubmitEventAsync(EventId.Value)", source, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Published_event_edit_exposes_price_list_save_without_full_event_save()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+        var priceReferenceService = ReadAppSource("../Odasoft.XBOL.Business/Services/PriceReferenceService.cs");
+
+        Assert.Contains("SavePublishedPriceListAsync", source, StringComparison.Ordinal);
+        Assert.Contains("_eventStatus == AdminEventStatus.Published", source, StringComparison.Ordinal);
+        Assert.Contains("CanSavePublishedPriceList", source, StringComparison.Ordinal);
+        Assert.Contains("await SavePricesAsync(force: true);", source, StringComparison.Ordinal);
+        Assert.Contains("await SaveAdditionalChargesAsync();", source, StringComparison.Ordinal);
+        Assert.Contains("await PriceReferenceService.GeneratePriceListAsync(AdminSaleType.Event, EventId.Value);", source, StringComparison.Ordinal);
+        Assert.Contains("GeneratePriceListAsync(AdminSaleType saleType, long referenceId)", priceReferenceService, StringComparison.Ordinal);
+
+        var methodStart = source.IndexOf("private async Task SavePublishedPriceListAsync()", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0, "Published price list save method should exist.");
+
+        var nextMethodStart = source.IndexOf("\n    private ", methodStart + 1, StringComparison.Ordinal);
+        var methodBody = source.Substring(methodStart, nextMethodStart - methodStart);
+
+        Assert.DoesNotContain("SaveEventAsync", methodBody, StringComparison.Ordinal);
+        Assert.DoesNotContain("SaveEventScheduleAsync", methodBody, StringComparison.Ordinal);
+        Assert.DoesNotContain("SaveEventMediaAsync", methodBody, StringComparison.Ordinal);
+        Assert.DoesNotContain("ResubmitEventAsync", methodBody, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Event_edit_tracks_price_and_fee_changes_independently_of_price_ids()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+
+        Assert.Contains("private bool _pricesHaveChanges = false;", source, StringComparison.Ordinal);
+        Assert.Contains("private bool _additionalChargesHaveChanges = false;", source, StringComparison.Ordinal);
+        Assert.Contains("private bool HasPublishedPriceListChanges => _pricesHaveChanges || _additionalChargesHaveChanges;", source, StringComparison.Ordinal);
+        Assert.Contains("_pricesHaveChanges = true;", source, StringComparison.Ordinal);
+        Assert.Contains("_additionalChargesHaveChanges = true;", source, StringComparison.Ordinal);
+        Assert.Contains("SavePricesAsync(force: false)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("if (_dirtyPriceIds.Any())\n            {\n                await SavePricesAsync();", source.Replace("\r\n", "\n", StringComparison.Ordinal), StringComparison.Ordinal);
+    }
+
     private static string ReadAppSource(string relativePath)
     {
         var path = Path.Combine(GetAppSourceRoot(), relativePath);
