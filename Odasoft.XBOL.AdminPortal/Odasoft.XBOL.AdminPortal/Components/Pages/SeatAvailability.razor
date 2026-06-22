@@ -46,7 +46,7 @@
                                    Class="text-uppercase mr-4">@L["Unblock"]</MudButton>
                         <MudButton StartIcon="@Icons.Material.Outlined.ShoppingCart"
                                    Color="Color.Primary" Variant="Variant.Filled"
-                                   Disabled="_sellProcessing"
+                                   Disabled="@(!CanSellSelectedSeats)"
                                    OnClick="SellSelectedSeatsAsync"
                                    Class="text-uppercase">
                             @if (_sellProcessing)
@@ -111,6 +111,7 @@
     private bool _loading = true;
     private bool _error = false;
     private bool _sellProcessing = false;
+    private bool _canSellFromAvailability = true;
 
     private enum ToolbarState { NoSelection, AllForSale, AllBlocked, Mixed }
 
@@ -133,6 +134,10 @@
     private EventManagerChart? _chartComponent;
     private SeatList? _seatsList;
     private List<SeatInfo> _selectedSeats = [];
+    private bool CanSellSelectedSeats =>
+        CurrentToolbarState == ToolbarState.AllBlocked
+        && _canSellFromAvailability
+        && !_sellProcessing;
 
     protected override async Task OnInitializedAsync()
     {
@@ -223,7 +228,7 @@
 
     private async Task SellSelectedSeatsAsync()
     {
-        if (_selectedSeats.Count == 0) return;
+        if (!CanSellSelectedSeats) return;
 
         _sellProcessing = true;
         StateHasChanged();
@@ -266,6 +271,7 @@
 
         try
         {
+            _canSellFromAvailability = await ResolveCanSellFromAvailabilityAsync();
             var detail = await AdminClient.GetSeatManagementDetailAsync(ExternalKey);
             _eventName = detail.Name;
             _secretKey = SeatsOptions.Value.SecretKey;
@@ -291,5 +297,38 @@
             _loading = false;
             StateHasChanged();
         }
+    }
+
+    private async Task<bool> ResolveCanSellFromAvailabilityAsync()
+    {
+        try
+        {
+            var bundle = await AdminClient.GetBundleByIdAsync(Id);
+            if (bundle.BundleType != BundleType.SeasonPass)
+            {
+                return true;
+            }
+
+            return CanSellSeasonPassBundle(bundle);
+        }
+        catch (ApiException ex) when (ex.StatusCode == StatusCodes.Status404NotFound)
+        {
+            return true;
+        }
+
+        return true;
+    }
+
+    private bool CanSellSeasonPassBundle(BundleDTO bundle)
+    {
+        return bundle.Status == AdminEventStatus.Published
+            && string.Equals(bundle.ExternalKey, ExternalKey, StringComparison.Ordinal)
+            && SeasonPassPurchaseWindow.CanBuy(
+                bundle.OnSaleDate,
+                bundle.OffSaleDate,
+                bundle.PreviousBundleId.HasValue,
+                bundle.RenewalEndDate,
+                bundle.IsBookable == true,
+                DateTimeOffset.UtcNow);
     }
 }
