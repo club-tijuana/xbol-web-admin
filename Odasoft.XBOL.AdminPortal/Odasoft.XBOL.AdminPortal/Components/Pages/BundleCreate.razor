@@ -870,22 +870,6 @@
                                     <MudText Typo="Typo.h6">@L["BundleEvents"]</MudText>
                                 </MudStack>
 
-                                <MudTextField T="string"
-                                              Value="_eventSearch"
-                                              ValueChanged="OnEventSearchChanged"
-                                              Immediate="true"
-                                              DebounceInterval="500"
-                                              Placeholder="@L["SearchEvents"].Value"
-                                              Variant="Variant.Outlined"
-                                              Margin="Margin.Dense"
-                                              Adornment="Adornment.Start"
-                                              AdornmentIcon="@Icons.Material.Filled.Search"
-                                              AdornmentAriaLabel="@L["SearchEvents"].Value"
-                                              IconSize="Size.Medium"
-                                              Typo="Typo.body2"
-                                              Class="flex-grow-1"
-                                              Disabled="@(_selectedVenueMap is null || _loadingEvents)" />
-
                                 @if (_selectedVenueMap is null)
                                 {
                                     <MudAlert Severity="MudBlazor.Severity.Info">@L["SelectVenueMapFirst"]</MudAlert>
@@ -1145,7 +1129,6 @@
     private AdminEventStatus? _bundleStatus;
     public AdditionalChargesInfoModel _additionalCharges { get; set; } = new();
 
-    private string? _eventSearch;
     private List<VenueResponse> _venues = [];
     private List<VenueMapResponse> _venueMaps = [];
     private List<ListItem> _organizers = [];
@@ -1388,14 +1371,6 @@
                     item.ScheduleStatus == ScheduleStatus.Draft ||
                     (item.ScheduleStatus == ScheduleStatus.OnSale &&
                      !string.IsNullOrWhiteSpace(item.ExternalEventKey)));
-            }
-
-            if (!string.IsNullOrWhiteSpace(_eventSearch))
-            {
-                query = query.Where(item =>
-                    item.EventName.Contains(_eventSearch, StringComparison.OrdinalIgnoreCase) ||
-                    item.Venue.Contains(_eventSearch, StringComparison.OrdinalIgnoreCase) ||
-                    item.Categories.Contains(_eventSearch, StringComparison.OrdinalIgnoreCase));
             }
 
             return query.OrderBy(item => item.StartDateTime);
@@ -1796,7 +1771,7 @@
             await LoadVenueMapLayoutAsync(venueMap.Id, initializePrices: shouldInitializePrices && !_loadingBundleDataForEdit);
         }
 
-        await LoadCandidateEventsAsync(_eventSearch);
+        await LoadCandidateEventsAsync();
     }
 
     private async Task LoadVenueMapLayoutAsync(long venueMapId, bool initializePrices = true)
@@ -1855,13 +1830,7 @@
         }
     }
 
-    private async Task OnEventSearchChanged(string? value)
-    {
-        _eventSearch = value;
-        await LoadCandidateEventsAsync(value);
-    }
-
-    private async Task LoadCandidateEventsAsync(string? search = null)
+    private async Task LoadCandidateEventsAsync()
     {
         if (_selectedVenueMap is null)
         {
@@ -1886,7 +1855,6 @@
                     pageSize: pageSize,
                     sortColumn: "startDate",
                     sortDescending: false,
-                    search: search,
                     venueMapId: venueMapId,
                     upcoming: true);
 

@@ -187,6 +187,9 @@ public sealed class BundleRouteRegressionTests
         Assert.Contains("bundle-events-source", source, StringComparison.Ordinal);
         Assert.Contains("bundle-events-selected-list", source, StringComparison.Ordinal);
         Assert.Equal(1, CountOccurrences(source, "@L[\"SelectedCount\", _eventSelection.Count]"));
+        Assert.DoesNotContain("SearchEvents", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("OnEventSearchChanged", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("_eventSearch", source, StringComparison.Ordinal);
         Assert.True(
             source.IndexOf("@L[\"BundleLineup\"]", StringComparison.Ordinal) <
             source.IndexOf("@L[\"AvailableEventsToAdd\"]", StringComparison.Ordinal),
