@@ -186,6 +186,7 @@ public sealed class BundleRouteRegressionTests
         Assert.Contains("bundle-events-target", source, StringComparison.Ordinal);
         Assert.Contains("bundle-events-source", source, StringComparison.Ordinal);
         Assert.Contains("bundle-events-selected-list", source, StringComparison.Ordinal);
+        Assert.Equal(1, CountOccurrences(source, "@L[\"SelectedCount\", _eventSelection.Count]"));
         Assert.True(
             source.IndexOf("@L[\"BundleLineup\"]", StringComparison.Ordinal) <
             source.IndexOf("@L[\"AvailableEventsToAdd\"]", StringComparison.Ordinal),
@@ -216,6 +217,20 @@ public sealed class BundleRouteRegressionTests
         Assert.Contains("Task RemoveBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds)", serviceInterface, StringComparison.Ordinal);
         Assert.Contains("adminClient.AddBundleEventSchedulesAsync", service, StringComparison.Ordinal);
         Assert.Contains("adminClient.RemoveBundleEventSchedulesAsync", service, StringComparison.Ordinal);
+    }
+
+    private static int CountOccurrences(string source, string value)
+    {
+        var count = 0;
+        var index = 0;
+
+        while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+
+        return count;
     }
 
     [Fact]

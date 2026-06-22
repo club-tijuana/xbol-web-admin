@@ -10,13 +10,13 @@ public sealed class BundleCreateValidationRegressionTests
         var source = ReadAppSource("Components/Pages/BundleCreate.razor");
 
         Assert.Contains("Validation=\"@ValidateStartDate\"", source, StringComparison.Ordinal);
-        Assert.Contains("Validation=\"@ValidateStartTime\"", source, StringComparison.Ordinal);
+        Assert.Contains("Validation=\"@(new Func<TimeSpan?, IEnumerable<string>>(ValidateStartTime))\"", source, StringComparison.Ordinal);
         Assert.Contains("Validation=\"@ValidateEndDate\"", source, StringComparison.Ordinal);
-        Assert.Contains("Validation=\"@ValidateEndTime\"", source, StringComparison.Ordinal);
+        Assert.Contains("Validation=\"@(new Func<TimeSpan?, IEnumerable<string>>(ValidateEndTime))\"", source, StringComparison.Ordinal);
         Assert.Contains("Validation=\"@ValidateOnSaleDate\"", source, StringComparison.Ordinal);
-        Assert.Contains("Validation=\"@ValidateOnSaleTime\"", source, StringComparison.Ordinal);
+        Assert.Contains("Validation=\"@(new Func<TimeSpan?, IEnumerable<string>>(ValidateOnSaleTime))\"", source, StringComparison.Ordinal);
         Assert.Contains("Validation=\"@ValidateOffSaleDate\"", source, StringComparison.Ordinal);
-        Assert.Contains("Validation=\"@ValidateOffSaleTime\"", source, StringComparison.Ordinal);
+        Assert.Contains("Validation=\"@(new Func<TimeSpan?, IEnumerable<string>>(ValidateOffSaleTime))\"", source, StringComparison.Ordinal);
         Assert.Contains("Validation=\"@ValidatePreSaleDate\"", source, StringComparison.Ordinal);
         Assert.Contains("Validation=\"@ValidateRenewalEndDate\"", source, StringComparison.Ordinal);
 
@@ -41,6 +41,61 @@ public sealed class BundleCreateValidationRegressionTests
         Assert.DoesNotContain("if (!await ValidateStepAsync(EventsStepIndex))", source, StringComparison.Ordinal);
         Assert.DoesNotContain("if (!await ValidateStepAsync(0))", source, StringComparison.Ordinal);
         Assert.DoesNotContain("if (!await ValidateStepAsync(DatesStepIndex))", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_create_date_submit_validation_collects_all_date_errors()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+        var normalizedSource = source.Replace("\r\n", "\n", StringComparison.Ordinal);
+
+        Assert.Contains("private readonly Dictionary<string, List<string>> _dateValidationErrors = new(StringComparer.OrdinalIgnoreCase);", source, StringComparison.Ordinal);
+        Assert.Contains("AddDateValidationErrors(", source, StringComparison.Ordinal);
+        Assert.Contains("_datesFormValid = _dateValidationErrors.Count == 0;", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("var hasErrors =\n            ValidateStartDate(_startDate).Any() ||", normalizedSource, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_create_time_fields_have_explicit_validation_delegates()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("Validation=\"@(new Func<TimeSpan?, IEnumerable<string>>(ValidateStartTime))\"", source, StringComparison.Ordinal);
+        Assert.Contains("Validation=\"@(new Func<TimeSpan?, IEnumerable<string>>(ValidateEndTime))\"", source, StringComparison.Ordinal);
+        Assert.Contains("Validation=\"@(new Func<TimeSpan?, IEnumerable<string>>(ValidateOnSaleTime))\"", source, StringComparison.Ordinal);
+        Assert.Contains("Validation=\"@(new Func<TimeSpan?, IEnumerable<string>>(ValidateOffSaleTime))\"", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_edit_uses_loaded_bundle_name_as_page_title()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("_pageTitle = string.IsNullOrWhiteSpace(bundleResult.Name)", source, StringComparison.Ordinal);
+        Assert.Contains(": bundleResult.Name;", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_edit_save_navigates_to_bundle_detail()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("Navigation.NavigateTo(GetBundleSaveSuccessRoute());", source, StringComparison.Ordinal);
+        Assert.Contains("private string GetBundleSaveSuccessRoute()", source, StringComparison.Ordinal);
+        Assert.Contains("if (_isEdit && BundleId is long bundleId)", source, StringComparison.Ordinal);
+        Assert.Contains("$\"./events/bundles/{bundleId}\"", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_submit_validation_handles_unmounted_step_forms()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("private async Task<bool> ValidatePriceStepAsync()", source, StringComparison.Ordinal);
+        Assert.Contains("var priceValidation = await _pricesValidator.ValidateAsync(BuildPricesInfoModel());", source, StringComparison.Ordinal);
+        Assert.Contains("private async Task<bool> ValidateAdditionalChargesStepAsync()", source, StringComparison.Ordinal);
+        Assert.Contains("var additionalChargesValidation = await _additionalChargesInfoValidator.ValidateAsync(_additionalCharges);", source, StringComparison.Ordinal);
+        Assert.Contains("private PricesInfoModel BuildPricesInfoModel()", source, StringComparison.Ordinal);
     }
 
     [Fact]
