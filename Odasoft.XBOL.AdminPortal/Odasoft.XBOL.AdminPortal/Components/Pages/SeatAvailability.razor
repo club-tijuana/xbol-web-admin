@@ -112,6 +112,8 @@
     private bool _error = false;
     private bool _sellProcessing = false;
     private bool _canSellFromAvailability = true;
+    private AdminSaleType? _availabilitySaleType;
+    private long? _availabilitySaleId;
 
     private enum ToolbarState { NoSelection, AllForSale, AllBlocked, Mixed }
 
@@ -137,6 +139,8 @@
     private bool CanSellSelectedSeats =>
         CurrentToolbarState == ToolbarState.AllBlocked
         && _canSellFromAvailability
+        && _availabilitySaleType.HasValue
+        && _availabilitySaleId.HasValue
         && !_sellProcessing;
 
     protected override async Task OnInitializedAsync()
@@ -240,6 +244,8 @@
             {
                 SeatKeys = seatKeys,
                 Reason = "Unblocked for sale",
+                SaleType = _availabilitySaleType,
+                SaleId = _availabilitySaleId,
             });
 
             var seatsParam = Uri.EscapeDataString(string.Join(",", seatKeys));
@@ -301,34 +307,73 @@
 
     private async Task<bool> ResolveCanSellFromAvailabilityAsync()
     {
+        _availabilitySaleType = AdminSaleType.Event;
+        _availabilitySaleId = Id;
+
         try
         {
             var bundle = await AdminClient.GetBundleByIdAsync(Id);
-            if (bundle.BundleType != BundleType.SeasonPass)
+            var isBundleAvailability =
+                string.Equals(bundle.ExternalKey, ExternalKey, StringComparison.Ordinal) ||
+                bundle.Schedules?.Any(schedule => string.Equals(schedule.ExternalEventKey, ExternalKey, StringComparison.Ordinal)) == true;
+
+            if (isBundleAvailability)
             {
-                return true;
+                _availabilitySaleType = AdminSaleType.Bundle;
+                _availabilitySaleId = bundle.Id;
+
+                return CanSellBundle(bundle);
             }
 
-            return CanSellSeasonPassBundle(bundle);
+            return await CanSellEventAsync();
         }
         catch (ApiException ex) when (ex.StatusCode == StatusCodes.Status404NotFound)
         {
-            return true;
+            return await CanSellEventAsync();
         }
-
-        return true;
     }
 
-    private bool CanSellSeasonPassBundle(BundleDTO bundle)
+    private async Task<bool> CanSellEventAsync()
     {
-        return bundle.Status == AdminEventStatus.Published
-            && string.Equals(bundle.ExternalKey, ExternalKey, StringComparison.Ordinal)
-            && SeasonPassPurchaseWindow.CanBuy(
+        _availabilitySaleType = AdminSaleType.Event;
+        _availabilitySaleId = Id;
+
+        var @event = await AdminClient.GetEventByIdAsync(Id);
+        var schedule = @event.Schedules?.FirstOrDefault(schedule =>
+            string.Equals(schedule.ExternalEventKey, ExternalKey, StringComparison.Ordinal));
+
+        return @event.Status == AdminEventStatus.Published
+            && schedule is not null
+            && schedule.Status == ScheduleStatus.OnSale
+            && IsSaleOpen(schedule.OnSaleDate, schedule.OffSaleDate, DateTimeOffset.UtcNow);
+    }
+
+    private bool CanSellBundle(BundleDTO bundle)
+    {
+        if (bundle.Status != AdminEventStatus.Published)
+        {
+            return false;
+        }
+
+        if (bundle.BundleType == BundleType.SeasonPass)
+        {
+            return SeasonPassPurchaseWindow.CanBuy(
                 bundle.OnSaleDate,
                 bundle.OffSaleDate,
                 bundle.PreviousBundleId.HasValue,
                 bundle.RenewalEndDate,
                 bundle.IsBookable == true,
                 DateTimeOffset.UtcNow);
+        }
+
+        return IsSaleOpen(bundle.OnSaleDate, bundle.OffSaleDate, DateTimeOffset.UtcNow);
+    }
+
+    private static bool IsSaleOpen(DateTimeOffset? onSaleDate, DateTimeOffset? offSaleDate, DateTimeOffset now)
+    {
+        return onSaleDate.HasValue
+            && offSaleDate.HasValue
+            && now >= onSaleDate.Value
+            && now < offSaleDate.Value;
     }
 }

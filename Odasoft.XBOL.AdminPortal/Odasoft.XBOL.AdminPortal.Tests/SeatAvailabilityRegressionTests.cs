@@ -12,7 +12,12 @@ public sealed class SeatAvailabilityRegressionTests
         Assert.Contains("CanSellSelectedSeats", source, StringComparison.Ordinal);
         Assert.Contains("Disabled=\"@(!CanSellSelectedSeats)\"", source, StringComparison.Ordinal);
         Assert.Contains("GetBundleByIdAsync(Id)", source, StringComparison.Ordinal);
+        Assert.Contains("GetEventByIdAsync(Id)", source, StringComparison.Ordinal);
+        Assert.Contains("schedule.Status == ScheduleStatus.OnSale", source, StringComparison.Ordinal);
+        Assert.Contains("IsSaleOpen(schedule.OnSaleDate, schedule.OffSaleDate", source, StringComparison.Ordinal);
         Assert.Contains("SeasonPassPurchaseWindow.CanBuy", source, StringComparison.Ordinal);
+        Assert.Contains("SaleType = _availabilitySaleType", source, StringComparison.Ordinal);
+        Assert.Contains("SaleId = _availabilitySaleId", source, StringComparison.Ordinal);
         Assert.DoesNotContain("detail.Type == BookableUnitType.Bundle", source, StringComparison.Ordinal);
         Assert.Contains("bundle.BundleType != BundleType.SeasonPass", source, StringComparison.Ordinal);
         Assert.Contains("if (!CanSellSelectedSeats) return;", source, StringComparison.Ordinal);

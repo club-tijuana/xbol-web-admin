@@ -26544,6 +26544,19 @@
           "reason": {
             "type": "string",
             "nullable": true
+          },
+          "saleType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminSaleType"
+              }
+            ],
+            "nullable": true
+          },
+          "saleId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           }
         },
         "additionalProperties": false
