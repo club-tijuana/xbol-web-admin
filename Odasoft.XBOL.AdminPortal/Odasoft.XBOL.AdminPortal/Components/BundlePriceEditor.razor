@@ -26,14 +26,11 @@
             <col />
         }
         <col />
-        @if (AllowAlternativePriceTypes)
+        @foreach (var priceType in PriceTypes)
         {
-            @foreach (var priceType in PriceTypes)
-            {
-                <col />
-            }
             <col />
         }
+        <col />
         <col />
     </ColGroup>
     <HeaderContent>
@@ -68,27 +65,24 @@
                 @L["BasePrice"]
             </MudTableSortLabel>
         </MudTh>
-        @if (AllowAlternativePriceTypes)
+        @foreach (var priceType in PriceTypes)
         {
-            @foreach (var priceType in PriceTypes)
-            {
-                <MudTh>
-                    @priceType
-                    <MudIconButton Icon="@Icons.Material.Outlined.Edit"
-                                   Color="Color.Secondary"
-                                   Size="Size.Small"
-                                   OnClick="@(() => OpenEditDialogAsync(priceType))" />
-                </MudTh>
-            }
             <MudTh>
-                <MudButton Color="Color.Primary"
-                           IconColor="Color.Primary"
-                           StartIcon="@Icons.Material.Outlined.Add"
-                           OnClick="OpenAddDialogAsync">
-                    @L["AlternativePrice"]
-                </MudButton>
+                @priceType
+                <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                               Color="Color.Secondary"
+                               Size="Size.Small"
+                               OnClick="@(() => OpenEditDialogAsync(priceType))" />
             </MudTh>
         }
+        <MudTh>
+            <MudButton Color="Color.Primary"
+                       IconColor="Color.Primary"
+                       StartIcon="@Icons.Material.Outlined.Add"
+                       OnClick="OpenAddDialogAsync">
+                @L["AlternativePrice"]
+            </MudButton>
+        </MudTh>
         <MudTh />
     </HeaderContent>
     <RowTemplate>
@@ -159,30 +153,27 @@
                 </div>
             </MudStack>
         </MudTd>
-        @if (AllowAlternativePriceTypes)
+        @foreach (var priceType in PriceTypes)
         {
-            @foreach (var priceType in PriceTypes)
-            {
-                <MudTd DataLabel="@priceType">
-                    <MudStack Row AlignItems="AlignItems.Start" Spacing="1" Class="price-cell">
-                        <AdminNumericField T="decimal?"
-                                           Value="@GetPriceTypeValue(context, priceType)"
-                                           ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType, newValue))"
-                                           Clearable
-                                           Format="N2"
-                                           Adornment="@Adornment.Start"
-                                           AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                           Placeholder="0.00"
-                                           HideSpinButtons />
-                        <div class="price-copy-action">
-                            <PriceCopyButton Disabled="@(!CanCopyPriceType(context, priceType))"
-                                             OnClick="@(() => CopyPriceTypeToAll(context, priceType))" />
-                        </div>
-                    </MudStack>
-                </MudTd>
-            }
-            <MudTd />
+            <MudTd DataLabel="@priceType">
+                <MudStack Row AlignItems="AlignItems.Start" Spacing="1" Class="price-cell">
+                    <AdminNumericField T="decimal?"
+                                       Value="@GetPriceTypeValue(context, priceType)"
+                                       ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType, newValue))"
+                                       Clearable
+                                       Format="N2"
+                                       Adornment="@Adornment.Start"
+                                       AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                       Placeholder="0.00"
+                                       HideSpinButtons />
+                    <div class="price-copy-action">
+                        <PriceCopyButton Disabled="@(!CanCopyPriceType(context, priceType))"
+                                         OnClick="@(() => CopyPriceTypeToAll(context, priceType))" />
+                    </div>
+                </MudStack>
+            </MudTd>
         }
+        <MudTd />
         <MudTd>
             @if (context.BaseRowId is not null || context.BaseSectionId is not null || context.BaseSeatId is not null)
             {
@@ -215,7 +206,6 @@
     [Parameter] public VenueMapLayoutResponse? Layout { get; set; }
     [Parameter, EditorRequired] public List<PriceForm> Prices { get; set; } = [];
     [Parameter, EditorRequired] public List<string> PriceTypes { get; set; } = [];
-    [Parameter] public bool AllowAlternativePriceTypes { get; set; }
     [Parameter] public bool AllowRowPrices { get; set; } = true;
     [Parameter] public bool AllowSeatPrices { get; set; } = true;
 
@@ -244,10 +234,7 @@
             {
                 columns++;
             }
-            if (AllowAlternativePriceTypes)
-            {
-                columns += PriceTypes.Count + 1;
-            }
+            columns += PriceTypes.Count + 1;
 
             return columns;
         }

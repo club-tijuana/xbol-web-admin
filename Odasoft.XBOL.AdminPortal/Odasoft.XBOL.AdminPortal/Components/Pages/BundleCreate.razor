@@ -342,7 +342,6 @@
                                 <BundlePriceEditor Layout="_venueMapLayout"
                                                    Prices="_prices"
                                                    PriceTypes="_priceTypes"
-                                                   AllowAlternativePriceTypes="false"
                                                    AllowRowPrices="false"
                                                    AllowSeatPrices="false" />
                             </MudForm>
@@ -1196,6 +1195,7 @@
     private const long MaxImageFileSize = 10 * 1024 * 1024;
     private const int MinImageWidth = 1920;
     private const int MinImageHeight = 1080;
+    private const string DefaultPriceTypeName = "General";
     private const string DefaultDragClass = "relative d-flex flex-column p-r gap-2 rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
     private string _dragClass = DefaultDragClass;
     private bool _dragging = false;
@@ -1651,7 +1651,12 @@
                 Prices = x.Prices?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new()
             }).ToList();
 
-            // _priceTypes = _prices.FirstOrDefault()?.PriceTypes ?? new Dictionary<string, bool> { { "General", true } };
+            _priceTypes = _prices
+                .SelectMany(price => price.PriceTypes)
+                .Where(priceType => !priceType.Value)
+                .Select(priceType => priceType.Key)
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
         }
         catch (ApiException apiEx)
         {
@@ -1839,6 +1844,7 @@
     private void InitializeEmptyPrices()
     {
         _prices.Clear();
+        _priceTypes.Clear();
         if (_venueMapLayout?.Zones is null)
         {
             return;
@@ -2341,17 +2347,7 @@
         {
             ReferenceId = BundleId,
             ReferenceType = AdminSaleType.Bundle,
-            PriceSegments = _prices.Select(p => new PriceSegmentRequest
-            {
-                VenueMapId = _selectedVenueMap?.Id,
-                BaseRowId = p.BaseRowId,
-                BaseSeatId = p.BaseSeatId,
-                BaseSectionId = p.BaseSectionId,
-                BaseZoneId = p.BaseZoneId,
-                Id = p.Id,
-                PriceTypes = p.PriceTypes,
-                Prices = p.Prices
-            }).ToList()
+            PriceSegments = BuildPriceRequests()
         };
 
         var response = await PriceReferenceService.SavePriceReferenceAsync(request);
@@ -2394,7 +2390,35 @@
 
     private List<PriceSegmentRequest> BuildPriceRequests()
     {
-        return [];
+        return _prices.Select(p => new PriceSegmentRequest
+        {
+            VenueMapId = _selectedVenueMap?.Id,
+            BaseRowId = p.BaseRowId,
+            BaseSeatId = p.BaseSeatId,
+            BaseSectionId = p.BaseSectionId,
+            BaseZoneId = p.BaseZoneId,
+            Id = p.Id,
+            PriceTypes = BuildPriceTypesForSave(p),
+            Prices = p.Prices.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+        }).ToList();
+    }
+
+    private Dictionary<string, bool> BuildPriceTypesForSave(PriceForm price)
+    {
+        var priceTypes = price.PriceTypes.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        priceTypes[DefaultPriceTypeName] = true;
+
+        foreach (var alternatePriceType in _priceTypes)
+        {
+            priceTypes.TryAdd(alternatePriceType, false);
+        }
+
+        foreach (var priceName in price.Prices.Keys.Where(priceName => priceName != DefaultPriceTypeName))
+        {
+            priceTypes.TryAdd(priceName, false);
+        }
+
+        return priceTypes;
     }
 
     private async Task AddImageAsync(IBrowserFile? file, AdminMediaType mediaType)
