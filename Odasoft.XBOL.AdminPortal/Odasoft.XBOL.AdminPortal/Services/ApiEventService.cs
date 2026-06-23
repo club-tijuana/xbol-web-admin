@@ -218,6 +218,20 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         return result.ToList();
     }
 
+    public async Task<List<BundleListItemDTO>> GetSeasonPassBundlesAsync()
+    {
+        var result = await adminClient.GetBundlesAsync(
+            status: null,
+            bundleType: BundleType.SeasonPass,
+            searchTerm: null,
+            sortBy: "name",
+            descending: false,
+            page: 1,
+            pageSize: 100);
+
+        return result.Items?.ToList() ?? [];
+    }
+
     public async Task<EventResult> CreateEventAsync(EventRequest request) => await adminClient.CreateEventAsync(request);
 
     public async Task<BundleDTO> CreateBundleAsync(BundleCreateRequest request) => await adminClient.CreateBundleAsync(request);

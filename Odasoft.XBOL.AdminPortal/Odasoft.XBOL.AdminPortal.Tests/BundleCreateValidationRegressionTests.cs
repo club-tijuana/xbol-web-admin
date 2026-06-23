@@ -76,6 +76,19 @@ public sealed class BundleCreateValidationRegressionTests
     }
 
     [Fact]
+    public void Season_pass_bundle_create_exposes_previous_bundle_selector()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("_previousSeasonPassBundles", source, StringComparison.Ordinal);
+        Assert.Contains("@bind-Value=\"_previousBundleId\"", source, StringComparison.Ordinal);
+        Assert.Contains("PreviousBundleId = _previousBundleId", source, StringComparison.Ordinal);
+        Assert.Contains("_previousBundleId = bundleResult.PreviousBundleId;", source, StringComparison.Ordinal);
+        Assert.Contains("GetSeasonPassBundlesAsync(", source, StringComparison.Ordinal);
+        Assert.Contains("BundleType.SeasonPass", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Bundle_edit_save_navigates_to_bundle_detail()
     {
         var source = ReadAppSource("Components/Pages/BundleCreate.razor");

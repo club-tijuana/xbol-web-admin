@@ -611,6 +611,19 @@
                                             @L["RenewalWindow"]
                                         </MudText>
                                     </MudItem>
+                                    <MudItem xs="12" md="5">
+                                        <AdminSelect T="long?"
+                                                     @bind-Value="_previousBundleId"
+                                                     Label="@L["PreviousSeasonPass"].Value"
+                                                     Field="@_datesFormContext.Field("PreviousBundleId")"
+                                                     Clearable>
+                                            @foreach (var bundle in _previousSeasonPassBundles)
+                                            {
+                                                <MudSelectItem T="long?" Value="bundle.Id">@bundle.Name</MudSelectItem>
+                                            }
+                                        </AdminSelect>
+                                    </MudItem>
+                                    <MudFlexBreak />
                                     <MudItem xs="12" md="3">
                                         <AdminDatePicker @bind-Date="_renewalStartDate"
                                                          Label="@L["RenewalStartDate"].Value"
@@ -1122,6 +1135,7 @@
     private string? _securityPolicies;
     private string? _additionalComments;
     private long? _organizerId;
+    private long? _previousBundleId;
     private VenueResponse? _selectedVenue;
     private VenueMapResponse? _selectedVenueMap;
 
@@ -1149,6 +1163,7 @@
     private List<VenueMapResponse> _venueMaps = [];
     private List<ListItem> _organizers = [];
     private List<AdminEventCategoryResult> _eventCategories = [];
+    private List<BundleListItemDTO> _previousSeasonPassBundles = [];
     private IReadOnlyCollection<AdminEventCategoryResult> _selectedCategories = [];
     private bool _loadingBundleDataForEdit;
 
@@ -1247,7 +1262,8 @@
         "OnSaleDate",
         "OffSaleDate",
         "RenewalStartDate",
-        "RenewalEndDate"
+        "RenewalEndDate",
+        "PreviousBundleId"
     };
 
     private IEnumerable<string> ValidateStartDate(DateTime? value) =>
@@ -1518,12 +1534,17 @@
             var venuesTask = CatalogsService.GetVenuesAsync();
             var categoriesTask = EventService.GetCategoriesAsync();
             var organizersTask = OrganizersService.GetOrganizersCatalogAsync();
+            var seasonPassBundlesTask = EventService.GetSeasonPassBundlesAsync();
 
-            await Task.WhenAll(venuesTask, categoriesTask, organizersTask);
+            await Task.WhenAll(venuesTask, categoriesTask, organizersTask, seasonPassBundlesTask);
 
             _venues = await venuesTask;
             _eventCategories = (await categoriesTask).Where(category => category.IsActive == true).ToList();
             _organizers = (await organizersTask).OrderBy(organizer => organizer.Name).ToList();
+            _previousSeasonPassBundles = (await seasonPassBundlesTask)
+                .Where(bundle => bundle.Id.HasValue && bundle.Id != BundleId)
+                .OrderBy(bundle => bundle.Name)
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -1565,6 +1586,7 @@
             _additionalComments = bundleResult.AdditionalComments;
             SelectBundleCategories(bundleResult.Categories);
             _organizerId = bundleResult.OrganizerId;
+            _previousBundleId = bundleResult.PreviousBundleId;
             _bundleStatus = bundleResult.Status;
             _loadingBundleDataForEdit = true;
 
@@ -2274,6 +2296,7 @@
                 OffSaleDate = DateTimeHelpers.ToDateTimeOffset(_offSaleDate, _offSaleTime),
                 RenewalStartDate = DateTimeHelpers.ToDateTimeOffset(_renewalStartDate, _renewalStartTime),
                 RenewalEndDate = DateTimeHelpers.ToDateTimeOffset(_renewalEndDate, _renewalEndTime),
+                PreviousBundleId = _previousBundleId,
                 Status = status
             });
 
@@ -2308,6 +2331,7 @@
                 OffSaleDate = DateTimeHelpers.ToDateTimeOffset(_offSaleDate, _offSaleTime),
                 RenewalStartDate = DateTimeHelpers.ToDateTimeOffset(_renewalStartDate, _renewalStartTime),
                 RenewalEndDate = DateTimeHelpers.ToDateTimeOffset(_renewalEndDate, _renewalEndTime),
+                PreviousBundleId = _previousBundleId,
                 EventScheduleIds = SelectedEvents
                     .Select(item => item.EventScheduleId!.Value)
                     .ToList(),

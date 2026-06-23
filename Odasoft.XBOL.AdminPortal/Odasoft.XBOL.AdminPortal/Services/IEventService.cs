@@ -55,6 +55,7 @@ public interface IEventService
     );
 
     Task<List<AdminEventCategoryResult>> GetCategoriesAsync();
+    Task<List<BundleListItemDTO>> GetSeasonPassBundlesAsync();
     Task<EventResult> CreateEventAsync(EventRequest request);
     Task<BundleDTO> CreateBundleAsync(BundleCreateRequest request);
     Task UpdateEventAsync(long id, EventRequest request);

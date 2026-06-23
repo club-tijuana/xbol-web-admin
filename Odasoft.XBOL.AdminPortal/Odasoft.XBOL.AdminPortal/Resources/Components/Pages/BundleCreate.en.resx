@@ -161,6 +161,7 @@
   <data name="PublishedDate" xml:space="preserve"><value>Published date</value></data>
   <data name="PublishedTime" xml:space="preserve"><value>Published time</value></data>
   <data name="PublishingAndPresale" xml:space="preserve"><value>Publishing and presale</value></data>
+  <data name="PreviousSeasonPass" xml:space="preserve"><value>Previous season pass</value></data>
   <data name="RenewalEndDate" xml:space="preserve"><value>Renewal end</value></data>
   <data name="RenewalEndAfterRenewalStart" xml:space="preserve"><value>Renewal end must be after renewal start.</value></data>
   <data name="RenewalEndTime" xml:space="preserve"><value>Renewal end time</value></data>
