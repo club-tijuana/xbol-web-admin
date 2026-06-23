@@ -31,6 +31,20 @@ public class ExecutiveReportsApiClient(IAdminClient adminClient, HttpClient http
         return await response.Content.ReadFromJsonAsync<IReadOnlyList<SelectOption>>(JsonOptions, token) ?? [];
     }
 
+    public async Task<IReadOnlyList<SelectOption>> GetBundlesAsync(CancellationToken token = default)
+    {
+        var response = await httpClient.GetAsync("api/executive-reports/bundles", token);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<IReadOnlyList<SelectOption>>(JsonOptions, token) ?? [];
+    }
+
+    public async Task<IReadOnlyList<ReportEventOption>> GetEventsForReportAsync(CancellationToken token = default)
+    {
+        var response = await httpClient.GetAsync("api/executive-reports/events", token);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<IReadOnlyList<ReportEventOption>>(JsonOptions, token) ?? [];
+    }
+
     public async Task<ReportListResponse<Dictionary<string, JsonElement>>> GetReportListAsync(ReportFilter filter, CancellationToken token = default)
     {
         var response = await httpClient.PostAsJsonAsync("api/executive-reports/list", filter, token);
