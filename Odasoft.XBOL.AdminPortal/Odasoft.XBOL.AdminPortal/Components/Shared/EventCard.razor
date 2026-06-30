@@ -30,7 +30,7 @@
                     <MudTooltip Text="@(Event.EventName)">
                         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="truncate-text"><b>@(Event.EventName)</b></MudText>
                     </MudTooltip>
-                    <MudText Typo="Typo.caption">@(Event.DateTime.ToString("d MMM yyyy"))</MudText>
+                    <MudText Typo="Typo.caption">@(Event.IsBundle ? EventDisplayDateHelper.GetDateRange(Event.StartDateTime, Event.EndDateTime) : Event.StartDateTime.ToString("d MMM yyyy"))</MudText>
                 </MudStack>
             </MudItem>
             <MudItem xs="6" Class="d-flex justify-end align-end">
@@ -108,15 +108,21 @@
     </MudCard>
 
 @code {
-        [Parameter]
-        [EditorRequired]
-        public EventViewModel Event { get; set; }
+    [Parameter]
+    [EditorRequired]
+    public EventViewModel Event { get; set; }
 
-        [Parameter]
-        public EventCallback OnClick { get; set; }
+    [Parameter]
+    public EventCallback OnClick { get; set; }
 
-        [Parameter]
-        public bool ShowActions { get; set; } = false;
+    [Parameter]
+    public bool CanOverrideSaleWindow { get; set; }
+
+    [Parameter]
+    public bool ShowActions { get; set; } = false;
+
+    [Parameter]
+    public bool IsAdmin { get; set; } = false;
 
     private async Task HandleOnClick()
     {
@@ -143,13 +149,17 @@
         if (Event.BundleType != BundleType.SeasonPass)
             return false;
 
+        if (IsAdmin && Event.IsBookable)
+            return true;
+
         return SeasonPassPurchaseWindow.CanBuy(
             Event.OnSaleDate,
             Event.OffSaleDate,
             Event.HasRenewalWindow,
             Event.RenewalEndDate,
             Event.IsBookable,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow,
+            CanOverrideSaleWindow);
     }
 
     private string GetEditRoute()

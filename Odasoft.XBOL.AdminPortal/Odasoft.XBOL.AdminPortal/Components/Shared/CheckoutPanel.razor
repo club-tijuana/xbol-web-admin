@@ -1,4 +1,5 @@
 @using FluentValidation
+@using Microsoft.Extensions.Options
 @using Newtonsoft.Json
 @using Odasoft.XBOL.AdminPortal.Components.Pages
 @using Odasoft.XBOL.AdminPortal.Helpers
@@ -10,6 +11,7 @@
 @using Odasoft.XBOL.Business.Services
 @using Odasoft.XBOL.Common.Constants
 @using Odasoft.XBOL.Common.Helpers
+@using Odasoft.XBOL.Common.Options
 @using Odasoft.XBOL.Models.DTO
 
 @implements IAsyncDisposable
@@ -26,6 +28,8 @@
 @inject ExchangeRateService _exchangeRateService
 @inject ILogger<CheckoutPanel> Logger
 @inject PersistentDialogState _persistentDialogState
+@inject IOptions<PaymentLinkOptions> PaymentLinkOptions
+@inject IOptions<Odasoft.XBOL.Common.Options.LocalizationOptions> LocalizationOptions
 
 @if (EnableNavigationLock)
 {
@@ -155,7 +159,7 @@
                     <MudGrid class="d-flex gap-4 align-center mb-3">
                         <MudItem xs="12">
 
-                            <MudToggleGroup T="int" @bind-Value="_value">
+                            <MudToggleGroup T="int" @bind-Value="_value" @bind-Value:after="OnTogglePaymentTypeChanged">
 
                                 <MudToggleItem T="int" Value="1" Text="Caja" />
                                 <MudToggleItem T="int" Value="2" Text="Link de pago" />
@@ -247,6 +251,31 @@
                         </MudItem>
                         <MudItem xs="12">
                             <div class="order-summary">
+                                @if (_cartState.HasFeeBreakdown)
+                                {
+                                    <div class="d-flex justify-space-between summary-item">
+                                        <MudText Typo="Typo.caption">Subtotal</MudText>
+                                        <MudText Typo="Typo.caption">@_cartState.SubTotal.ToString(FormatConstants.CURRENCY)</MudText>
+                                    </div>
+                                    @if (_cartState.TotalCommissions > 0)
+                                    {
+                                        <div class="d-flex justify-space-between summary-item">
+                                            <MudText Typo="Typo.caption">Comisiones</MudText>
+                                            <MudText Typo="Typo.caption">@_cartState.TotalCommissions.ToString(FormatConstants.CURRENCY)</MudText>
+                                        </div>
+                                    }
+                                    @if (_cartState.TotalTaxes > 0)
+                                    {
+                                        <div class="d-flex justify-space-between summary-item">
+                                            <MudText Typo="Typo.caption">Impuestos</MudText>
+                                            <MudText Typo="Typo.caption">@_cartState.TotalTaxes.ToString(FormatConstants.CURRENCY)</MudText>
+                                        </div>
+                                    }
+                                    <div class="d-flex justify-space-between summary-item">
+                                        <MudText Typo="Typo.caption"><b>Total</b></MudText>
+                                        <MudText Typo="Typo.caption"><b>@_cartState.TotalPrice.ToString(FormatConstants.CURRENCY)</b></MudText>
+                                    </div>
+                                }
                                 <div class="d-flex justify-space-between summary-item">
                                     <MudText Typo="Typo.caption">
                                         Tipo de cambio
@@ -513,7 +542,7 @@
         );
 
     private bool HasValidPaymentLinkExpiration =>
-        _request.PaymentLinkExpiresAt != null;
+        _request.PaymentLinkExpiresAt > DateTimeOffset.UtcNow;
 
     private bool HasBalanceError =>
         TicketType != "Cortesía" &&
@@ -524,7 +553,7 @@
         _value == 2 &&
         !HasValidPaymentLinkExpiration;
 
-    private DateTime? ExpirationDate { get; set; } = DateTime.Now;
+    private DateTime? ExpirationDate { get; set; }
 
     private string ExpirationDateText =>
         ExpirationDate?.ToString("dd/MM/yy - HH:mm 'hrs'") ?? "";
@@ -709,6 +738,7 @@
     private void ClearPaymentExpirationsAsync()
     {
         _request.PaymentLinkExpiresAt = null;
+        ExpirationDate = null;
     }
 
     private void ClearAmountsAsync()
@@ -797,10 +827,11 @@
     {
         if (_value == 1)
         {
-            _request.PaymentLinkExpiresAt = null;
+            ClearPaymentExpirationsAsync();
         }
         else
         {
+            SetDefaultPaymentLinkExpiration();
             ClearAmountsAsync();
         }
     }
@@ -824,6 +855,9 @@
         _request.PendingPay = PendingPay;
         _request.ExchangeRate = exchangeRate.Rate ?? 0;
         _request.TotalPrice = _cartState.TotalPrice;
+        _request.SubTotal = _cartState.SubTotal;
+        _request.TotalFees = _cartState.TotalCommissions;
+        _request.TotalTaxes = _cartState.TotalTaxes;
 
         await _form.ValidateAsync();
 
@@ -914,7 +948,7 @@
             var conflicts = ParseSeatConflicts(apiEx.Response);
             if (conflicts.Count > 0)
             {
-                Logger.LogError(apiEx, "Seat conflict on book");
+                LogBookingApiException(apiEx, "seat conflict");
                 _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 
                 await ExpireHoldTokenAsync();
@@ -923,8 +957,19 @@
                 return;
             }
 
-            Logger.LogError(apiEx, "Booking validation failed");
+            LogBookingApiException(apiEx, "validation failure");
             _snackbar.Add(GetApiErrorMessage(apiEx.Response), MudBlazor.Severity.Error);
+
+            await ExpireHoldTokenAsync();
+            await OnBookingFailed.InvokeAsync(apiEx);
+        }
+        catch (ApiException apiEx)
+        {
+            LogBookingApiException(apiEx, "unexpected API failure");
+            _snackbar.Add(GetApiErrorMessage(apiEx.Response), MudBlazor.Severity.Error);
+
+            await ExpireHoldTokenAsync();
+            await OnBookingFailed.InvokeAsync(apiEx);
         }
         catch (Exception ex)
         {
@@ -939,6 +984,16 @@
             _isSubmitting = false;
             _loadingState.Hide();
         }
+    }
+
+    private void LogBookingApiException(ApiException apiEx, string failureKind)
+    {
+        Logger.LogError(
+            apiEx,
+            "Booking API failure ({FailureKind}). StatusCode={StatusCode} ResponseBody={ResponseBody}",
+            failureKind,
+            apiEx.StatusCode,
+            apiEx.Response);
     }
 
     private List<ConflictedSeat> ParseSeatConflicts(string? responseBody)
@@ -1033,8 +1088,15 @@
         if (!result.Canceled && result.Data is DateTime selected)
         {
             ExpirationDate = selected;
-            _request.PaymentLinkExpiresAt = selected;
+            _request.PaymentLinkExpiresAt = PaymentLinkDateTime.ToConfiguredOffset(selected, LocalizationOptions.Value);
         }
+    }
+
+    private void SetDefaultPaymentLinkExpiration()
+    {
+        var expiration = PaymentLinkDateTime.CreateDefaultExpiration(PaymentLinkOptions.Value, LocalizationOptions.Value);
+        _request.PaymentLinkExpiresAt = expiration;
+        ExpirationDate = PaymentLinkDateTime.ToDisplayDateTime(expiration, LocalizationOptions.Value);
     }
 
     private async Task OpenTermsAndConditions()

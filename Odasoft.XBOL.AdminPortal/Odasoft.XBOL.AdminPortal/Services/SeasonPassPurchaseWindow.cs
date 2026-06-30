@@ -8,11 +8,17 @@ public static class SeasonPassPurchaseWindow
         bool hasPreviousBundle,
         DateTimeOffset? renewalEndDate,
         bool isBookable,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        bool overrideSaleWindow = false)
     {
         if (!isBookable)
         {
             return false;
+        }
+
+        if (overrideSaleWindow)
+        {
+            return true;
         }
 
         if (!IsSaleOpen(onSaleDate, offSaleDate, now))

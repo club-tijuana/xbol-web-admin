@@ -1,9 +1,15 @@
+@using Microsoft.Extensions.Options
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
+@using Odasoft.XBOL.AdminPortal.Helpers
+@using Odasoft.XBOL.Common.Options
 
 @inject AppLocalizer<EventScheduleSales> _localizer;
 @inject PaymentLinkService _paymentLinkService;
 @inject SalesService _salesService;
+@inject ILogger<EventScheduleSales> Logger
+@inject IOptions<PaymentLinkOptions> PaymentLinkOptions
+@inject IOptions<Odasoft.XBOL.Common.Options.LocalizationOptions> LocalizationOptions
 
 @inject IJSRuntime JSRuntime;
 @inject ISnackbar _snackbar;
@@ -132,7 +138,7 @@
                                 {
                                     <div class="d-flex flex-column align-start">
                                         <MudChip Size="Size.Small" Style="background-color: #FFF8E1; color: #F78E21; font-weight: 500; border-radius: 12px;">Pendiente</MudChip>
-                                        <MudText Typo="Typo.caption" Style="color: #9E9E9E; font-size: 0.7rem; margin-top: 2px;">Exp. @context.Item.ExpirationDate.Value.ToString("dd/MM/yyyy")</MudText>
+                                        <MudText Typo="Typo.caption" Style="color: #9E9E9E; font-size: 0.7rem; margin-top: 2px;">Exp. @FormatPaymentLinkDate(context.Item.ExpirationDate.Value)</MudText>
                                     </div>
                                 }
                                 else
@@ -160,9 +166,8 @@
                     </CellTemplate>
                 </PropertyColumn>
 
-                <TemplateColumn Sortable="false">
+                 <TemplateColumn Sortable="false">
                     <CellTemplate>
-                        <MudStack Row Spacing="0" Justify="Justify.FlexEnd" @onclick:stopPropagation="true">
                             @if (context.Item.OrderStatus == OrderStatus.Pending
                                 && context.Item.PaymentLink != null
                                 && context.Item.PaymentLink.ExpirationDate > DateTimeOffset.UtcNow)
@@ -171,7 +176,12 @@
 
                                 <MudIconButton Icon="@Icons.Material.Outlined.ContentCopy" Size="Size.Small" Style="color: #757575;" OnClick="@(() => CopyPaymentLinkAsync(context.Item.PaymentLink?.Link))" />
                             }
+                    </CellTemplate>
+                </TemplateColumn>
 
+                <TemplateColumn Sortable="false">
+                    <CellTemplate>
+                        <MudStack Row Spacing="0" Justify="Justify.FlexEnd" @onclick:stopPropagation="true">
                             <MudIconButton Icon="@(context.Item.ShowDetails.HasValue && context.Item.ShowDetails.Value ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
                                            Size="Size.Small"
                                            OnClick="@(() => ToggleDetails(context.Item))" />
@@ -282,7 +292,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching sales. {ex.Message}");
+            Logger.LogError(ex, "Error fetching sales");
             _snackbar.Add("Ocurrió un error al cargar las ventas.", Severity.Error);
             return new GridData<SaleResponse> { TotalItems = 0, Items = new List<SaleResponse>() };
         }
@@ -339,5 +349,12 @@
         {
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", paymentLink);
         }
+    }
+
+    private string FormatPaymentLinkDate(DateTimeOffset expiration)
+    {
+        return PaymentLinkDateTime
+            .ToDisplayDateTime(expiration, LocalizationOptions.Value)
+            .ToString("dd/MM/yyyy");
     }
 }

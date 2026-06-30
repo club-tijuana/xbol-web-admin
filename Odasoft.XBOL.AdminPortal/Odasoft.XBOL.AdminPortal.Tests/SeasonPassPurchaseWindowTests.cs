@@ -42,6 +42,27 @@ public sealed class SeasonPassPurchaseWindowTests
     }
 
     [Fact]
+    public void CanBuy_override_allows_bookable_bundle_outside_sale_window()
+    {
+        Assert.True(SeasonPassPurchaseWindow.CanBuy(
+            null,
+            null,
+            true,
+            Now.AddDays(1),
+            true,
+            Now,
+            overrideSaleWindow: true));
+        Assert.False(SeasonPassPurchaseWindow.CanBuy(
+            null,
+            null,
+            true,
+            Now.AddDays(1),
+            false,
+            Now,
+            overrideSaleWindow: true));
+    }
+
+    [Fact]
     public void IsRenewalOpen_requires_complete_sale_and_renewal_windows()
     {
         Assert.False(SeasonPassPurchaseWindow.IsRenewalOpen(null, Now.AddDays(10), Now.AddDays(-1), Now.AddDays(1), true, Now));

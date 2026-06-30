@@ -59,6 +59,15 @@ public sealed class BundleRouteRegressionTests
     }
 
     [Fact]
+    public void Bundle_renewal_prefill_keeps_current_bundle_price_list_item()
+    {
+        var source = ReadAppSource("Components/Pages/Booking.razor");
+
+        Assert.Contains("ProjectBundleRenewalPrefill(SaleResponse sale)", source, StringComparison.Ordinal);
+        Assert.Contains("PriceListItemId = item.PriceListItemId ?? 0", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Admin_component_navigation_targets_are_base_relative()
     {
         var componentRoot = Path.Combine(GetAppSourceRoot(), "Components");
@@ -157,6 +166,199 @@ public sealed class BundleRouteRegressionTests
     }
 
     [Fact]
+    public void Bundle_edit_load_preserves_selected_categories_and_saved_prices()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("values?.Any(category => category.Id.HasValue) != true", source, StringComparison.Ordinal);
+        Assert.Contains("SelectBundleCategories(bundleResult.Categories)", source, StringComparison.Ordinal);
+        Assert.Contains("if (!_eventCategories.Any(category => category.Id == bundleCategory.Id))", source, StringComparison.Ordinal);
+        Assert.Contains("_loadingBundleDataForEdit = true", source, StringComparison.Ordinal);
+        Assert.Contains("shouldInitializePrices && !_loadingBundleDataForEdit", source, StringComparison.Ordinal);
+        Assert.Contains("if (_selectedVenueMap is not null && _venueMapLayout is null)", source, StringComparison.Ordinal);
+        Assert.Contains("await EnsurePriceRowsLoadedAsync()", source, StringComparison.Ordinal);
+        Assert.Contains("if (_selectedVenueMap?.Id != venueMapId)", source, StringComparison.Ordinal);
+        Assert.Contains("initializePrices && _prices.Count == 0", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("_eventCategories = bundleResult.Categories?.ToList() ?? []", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_events_editor_uses_explicit_lists_and_delta_persistence()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+        var normalizedSource = source.Replace("\r\n", "\n", StringComparison.Ordinal);
+        var service = ReadAppSource("Services/ApiEventService.cs");
+        var serviceInterface = ReadAppSource("Services/IEventService.cs");
+
+        Assert.Contains("@L[\"BundleLineup\"]", source, StringComparison.Ordinal);
+        Assert.Contains("@L[\"AvailableEventsToAdd\"]", source, StringComparison.Ordinal);
+        Assert.Contains("bundle-events-target", source, StringComparison.Ordinal);
+        Assert.Contains("bundle-events-source", source, StringComparison.Ordinal);
+        Assert.Contains("bundle-events-selected-list", source, StringComparison.Ordinal);
+        Assert.Equal(1, CountOccurrences(source, "@L[\"SelectedCount\", _eventSelection.Count]"));
+        Assert.DoesNotContain("SearchEvents", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("OnEventSearchChanged", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("_eventSearch", source, StringComparison.Ordinal);
+        Assert.True(
+            source.IndexOf("@L[\"BundleLineup\"]", StringComparison.Ordinal) <
+            source.IndexOf("@L[\"AvailableEventsToAdd\"]", StringComparison.Ordinal),
+            "Selected bundle events should appear before available candidate events.");
+        Assert.Contains("AddSelectedEvent(context)", source, StringComparison.Ordinal);
+        Assert.Contains("RemoveSelectedEvent(item)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Items=\"@SelectedEvents\"", source, StringComparison.Ordinal);
+        Assert.Contains("Items=\"@AvailableCandidateEvents\"", source, StringComparison.Ordinal);
+        Assert.Contains("BundleEventSelectionState _eventSelection", source, StringComparison.Ordinal);
+        Assert.Contains("LoadPersistedBundleEventsAsync(BundleId.Value)", source, StringComparison.Ordinal);
+        Assert.Contains("SaveBundleEventSchedulesAsync(BundleId.Value)", source, StringComparison.Ordinal);
+        Assert.Contains("EventService.RemoveBundleEventSchedulesAsync(bundleId, delta.RemovedEventScheduleIds)", source, StringComparison.Ordinal);
+        Assert.Contains("EventService.AddBundleEventSchedulesAsync(bundleId, delta.AddedEventScheduleIds)", source, StringComparison.Ordinal);
+        Assert.Contains("!_eventSelection.IsPersisted(scheduleId)", source, StringComparison.Ordinal);
+        Assert.Contains("Disabled=\"@(!CanRemoveSelectedEvent(item))\"", source, StringComparison.Ordinal);
+        Assert.Contains("GetDelta(skipRemovals: IsPublishedSeasonPass)", source, StringComparison.Ordinal);
+        Assert.Contains("ScheduleStatus: e.Status", service, StringComparison.Ordinal);
+        Assert.Contains("ScheduleStatus? ScheduleStatus", ReadAppSource("ViewModels/EventViewModel.cs"), StringComparison.Ordinal);
+        Assert.DoesNotContain("<MudItem xs=\"12\" lg=\"7\">", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("<MudItem xs=\"12\" lg=\"5\">", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("_selectedEventsByScheduleId.Clear();\n        _persistedEventScheduleIds.Clear();", normalizedSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("_selectedEventsByScheduleId", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("_persistedEventScheduleIds", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("SelectedItems=\"_visibleSelectedEvents\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("SelectedItemsChanged=\"OnVisibleSelectedEventsChanged\"", source, StringComparison.Ordinal);
+
+        Assert.Contains("Task AddBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds)", serviceInterface, StringComparison.Ordinal);
+        Assert.Contains("Task RemoveBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds)", serviceInterface, StringComparison.Ordinal);
+        Assert.Contains("adminClient.AddBundleEventSchedulesAsync", service, StringComparison.Ordinal);
+        Assert.Contains("adminClient.RemoveBundleEventSchedulesAsync", service, StringComparison.Ordinal);
+    }
+
+    private static int CountOccurrences(string source, string value)
+    {
+        var count = 0;
+        var index = 0;
+
+        while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+
+        return count;
+    }
+
+    [Fact]
+    public void Bundle_price_editor_exposes_debug_gated_copy_to_all_action()
+    {
+        var source = ReadAppSource("Components/BundlePriceEditor.razor");
+        var css = ReadAppSource("Components/BundlePriceEditor.razor.css");
+
+        Assert.Contains("[Parameter] public bool CanCopyPrices", source, StringComparison.Ordinal);
+        Assert.Contains("@if (CanCopyPrices)", source, StringComparison.Ordinal);
+        Assert.Contains("PriceCopyButton", source, StringComparison.Ordinal);
+        Assert.Contains("CopyPriceTypeToAll(context, DefaultPriceTypeName)", source, StringComparison.Ordinal);
+        Assert.Contains("CanCopyPriceType(source, priceType)", source, StringComparison.Ordinal);
+        Assert.Contains("Disabled=\"@(!CanCopyPriceType(context, DefaultPriceTypeName))\"", source, StringComparison.Ordinal);
+        Assert.Contains("Disabled=\"@(!CanCopyPriceType(context, priceType))\"", source, StringComparison.Ordinal);
+        Assert.Contains("price-copy-action", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("StartIcon=\"@Icons.Material.Outlined.ContentCopy\"", source, StringComparison.Ordinal);
+        Assert.Contains("aria-label=\"@L[\"CopyToAll\"]\"", ReadAppSource("Components/Shared/PriceCopyButton.razor"), StringComparison.Ordinal);
+        Assert.Contains("Class=\"bundle-price-editor-table\"", source, StringComparison.Ordinal);
+        Assert.Contains("Class=\"price-cell\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Immediate=\"@true\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Immediate=\"@false\"", source, StringComparison.Ordinal);
+        Assert.Contains("vertical-align: top", css, StringComparison.Ordinal);
+        Assert.Contains(".price-copy-action", css, StringComparison.Ordinal);
+        Assert.Contains("height: 40px", css, StringComparison.Ordinal);
+        Assert.Contains("width: 40px", css, StringComparison.Ordinal);
+        Assert.Contains("display: flex", css, StringComparison.Ordinal);
+        Assert.Contains("align-items: center", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("112px", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("padding-top", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Event_price_editor_exposes_debug_gated_copy_to_all_action()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+        var css = ReadAppSource("Components/Pages/EventEdit.razor.css");
+
+        Assert.Contains("Class=\"event-price-editor-table\"", source, StringComparison.Ordinal);
+        Assert.Contains("<MudTd Style=\"vertical-align: top;\"></MudTd>", source, StringComparison.Ordinal);
+        Assert.Contains("<MudTd Style=\"vertical-align: top;\">", source, StringComparison.Ordinal);
+        Assert.Contains("<MudTd DataLabel=\"@priceType.Key\" Style=\"vertical-align: top;\">", source, StringComparison.Ordinal);
+        Assert.Contains("Class=\"price-cell\"", source, StringComparison.Ordinal);
+        Assert.Contains("_canCopyPrices", source, StringComparison.Ordinal);
+        Assert.Contains("AdminRoles.Debug.Admin", source, StringComparison.Ordinal);
+        Assert.Contains("@if (_canCopyPrices)", source, StringComparison.Ordinal);
+        Assert.Contains("PriceCopyButton", source, StringComparison.Ordinal);
+        Assert.Contains("CopyPriceTypeToAll(context, priceType.Key)", source, StringComparison.Ordinal);
+        Assert.Contains("CanCopyPriceType(source, priceType)", source, StringComparison.Ordinal);
+        Assert.Contains("price-copy-action", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Immediate=\"@true\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Immediate=\"@false\"", source, StringComparison.Ordinal);
+        Assert.Contains("Disabled=\"@(_isReview || !CanCopyPriceType(context, priceType.Key))\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("StartIcon=\"@Icons.Material.Outlined.ContentCopy\"", source, StringComparison.Ordinal);
+        Assert.Contains("SetPriceTypeValue(price, priceType, value)", source, StringComparison.Ordinal);
+        Assert.Contains("row.PriceTypes.TryAdd(key, PriceTypes.TryGetValue(key, out var isBasePrice) && isBasePrice)", source, StringComparison.Ordinal);
+        Assert.Contains("vertical-align: top", css, StringComparison.Ordinal);
+        Assert.Contains(".price-copy-action", css, StringComparison.Ordinal);
+        Assert.Contains("height: 40px", css, StringComparison.Ordinal);
+        Assert.Contains("width: 40px", css, StringComparison.Ordinal);
+        Assert.Contains("display: flex", css, StringComparison.Ordinal);
+        Assert.Contains("align-items: center", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("112px", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("padding-top", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Event_price_editor_exposes_alternative_price_action_in_toolbar()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+        var priceTable = ExtractBetween(source, "Class=\"event-price-editor-table\"", "</MudTable>");
+        var toolbar = ExtractBetween(priceTable, "<ToolBarContent>", "</ToolBarContent>");
+        var header = ExtractBetween(priceTable, "<HeaderContent>", "</HeaderContent>");
+
+        Assert.Contains("OnClick=\"OpenAddDialog\"", toolbar, StringComparison.Ordinal);
+        Assert.Contains("@L[\"AlternativePrice\"]", toolbar, StringComparison.Ordinal);
+        Assert.Contains("StartIcon=\"@Icons.Material.Outlined.Add\"", toolbar, StringComparison.Ordinal);
+        Assert.DoesNotContain("@L[\"AlternativePrice\"]", header, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_create_passes_debug_role_flag_to_price_editor()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("_canCopyPrices", source, StringComparison.Ordinal);
+        Assert.Contains("AdminRoles.Debug.Admin", source, StringComparison.Ordinal);
+        Assert.Contains("CanCopyPrices=\"_canCopyPrices\"", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_create_enables_full_price_editor_parity()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("AllowRowPrices=\"true\"", source, StringComparison.Ordinal);
+        Assert.Contains("AllowSeatPrices=\"true\"", source, StringComparison.Ordinal);
+        Assert.Contains("RebuildAlternatePriceTypes(_prices)", source, StringComparison.Ordinal);
+        Assert.Contains("CreatePriceForm(zone.Id)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("AllowAlternativePriceTypes", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("AllowRowPrices=\"false\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("AllowSeatPrices=\"false\"", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Bundle_price_editor_adds_rows_with_base_and_alternate_price_types()
+    {
+        var source = ReadAppSource("Components/BundlePriceEditor.razor");
+
+        Assert.Contains("CreatePriceRow(zoneId.Value, sectionId.Value)", source, StringComparison.Ordinal);
+        Assert.Contains("row.PriceTypes[DefaultPriceTypeName] = true", source, StringComparison.Ordinal);
+        Assert.Contains("foreach (var priceType in PriceTypes)", source, StringComparison.Ordinal);
+        Assert.Contains("row.PriceTypes.TryAdd(priceType, false)", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Event_edit_resubmits_changes_requested_events_after_save()
     {
         var source = ReadAppSource("Components/Pages/EventEdit.razor");
@@ -165,11 +367,90 @@ public sealed class BundleRouteRegressionTests
         Assert.Contains("ResubmitEventAsync(EventId.Value)", source, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Published_event_edit_uses_generic_save_without_price_list_action()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+
+        Assert.Contains("OnClick=\"PublishAsync\"", source, StringComparison.Ordinal);
+        Assert.Contains("Disabled=\"_eventStatus != AdminEventStatus.Approved || _loading\">@L[\"Publish\"]", source, StringComparison.Ordinal);
+        Assert.Contains("else if (_activeIndex == _maxIndex && !_isReview)", source, StringComparison.Ordinal);
+        Assert.Contains("OnClick=\"SubmitAsync\"", source, StringComparison.Ordinal);
+
+        Assert.DoesNotContain("SavePublishedPriceListAsync", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("CanSavePublishedPriceList", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("SavePriceList", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("else if (_activeIndex == _maxIndex && !(_isReview || _eventStatus == AdminEventStatus.Published))", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Published_event_edit_keeps_media_controls_editable()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+        var imagesStepStart = source.IndexOf("Title=\"@L[\"Images\"]\"", StringComparison.Ordinal);
+        Assert.True(imagesStepStart >= 0, "Images step should exist.");
+
+        var mediaStep = source[imagesStepStart..];
+
+        Assert.DoesNotContain("_eventStatus == AdminEventStatus.Published", mediaStep, StringComparison.Ordinal);
+        Assert.Contains("Disabled=\"@_isReview\"", mediaStep, StringComparison.Ordinal);
+        Assert.Contains("FilesChanged=\"UploadGalleryImagesAsync\"", mediaStep, StringComparison.Ordinal);
+        Assert.Contains("FilesChanged=\"UploadGalleryImagesAsync\"\n                                                   Disabled=\"@_isReview\"", mediaStep.Replace("\r\n", "\n", StringComparison.Ordinal), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Published_event_submit_regenerates_price_list_after_price_or_fee_changes()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+        var priceReferenceService = ReadAppSource("../Odasoft.XBOL.Business/Services/PriceReferenceService.cs");
+
+        Assert.Contains("await RegeneratePublishedPriceListIfNeededAsync(pricesChanged, additionalChargesChanged);", source, StringComparison.Ordinal);
+        Assert.Contains("_eventStatus != AdminEventStatus.Published", source, StringComparison.Ordinal);
+        Assert.Contains("!pricesChanged && !additionalChargesChanged", source, StringComparison.Ordinal);
+        Assert.Contains("await PriceReferenceService.GeneratePriceListAsync(AdminSaleType.Event, EventId.Value);", source, StringComparison.Ordinal);
+        Assert.Contains("GeneratePriceListAsync(AdminSaleType saleType, long referenceId)", priceReferenceService, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Published_bundle_submit_regenerates_price_list_after_price_save()
+    {
+        var source = ReadAppSource("Components/Pages/BundleCreate.razor");
+
+        Assert.Contains("await RegeneratePublishedPriceListIfNeededAsync();", source, StringComparison.Ordinal);
+        Assert.Contains("_bundleStatus != AdminEventStatus.Published", source, StringComparison.Ordinal);
+        Assert.Contains("await PriceReferenceService.GeneratePriceListAsync(AdminSaleType.Bundle, BundleId.Value);", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Event_edit_tracks_price_and_fee_changes_independently_of_price_ids()
+    {
+        var source = ReadAppSource("Components/Pages/EventEdit.razor");
+
+        Assert.Contains("private bool _pricesHaveChanges = false;", source, StringComparison.Ordinal);
+        Assert.Contains("private bool _additionalChargesHaveChanges = false;", source, StringComparison.Ordinal);
+        Assert.Contains("_pricesHaveChanges = true;", source, StringComparison.Ordinal);
+        Assert.Contains("_additionalChargesHaveChanges = true;", source, StringComparison.Ordinal);
+        Assert.Contains("SavePricesAsync(force: false)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("if (_dirtyPriceIds.Any())\n            {\n                await SavePricesAsync();", source.Replace("\r\n", "\n", StringComparison.Ordinal), StringComparison.Ordinal);
+    }
+
     private static string ReadAppSource(string relativePath)
     {
         var path = Path.Combine(GetAppSourceRoot(), relativePath);
 
         return File.ReadAllText(path);
+    }
+
+    private static string ExtractBetween(string source, string start, string end)
+    {
+        var startIndex = source.IndexOf(start, StringComparison.Ordinal);
+        Assert.True(startIndex >= 0, $"Could not find start marker: {start}");
+        startIndex += start.Length;
+
+        var endIndex = source.IndexOf(end, startIndex, StringComparison.Ordinal);
+        Assert.True(endIndex >= 0, $"Could not find end marker: {end}");
+
+        return source[startIndex..endIndex];
     }
 
     private static string GetAppSourceRoot()

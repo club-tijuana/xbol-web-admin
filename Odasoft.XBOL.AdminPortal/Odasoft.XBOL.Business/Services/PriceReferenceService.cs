@@ -18,5 +18,10 @@ namespace Odasoft.XBOL.Business.Services
         {
             return await _adminClient.SavePriceReferenceAsync(request);
         }
+
+        public async Task<GeneratePriceListResponse> GeneratePriceListAsync(AdminSaleType saleType, long referenceId)
+        {
+            return await _adminClient.GeneratePriceListAsync(saleType, referenceId);
+        }
     }
 }

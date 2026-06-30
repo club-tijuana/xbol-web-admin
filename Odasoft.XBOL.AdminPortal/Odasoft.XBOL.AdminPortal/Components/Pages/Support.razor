@@ -69,30 +69,15 @@
                             <MudMenuItem Icon="@Icons.Material.Outlined.ContentCopy"
                                          IconColor="@Color.Secondary"
                                          OnClick="CopyPaymentLink"
-                                         Disabled="
-                                         _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
-                                              || _orderInfoResponse.Status != OrderStatus.Pending
-                            ">
-                            Copiar
-                            </MudMenuItem>
+                                         Disabled="_orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending || _orderInfoResponse.Status != OrderStatus.Pending">Copiar</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Outlined.Cancel"
                                          IconColor="@Color.Secondary"
                                          OnClick="CancelPaymentLink"
-                                         Disabled="
-                                         _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
-                                              || _orderInfoResponse.Status != OrderStatus.Pending
-                            ">
-                            Cancelar
-                            </MudMenuItem>
+                                         Disabled="_orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending || _orderInfoResponse.Status != OrderStatus.Pending">Cancelar</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Outlined.Refresh"
                                          IconColor="@Color.Secondary"
                                          OnClick="RegeneratePaymentLink"
-                                         Disabled="
-                                         _orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending
-                                         || _orderInfoResponse.Status != OrderStatus.Pending
-                            ">
-                            Regenerar
-                            </MudMenuItem>
+                                         Disabled="_orderInfoResponse.PaymentLinkStatus != PaymentLinkStatus.Pending || _orderInfoResponse.Status != OrderStatus.Pending">Regenerar</MudMenuItem>
                         </MudMenu>
                     </MudItem>
                 }
@@ -137,9 +122,9 @@
                     <RowTemplate>
                         <MudTd Style="background-color: #fff8e1;">@context.OrderDateTime?.ToString("dd/MM/yyyy hh:mm tt")</MudTd>
                         <MudTd Style="background-color: #fff8e1;">@context.ItemQuantity</MudTd>
-                        <MudTd Style="background-color: #fff8e1;">@(context.Channel.HasValue ? _localizer[context.Channel?.ToString()] : "N/A")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.Channel.HasValue ? _localizer[context.Channel.Value.ToString()] : "N/A")</MudTd>
                         <MudTd Style="background-color: #fff8e1;">@context.Seller</MudTd>
-                        <MudTd Style="background-color: #fff8e1;">@(context.PaymentMethod.HasValue ? _localizer[context.PaymentMethod.ToString()] : "N/A")</MudTd>
+                        <MudTd Style="background-color: #fff8e1;">@(context.PaymentMethod.HasValue ? _localizer[context.PaymentMethod.Value.ToString()] : "N/A")</MudTd>
                         <MudTd Style="background-color: #fff8e1;">@(context.Total?.ToString("C"))</MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -207,7 +192,7 @@
     private HashSet<OrderItemResponse> _selectedItems = [];
     private int DynamicLg => _orderInfoResponse.PaymentLink != null ? 2 : 3;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         if (!string.IsNullOrWhiteSpace(OrderLocalizer))
         {
@@ -227,7 +212,7 @@
 
         OrderInfoResponse? searchResult = await _supportService.SearchOrderByReferenceAsync(_searchQuery.Trim());
 
-        if (searchResult == null)
+        if (searchResult == null || searchResult.OrderId == null)
         {
             ClearData();
             return;
@@ -241,6 +226,7 @@
         _orderInfo.Add(searchResult);
         _orderItems = searchResult.Items?.Count() > 0 ? searchResult.Items.ToList() : [];
         _activeTabIndex = 0;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task DoSearchAsync()
@@ -389,7 +375,8 @@
             }
 
             _snackbar.Add("Ocurrió un error al reenviar el recibo.", Severity.Error);
-        }    }
+        }
+    }
 
     private async Task ReissueTicketsAsync()
     {
@@ -405,7 +392,8 @@
             }
 
             _snackbar.Add("Ocurrió un error al reemitir los boletos.", Severity.Error);
-        }    }
+        }
+    }
 
     private async Task SendTicketsAsync()
     {
@@ -421,7 +409,8 @@
             }
 
             _snackbar.Add("Ocurrió un error al enviar los boletos.", Severity.Error);
-        }        ;
+        }
+        ;
     }
 
     private async Task SendCourtesiesAsync()

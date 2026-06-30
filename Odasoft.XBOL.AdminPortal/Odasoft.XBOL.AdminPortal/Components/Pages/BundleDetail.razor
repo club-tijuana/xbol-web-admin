@@ -16,6 +16,7 @@
 @inject IDialogService _dialogService;
 @inject ISnackbar _snackbar;
 @inject AdminMediaUrlResolver MediaUrlResolver;
+@inject ILogger<BundleDetail> Logger
 
 <PageTitle>@(_bundle?.Name ?? "")</PageTitle>
 
@@ -120,7 +121,7 @@
     private BundleDTO? _bundle;
     private ImageHeroBannerViewModel _banner = new();
     private ScheduleAndPoliciesViewModel _scheduleAndPolicies = new();
-    private EventMediaSetResponse _media = new();
+    private MediaSetResponse _media = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -175,11 +176,11 @@
                 AdditionalComments = _bundle?.AdditionalComments
             };
 
-            _media = new EventMediaSetResponse
+            _media = new MediaSetResponse
                 {
-                    Banner = _bundle?.Media?.FirstOrDefault(x => x.MediaType == AdminMediaType.Banner) ?? new MediaResponse { Url = _bundle?.BannerImageUrl },
-                    Sponsors = _bundle?.Media?.Where(x => x.MediaType == AdminMediaType.Sponsor).ToList() ?? new List<MediaResponse>(),
-                    Gallery = _bundle?.Media?.Where(x => x.MediaType == AdminMediaType.Gallery).ToList() ?? new List<MediaResponse>()
+                    Banner = _bundle?.Media?.Banner ?? new MediaResponse { Url = _bundle?.BannerImageUrl },
+                    Sponsors = _bundle?.Media?.Sponsors?.ToList() ?? [],
+                    Gallery = _bundle?.Media?.Gallery?.ToList() ?? []
                 };
 
 
@@ -198,7 +199,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading bundle '{BundleId}': {ex.Message}");
+            Logger.LogError(ex, $"Error loading bundle '{BundleId}'");
             _error = true;
             _snackbar.Add(L["ErrorLoading"], Severity.Error);
         }
@@ -225,7 +226,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error deleting bundle: {ex.Message}");
+            Logger.LogError(ex, "Error deleting bundle");
             _snackbar.Add(L["DeleteError"], Severity.Error);
         }
     }

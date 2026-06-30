@@ -304,6 +304,12 @@ public static class AppSettingsSchemaGenerator
         [Description("Seats.io integration settings")]
         public SeatsIoOptions? SeatsIo { get; set; }
 
+        [Description("Admin Portal localization and display settings")]
+        public LocalizationOptions? Localization { get; set; }
+
+        [Description("Payment-link defaults")]
+        public PaymentLinkOptions? PaymentLink { get; set; }
+
         [Description("Hosting / reverse proxy settings")]
         public HostingOptions? Hosting { get; set; }
     }

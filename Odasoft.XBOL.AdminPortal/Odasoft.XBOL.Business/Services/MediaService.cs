@@ -27,18 +27,27 @@ namespace Odasoft.XBOL.Business.Services
             return await adminClient.GetProductMediaAsync(referenceId, referenceType);
         }
 
-        public async Task<EventMediaSetResponse> GetEventMediaAsync(long eventId)
+        public async Task<MediaSetResponse> GetEventMediaAsync(long eventId)
         {
             return await adminClient.GetEventMediaAsync(eventId);
         }
 
-        public async Task<EventMediaSetResponse> ReconcileEventMediaAsync(
+        public async Task<MediaSetResponse> ReconcileEventMediaAsync(
             long eventId,
             IEnumerable<EventMediaDesiredItem> items,
             IEnumerable<FileParameter>? files = null)
         {
             var serializedItems = Newtonsoft.Json.JsonConvert.SerializeObject(items);
             return await adminClient.ReconcileEventMediaAsync(eventId, serializedItems, files ?? []);
+        }
+
+        public async Task<MediaSetResponse> ReconcileBundleMediaAsync(
+            long bundleId,
+            IEnumerable<BundleMediaDesiredItem> items,
+            IEnumerable<FileParameter>? files = null)
+        {
+            var serializedItems = Newtonsoft.Json.JsonConvert.SerializeObject(items);
+            return await adminClient.ReconcileBundleMediaAsync(bundleId, serializedItems, files ?? []);
         }
     }
 }

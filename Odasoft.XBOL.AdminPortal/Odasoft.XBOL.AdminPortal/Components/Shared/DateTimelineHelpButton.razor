@@ -1,0 +1,42 @@
+@inject IDialogService DialogService
+
+<MudTooltip Text="@Tooltip" Placement="Placement.Top">
+    <MudIconButton Icon="@Icons.Material.Outlined.Info"
+                   Color="MudBlazor.Color.Secondary"
+                   Size="Size.Small"
+                   Edge="Edge.End"
+                   OnClick="OpenTimelineHelpAsync" />
+</MudTooltip>
+
+@code {
+    private static readonly DialogOptions HelpDialogOptions = new()
+    {
+        CloseButton = true,
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true
+    };
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Tooltip { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Overview { get; set; } = string.Empty;
+
+    [Parameter]
+    public IReadOnlyList<DateTimelineStep> Items { get; set; } = [];
+
+    private async Task OpenTimelineHelpAsync()
+    {
+        var parameters = new DialogParameters<DateTimelineHelpDialog>
+        {
+            { x => x.Title, Title },
+            { x => x.Overview, Overview },
+            { x => x.Items, Items }
+        };
+
+        await DialogService.ShowAsync<DateTimelineHelpDialog>(Title, parameters, HelpDialogOptions);
+    }
+}

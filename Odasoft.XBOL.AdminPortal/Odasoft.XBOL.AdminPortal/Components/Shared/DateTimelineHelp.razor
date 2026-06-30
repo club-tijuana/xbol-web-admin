@@ -1,0 +1,39 @@
+<MudStack Spacing="3">
+    <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary">
+        @Overview
+    </MudText>
+
+    <MudTimeline TimelinePosition="TimelinePosition.Start" Class="date-timeline-help">
+        @for (var index = 0; index < Items.Count; index++)
+        {
+            DateTimelineStep item = Items[index];
+            var stepNumber = index + 1;
+
+            <MudTimelineItem Color="MudBlazor.Color.Primary" Size="Size.Medium" Elevation="0">
+                <ItemDot>
+                    <MudText Typo="Typo.caption" Class="date-timeline-help-dot">
+                        @stepNumber
+                    </MudText>
+                </ItemDot>
+                <ChildContent>
+                    <MudStack Spacing="1" Class="pb-2">
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold">
+                            @item.Label
+                        </MudText>
+                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary">
+                            @item.Description
+                        </MudText>
+                    </MudStack>
+                </ChildContent>
+            </MudTimelineItem>
+        }
+    </MudTimeline>
+</MudStack>
+
+@code {
+    [Parameter]
+    public string Overview { get; set; } = string.Empty;
+
+    [Parameter]
+    public IReadOnlyList<DateTimelineStep> Items { get; set; } = [];
+}

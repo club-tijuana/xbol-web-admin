@@ -1,8 +1,13 @@
+@using Microsoft.Extensions.Options
 @using Odasoft.XBOL.Business
+@using Odasoft.XBOL.AdminPortal.Helpers
 @using Odasoft.XBOL.AdminPortal.Components.Pages
+@using Odasoft.XBOL.Common.Options
 
 @inject AppLocalizer<Events> L
 @inject IDialogService _dialogService
+@inject IOptions<PaymentLinkOptions> PaymentLinkOptions
+@inject IOptions<Odasoft.XBOL.Common.Options.LocalizationOptions> LocalizationOptions
 
 <MudDialog>
     <TitleContent>
@@ -26,6 +31,7 @@
 
         <MudButton Color="Color.Primary"
                    Variant="Variant.Filled"
+                   Disabled="@(!HasValidExpiration)"
                    OnClick="Confirm">
             Confirmar
         </MudButton>
@@ -35,16 +41,29 @@
 @code {
     private PaymentLinkRequest _request = new();
 
-    private DateTime? ExpirationDate { get; set; } = DateTime.Now;
+    private DateTime? ExpirationDate { get; set; }
 
     private string ExpirationDateText =>
         ExpirationDate?.ToString("dd/MM/yy - HH:mm 'hrs'") ?? "";
 
+    private bool HasValidExpiration =>
+        _request.ExpiresAt > DateTimeOffset.UtcNow;
+
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
+    protected override void OnInitialized()
+    {
+        SetDefaultExpiration();
+    }
+
     private void Confirm()
     {
+        if (!HasValidExpiration)
+        {
+            return;
+        }
+
         MudDialog.Close(DialogResult.Ok(_request));
     }
 
@@ -80,7 +99,14 @@
         if (!result.Canceled && result.Data is DateTime selected)
         {
             ExpirationDate = selected;
-            _request.ExpiresAt = selected;
+            _request.ExpiresAt = PaymentLinkDateTime.ToConfiguredOffset(selected, LocalizationOptions.Value);
         }
+    }
+
+    private void SetDefaultExpiration()
+    {
+        var expiration = PaymentLinkDateTime.CreateDefaultExpiration(PaymentLinkOptions.Value, LocalizationOptions.Value);
+        _request.ExpiresAt = expiration;
+        ExpirationDate = PaymentLinkDateTime.ToDisplayDateTime(expiration, LocalizationOptions.Value);
     }
 }

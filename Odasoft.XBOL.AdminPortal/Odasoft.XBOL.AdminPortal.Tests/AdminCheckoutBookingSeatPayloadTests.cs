@@ -90,12 +90,14 @@ public sealed class AdminCheckoutBookingSeatPayloadTests
         {
             SeatId = "B-1-1",
             Price = 375m,
+            PriceListItemId = 501,
             IsSelected = true
         },
         new()
         {
             SeatId = "B-1-2",
             Price = 425m,
+            PriceListItemId = 502,
             IsSelected = true
         }
     ];
@@ -140,8 +142,10 @@ public sealed class AdminCheckoutBookingSeatPayloadTests
         Assert.Equal(2, seats.Count);
         Assert.Equal("B-1-1", (string?)seats[0]?["seatKey"]);
         Assert.Equal(375m, (decimal?)seats[0]?["seatPrice"]);
+        Assert.Equal(501, (long?)seats[0]?["priceListItemId"]);
         Assert.Equal("B-1-2", (string?)seats[1]?["seatKey"]);
         Assert.Equal(425m, (decimal?)seats[1]?["seatPrice"]);
+        Assert.Equal(502, (long?)seats[1]?["priceListItemId"]);
     }
 
     private sealed class CapturingHandler : HttpMessageHandler

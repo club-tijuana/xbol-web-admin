@@ -1,11 +1,13 @@
 @using FluentValidation;
 @using Microsoft.Extensions.Options;
+@using Odasoft.XBOL.AdminPortal.Helpers
 @using Odasoft.XBOL.AdminPortal.States;
 @using Odasoft.XBOL.AdminPortal.Validators
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
 @using Odasoft.XBOL.Common.Helpers;
+@using Odasoft.XBOL.Common.Options
 
 @implements IAsyncDisposable;
 
@@ -15,11 +17,14 @@
 @inject IAdminClient _adminClient
 @inject NavigationManager _navigation
 @inject IOptions<SeatsIoOptions> SeatsOptions
+@inject IOptions<PaymentLinkOptions> PaymentLinkOptions
+@inject IOptions<Odasoft.XBOL.Common.Options.LocalizationOptions> LocalizationOptions
 @inject AppLocalizer<Events> L
 @inject LoadingState _loadingState;
 @inject IDialogService _dialogService;
 @inject ClientsService _clientsService;
 @inject CatalogsService _catalogsService;
+@inject SettingsService _settingsService
 @inject OrdersService OrdersService;
 @inject ExchangeRateService _exchangeRateService
 @inject ILogger<BoxOfficeSeasonCheckout> Logger;
@@ -37,7 +42,12 @@
                     <MudText Typo="Typo.body1">@_eventInfo.StartDate.ToString("dd/MM/yyyy h:mm tt")</MudText>
                 </MudStack>
             </MudStack>
-            <MudButton OnClick="ReturnAsync" Variant="Variant.Filled" DropShadow="false" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
+            @if(!IsRenewal 
+            || (_eventInfo.PreSaleDate.HasValue && _eventInfo.PreSaleDate <= DateTime.Now)
+            || (_eventInfo.OnSaleDate.HasValue && _eventInfo.OnSaleDate <= DateTime.Now))
+            {
+                <MudButton OnClick="ReturnAsync" Variant="Variant.Filled" DropShadow="false" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
+            }
         </MudItem>
         <MudItem xs="3">
             <MudGrid Spacing="10">
@@ -144,7 +154,7 @@
             <MudGrid class="d-flex gap-4 align-center mb-3">
                 <MudItem xs="12">
 
-                    <MudToggleGroup T="int" @bind-Value="_value">
+                    <MudToggleGroup T="int" @bind-Value="_value" @bind-Value:after="OnTogglePaymentTypeChanged">
 
                         <MudToggleItem T="int" Value="1" Text="Caja" />
                         <MudToggleItem T="int" Value="2" Text="Link de pago" />
@@ -201,6 +211,22 @@
                                          HideSpinButtons="true"
                                          Immediate="false" />
                         <MudButton Variant="Variant.Outlined" @onclick="SetAllDolar">TODO</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" class="d-flex gap-4 align-center">
+                        <MudNumericField @bind-Value="_request.CreditAmount"
+                                         For="@(() => _request.CreditAmount)"
+                                         Format="N2"
+                                         Label="@L["Credit"]"
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                         Margin="Margin.Dense"
+                                         Placeholder="0.00"
+                                         HideSpinButtons="true"
+                                         Disabled="@CreditAmountIsDisable()"
+                                         Immediate="false"
+                                         Max="@Math.Max(0, RemainingWithoutCredit)" />
+                        <MudButton Variant="Variant.Outlined" @onclick="SetAllCreditAsync" Disabled="@CreditAmountIsDisable()">TODO</MudButton>
                     </MudItem>
                     <MudItem xs="12" class="d-flex gap-4 align-center">
                         <MudNumericField @bind-Value="_request.OtherAmount"
@@ -364,6 +390,7 @@
 
     private bool _isSubmitting = false;
     private bool _successfulPurchase = false;
+    private bool _returningToSeats = false;
 
     private int _value = 1;
 
@@ -381,6 +408,7 @@
         (_request.CardAmount ?? 0) +
         (_request.CashAmount ?? 0) +
         DollarAmountInMXN +
+        (_request.CreditAmount ?? 0) +
         (_request.OtherAmount ?? 0);
 
     private decimal TotalReceived =>
@@ -395,8 +423,17 @@
 
     private decimal RemainingBalance => TotalPay - _cartState.TotalPrice - TotalChangeMx;
 
+    private decimal RemainingWithoutCredit =>
+        _cartState.TotalPrice
+        - (
+            (_request.CardAmount ?? 0)
+            + (_request.CashAmount ?? 0)
+            + DollarAmountInMXN
+            + (_request.OtherAmount ?? 0)
+        );
+
     private bool HasValidPaymentLinkExpiration =>
-        _request.PaymentLinkExpiresAt != null;
+        _request.PaymentLinkExpiresAt > DateTimeOffset.UtcNow;
 
     private bool HasBalanceError =>
         _value == 1 &&
@@ -406,7 +443,7 @@
         _value == 2 &&
         !HasValidPaymentLinkExpiration;
 
-    private DateTime? ExpirationDate { get; set; } = DateTime.Now;
+    private DateTime? ExpirationDate { get; set; }
 
     private string ExpirationDateText =>
         ExpirationDate?.ToString("dd/MM/yy - HH:mm 'hrs'") ?? "";
@@ -417,6 +454,8 @@
     private Color RemainingBalanceColor => RemainingBalance > 0 ? Color.Error : RemainingBalance < 0 ? Color.Warning : Color.Success;
 
     private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
+    private bool _validateClientHasCredit = false;
+    private bool _clientHasCredit = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -424,8 +463,17 @@
 
         try
         {
-            _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
-            exchangeRate = await _exchangeRateService.GetExchangeRateBySeasonAsync(_cartState.CurrentEventId.Value);
+            var exchangeRateTask = _exchangeRateService.GetExchangeRateBySeasonAsync(_cartState.CurrentEventId.Value);
+            var phoneTask = _catalogsService.GetPhoneRegionCodesAsync();
+            var creditSettingsTask = _settingsService.GetClientCreditSettingsAsync();
+
+            await Task.WhenAll(exchangeRateTask, phoneTask, creditSettingsTask);
+
+            _phoneRegionCodes = await phoneTask;
+            exchangeRate = await exchangeRateTask;
+            var creditSettings = await creditSettingsTask;
+
+            _validateClientHasCredit = creditSettings?.ValidateClientHasCredit ?? false;
 
             if (IsRenewal && OrderInfo is not null)
             {
@@ -438,22 +486,43 @@
                 _request.Neighborhood = OrderInfo.Neighbourhood;
                 _request.Gender = (ClientGender?)OrderInfo.Gender;
                 _request.Birthday = DateTimeHelpers.ToNullableDateTime(OrderInfo.Dob);
+                _clientHasCredit = OrderInfo.HasCredit ?? false;
             }
-
-            // TODO: Move this to a proper service
-            var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
-            {
-                Id = _cartState.CurrentEventId.Value,
-                Seats = _cartState.SelectedSeatsKeys,
-                SaleType = SaleType.Bundle
-            });
-
-            _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
         }
         catch (Exception)
         {
             _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
             await OnReturn.InvokeAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if ((!IsRenewal
+                    || (_eventInfo.PreSaleDate.HasValue && _eventInfo.PreSaleDate <= DateTime.Now)
+                    || (_eventInfo.OnSaleDate.HasValue && _eventInfo.OnSaleDate <= DateTime.Now))
+                    && string.IsNullOrWhiteSpace(_cartState.HoldToken))
+                {
+                    // TODO: Move this to a proper service
+                    var holdToken = await _adminClient.HoldSeatsAsync(new HoldSeatsRequest
+                    {
+                        Id = _cartState.CurrentEventId.Value,
+                        Seats = _cartState.SelectedSeatsKeys,
+                        SaleType = SaleType.Bundle
+                    });
+
+                    _cartState.SetHoldToken(holdToken.Token, holdToken.ExpiresAt.GetValueOrDefault());
+                }
+            }
+            catch (Exception)
+            {
+                _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
+                await OnReturn.InvokeAsync();
+            }
         }
     }
 
@@ -480,6 +549,8 @@
                 _request.Gender = (ClientGender?)client.Gender;
                 _request.Birthday = DateTimeHelpers.ToNullableDateTime(client.Dob);
             }
+
+            _clientHasCredit = client?.HasCredit ?? false;
         }
         catch (ApiException ex)
         {
@@ -496,14 +567,20 @@
 
     }
 
+    private bool CreditAmountIsDisable()
+    {
+        if (_validateClientHasCredit)
+        {
+            return (!_clientHasCredit);
+        }
+
+        return false;
+    }
+
     private async Task ReturnAsync()
     {
-        bool exit = await ConfirmExitAsync();
-
-        if (exit)
-        {
-            await OnReturn.InvokeAsync();
-        }
+        _returningToSeats = true;
+        await OnReturn.InvokeAsync();
     }
 
     private async Task<bool> ConfirmExitAsync()
@@ -558,6 +635,7 @@
     private void ClearPaymentExpirationsAsync()
     {
         _request.PaymentLinkExpiresAt = null;
+        ExpirationDate = null;
     }
 
     private void HandleCartChange()
@@ -601,6 +679,20 @@
         );
     }
 
+    private void SetAllCreditAsync()
+    {
+        ClearAmountsAsync();
+
+        if (_validateClientHasCredit)
+        {
+            _request.CreditAmount = _clientHasCredit ? _cartState.TotalPrice : 0;
+        }
+        else
+        {
+            _request.CreditAmount = _cartState.TotalPrice;
+        }
+    }
+
     private async void SetAllOtherAsync()
     {
         ClearAmountsAsync();
@@ -632,10 +724,11 @@
     {
         if (_value == 1)
         {
-            _request.PaymentLinkExpiresAt = null;
+            ClearPaymentExpirationsAsync();
         }
         else
         {
+            SetDefaultPaymentLinkExpiration();
             ClearAmountsAsync();
         }
     }
@@ -645,9 +738,17 @@
         if (_isSubmitting)
             return;
 
+        if (_validateClientHasCredit && !_clientHasCredit)
+        {
+            _request.CreditAmount = 0;
+        }
+
         _request.PendingPay = PendingPay;
         _request.ExchangeRate = exchangeRate.Rate ?? 0;
         _request.TotalPrice = _cartState.TotalPrice;
+        // _request.SubTotal = _cartState.SubTotal;
+        // _request.TotalFees = _cartState.TotalCommissions;
+        // _request.TotalTaxes = _cartState.TotalTaxes;
 
         await _form.ValidateAsync();
 
@@ -701,6 +802,7 @@
                 CardAmount = _request.CardAmount,
                 CashAmount = _request.CashAmount,
                 DolarAmount = _request.DolarAmount,
+                CreditAmount = _request.CreditAmount,
                 OtherAmount = _request.OtherAmount
             },
             ChangeInfoRequest = new ChangeInfoRequest {
@@ -736,8 +838,17 @@
                 _navigation.NavigateTo("./box-office");
             }
         }
+        catch (ApiException apiEx)
+        {
+            LogBookingApiException(apiEx, "API failure");
+            _snackbar.Add(GetApiErrorMessage(apiEx.Response), MudBlazor.Severity.Error);
+
+            await ReleaseTokenAsync();
+            await OnReturn.InvokeAsync();
+        }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to book season pass seats");
             _snackbar.Add(L["Seats_PaymentError"], MudBlazor.Severity.Error);
 
             await ReleaseTokenAsync();
@@ -748,6 +859,46 @@
             _isSubmitting = false;
             _loadingState.Hide();
         }
+    }
+
+    private void LogBookingApiException(ApiException apiEx, string failureKind)
+    {
+        Logger.LogError(
+            apiEx,
+            "Season pass booking API failure ({FailureKind}). StatusCode={StatusCode} ResponseBody={ResponseBody}",
+            failureKind,
+            apiEx.StatusCode,
+            apiEx.Response);
+    }
+
+    private string GetApiErrorMessage(string? responseBody)
+    {
+        if (string.IsNullOrWhiteSpace(responseBody))
+        {
+            return L["Seats_PaymentError"];
+        }
+
+        try
+        {
+            var parsed = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
+            var detail = parsed.Value<string>("detail");
+            if (!string.IsNullOrWhiteSpace(detail))
+            {
+                return detail;
+            }
+
+            var title = parsed.Value<string>("title");
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                return title;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to parse API error response");
+        }
+
+        return L["Seats_PaymentError"];
     }
 
     private async Task OpenTermsAndConditions()
@@ -782,13 +933,23 @@
         if (!result.Canceled && result.Data is DateTime selected)
         {
             ExpirationDate = selected;
-            _request.PaymentLinkExpiresAt = selected;
+            _request.PaymentLinkExpiresAt = PaymentLinkDateTime.ToConfiguredOffset(selected, LocalizationOptions.Value);
         }
+    }
+
+    private void SetDefaultPaymentLinkExpiration()
+    {
+        var expiration = PaymentLinkDateTime.CreateDefaultExpiration(PaymentLinkOptions.Value, LocalizationOptions.Value);
+        _request.PaymentLinkExpiresAt = expiration;
+        ExpirationDate = PaymentLinkDateTime.ToDisplayDateTime(expiration, LocalizationOptions.Value);
     }
 
     public async ValueTask DisposeAsync()
     {
         _cartState.OnChange -= StateHasChanged;
-        await ReleaseTokenAsync();
+        if (!_returningToSeats)
+        {
+            await ReleaseTokenAsync();
+        }
     }
 }

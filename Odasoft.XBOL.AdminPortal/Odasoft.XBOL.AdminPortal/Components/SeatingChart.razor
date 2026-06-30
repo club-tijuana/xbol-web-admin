@@ -36,6 +36,12 @@
     public string Session { get; set; } = SESSION_NONE;
 
     [Parameter]
+    public string Mode { get; set; } = "createOrder";
+
+    [Parameter]
+    public List<string>? Order { get; set; }
+
+    [Parameter]
     public string? HoldToken { get; set; }
 
     private const string SESSION_CONTINUE = "continue";
@@ -100,7 +106,8 @@
                     channels = Channels,
                     categoryFilter = categoryFilter,
                     language = Language,
-                    mode = "createOrder"
+                    mode = Mode,
+                    order = Order
                 };
 
                 _chart = await _module.InvokeAsync<IJSObjectReference>("renderChart", ChartId, config, _objRef);
@@ -137,12 +144,18 @@
     }
 
     [JSInvokable]
-    public async Task HandleSeatSelected(string seatId, decimal price, long priceListItemId, string? category = null, string? selectedTicketType = null)
+    public async Task HandleSeatSelected(string seatId, decimal price, long priceListItemId, string? category, string? selectedTicketType, decimal originalPrice, List<SeatFeeInfo> fees)
     {
+        var normalizedFees = fees
+            .Select(f => f with { ChargeCategory = string.IsNullOrEmpty(f.ChargeCategory) ? "Fee" : f.ChargeCategory })
+            .ToList();
+
         SeatInfo seat = new SeatInfo
         {
             SeatId = seatId,
             Price = price,
+            OriginalPrice = originalPrice,
+            Fees = normalizedFees,
             PriceListItemId = priceListItemId,
             Category = category,
             SelectedTicketType = selectedTicketType,
@@ -216,6 +229,14 @@
     }
 
     public async ValueTask TrySelectObjectsAsync(string[] seats)
+    {
+        if (_module is null || _chart is null)
+            return;
+
+        await _module.InvokeAsync<string[]>("trySelectObjects", _chart, seats, _objRef);
+    }
+
+    public async ValueTask TrySelectObjectsAsync(object[] seats)
     {
         if (_module is null || _chart is null)
             return;

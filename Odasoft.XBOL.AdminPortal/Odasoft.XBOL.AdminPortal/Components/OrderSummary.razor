@@ -10,8 +10,8 @@
 
 <SeatList Items="CartState.SelectedSeats"
           Chart="Chart"
-          Title="TOTAL"
-          Total="@CartState.TotalPrice.ToString(FormatConstants.CURRENCY)"
+          Title="@(CartState.HasFeeBreakdown ? "SUBTOTAL" : "TOTAL")"
+          Total="@(CartState.HasFeeBreakdown ? CartState.SubTotal.ToString(FormatConstants.CURRENCY) : CartState.TotalPrice.ToString(FormatConstants.CURRENCY))"
           OnClearAll="ClearAllCallback">
     <HeaderLeadingContent>
         @if (AllowPartialUpdate)
@@ -51,6 +51,29 @@
         }
     </RowActionContent>
     <FooterContent>
+        @if (CartState.HasFeeBreakdown)
+        {
+            <div class="px-4 pb-2">
+                @if (CartState.TotalCommissions > 0)
+                {
+                    <div class="d-flex justify-space-between">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Comisiones</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@CartState.TotalCommissions.ToString(FormatConstants.CURRENCY)</MudText>
+                    </div>
+                }
+                @if (CartState.TotalTaxes > 0)
+                {
+                    <div class="d-flex justify-space-between">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Impuestos</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@CartState.TotalTaxes.ToString(FormatConstants.CURRENCY)</MudText>
+                    </div>
+                }
+                <div class="d-flex justify-space-between mt-1">
+                    <MudText Typo="Typo.body2"><b>Total</b></MudText>
+                    <MudText Typo="Typo.body2"><b>@CartState.TotalPrice.ToString(FormatConstants.CURRENCY)</b></MudText>
+                </div>
+            </div>
+        }
         @if (CartState.HoldExpirationTime.HasValue)
         {
             <MudStack Row="true" Justify="Justify.Center" Class="pa-4">
@@ -157,7 +180,14 @@
     {
         if (Chart is not null)
         {
-            await Chart.TrySelectObjectsAsync([seat.SeatId]);
+            if (string.IsNullOrWhiteSpace(seat.SelectedTicketType))
+            {                
+                await Chart.TrySelectObjectsAsync([seat.SeatId]);
+            }
+            else
+            {
+                await Chart.TrySelectObjectsAsync([new { label = seat.SeatId, ticketType = seat.SelectedTicketType }]);
+            }
         }
         else
         {

@@ -1,6 +1,7 @@
 @using Odasoft.XBOL.AdminPortal.Components.Shared
 @using Odasoft.XBOL.AdminPortal.Services
 @using Odasoft.XBOL.AdminPortal.ViewModels
+@using Odasoft.XBOL.Auth
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
 @using Odasoft.XBOL.Common.Constants
@@ -93,13 +94,15 @@
                 <MudAlert Severity="Severity.Normal" Class="mx-4">@L["NoEventsFound"]</MudAlert>
             </NoRecordsContent>
             <Columns>
-                <PropertyColumn Property="x => x.DateTime" Sortable="true" Filterable="false"
+                <PropertyColumn Property="x => x.StartDateTime" Sortable="true" Filterable="false"
                                 InitialDirection="MudSortDirection.Descending">
                     <HeaderTemplate>
                         <span Class="pl-lg-4">@L["ColumnDateTime"]</span>
                     </HeaderTemplate>
                     <CellTemplate>
-                        <MudText Typo="Typo.body2" Class="pl-lg-4">@context.Item.DateTime.ToString(FormatConstants.DATE_TIME)</MudText>
+                        <MudText Typo="Typo.body2" Class="pl-lg-4">
+                            @EventDisplayDateHelper.GetDateRange(context.Item.StartDateTime, context.Item.EndDateTime)
+                            </MudText>
                     </CellTemplate>
                 </PropertyColumn>
 
@@ -160,12 +163,16 @@
     [Parameter] public bool Dense { get; set; }
     [Parameter] public string? Height { get; set; }
 
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
     private bool _loading;
     private string _searchString = "";
     private string? _selectedVenue;
     private DateRange? _dateRange;
     private MudDataGrid<EventViewModel> _dataGrid = default!;
     private List<VenueResponse> _venues = [];
+    private bool _canOverrideSaleWindow;
 
     private bool HasAnyFilter =>
         !string.IsNullOrWhiteSpace(_selectedVenue) ||
@@ -174,6 +181,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (AuthenticationStateTask is not null)
+        {
+            var authState = await AuthenticationStateTask;
+            _canOverrideSaleWindow = AdminPermissionScopes.HasPermission(authState.User, AdminPermissions.Orders.OverrideSaleWindow);
+        }
+
         try
         {
             _venues = await CatalogsService.GetVenuesAsync();
@@ -241,7 +254,7 @@
             : $"./events/{item.Id}/key/{item.ExternalEventKey}/booking";
     }
 
-    private static bool CanBook(EventViewModel item)
+    private bool CanBook(EventViewModel item)
     {
         if (string.IsNullOrWhiteSpace(item.ExternalEventKey))
             return false;
@@ -255,6 +268,7 @@
             item.HasRenewalWindow,
             item.RenewalEndDate,
             item.IsBookable,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow,
+            _canOverrideSaleWindow);
     }
 }

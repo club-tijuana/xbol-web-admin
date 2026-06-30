@@ -18,6 +18,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         EventCatalogItemType? itemType = null,
         BundleType? bundleType = null,
         bool? upcoming = null,
+        bool? buyableOnly = null,
         AdminEventStatus? status = null)
     {
         var response = await adminClient.GetEventCatalogItemsAsync(
@@ -29,6 +30,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
             startDate: ToOffset(filters?.DateFrom),
             endDate: ToEndOffset(filters?.DateTo),
             upcoming: upcoming,
+            buyableOnly: buyableOnly,
             sortBy: sortColumn,
             descending: sortDescending,
             page: page + 1,
@@ -38,6 +40,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         var items = response.Items?.Select(e => new EventViewModel(
             e.Id ?? 0,
             e.ScheduledStartDate?.DateTime ?? default,
+            e.ScheduledEndDate?.DateTime,
             e.Name ?? "",
             FormatCategories(e.Categories),
             e.VenueName ?? "",
@@ -94,6 +97,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
             e.EventId ?? 0,
             e.EventScheduleId ?? 0,
             e.ScheduledStartDate?.DateTime ?? default,
+            e.ScheduledEndDate?.DateTime,
             e.Name ?? "",
             FormatCategories(e.Categories),
             e.VenueName ?? "",
@@ -136,6 +140,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         var items = response.Items?.Select(e => new EventViewModel(
             e.EventId ?? 0,
             e.ScheduledStartDate?.DateTime ?? default,
+            e.ScheduledEndDate?.DateTime,
             e.Name ?? "",
             FormatCategories(e.Categories),
             e.VenueName ?? "",
@@ -145,7 +150,8 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
             e.ExternalEventKey,
             ItemType: EventCatalogItemType.Event,
             EventScheduleId: e.EventScheduleId,
-            VenueMapId: e.VenueMapId
+            VenueMapId: e.VenueMapId,
+            ScheduleStatus: e.Status
         )).ToArray() ?? [];
 
         return new GridData<EventViewModel>
@@ -183,6 +189,7 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
         var items = response.Items?.Select(e => new EventViewModel(
             e.Id,
             e.ScheduledStartDate.DateTime,
+            e.ScheduledEndDate.DateTime,
             e.Name ?? "",
             FormatCategories(e.Categories),
             e.VenueName ?? "",
@@ -205,52 +212,24 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
 
     public async Task<BundleDTO> GetBundleByIdAsync(long id) => await adminClient.GetBundleByIdAsync(id);
 
-    public async Task<GridData<EventViewModel>> GetEventsOnSaleAsync(
-        int page,
-        int pageSize,
-        string? sortColumn,
-        bool sortDescending,
-        string? search = null,
-        EventFilterParameters? filters = null)
-    {
-        var response = await adminClient.GetEventsOnSaleAsync(
-            venues: filters?.Venues != null && filters.Venues.Count > 0 ? string.Join(",", filters.Venues) : null,
-            categories: filters?.Categories != null && filters.Categories.Count > 0 ? string.Join(",", filters.Categories) : null,
-            startDate: filters?.DateFrom,
-            endDate: filters?.DateTo,
-            search: search,
-            sortBy: sortColumn,
-            descending: sortDescending,
-            page: page + 1,
-            pageSize: pageSize
-        );
-
-        var items = response.Items?.Select(e => new EventViewModel(
-            e.Id,
-            e.ScheduledStartDate.DateTime,
-            e.Name ?? "",
-            FormatCategories(e.Categories),
-            e.VenueName ?? "",
-            e.AvailableSeats,
-            e.TotalSeats,
-            e.Status,
-            e.ExternalEventKey,
-            mediaUrlResolver.Resolve(e.PosterImageUrl),
-            mediaUrlResolver.Resolve(e.BannerImageUrl),
-            e.IsSeason
-        )).ToArray() ?? [];
-
-        return new GridData<EventViewModel>
-        {
-            TotalItems = response.TotalCount,
-            Items = items
-        };
-    }
-
     public async Task<List<AdminEventCategoryResult>> GetCategoriesAsync()
     {
         var result = await adminClient.GetCategoriesAsync();
         return result.ToList();
+    }
+
+    public async Task<List<BundleListItemDTO>> GetSeasonPassBundlesAsync()
+    {
+        var result = await adminClient.GetBundlesAsync(
+            status: null,
+            bundleType: BundleType.SeasonPass,
+            searchTerm: null,
+            sortBy: "name",
+            descending: false,
+            page: 1,
+            pageSize: 100);
+
+        return result.Items?.ToList() ?? [];
     }
 
     public async Task<EventResult> CreateEventAsync(EventRequest request) => await adminClient.CreateEventAsync(request);
@@ -259,6 +238,37 @@ public class ApiEventService(IAdminClient adminClient, AdminMediaUrlResolver med
 
     public async Task UpdateEventAsync(long id, EventRequest request) => await adminClient.UpdateEventAsync(id, request);
     public async Task UpdateBundleAsync(long id, BundleUpdateRequest request) => await adminClient.UpdateBundleAsync(id, request);
+    public async Task AddBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds)
+    {
+        if (eventScheduleIds.Count == 0)
+        {
+            return;
+        }
+
+        await adminClient.AddBundleEventSchedulesAsync(bundleId, new BundleEventScheduleAddRequest
+        {
+            Items = eventScheduleIds
+                .Select((eventScheduleId, index) => new BundleEventScheduleItem
+                {
+                    EventScheduleId = eventScheduleId,
+                    SortOrder = index
+                })
+                .ToList()
+        });
+    }
+
+    public async Task RemoveBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds)
+    {
+        if (eventScheduleIds.Count == 0)
+        {
+            return;
+        }
+
+        await adminClient.RemoveBundleEventSchedulesAsync(bundleId, new BundleEventScheduleRemoveRequest
+        {
+            EventScheduleIds = eventScheduleIds.ToList()
+        });
+    }
 
     public async Task DeleteEventAsync(long id)
             => await adminClient.DeleteEventAsync(id);

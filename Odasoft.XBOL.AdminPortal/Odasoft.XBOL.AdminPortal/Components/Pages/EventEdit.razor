@@ -8,6 +8,7 @@
 @attribute [RequireAnyPermission(AdminPermissions.Events.Read, AdminPermissions.Events.ReadCurrent, AdminPermissions.Events.Create, AdminPermissions.Events.Update)]
 
 @using Microsoft.Net.Http.Headers
+@using Microsoft.Extensions.Options
 @using Odasoft.XBOL.AdminPortal.Extensions
 @using Odasoft.XBOL.AdminPortal.States
 @using Odasoft.XBOL.AdminPortal.ViewModels.Event
@@ -15,6 +16,7 @@
 @using Odasoft.XBOL.Business
 @using Odasoft.XBOL.Business.Services
 @using Odasoft.XBOL.Business.ModelValidators
+@using Odasoft.XBOL.Common.Options
 @using Radzen.Blazor
 @using SixLabors.ImageSharp
 @using FluentValidation;
@@ -36,6 +38,7 @@
 @inject ILogger<EventEdit> Logger;
 @inject PriceReferenceService PriceReferenceService;
 @inject AdminMediaUrlResolver MediaUrlResolver
+@inject IOptions<Odasoft.XBOL.Common.Options.LocalizationOptions> LocalizationOptions
 
 <style>
     .mud-stepper .mud-stepper-content {
@@ -133,7 +136,7 @@
                                 <MudItem xs="12">
                                     <AdminSelect Label="@(L["Organizer"].Value)"
                                                @bind-Value="EventState.EventInfo.OrganizerId"
-                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                               Disabled="@_isReview"
                                                  For="@(() => EventState.EventInfo.OrganizerId)">
 
                                         @foreach (var organizer in _organizers)
@@ -151,13 +154,13 @@
                                                             Class="required"
                                                             Label="@L["Name"].Value"
                                                             For="@(() => EventState.EventInfo.Name)"
-                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                            Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <AdminTextField @bind-Value="EventState.EventInfo.Subtitle"
                                                             Label="@L["Subtitle"].Value"
                                                             For="@(() => EventState.EventInfo.Subtitle)"
-                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                            Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <MudSelect Label="@L["EventType"]"
@@ -168,7 +171,7 @@
                                                        Variant="Variant.Outlined"
                                                        Margin="Margin.Dense"
                                                        ToStringFunc="@(c => c?.DisplayName ?? "")"
-                                                       Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                       Disabled="@_isReview"
                                                        Class="required">
 
                                                 @foreach (var category in _eventCategories)
@@ -184,7 +187,7 @@
                                                             Label="@L["EventSummary"].Value"
                                                             For="@(() => EventState.EventInfo.ShortDescription)"
                                                             Lines="@(3)"
-                                                            Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                            Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12">
                                             <MudStack>
@@ -194,7 +197,7 @@
                                                 <MudPaper Outlined="true" Class="pa-0">
                                                     <RadzenHtmlEditor
                                                         @bind-Value="EventState.EventInfo.LongDescription" Style="min-height: 300px; width: 100%;"
-                                                          Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                          Disabled="@_isReview">
                                                         <RadzenHtmlEditorUndo Title="Deshacer" />
                                                         <RadzenHtmlEditorRedo Title="Rehacer" />
                                                         <RadzenHtmlEditorSeparator />
@@ -242,7 +245,7 @@
                                                          ValueChanged="OnVenueSelected"
                                                          For="@(() => EventState.EventInfo.SelectedVenue)"
                                                          Label="@L["Venue"].Value"
-                                                         Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                         Disabled="@_isReview">
                                                 @foreach (var venue in _venues)
                                                 {
                                                     <MudSelectItem T="VenueResponse?" Value="@venue">@venue.Name</MudSelectItem>
@@ -256,7 +259,7 @@
                                                          ValueChanged="OnVenueMapSelected"
                                                          For="@(() => EventState.EventInfo.SelectedVenueMap)"
                                                          Label="@L["Map"].Value"
-                                                         Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                         Disabled="@_isReview">
                                                 @foreach (var map in _venueMaps)
                                                 {
                                                     <MudSelectItem T="VenueMapResponse?" Value="@map">@map.Name</MudSelectItem>
@@ -302,7 +305,8 @@
                                 Items="EventState.PricesInfo.Prices"
                                 GroupBy="_groupDefinition"
                                 Elevation="0"
-                                FixedHeader>
+                                FixedHeader
+                                Class="event-price-editor-table">
                                 <ToolBarContent>
                                     <MudText Typo="Typo.h5">@L["Zones"]</MudText>
                                     <MudSpacer />
@@ -311,12 +315,12 @@
                                         {
                                             <MudButton StartIcon="@Icons.Material.Filled.FileDownload" OnClick="@(() => DownloadCsvAsync())" Color="MudBlazor.Color.Secondary" Variant="Variant.Filled">@L["DownloadTemplate"]</MudButton>
                                             <MudButton StartIcon="@Icons.Material.Filled.FileUpload" Color="MudBlazor.Color.Secondary" Variant="Variant.Filled" OnClick="OpenPriceImportDialog">@L["ImportPrices"]</MudButton>
+                                            <MudButton StartIcon="@Icons.Material.Outlined.Add" Color="MudBlazor.Color.Primary" Variant="Variant.Filled" OnClick="OpenAddDialog">@L["AlternativePrice"]</MudButton>
                                         }
                                         @* <MudTextField @bind-Value="_searchPrices" Placeholder="@L["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField> *@
                                     </MudStack>
                                 </ToolBarContent>
                                 <ColGroup>
-                                    <col />
                                     <col />
                                     <col />
                                     <col />
@@ -345,17 +349,11 @@
                                             }
                                         </MudTh>
                                     }
-                                    <MudTh>
-                                        @if (!_isReview)
-                                        {
-                                            <MudButton Color="MudBlazor.Color.Primary" IconColor="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Outlined.Add" OnClick="OpenAddDialog">@L["AlternativePrice"]</MudButton>
-                                        }
-                                    </MudTh>
                                     <MudTh />
                                 </HeaderContent>
                                 <RowTemplate>
-                                    <MudTd></MudTd>
-                                    <MudTd>
+                                    <MudTd Style="vertical-align: top;"></MudTd>
+                                    <MudTd Style="vertical-align: top;">
                                         <AdminSelect T="long?"
                                                      Value="@context.BaseSectionId"
                                                      ValueChanged="@((long? newValue) => OnSectionChanged(context, newValue))"
@@ -369,7 +367,7 @@
                                             }
                                         </AdminSelect>
                                     </MudTd>
-                                    <MudTd>
+                                    <MudTd Style="vertical-align: top;">
                                         <AdminSelect T="long?"
                                                      Value="@context.BaseRowId"
                                                      ValueChanged="@((long? newValue) => OnRowChanged(context, newValue))"
@@ -384,9 +382,10 @@
                                             }
                                         </AdminSelect>
                                     </MudTd>
-                                    <MudTd>
+                                    <MudTd Style="vertical-align: top;">
                                         <AdminSelect T="long?"
-                                                     @bind-Value="@context.BaseSeatId"
+                                                     Value="@context.BaseSeatId"
+                                                     ValueChanged="@((long? newValue) => OnSeatChanged(context, newValue))"
                                                      Disabled="@(context.IsZonePrice || _isReview)"
                                                      Placeholder="@L["Select"].Value"
                                                      Clearable="@true">
@@ -400,22 +399,29 @@
                                     </MudTd>
                                     @foreach (var priceType in PriceTypes)
                                     {
-                                        <MudTd DataLabel="@priceType.Key">
-                                            <AdminNumericField T="decimal?"
-                                                               Value="@GetPriceTypeValue(context, priceType.Key)"
-                                                               ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType.Key, newValue))"
-                                                               Validation="@(new Func<decimal?, Task<IEnumerable<string>>>(val => ValidateSpecificPrice(PriceTypes, priceType.Key, val)))"
-                                                               Clearable="@true"
-                                                               Format="N2"
-                                                               Adornment="@Adornment.Start"
-                                                               AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                                               Placeholder="0.00"
-                                                               HideSpinButtons="@true"
-                                                               Immediate="@false"
-                                                               Disabled="@_isReview" />
+                                        <MudTd DataLabel="@priceType.Key" Style="vertical-align: top;">
+                                            <MudStack Row AlignItems="AlignItems.Start" Spacing="1" Class="price-cell">
+                                                <AdminNumericField T="decimal?"
+                                                                   Value="@GetPriceTypeValue(context, priceType.Key)"
+                                                                   ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType.Key, newValue))"
+                                                                   Validation="@(new Func<decimal?, Task<IEnumerable<string>>>(val => ValidateSpecificPrice(PriceTypes, priceType.Key, val)))"
+                                                                   Clearable="@true"
+                                                                   Format="N2"
+                                                                   Adornment="@Adornment.Start"
+                                                                   AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                                                   Placeholder="0.00"
+                                                                   HideSpinButtons="@true"
+                                                                   Disabled="@_isReview" />
+                                                @if (_canCopyPrices)
+                                                {
+                                                    <div class="price-copy-action">
+                                                        <PriceCopyButton Disabled="@(_isReview || !CanCopyPriceType(context, priceType.Key))"
+                                                                         OnClick="@(() => CopyPriceTypeToAll(context, priceType.Key))" />
+                                                    </div>
+                                                }
+                                            </MudStack>
                                         </MudTd>
                                     }
-                                    <MudTd></MudTd>
                                     <MudTd>
                                         @if (!_isReview && (context.BaseRowId != null || context.BaseSectionId != null || context.BaseSeatId != null))
                                         {
@@ -429,7 +435,7 @@
                                     </MudTd>
                                 </RowTemplate>
                                 <GroupHeaderTemplate>
-                                    <MudTh colspan="@(6 + PriceTypes.Count)">
+                                    <MudTh colspan="@(4 + PriceTypes.Count)">
                                         <MudText Class="text-primary-darken" Typo="Typo.subtitle2">
                                             @(GetZoneName(long.Parse(context.Key.ToString())))
                                         </MudText>
@@ -518,6 +524,31 @@
                                                 </EditTemplate>
                                             </PropertyColumn>
 
+                                            <PropertyColumn Property="x => x.ChargeCategory" Title="@L["ChargeCategory"]">
+                                                <EditTemplate>
+                                                    @{
+                                                        var item = context.Item;
+                                                    }
+                                                    <MudSelect @key="item.UiId"
+                                                               T="ChargeCategory"
+                                                               @bind-Value="item.ChargeCategory"
+                                                               Variant="Variant.Outlined"
+                                                               Margin="Margin.Dense"
+                                                               For="@(() => item.ChargeCategory)"
+                                                               ToStringFunc="@(category => L[category.ToString()].Value)"
+                                                               Validation="@(new Func<ChargeCategory, Task<IEnumerable<string>>>(val => ValidateGridCell(item, nameof(item.ChargeCategory), val)))"
+                                                               Disabled="@(_isReview)">
+
+                                                        @foreach (var category in _chargeCategories)
+                                                        {
+                                                            <MudSelectItem T="ChargeCategory" Value="category">
+                                                                @L[category.ToString()]
+                                                            </MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                </EditTemplate>
+                                            </PropertyColumn>
+
                                             <PropertyColumn Property="x => x.Value" Title="@L["FeeAmount"]">
                                                 <EditTemplate>
                                                     @{
@@ -560,14 +591,23 @@
                             @onkeydown="OnKeyDownAsync">
                             <MudGrid Spacing="6">
                                 <MudItem xs="12">
-                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
-                                    ;">@L["EventSchedule"]</MudText>
+                                    <MudStack Row="true" AlignItems="AlignItems.Start" Justify="Justify.SpaceBetween" Spacing="2">
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                            ;">@L["EventSchedule"]</MudText>
+                                            <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">@L["EventDatesScheduleHelp"]</MudText>
+                                        </MudStack>
+                                        <DateTimelineHelpButton Title="@L["EventDatesTimelineTitle"]"
+                                                                Tooltip="@L["EventDatesTimelineTooltip"]"
+                                                                Overview="@L["EventDatesTimelineOverview"]"
+                                                                Items="EventTimelineSteps" />
+                                    </MudStack>
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.StartDate"
                                                      Label="@L["StartDate"].Value"
                                                      For="@(() => EventState.ScheduleInfo.StartDate)"
-                                                     Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                     Disabled="@_isReview"
                                                      Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -578,7 +618,7 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.StartTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Disabled="@_isReview"
                                                    Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
@@ -586,7 +626,7 @@
                                         @bind-Date="EventState.ScheduleInfo.EndDate"
                                         Label="@L["EndDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.EndDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Disabled="@_isReview"
                                         Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -597,19 +637,22 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.EndTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Disabled="@_isReview"
                                                    Class="required" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12">
-                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
-                                    ;">@L["TicketsPreSale"]</MudText>
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                        ;">@L["TicketsPreSale"]</MudText>
+                                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">@L["EventDatesPreSaleHelp"]</MudText>
+                                    </MudStack>
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.PreSaleDate"
                                         Label="@L["StartDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.PreSaleDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        Disabled="@_isReview" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="EventState.ScheduleInfo.PreSaleTime"
@@ -619,13 +662,13 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.PreSaleTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                   Disabled="@_isReview" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.PreSaleEndDate"
                                         Label="@L["EndDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.PreSaleEndDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                        Disabled="@_isReview" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudTimePicker @bind-Time="EventState.ScheduleInfo.PreSaleEndTime"
@@ -635,18 +678,21 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.PreSaleEndTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                   Disabled="@_isReview" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12">
-                                    <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
-                                    ;">@L["TicketsSale"]</MudText>
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                        ;">@L["TicketsSale"]</MudText>
+                                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">@L["EventDatesSaleHelp"]</MudText>
+                                    </MudStack>
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OnSaleDate"
                                         Label="@L["StartDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.OnSaleDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Disabled="@_isReview"
                                         Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -657,14 +703,14 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.OnSaleTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Disabled="@_isReview"
                                                    Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
                                     <AdminDatePicker @bind-Date="EventState.ScheduleInfo.OffSaleDate"
                                         Label="@L["EndDate"].Value"
                                         For="@(() => EventState.ScheduleInfo.OffSaleDate)"
-                                        Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                        Disabled="@_isReview"
                                         Class="required" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
@@ -675,21 +721,24 @@
                                                    TimeFormat="h:mm tt"
                                                    AmPm="true"
                                                    For="@(() => EventState.ScheduleInfo.OffSaleTime)"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)"
+                                                   Disabled="@_isReview"
                                                    Class="required" />
                                 </MudItem>
                                 <MudFlexBreak />
                                 <MudItem xs="12" md="5">
                                     <MudGrid Spacing="6">
                                         <MudItem xs="12">
-                                            <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
-                                            ;">@L["WebSitePublishing"]</MudText>
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                                ;">@L["WebSitePublishing"]</MudText>
+                                                <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">@L["EventDatesPublishingHelp"]</MudText>
+                                            </MudStack>
                                         </MudItem>
                                         <MudItem xs="12" md="7">
                                             <AdminDatePicker @bind-Date="EventState.ScheduleInfo.PublishedDate"
                                                 Label="@L["PublishDate"].Value"
                                                 For="@(() => EventState.ScheduleInfo.PublishedDate)"
-                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12" md="5">
                                             <MudTimePicker @bind-Time="EventState.ScheduleInfo.PublishedTime"
@@ -699,21 +748,24 @@
                                                            TimeFormat="h:mm tt"
                                                            AmPm="true"
                                                            For="@(() => EventState.ScheduleInfo.PublishedTime)"
-                                                           Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                           Disabled="@_isReview" />
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
                                 <MudItem xs="12" md="7">
                                     <MudGrid Spacing="6">
                                         <MudItem xs="12">
-                                            <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
-                                            ;">@L["VenueAccess"]</MudText>
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.subtitle2" Class="text-secondary-darken" Style="font-weight:600
+                                                ;">@L["VenueAccess"]</MudText>
+                                                <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">@L["EventDatesAccessHelp"]</MudText>
+                                            </MudStack>
                                         </MudItem>
                                         <MudItem xs="12" md="5">
                                             <AdminDatePicker @bind-Date="EventState.ScheduleInfo.GateOpenDate"
                                                 Label="@L["AccessDate"].Value"
                                                 For="@(() => EventState.ScheduleInfo.GateOpenDate)"
-                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12" md="4">
                                             <MudTimePicker @bind-Time="EventState.ScheduleInfo.GateOpenTime"
@@ -723,7 +775,7 @@
                                                            TimeFormat="h:mm tt"
                                                            AmPm="true"
                                                            For="@(() => EventState.ScheduleInfo.GateOpenTime)"
-                                                           Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                           Disabled="@_isReview" />
                                         </MudItem>
                                         <MudItem xs="12" md="3">
                                             <MudSelect Label="@L["AgeRestrictions"]"
@@ -733,7 +785,7 @@
                                                        Margin="Margin.Dense"
                                                        For="@(() => EventState.EventInfo.AgeRestriction)"
                                                        ToStringFunc="@(restriction => L[restriction.ToString()].Value)"
-                                                       Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                       Disabled="@_isReview">
 
                                                 @foreach (var restriction in _ageRestrictions)
                                                 {
@@ -753,7 +805,7 @@
                                                        Label="@L["TimeToPurchaseInMinutes"].Value"
                                                     For="@(() => EventState.ScheduleInfo.HoldExpirationInMinutes)"
                                                     HideSpinButtons="@true"
-                                                    Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)" />
+                                                    Disabled="@_isReview" />
                                     </MudStack>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
@@ -767,7 +819,7 @@
                                             <RadzenHtmlEditor
                                                 @bind-Value="EventState.EventInfo.SecurityPolicies"
                                                 Style="min-height: 300px; width: 100%;"
-                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                Disabled="@_isReview">
                                                 <RadzenHtmlEditorUndo Title="Deshacer" />
                                                 <RadzenHtmlEditorRedo Title="Rehacer" />
                                                 <RadzenHtmlEditorSeparator />
@@ -812,7 +864,7 @@
                                             <RadzenHtmlEditor
                                                 @bind-Value="EventState.EventInfo.AdditionalComments"
                                                 Style="min-height: 300px; width: 100%;"
-                                                Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                Disabled="@_isReview">
                                                 <RadzenHtmlEditorUndo Title="Deshacer" />
                                                 <RadzenHtmlEditorRedo Title="Rehacer" />
                                                 <RadzenHtmlEditorSeparator />
@@ -882,11 +934,11 @@
                                                            Variant="Variant.Filled"
                                                            Color="MudBlazor.Color.Secondary"
                                                            OnClick="@context.OpenFilePickerAsync"
-                                                           Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                           Disabled="@_isReview">
                                                     @L["EventBanner"]
                                                 </MudButton>
 
-                                                @if (EventState.ImagesInfo.BannerImage != null && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                                                @if (EventState.ImagesInfo.BannerImage != null && !_isReview)
                                                 {
                                                     <MudChip T="string"
                                                         Variant="Variant.Text"
@@ -958,11 +1010,11 @@
                                                                Variant="Variant.Filled"
                                                                Color="MudBlazor.Color.Secondary"
                                                                OnClick="@context.OpenFilePickerAsync"
-                                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                               Disabled="@_isReview">
                                                         @L["Sponsor"] 1
                                                     </MudButton>
 
-                                                    @if (EventState.ImagesInfo.SponsorImages[0] != null && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                                                    @if (EventState.ImagesInfo.SponsorImages[0] != null && !_isReview)
                                                     {
                                                         <MudChip T="string"
                                                                  Variant="Variant.Text"
@@ -1007,11 +1059,11 @@
                                                                Variant="Variant.Filled"
                                                                Color="MudBlazor.Color.Secondary"
                                                                OnClick="@context.OpenFilePickerAsync"
-                                                               Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                               Disabled="@_isReview">
                                                         @L["Sponsor"] 2
                                                     </MudButton>
 
-                                                    @if (EventState.ImagesInfo.SponsorImages[1] != null && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                                                    @if (EventState.ImagesInfo.SponsorImages[1] != null && !_isReview)
                                                     {
                                                         <MudChip T="string"
                                                                  Variant="Variant.Text"
@@ -1052,7 +1104,7 @@
                                 <MudItem xs="12" Class="pt-0">
                                     <MudFileUpload @ref="_galleryUpload" T="IReadOnlyList<IBrowserFile>" Accept=".jpg, .png, .jpeg" AppendMultipleFiles="true" DragAndDrop="true"
                                                    @bind-Dragging="@_dragging" @bind-Dragging:after="@ClearDragClass" FilesChanged="UploadGalleryImagesAsync"
-                                                   Disabled="@(_isReview || _eventStatus == AdminEventStatus.Published)">
+                                                   Disabled="@_isReview">
                                         <CustomContent>
                                             <MudPaper Height="300px;" Outlined="true" @onclick="@context.OpenFilePickerAsync" @ondragenter="@SetDragClass"
                                                       Class="@($"pa-4 {_dragClass}")">
@@ -1064,7 +1116,7 @@
                                                     @L["GalleryUploadHintDetails", _minWidth, _minHeight, _maxFileSize / 1024 / 1024]
                                                 </MudText>
 
-                                                @if (EventState.ImagesInfo.GalleryImages.Count() > 0 && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                                                @if (EventState.ImagesInfo.GalleryImages.Count() > 0 && !_isReview)
                                                 {
                                                     <div class="mt-4 d-flex flex-wrap gap-2" style="z-index: 10;">
                                                         @foreach (var image in EventState.ImagesInfo.GalleryImages)
@@ -1082,7 +1134,7 @@
                                                     </div>
                                                 }
 
-                                                @if (EventState.ImagesInfo.GalleryImages.Any() && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                                                @if (EventState.ImagesInfo.GalleryImages.Any() && !_isReview)
                                                 {
                                                     <div style="position: absolute; bottom: 16px; right: 16px; z-index: 20;">
                                                         <MudButton Variant="Variant.Outlined"
@@ -1140,7 +1192,7 @@
                             @L["Next"]
                         </MudButton>
                     }
-                    else if (_activeIndex == _maxIndex && !(_isReview || _eventStatus == AdminEventStatus.Published))
+                    else if (_activeIndex == _maxIndex && !_isReview)
                     {
                         <MudButton OnClick="SubmitAsync"
                                    Variant="Variant.Filled"
@@ -1166,6 +1218,7 @@
     private bool _error = false;
     private bool _isEdit = false;
     private bool _isReview = false;
+    private bool _canCopyPrices;
 
     private MudStepper _stepper = null!;
     private int _activeIndex = 0;
@@ -1177,6 +1230,8 @@
     private EventInfoModel _originalEventInfo = new();
     private ScheduleInfoModel _originalScheduleInfo = new();
     private HashSet<long> _dirtyPriceIds = new();
+    private bool _pricesHaveChanges = false;
+    private bool _additionalChargesHaveChanges = false;
     private bool _imageHasChanges = false;
 
     private MudForm _descriptionForm = default!;
@@ -1213,9 +1268,19 @@
 
     private bool IsFormReadyToSubmit => _descriptionFormValid && _scheduleValid && _pricesValid && _imagesValid && _additionalChargesValid;
 
+    private IReadOnlyList<DateTimelineStep> EventTimelineSteps =>
+    [
+        new(L["EventDatesTimelinePublishLabel"].Value, L["EventDatesTimelinePublishDescription"].Value),
+        new(L["EventDatesTimelinePreSaleLabel"].Value, L["EventDatesTimelinePreSaleDescription"].Value),
+        new(L["EventDatesTimelineSaleLabel"].Value, L["EventDatesTimelineSaleDescription"].Value),
+        new(L["EventDatesTimelineAccessLabel"].Value, L["EventDatesTimelineAccessDescription"].Value),
+        new(L["EventDatesTimelineEventLabel"].Value, L["EventDatesTimelineEventDescription"].Value)
+    ];
+
     private List<AdminEventCategoryResult> _eventCategories = [];
     private List<AgeRestriction> _ageRestrictions = Enum.GetValues<AgeRestriction>().ToList();
     private List<FeeType> _feeTypes = Enum.GetValues<FeeType>().ToList();
+    private List<ChargeCategory> _chargeCategories = Enum.GetValues<ChargeCategory>().ToList();
     private List<VenueResponse> _venues = [];
     private List<VenueMapResponse> _venueMaps = [];
     private List<ListItem> _organizers = [];
@@ -1256,6 +1321,9 @@
 
     private static readonly DialogOptions _dialogOptions = new() { CloseButton = true };
 
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -1285,6 +1353,12 @@
         _additionalChargesInfoValidator = new(L);
         _additionalChargeInfoValidator = new(L);
         _imagesValidator = new(L);
+
+        if (AuthenticationStateTask is not null)
+        {
+            var authState = await AuthenticationStateTask;
+            _canCopyPrices = authState.User.HasClaim(AdminClaimTypes.Role, AdminRoles.Debug.Admin);
+        }
     }
 
     private async Task InitializeForm()
@@ -1367,22 +1441,22 @@
 
             if (schedule is not null)
             {
-                EventState.ScheduleInfo.StartDate = DateTimeHelpers.ToNullableDateTime(schedule?.StartDateTime);
-                EventState.ScheduleInfo.StartTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.StartDateTime);
-                EventState.ScheduleInfo.EndDate = DateTimeHelpers.ToNullableDateTime(schedule?.EndDateTime);
-                EventState.ScheduleInfo.EndTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.EndDateTime);
-                EventState.ScheduleInfo.PreSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.PreSaleStartDate);
-                EventState.ScheduleInfo.PreSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PreSaleStartDate);
-                EventState.ScheduleInfo.PreSaleEndDate = DateTimeHelpers.ToNullableDateTime(schedule?.PreSaleEndDate);
-                EventState.ScheduleInfo.PreSaleEndTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PreSaleEndDate);
-                EventState.ScheduleInfo.OnSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.OnSaleDate);
-                EventState.ScheduleInfo.OnSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.OnSaleDate);
-                EventState.ScheduleInfo.OffSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.OffSaleDate);
-                EventState.ScheduleInfo.OffSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.OffSaleDate);
-                EventState.ScheduleInfo.PublishedDate = DateTimeHelpers.ToNullableDateTime(schedule?.PublishedDate);
-                EventState.ScheduleInfo.PublishedTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PublishedDate);
-                EventState.ScheduleInfo.GateOpenDate = DateTimeHelpers.ToNullableDateTime(schedule?.GateOpenDate);
-                EventState.ScheduleInfo.GateOpenTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.GateOpenDate);
+                EventState.ScheduleInfo.StartDate = DateTimeHelpers.ToNullableDateTime(schedule?.StartDateTime, LocalizationOptions.Value);
+                EventState.ScheduleInfo.StartTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.StartDateTime, LocalizationOptions.Value);
+                EventState.ScheduleInfo.EndDate = DateTimeHelpers.ToNullableDateTime(schedule?.EndDateTime, LocalizationOptions.Value);
+                EventState.ScheduleInfo.EndTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.EndDateTime, LocalizationOptions.Value);
+                EventState.ScheduleInfo.PreSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.PreSaleStartDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.PreSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PreSaleStartDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.PreSaleEndDate = DateTimeHelpers.ToNullableDateTime(schedule?.PreSaleEndDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.PreSaleEndTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PreSaleEndDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.OnSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.OnSaleDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.OnSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.OnSaleDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.OffSaleDate = DateTimeHelpers.ToNullableDateTime(schedule?.OffSaleDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.OffSaleTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.OffSaleDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.PublishedDate = DateTimeHelpers.ToNullableDateTime(schedule?.PublishedDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.PublishedTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.PublishedDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.GateOpenDate = DateTimeHelpers.ToNullableDateTime(schedule?.GateOpenDate, LocalizationOptions.Value);
+                EventState.ScheduleInfo.GateOpenTime = DateTimeHelpers.ToNullableTimeSpan(schedule?.GateOpenDate, LocalizationOptions.Value);
                 EventState.ScheduleInfo.HoldExpirationInMinutes = schedule.HoldExpirationInMinutes;
                 EventState.ScheduleInfo.ExternalEventKey = schedule.ExternalEventKey;
             }
@@ -1594,10 +1668,11 @@
     {
         bool eventChanged = _originalEventInfo != EventState.EventInfo;
         bool scheduleChanged = _originalScheduleInfo != EventState.ScheduleInfo;
-        bool pricesChanged = _dirtyPriceIds.Any();
+        bool pricesChanged = _pricesHaveChanges;
+        bool additionalChargesChanged = _additionalChargesHaveChanges;
         bool imagesChanged = _imageHasChanges;
 
-        bool changed = eventChanged || scheduleChanged || pricesChanged || imagesChanged;
+        bool changed = eventChanged || scheduleChanged || pricesChanged || additionalChargesChanged || imagesChanged;
 
         if (changed)
         {
@@ -1673,23 +1748,31 @@
         LoadingState.Show();
         try
         {
+            var pricesChanged = _pricesHaveChanges;
+            var additionalChargesChanged = _additionalChargesHaveChanges;
+
             await SaveEventAsync();
 
             if (_originalScheduleInfo != EventState.ScheduleInfo)
             {
                 await SaveEventScheduleAsync();
             }
-            if (_dirtyPriceIds.Any())
+            if (_pricesHaveChanges)
             {
-                await SavePricesAsync();
+                await SavePricesAsync(force: false);
             }
 
-            await SaveAdditionalChargesAsync();
+            if (_additionalChargesHaveChanges)
+            {
+                await SaveAdditionalChargesAsync();
+            }
 
             if (_imageHasChanges)
             {
                 await SaveEventMediaAsync();
             }
+
+            await RegeneratePublishedPriceListIfNeededAsync(pricesChanged, additionalChargesChanged);
 
             if (_eventStatus == AdminEventStatus.ChangesRequested)
             {
@@ -1720,6 +1803,16 @@
             _imagesFormContext.SetSaving(false);
             LoadingState.Hide();
         }
+    }
+
+    private async Task RegeneratePublishedPriceListIfNeededAsync(bool pricesChanged, bool additionalChargesChanged)
+    {
+        if (_eventStatus != AdminEventStatus.Published || EventId is null || (!pricesChanged && !additionalChargesChanged))
+        {
+            return;
+        }
+
+        await PriceReferenceService.GeneratePriceListAsync(AdminSaleType.Event, EventId.Value);
     }
 
     private async Task SaveEventAsync()
@@ -1771,14 +1864,14 @@
         var request = new EventScheduleRequest
         {
             EventId = EventId,
-            StartDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.StartDate, EventState.ScheduleInfo.StartTime),
-            EndDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.EndDate, EventState.ScheduleInfo.EndTime),
-            PreSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleDate, EventState.ScheduleInfo.PreSaleTime),
-            PreSaleEndDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleEndDate, EventState.ScheduleInfo.PreSaleEndTime),
-            OnSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OnSaleDate, EventState.ScheduleInfo.OnSaleTime),
-            OffSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OffSaleDate, EventState.ScheduleInfo.OffSaleTime),
-            PublishedDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PublishedDate, EventState.ScheduleInfo.PublishedTime),
-            GateOpenDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.GateOpenDate, EventState.ScheduleInfo.GateOpenTime),
+            StartDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.StartDate, EventState.ScheduleInfo.StartTime, LocalizationOptions.Value),
+            EndDateTime = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.EndDate, EventState.ScheduleInfo.EndTime, LocalizationOptions.Value),
+            PreSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleDate, EventState.ScheduleInfo.PreSaleTime, LocalizationOptions.Value),
+            PreSaleEndDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PreSaleEndDate, EventState.ScheduleInfo.PreSaleEndTime, LocalizationOptions.Value),
+            OnSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OnSaleDate, EventState.ScheduleInfo.OnSaleTime, LocalizationOptions.Value),
+            OffSaleDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.OffSaleDate, EventState.ScheduleInfo.OffSaleTime, LocalizationOptions.Value),
+            PublishedDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.PublishedDate, EventState.ScheduleInfo.PublishedTime, LocalizationOptions.Value),
+            GateOpenDate = DateTimeHelpers.ToDateTimeOffset(EventState.ScheduleInfo.GateOpenDate, EventState.ScheduleInfo.GateOpenTime, LocalizationOptions.Value),
             HoldExpirationInMinutes = EventState.ScheduleInfo.HoldExpirationInMinutes
         };
 
@@ -1839,8 +1932,13 @@
         }
     }
 
-    private async Task SavePricesAsync()
+    private async Task SavePricesAsync(bool force = false)
     {
+        if (!force && !_pricesHaveChanges)
+        {
+            return;
+        }
+
         var request = new PriceReferenceRequest
         {
             ReferenceId = EventId.Value,
@@ -1862,6 +1960,7 @@
             var response = await PriceReferenceService.SavePriceReferenceAsync(request);
             _priceReferenceId = response.Id;
             _dirtyPriceIds.Clear();
+            _pricesHaveChanges = false;
         }
         catch (ApiException<ProblemDetails> ex)
         {
@@ -1893,8 +1992,10 @@
                 PriceReferenceId = _priceReferenceId.Value,
                 Name = x.Name,
                 FeeType = x.FeeType,
+                ChargeCategory = x.ChargeCategory,
                 Value = x.Value.Value
             }).ToList());
+            _additionalChargesHaveChanges = false;
         }
         catch (ApiException<ProblemDetails> ex)
         {
@@ -2057,7 +2158,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred while trying to read the file '{file.Name}'. Error: {ex.Message}");
+                Logger.LogError(ex, $"An error occurred while trying to read the file '{file.Name}'.");
                 Snackbar.Add($"Error al procesar '{file.Name}': El formato podría no estar soportado.", MudBlazor.Severity.Error);
                 continue;
             }
@@ -2089,7 +2190,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error ocurred while trying to remove a gallery image. Error: {ex.Message}");
+            Logger.LogError(ex, "An error ocurred while trying to remove a gallery image.");
             Snackbar.Add($"Ocurrio un error al tratar de eliminar la imgen '{image.Name}'.", MudBlazor.Severity.Error);
         }
 
@@ -2205,6 +2306,7 @@
 
         price.BaseRowId = null;
         price.BaseSeatId = null;
+        MarkPriceAsDirty(price.Id ?? 0);
         StateHasChanged();
     }
 
@@ -2213,7 +2315,14 @@
         price.BaseRowId = rowId;
 
         price.BaseSeatId = null;
+        MarkPriceAsDirty(price.Id ?? 0);
         StateHasChanged();
+    }
+
+    private void OnSeatChanged(PriceInfoModel price, long? seatId)
+    {
+        price.BaseSeatId = seatId;
+        MarkPriceAsDirty(price.Id ?? 0);
     }
 
     private void AddPrice(long zoneId)
@@ -2227,11 +2336,13 @@
         }
 
         EventState.PricesInfo.Prices.Add(new PriceInfoModel { BaseZoneId = zoneId, BaseSectionId = sections.FirstOrDefault()?.Id });
+        MarkPriceAsDirty(0);
     }
 
     private void MarkPriceAsDirty(long priceId)
     {
         _dirtyPriceIds.Add(priceId);
+        _pricesHaveChanges = true;
     }
 
     private IEnumerable<BaseSectionResponse>GetSectionsFor(long? zoneId)
@@ -2342,6 +2453,8 @@
             }).ToList();
 
             PriceTypes = EventState.PricesInfo.Prices.FirstOrDefault()?.PriceTypes ?? new Dictionary<string, bool> { { "General", true } };
+            _dirtyPriceIds.Clear();
+            _pricesHaveChanges = false;
         }
         catch (ApiException apiEx)
         {
@@ -2356,6 +2469,7 @@
     {
         if (_priceReferenceId == null)
         {
+            _additionalChargesHaveChanges = false;
             return;
         }
         try
@@ -2366,8 +2480,10 @@
                 Id = x.Id,
                 Name = x.Name,
                 FeeType = x.FeeType,
+                ChargeCategory = x.ChargeCategory ?? ChargeCategory.Fee,
                 Value = x.Value
             }).ToList();
+            _additionalChargesHaveChanges = false;
         }
         catch (ApiException apiEx)
         {
@@ -2375,6 +2491,7 @@
             {
                 EventState.AdditionalChargesInfo.AdditionalCharges = [];
             }
+            _additionalChargesHaveChanges = false;
         }
     }
 
@@ -2382,6 +2499,8 @@
     {
         EventState.PricesInfo.Prices.Clear();
         _priceReferenceId = null;
+        _dirtyPriceIds.Clear();
+        _pricesHaveChanges = false;
 
         if (_layout.Zones is not null && _layout.Zones.Count > 0)
         {
@@ -2400,6 +2519,7 @@
         if (!string.IsNullOrWhiteSpace(type) && !PriceTypes.ContainsKey(type))
         {
             PriceTypes.Add(type, false);
+            MarkPriceAsDirty(0);
         }
     }
 
@@ -2424,6 +2544,7 @@
                     price.Prices[newName] = value;
                 }
             }
+            MarkPriceAsDirty(0);
         }
     }
 
@@ -2438,6 +2559,7 @@
                 price.PriceTypes.Remove(_priceTypeName);
             }
         }
+        MarkPriceAsDirty(0);
     }
 
     private decimal? GetPriceTypeValue(PriceInfoModel row, string key)
@@ -2450,12 +2572,34 @@
         if (newValue.HasValue)
         {
             row.Prices[key] = newValue.Value;
+            row.PriceTypes.TryAdd(key, PriceTypes.TryGetValue(key, out var isBasePrice) && isBasePrice);
         }
         else
         {
             row.Prices.Remove(key);
         }
         MarkPriceAsDirty(row.Id ?? 0);
+    }
+
+    private bool CanCopyPriceType(PriceInfoModel source, string priceType)
+    {
+        var value = GetPriceTypeValue(source, priceType);
+
+        return value.HasValue && value.Value > 0;
+    }
+
+    private void CopyPriceTypeToAll(PriceInfoModel source, string priceType)
+    {
+        var value = GetPriceTypeValue(source, priceType);
+        if (!CanCopyPriceType(source, priceType) || !value.HasValue)
+        {
+            return;
+        }
+
+        foreach (var price in EventState.PricesInfo.Prices)
+        {
+            SetPriceTypeValue(price, priceType, value);
+        }
     }
 
     private async Task DeletePriceAsync(PriceInfoModel price)
@@ -2469,10 +2613,11 @@
         try
         {
             EventState.PricesInfo.Prices.Remove(price);
+            MarkPriceAsDirty(price.Id ?? 0);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error deleting event: {ex.Message}");
+            Logger.LogError(ex, "Error deleting event");
             Snackbar.Add(L["DeleteError"], MudBlazor.Severity.Error);
         }
     }
@@ -2531,7 +2676,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error trying to get file: {ex.Message}");
+            Logger.LogError(ex, "Error trying to get file");
             Snackbar.Add(L["ErrorDownloadingPricesTemplate"], MudBlazor.Severity.Error);
         }
     }
@@ -2557,7 +2702,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error downloading file: {ex.Message}");
+            Logger.LogError(ex, "Error downloading file");
             Snackbar.Add(L["ErrorDownloadingPricesTemplate"], MudBlazor.Severity.Error);
         }
     }
@@ -2591,6 +2736,7 @@
                     PriceTypes.Add(priceType.Key, priceType.Value);
                 }
             }
+            MarkPriceAsDirty(0);
         }
     }
 
@@ -2598,16 +2744,19 @@
     {
         var elem = new AdditionalChargeInfoModel();
         EventState.AdditionalChargesInfo.AdditionalCharges.Insert(0, elem);
+        _additionalChargesHaveChanges = true;
         StateHasChanged();
     }
 
     private void DeleteAdditionalCharge(AdditionalChargeInfoModel item)
     {
         EventState.AdditionalChargesInfo.AdditionalCharges.Remove(item);
+        _additionalChargesHaveChanges = true;
     }
 
     private Task<DataGridEditFormAction> CommittedItemChanges(AdditionalChargeInfoModel item)
     {
+        _additionalChargesHaveChanges = true;
         return Task.FromResult(DataGridEditFormAction.Close);
     }
 

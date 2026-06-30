@@ -61,6 +61,19 @@ public static class OptionsConfiguration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<PaymentLinkOptions>()
+            .BindConfiguration("PaymentLink")
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<LocalizationOptions>()
+            .BindConfiguration("Localization")
+            .ValidateDataAnnotations()
+            .Validate(
+                options => IsValidTimeZone(options.TimeZoneId),
+                "Localization:TimeZoneId must be a valid timezone ID.")
+            .ValidateOnStart();
+
         services.AddOptions<HostingOptions>()
             .BindConfiguration("Hosting")
             .ValidateDataAnnotations()
@@ -79,6 +92,28 @@ public static class OptionsConfiguration
         });
 
         return services;
+    }
+
+    private static bool IsValidTimeZone(string? timeZoneId)
+    {
+        if (string.IsNullOrWhiteSpace(timeZoneId))
+        {
+            return false;
+        }
+
+        try
+        {
+            TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return true;
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return false;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return false;
+        }
     }
 
     private static bool ValidateGcipAuthOptions(GcipAuthOptions options)

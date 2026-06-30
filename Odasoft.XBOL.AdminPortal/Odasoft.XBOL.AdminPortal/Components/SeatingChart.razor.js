@@ -29,6 +29,26 @@ export {
 export async function renderChart(containerId, config, dotNetHelper) {
   await ensureSeatsioLoaded();
 
+  // Strip application-internal fields that SeatsIO's schema rejects at runtime.
+  // Keep config.pricing intact for the onObjectSelected closure (needs priceListItemId, fees, etc.).
+  const seatsioSafePricing = config.pricing.map(p => {
+    const entry = {};
+    if (p.category != null) entry.category = p.category;
+    if (p.objects)          entry.objects = p.objects;
+    if (p.price != null)    entry.price = p.price;
+    if (p.fee != null)      entry.fee = p.fee;
+    if (p.ticketTypes) {
+      entry.ticketTypes = p.ticketTypes.map(({ ticketType, price, label, description, fee }) => {
+        const t = { ticketType, price };
+        if (label != null)       t.label = label;
+        if (description != null) t.description = description;
+        if (fee != null)         t.fee = fee;
+        return t;
+      });
+    }
+    return entry;
+  });
+
   const chart = new seatsio.EventManager({
     divId: containerId,
     secretKey: config.secretKey,
@@ -36,8 +56,9 @@ export async function renderChart(containerId, config, dotNetHelper) {
     events: config.events,
     session: config.session,
     holdToken: config.holdToken,
+    ...(config.order && { order: config.order }),
     pricing: {
-      prices: config.pricing,
+      prices: seatsioSafePricing,
       priceFormatter: price => '$' + price,
       allFeesIncluded: true
     },
@@ -48,18 +69,26 @@ export async function renderChart(containerId, config, dotNetHelper) {
     onObjectSelected: obj => {
       let price = 0;
       let priceListItemId = 0;
+      let originalPrice = 0;
+      let fees = [];
       let pricingRule = config.pricing.find(p => p.objects && p.objects.includes(obj.id));
 
       if (!pricingRule) {
-        pricingRule = config.pricing.find(p => p.category === obj.category?.key);
+        pricingRule = config.pricing.find(p => String(p.category) === String(obj.category?.key));
       }
 
       if (pricingRule) {
+        originalPrice = pricingRule.originalPrice ?? 0;
+        fees = pricingRule.fees ?? [];
+
         if (obj.selectedTicketType && pricingRule.ticketTypes) {
           const ticket = pricingRule.ticketTypes.find(t => t.ticketType === obj.selectedTicketType);
           if (ticket) {
             price = ticket.price;
             priceListItemId = ticket.priceListItemId;
+            // For ticket types, originalPrice is derived from the rule-level fee breakdown
+            originalPrice = ticket.originalPrice ?? 0;
+            fees = ticket.fees
           }
         } else {
           price = pricingRule.price;
@@ -69,7 +98,7 @@ export async function renderChart(containerId, config, dotNetHelper) {
         price = obj.pricing?.price ?? 0;
       }
 
-      dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, price, priceListItemId, obj.category?.label, obj.selectedTicketType);
+      dotNetHelper.invokeMethodAsync('HandleSeatSelected', obj.id, price, priceListItemId, obj.category?.label, obj.selectedTicketType, originalPrice, fees);
     },
     onObjectDeselected: obj => {
       dotNetHelper.invokeMethodAsync('HandleSeatDeselected', obj.id);

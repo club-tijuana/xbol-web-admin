@@ -19,15 +19,6 @@ public interface IEventService
         bool? upcoming = null
     );
 
-    Task<GridData<EventViewModel>> GetEventsOnSaleAsync(
-        int page,
-        int pageSize,
-        string? sortColumn,
-        bool sortDescending,
-        string? search = null,
-        EventFilterParameters? filters = null
-    );
-
     Task<GridData<EventViewModel>> GetEventCatalogAsync(
         int page,
         int pageSize,
@@ -38,6 +29,7 @@ public interface IEventService
         EventCatalogItemType? itemType = null,
         BundleType? bundleType = null,
         bool? upcoming = null,
+        bool? buyableOnly = null,
         AdminEventStatus? status = null
     );
 
@@ -63,6 +55,7 @@ public interface IEventService
     );
 
     Task<List<AdminEventCategoryResult>> GetCategoriesAsync();
+    Task<List<BundleListItemDTO>> GetSeasonPassBundlesAsync();
     Task<EventResult> CreateEventAsync(EventRequest request);
     Task<BundleDTO> CreateBundleAsync(BundleCreateRequest request);
     Task UpdateEventAsync(long id, EventRequest request);
@@ -81,6 +74,8 @@ public interface IEventService
     Task<BundleDTO> GetBundleByIdAsync(long id);
     Task DeleteBundleAsync(long id);
     Task UpdateBundleAsync(long id, BundleUpdateRequest request);
+    Task AddBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds);
+    Task RemoveBundleEventSchedulesAsync(long bundleId, IReadOnlyList<long> eventScheduleIds);
     Task SubmitBundleAsync(long id);
     Task ResubmitBundleAsync(long id);
     Task ApproveBundleAsync(long id);

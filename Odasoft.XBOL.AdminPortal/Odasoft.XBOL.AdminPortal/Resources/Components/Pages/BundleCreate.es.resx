@@ -64,6 +64,9 @@
   <data name="Categories" xml:space="preserve">
     <value>Categorías</value>
   </data>
+  <data name="CategoriesRequired" xml:space="preserve">
+    <value>Al menos una categoría es obligatoria.</value>
+  </data>
   <data name="Code" xml:space="preserve">
     <value>Código</value>
   </data>
@@ -75,6 +78,33 @@
   </data>
   <data name="BundleEvents" xml:space="preserve">
     <value>Eventos del paquete</value>
+  </data>
+  <data name="AvailableEvents" xml:space="preserve">
+    <value>Eventos disponibles</value>
+  </data>
+  <data name="SelectedEvents" xml:space="preserve">
+    <value>Eventos seleccionados</value>
+  </data>
+  <data name="BundleLineup" xml:space="preserve">
+    <value>Contenido del paquete</value>
+  </data>
+  <data name="BundleLineupHelp" xml:space="preserve">
+    <value>Eventos que quedarán incluidos en este paquete.</value>
+  </data>
+  <data name="AvailableEventsToAdd" xml:space="preserve">
+    <value>Eventos disponibles para agregar</value>
+  </data>
+  <data name="AvailableEventsToAddHelp" xml:space="preserve">
+    <value>Funciones elegibles del mapa de recinto seleccionado.</value>
+  </data>
+  <data name="NoEventsSelected" xml:space="preserve">
+    <value>Aún no hay eventos en el paquete.</value>
+  </data>
+  <data name="NoEventsSelectedHelp" xml:space="preserve">
+    <value>Agrega eventos desde la lista disponible de abajo.</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Quitar</value>
   </data>
   <data name="RequiredFieldsNote" xml:space="preserve">
     <value>*Campos obligatorios</value>
@@ -144,6 +174,9 @@
   </data>
   <data name="ErrorSaving" xml:space="preserve">
     <value>Error al crear el paquete.</value>
+  </data>
+  <data name="EndAfterStart" xml:space="preserve">
+    <value>La fecha de termino debe ser posterior a la fecha de inicio.</value>
   </data>
   <data name="Event" xml:space="preserve">
     <value>Evento</value>
@@ -241,6 +274,21 @@
   <data name="InvalidImage" xml:space="preserve">
     <value>El archivo '{0}' no es una imagen válida.</value>
   </data>
+  <data name="ImageTooSmall" xml:space="preserve">
+    <value>La imagen '{0}' mide {1}x{2}px. El mínimo es {3}x{4}px.</value>
+  </data>
+  <data name="ErrorSavingMedia" xml:space="preserve">
+    <value>El paquete se guardó, pero no se pudo cargar la imagen.</value>
+  </data>
+  <data name="ProcessingImages" xml:space="preserve">
+    <value>Procesando imágenes...</value>
+  </data>
+  <data name="SavingImages" xml:space="preserve">
+    <value>Guardando imágenes...</value>
+  </data>
+  <data name="InvalidForm" xml:space="preserve">
+    <value>Revisa los campos marcados antes de guardar.</value>
+  </data>
   <data name="TicketsSale" xml:space="preserve">
     <value>Venta de boletos</value>
   </data>
@@ -256,8 +304,23 @@
   <data name="PreSaleDate" xml:space="preserve">
     <value>Inicio de preventa</value>
   </data>
+  <data name="PreSaleAfterPublished" xml:space="preserve">
+    <value>El inicio de preventa debe ser posterior a la fecha de publicación.</value>
+  </data>
+  <data name="PreSaleAfterRenewalEnd" xml:space="preserve">
+    <value>El inicio de preventa debe ser en o después del fin de renovación.</value>
+  </data>
   <data name="PreSaleTime" xml:space="preserve">
     <value>Hora de preventa</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publicar</value>
+  </data>
+  <data name="PreviousSeasonPass" xml:space="preserve">
+    <value>Pase de temporada anterior</value>
+  </data>
+  <data name="BundleRenewalDatesRequirePreviousBundle" xml:space="preserve">
+    <value>Selecciona un pase de temporada anterior antes de definir fechas de renovación.</value>
   </data>
   <data name="RenewalWindow" xml:space="preserve">
     <value>Ventana de renovación</value>
@@ -265,11 +328,20 @@
   <data name="RenewalStartDate" xml:space="preserve">
     <value>Inicio de renovación</value>
   </data>
+  <data name="BundleRenewalStartRequired" xml:space="preserve">
+    <value>El inicio de renovación es obligatorio para paquetes de renovación.</value>
+  </data>
   <data name="RenewalStartTime" xml:space="preserve">
     <value>Hora de inicio de renovación</value>
   </data>
   <data name="RenewalEndDate" xml:space="preserve">
     <value>Fin de renovación</value>
+  </data>
+  <data name="RenewalEndAfterRenewalStart" xml:space="preserve">
+    <value>El fin de renovación debe ser posterior al inicio de renovación.</value>
+  </data>
+  <data name="BundleRenewalEndRequired" xml:space="preserve">
+    <value>El fin de renovación es obligatorio para paquetes de renovación.</value>
   </data>
   <data name="RenewalEndTime" xml:space="preserve">
     <value>Hora de fin de renovación</value>
@@ -279,6 +351,45 @@
   </data>
   <data name="AdditionalComments" xml:space="preserve">
     <value>Comentarios adicionales</value>
+  </data>
+  <data name="AdditionalCharges" xml:space="preserve">
+    <value>Cargos adicionales</value>
+  </data>
+  <data name="AddAdditionalCharge" xml:space="preserve">
+    <value>Añadir cargo</value>
+  </data>
+  <data name="ErrorPublishingEvent" xml:space="preserve">
+    <value>Hubo un error al publicar el evento</value>
+  </data>
+  <data name="ErrorSendingEventToReview" xml:space="preserve">
+    <value>Hubo un error al enviar el evento a revisión</value>
+  </data>
+  <data name="EventPublished" xml:space="preserve">
+    <value>Evento publicado</value>
+  </data>
+  <data name="EventSentToReview" xml:space="preserve">
+    <value>Evento enviado a revisión</value>
+  </data>
+  <data name="FeeAmount" xml:space="preserve">
+    <value>Cantidad</value>
+  </data>
+  <data name="FeeName" xml:space="preserve">
+    <value>Nombre del cargo</value>
+  </data>
+  <data name="ChargeCategory" xml:space="preserve">
+    <value>Categoría</value>
+  </data>
+  <data name="Fee" xml:space="preserve">
+    <value>Cargo</value>
+  </data>
+  <data name="Tax" xml:space="preserve">
+    <value>Impuesto</value>
+  </data>
+  <data name="FinishReview" xml:space="preserve">
+    <value>Terminar revisión</value>
+  </data>
+  <data name="Fixed" xml:space="preserve">
+    <value>Fijo</value>
   </data>
   <data name="Map" xml:space="preserve">
     <value>Mapa</value>
@@ -295,17 +406,29 @@
   <data name="OffSaleDate" xml:space="preserve">
     <value>Fin de venta</value>
   </data>
+  <data name="OffSaleAfterOnSale" xml:space="preserve">
+    <value>El fin de venta debe ser posterior al inicio de venta.</value>
+  </data>
   <data name="OffSaleTime" xml:space="preserve">
     <value>Hora de fin de venta</value>
   </data>
   <data name="OnSaleDate" xml:space="preserve">
     <value>Inicio de venta</value>
   </data>
+  <data name="OnSaleAfterPreSale" xml:space="preserve">
+    <value>El inicio de venta debe ser posterior al inicio de preventa.</value>
+  </data>
+  <data name="OnSaleAfterRenewalEnd" xml:space="preserve">
+    <value>El inicio de venta debe ser en o después del fin de renovación.</value>
+  </data>
   <data name="OnSaleTime" xml:space="preserve">
     <value>Hora de inicio de venta</value>
   </data>
   <data name="Organizer" xml:space="preserve">
     <value>Organizador</value>
+  </data>
+  <data name="Percentage" xml:space="preserve">
+    <value>Porcentaje</value>
   </data>
   <data name="RequiredField" xml:space="preserve">
     <value>Campo requerido</value>
@@ -316,8 +439,11 @@
   <data name="SearchEvents" xml:space="preserve">
     <value>Buscar...</value>
   </data>
-  <data name="SelectEvents" xml:space="preserve">
-    <value>Selecciona al menos un evento.</value>
+  <data name="EventAlreadyPublished" xml:space="preserve">
+    <value>Los eventos ya publicados en seats.io no se pueden agregar a un pase de temporada.</value>
+  </data>
+  <data name="SendToReview" xml:space="preserve">
+    <value>Enviar a revisión</value>
   </data>
   <data name="SelectVenueMapFirst" xml:space="preserve">
     <value>Selecciona un mapa para buscar eventos.</value>
@@ -345,5 +471,77 @@
   </data>
   <data name="Venue" xml:space="preserve">
     <value>Recinto</value>
+  </data>
+  <data name="Timer" xml:space="preserve">
+    <value>Temporizador</value>
+  </data>
+  <data name="AdditionalCharges" xml:space="preserve">
+    <value>Cargos adicionales</value>
+  </data>
+  <data name="AddAdditionalCharge" xml:space="preserve">
+    <value>Añadir cargo</value>
+  </data>
+  <data name="FeeName" xml:space="preserve">
+    <value>Nombre del cargo</value>
+  </data>
+  <data name="Fixed" xml:space="preserve">
+    <value>Fijo</value>
+  </data>
+  <data name="Percentage" xml:space="preserve">
+    <value>Porcentaje</value>
+  </data>
+  <data name="FeeAmount" xml:space="preserve">
+    <value>Cantidad</value>
+  </data>
+  <data name="BundleDatesScheduleHelp" xml:space="preserve">
+    <value>El período que cubre el paquete o pase. Es el período final de cobertura y define si aparece como actual o pasado.</value>
+  </data>
+  <data name="BundleDatesSaleHelp" xml:space="preserve">
+    <value>La ventana pública de compra. La compra pública inicia después de cerrar la renovación para pases de renovación y termina en el fin de venta.</value>
+  </data>
+  <data name="BundleDatesPublishingHelp" xml:space="preserve">
+    <value>La publicación controla visibilidad. La preventa es un punto opcional antes de la venta pública; inicio y fin de venta siguen controlando la compra pública.</value>
+  </data>
+  <data name="BundleDatesRenewalHelp" xml:space="preserve">
+    <value>Solo para renovaciones de pases de temporada. Los titulares del pase anterior pueden renovar desde el inicio de renovación; la compra pública espera hasta que termine la renovación.</value>
+  </data>
+  <data name="BundleDatesTimelineTitle" xml:space="preserve">
+    <value>Línea de tiempo de fechas</value>
+  </data>
+  <data name="BundleDatesTimelineTooltip" xml:space="preserve">
+    <value>Ver línea de tiempo de fechas</value>
+  </data>
+  <data name="BundleDatesTimelineOverview" xml:space="preserve">
+    <value>Lee de arriba hacia abajo: la publicación controla visibilidad, la renovación protege a titulares del pase anterior, la preventa marca la fase temprana, la venta abre la compra pública y el horario es el período cubierto.</value>
+  </data>
+  <data name="BundleDatesTimelinePublishLabel" xml:space="preserve">
+    <value>Publicación</value>
+  </data>
+  <data name="BundleDatesTimelinePublishDescription" xml:space="preserve">
+    <value>El paquete puede volverse visible.</value>
+  </data>
+  <data name="BundleDatesTimelineRenewalLabel" xml:space="preserve">
+    <value>Renovación</value>
+  </data>
+  <data name="BundleDatesTimelineRenewalDescription" xml:space="preserve">
+    <value>Primero titulares del pase anterior.</value>
+  </data>
+  <data name="BundleDatesTimelinePreSaleLabel" xml:space="preserve">
+    <value>Preventa</value>
+  </data>
+  <data name="BundleDatesTimelinePreSaleDescription" xml:space="preserve">
+    <value>Marcador opcional antes de la venta pública.</value>
+  </data>
+  <data name="BundleDatesTimelineSaleLabel" xml:space="preserve">
+    <value>Venta</value>
+  </data>
+  <data name="BundleDatesTimelineSaleDescription" xml:space="preserve">
+    <value>Ventana pública de compra.</value>
+  </data>
+  <data name="BundleDatesTimelineCoverageLabel" xml:space="preserve">
+    <value>Cobertura</value>
+  </data>
+  <data name="BundleDatesTimelineCoverageDescription" xml:space="preserve">
+    <value>Fechas incluidas en el paquete o pase.</value>
   </data>
 </root>

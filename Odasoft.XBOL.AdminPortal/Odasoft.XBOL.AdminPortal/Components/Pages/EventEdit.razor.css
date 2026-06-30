@@ -1,0 +1,16 @@
+::deep .event-price-editor-table .mud-table-cell {
+    vertical-align: top;
+}
+
+::deep .event-price-editor-table .price-cell {
+    align-items: flex-start;
+}
+
+::deep .event-price-editor-table .price-copy-action {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

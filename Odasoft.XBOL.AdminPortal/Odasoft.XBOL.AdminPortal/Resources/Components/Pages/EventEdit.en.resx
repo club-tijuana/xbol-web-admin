@@ -342,7 +342,70 @@
   <data name="FeeAmount" xml:space="preserve">
     <value>Amount</value>
   </data>
+  <data name="ChargeCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Fee" xml:space="preserve">
+    <value>Fee</value>
+  </data>
+  <data name="Tax" xml:space="preserve">
+    <value>Tax</value>
+  </data>
   <data name="Timer" xml:space="preserve">
     <value>Timer</value>
+  </data>
+  <data name="EventDatesScheduleHelp" xml:space="preserve">
+    <value>When the event happens. This is the final point on the timeline and drives current/past grouping.</value>
+  </data>
+  <data name="EventDatesPreSaleHelp" xml:space="preserve">
+    <value>Optional window before public sale. Use it to mark the presale phase without changing the public purchase window.</value>
+  </data>
+  <data name="EventDatesSaleHelp" xml:space="preserve">
+    <value>The public purchase window. Sale start comes after presale when presale is used; sale end closes public buying.</value>
+  </data>
+  <data name="EventDatesPublishingHelp" xml:space="preserve">
+    <value>Earliest visibility point. Publishing can happen before presale or sale, but it does not open buying by itself.</value>
+  </data>
+  <data name="EventDatesAccessHelp" xml:space="preserve">
+    <value>Door/access timing for attendees. It belongs near event time and does not open or close sales.</value>
+  </data>
+  <data name="EventDatesTimelineTitle" xml:space="preserve">
+    <value>Date timeline</value>
+  </data>
+  <data name="EventDatesTimelineTooltip" xml:space="preserve">
+    <value>Show date timeline</value>
+  </data>
+  <data name="EventDatesTimelineOverview" xml:space="preserve">
+    <value>Read top to bottom: publish controls visibility, presale marks the early phase, sale opens public buying, access is when attendees enter, and the schedule is when the event happens.</value>
+  </data>
+  <data name="EventDatesTimelinePublishLabel" xml:space="preserve">
+    <value>Publish</value>
+  </data>
+  <data name="EventDatesTimelinePublishDescription" xml:space="preserve">
+    <value>Page can become visible.</value>
+  </data>
+  <data name="EventDatesTimelinePreSaleLabel" xml:space="preserve">
+    <value>Presale</value>
+  </data>
+  <data name="EventDatesTimelinePreSaleDescription" xml:space="preserve">
+    <value>Optional early phase before public sale.</value>
+  </data>
+  <data name="EventDatesTimelineSaleLabel" xml:space="preserve">
+    <value>Sale</value>
+  </data>
+  <data name="EventDatesTimelineSaleDescription" xml:space="preserve">
+    <value>Public purchase window.</value>
+  </data>
+  <data name="EventDatesTimelineAccessLabel" xml:space="preserve">
+    <value>Access</value>
+  </data>
+  <data name="EventDatesTimelineAccessDescription" xml:space="preserve">
+    <value>Attendee entry timing.</value>
+  </data>
+  <data name="EventDatesTimelineEventLabel" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="EventDatesTimelineEventDescription" xml:space="preserve">
+    <value>Actual event start and end.</value>
   </data>
 </root>

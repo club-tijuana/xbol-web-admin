@@ -9,7 +9,8 @@
 <MudTable Items="Prices"
           GroupBy="_groupDefinition"
           Elevation="0"
-          FixedHeader>
+          FixedHeader
+          Class="bundle-price-editor-table">
     <ToolBarContent>
         <MudText Typo="Typo.h5">@L["Zones"]</MudText>
     </ToolBarContent>
@@ -25,14 +26,11 @@
             <col />
         }
         <col />
-        @if (AllowAlternativePriceTypes)
+        @foreach (var priceType in PriceTypes)
         {
-            @foreach (var priceType in PriceTypes)
-            {
-                <col />
-            }
             <col />
         }
+        <col />
         <col />
     </ColGroup>
     <HeaderContent>
@@ -67,27 +65,24 @@
                 @L["BasePrice"]
             </MudTableSortLabel>
         </MudTh>
-        @if (AllowAlternativePriceTypes)
+        @foreach (var priceType in PriceTypes)
         {
-            @foreach (var priceType in PriceTypes)
-            {
-                <MudTh>
-                    @priceType
-                    <MudIconButton Icon="@Icons.Material.Outlined.Edit"
-                                   Color="Color.Secondary"
-                                   Size="Size.Small"
-                                   OnClick="@(() => OpenEditDialogAsync(priceType))" />
-                </MudTh>
-            }
             <MudTh>
-                <MudButton Color="Color.Primary"
-                           IconColor="Color.Primary"
-                           StartIcon="@Icons.Material.Outlined.Add"
-                           OnClick="OpenAddDialogAsync">
-                    @L["AlternativePrice"]
-                </MudButton>
+                @priceType
+                <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                               Color="Color.Secondary"
+                               Size="Size.Small"
+                               OnClick="@(() => OpenEditDialogAsync(priceType))" />
             </MudTh>
         }
+        <MudTh>
+            <MudButton Color="Color.Primary"
+                       IconColor="Color.Primary"
+                       StartIcon="@Icons.Material.Outlined.Add"
+                       OnClick="OpenAddDialogAsync">
+                @L["AlternativePrice"]
+            </MudButton>
+        </MudTh>
         <MudTh />
     </HeaderContent>
     <RowTemplate>
@@ -101,7 +96,7 @@
                 @foreach (var section in GetSectionsFor(context.BaseZoneId))
                 {
                     <MudSelectItem T="long?" Value="section.Id">
-                        @section.Name
+                        @(section.Name)
                     </MudSelectItem>
                 }
             </AdminSelect>
@@ -142,21 +137,29 @@
             </MudTd>
         }
         <MudTd>
-            <AdminNumericField T="decimal?"
-                               Value="@GetPriceTypeValue(context, DefaultPriceTypeName)"
-                               ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, DefaultPriceTypeName, newValue))"
-                               Format="N2"
-                               Adornment="@Adornment.Start"
-                               AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                               Placeholder="0.00"
-                               HideSpinButtons
-                               Required />
+            <MudStack Row AlignItems="AlignItems.Start" Spacing="1" Class="price-cell">
+                <AdminNumericField T="decimal?"
+                                   Value="@GetPriceTypeValue(context, DefaultPriceTypeName)"
+                                   ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, DefaultPriceTypeName, newValue))"
+                                   Format="N2"
+                                   Adornment="@Adornment.Start"
+                                   AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                   Placeholder="0.00"
+                                   HideSpinButtons
+                                   Required />
+                @if (CanCopyPrices)
+                {
+                    <div class="price-copy-action">
+                        <PriceCopyButton Disabled="@(!CanCopyPriceType(context, DefaultPriceTypeName))"
+                                         OnClick="@(() => CopyPriceTypeToAll(context, DefaultPriceTypeName))" />
+                    </div>
+                }
+            </MudStack>
         </MudTd>
-        @if (AllowAlternativePriceTypes)
+        @foreach (var priceType in PriceTypes)
         {
-            @foreach (var priceType in PriceTypes)
-            {
-                <MudTd DataLabel="@priceType">
+            <MudTd DataLabel="@priceType">
+                <MudStack Row AlignItems="AlignItems.Start" Spacing="1" Class="price-cell">
                     <AdminNumericField T="decimal?"
                                        Value="@GetPriceTypeValue(context, priceType)"
                                        ValueChanged="@((decimal? newValue) => SetPriceTypeValue(context, priceType, newValue))"
@@ -166,10 +169,17 @@
                                        AdornmentIcon="@Icons.Material.Filled.AttachMoney"
                                        Placeholder="0.00"
                                        HideSpinButtons />
-                </MudTd>
-            }
-            <MudTd />
+                    @if (CanCopyPrices)
+                    {
+                        <div class="price-copy-action">
+                            <PriceCopyButton Disabled="@(!CanCopyPriceType(context, priceType))"
+                                             OnClick="@(() => CopyPriceTypeToAll(context, priceType))" />
+                        </div>
+                    }
+                </MudStack>
+            </MudTd>
         }
+        <MudTd />
         <MudTd>
             @if (context.BaseRowId is not null || context.BaseSectionId is not null || context.BaseSeatId is not null)
             {
@@ -202,9 +212,9 @@
     [Parameter] public VenueMapLayoutResponse? Layout { get; set; }
     [Parameter, EditorRequired] public List<PriceForm> Prices { get; set; } = [];
     [Parameter, EditorRequired] public List<string> PriceTypes { get; set; } = [];
-    [Parameter] public bool AllowAlternativePriceTypes { get; set; }
     [Parameter] public bool AllowRowPrices { get; set; } = true;
     [Parameter] public bool AllowSeatPrices { get; set; } = true;
+    [Parameter] public bool CanCopyPrices { get; set; }
 
     private const string DefaultPriceTypeName = "General";
     private string _priceTypeName = string.Empty;
@@ -231,10 +241,7 @@
             {
                 columns++;
             }
-            if (AllowAlternativePriceTypes)
-            {
-                columns += PriceTypes.Count + 1;
-            }
+            columns += PriceTypes.Count + 1;
 
             return columns;
         }
@@ -267,7 +274,27 @@
             return;
         }
 
-        Prices.Add(new PriceForm { BaseZoneId = zoneId, BaseSectionId = sections[0].Id });
+        var sectionId = sections[0].Id;
+        if (sectionId is null)
+        {
+            Snackbar.Add(L["NoSectionsInZone"], Severity.Warning);
+            return;
+        }
+
+        Prices.Add(CreatePriceRow(zoneId.Value, sectionId.Value));
+    }
+
+    private PriceForm CreatePriceRow(long zoneId, long sectionId)
+    {
+        var row = new PriceForm { BaseZoneId = zoneId, BaseSectionId = sectionId };
+        row.PriceTypes[DefaultPriceTypeName] = true;
+
+        foreach (var priceType in PriceTypes)
+        {
+            row.PriceTypes.TryAdd(priceType, false);
+        }
+
+        return row;
     }
 
     private IEnumerable<BaseSectionResponse> GetSectionsFor(long? zoneId)
@@ -346,6 +373,27 @@
         else
         {
             row.Prices.Remove(key);
+        }
+    }
+
+    private static bool CanCopyPriceType(PriceForm source, string priceType)
+    {
+        var value = GetPriceTypeValue(source, priceType);
+
+        return value.HasValue && value.Value > 0;
+    }
+
+    private void CopyPriceTypeToAll(PriceForm source, string priceType)
+    {
+        var value = GetPriceTypeValue(source, priceType);
+        if (!CanCopyPriceType(source, priceType) || !value.HasValue)
+        {
+            return;
+        }
+
+        foreach (var price in Prices)
+        {
+            SetPriceTypeValue(price, priceType, value);
         }
     }
 

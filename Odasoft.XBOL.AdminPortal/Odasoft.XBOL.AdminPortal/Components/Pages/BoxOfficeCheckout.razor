@@ -1,11 +1,13 @@
 @using FluentValidation;
 @using Microsoft.Extensions.Options;
+@using Odasoft.XBOL.AdminPortal.Helpers
 @using Odasoft.XBOL.AdminPortal.States;
 @using Odasoft.XBOL.AdminPortal.Validators
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
 @using Odasoft.XBOL.Common.Helpers;
+@using Odasoft.XBOL.Common.Options
 
 @implements IAsyncDisposable;
 
@@ -15,6 +17,8 @@
 @inject IAdminClient _adminClient;
 @inject NavigationManager _navigation;
 @inject IOptions<SeatsIoOptions> SeatsOptions;
+@inject IOptions<PaymentLinkOptions> PaymentLinkOptions;
+@inject IOptions<Odasoft.XBOL.Common.Options.LocalizationOptions> LocalizationOptions;
 @inject AppLocalizer<Events> L;
 @inject LoadingState _loadingState;
 @inject IDialogService _dialogService;
@@ -32,7 +36,7 @@
                 <MudText Typo="Typo.h5"><b>@_eventInfo.Name</b></MudText>
                 <MudStack Row>
                     <MudText Typo="Typo.body1" Class="text-secondary-darken" Style="font-weight:600;">@_eventInfo.VenueName</MudText>
-                    <MudText Typo="Typo.body1">@_eventSchedulueInfo?.StartDateTime.ToString("dd/MM/yyyy h:mm tt")</MudText>
+                    <MudText Typo="Typo.body1">@_eventInfo?.StartDate.ToString("dd/MM/yyyy h:mm tt")</MudText>
                 </MudStack>
             </MudStack>
             <MudButton OnClick="ReturnAsync" Variant="Variant.Filled" DropShadow="false" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.ArrowBackIosNew">@L["Seats"]</MudButton>
@@ -141,7 +145,7 @@
             <MudGrid class="d-flex gap-4 align-center mb-3">
                 <MudItem xs="12">
 
-                    <MudToggleGroup T="int" @bind-Value="_value">
+                    <MudToggleGroup T="int" @bind-Value="_value" @bind-Value:after="OnTogglePaymentTypeChanged">
 
                         <MudToggleItem T="int" Value="1" Text="Caja" />
                         <MudToggleItem T="int" Value="2" Text="Link de pago" />
@@ -341,7 +345,7 @@
 @code {
     [Parameter]
     [EditorRequired]
-    public EventInfoDTO _eventInfo { get; set; }
+    public SeatManagementDetailDTO _eventInfo { get; set; }
 
     [EditorRequired]
     [Parameter]
@@ -363,8 +367,6 @@
     private BookingFormFluentValidator orderValidator = new();
 
     private ExchangeRateResponse exchangeRate = new();
-
-    private EventScheduleDTO? _eventSchedulueInfo;
 
     private decimal DollarAmountInMXN =>
         (_request.DolarAmount ?? 0) * (exchangeRate?.Rate ?? 0);
@@ -388,7 +390,7 @@
     private decimal RemainingBalance => TotalPay - _cartState.TotalPrice - TotalChangeMx;
 
     private bool HasValidPaymentLinkExpiration =>
-        _request.PaymentLinkExpiresAt != null;
+        _request.PaymentLinkExpiresAt > DateTimeOffset.UtcNow;
 
     private bool HasBalanceError =>
         _value == 1 &&
@@ -398,7 +400,7 @@
         _value == 2 &&
         !HasValidPaymentLinkExpiration;
 
-    private DateTime? ExpirationDate { get; set; } = DateTime.Now;
+    private DateTime? ExpirationDate { get; set; }
 
     private string ExpirationDateText =>
         ExpirationDate?.ToString("dd/MM/yy - HH:mm 'hrs'") ?? "";
@@ -416,11 +418,6 @@
 
         try
         {
-            if (_eventInfo?.Schedules?.Any() == true)
-            {
-                _eventSchedulueInfo = _eventInfo.Schedules.First();
-            }
-
             _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
             exchangeRate = await _exchangeRateService.GetExchangeRateByEventAsync(_cartState.CurrentEventId.Value);
 
@@ -546,6 +543,7 @@
     private void ClearPaymentExpirationsAsync()
     {
         _request.PaymentLinkExpiresAt = null;
+        ExpirationDate = null;
     }
 
     private async void ClearAmountsAsync()
@@ -614,10 +612,11 @@
     {
         if (_value == 1)
         {
-            _request.PaymentLinkExpiresAt = null;
+            ClearPaymentExpirationsAsync();
         }
         else
         {
+            SetDefaultPaymentLinkExpiration();
             ClearAmountsAsync();
         }
     }
@@ -759,8 +758,15 @@
         if (!result.Canceled && result.Data is DateTime selected)
         {
             ExpirationDate = selected;
-            _request.PaymentLinkExpiresAt = selected;
+            _request.PaymentLinkExpiresAt = PaymentLinkDateTime.ToConfiguredOffset(selected, LocalizationOptions.Value);
         }
+    }
+
+    private void SetDefaultPaymentLinkExpiration()
+    {
+        var expiration = PaymentLinkDateTime.CreateDefaultExpiration(PaymentLinkOptions.Value, LocalizationOptions.Value);
+        _request.PaymentLinkExpiresAt = expiration;
+        ExpirationDate = PaymentLinkDateTime.ToDisplayDateTime(expiration, LocalizationOptions.Value);
     }
 
     private async Task OpenTermsAndConditions()

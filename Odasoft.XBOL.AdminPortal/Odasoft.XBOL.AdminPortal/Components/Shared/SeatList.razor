@@ -60,6 +60,11 @@
                             <MudText Typo="Typo.caption" Color="Color.Secondary">@($"{item.Category.ToUpper()} SECCIÓN {item.SeatId}")</MudText>
                         }
 
+                        @if (!string.IsNullOrWhiteSpace(item.SelectedTicketType))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@($" - {item.SelectedTicketType}")</MudText>
+                        }
+
                         @if (RowStatusContent != null)
                         {
                             @RowStatusContent(item)

@@ -39,5 +39,36 @@ namespace Odasoft.XBOL.Business.Services
                 page,
                 pageSize);
         }
+
+        public async Task<SaleResponsePagedResponse> GetRenewalSalesAsync(
+            AdminSaleType adminSaleType,
+            long referenceId,
+            bool? renewalMode,
+            DateTimeOffset? startDate,
+            DateTimeOffset? endDate,
+            IEnumerable<PaymentType>? paymentTypes,
+            IEnumerable<SaleChannel>? saleChannel,
+            IEnumerable<OrderStatus>? orderStatus,
+            string? searchTerm,
+            string? sortBy,
+            bool? descending,
+            int page,
+            int pageSize)
+        {
+            return await _adminClient.GetRenewalSalesAsync(
+                adminSaleType,
+                referenceId,
+                renewalMode,
+                startDate,
+                endDate,
+                paymentTypes,
+                saleChannel,
+                orderStatus,
+                searchTerm,
+                sortBy,
+                descending,
+                page,
+                pageSize);
+        }
     }
 }

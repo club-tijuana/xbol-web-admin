@@ -342,10 +342,73 @@
   <data name="FeeAmount" xml:space="preserve">
     <value>Cantidad</value>
   </data>
+  <data name="ChargeCategory" xml:space="preserve">
+    <value>Categoría</value>
+  </data>
+  <data name="Fee" xml:space="preserve">
+    <value>Cargo</value>
+  </data>
+  <data name="Tax" xml:space="preserve">
+    <value>Impuesto</value>
+  </data>
   <data name="ReviewDescription" xml:space="preserve">
     <value>Favor de revisar que toda la información ingresada sea correcta. Al terminar presione 'Terminar revisión' si todo está en orden presione 'Aprobar'; de lo contrario, 'Requiere cambios' para realizar las correcciones necesarias.</value>
   </data>
   <data name="Timer" xml:space="preserve">
     <value>Temporizador</value>
+  </data>
+  <data name="EventDatesScheduleHelp" xml:space="preserve">
+    <value>Cuándo ocurre el evento. Es el punto final de la línea de tiempo y define si aparece como actual o pasado.</value>
+  </data>
+  <data name="EventDatesPreSaleHelp" xml:space="preserve">
+    <value>Ventana opcional antes de la venta pública. Úsala para marcar la fase de preventa sin cambiar la ventana pública de compra.</value>
+  </data>
+  <data name="EventDatesSaleHelp" xml:space="preserve">
+    <value>La ventana pública de compra. El inicio de venta va después de la preventa cuando se usa; el fin de venta cierra la compra pública.</value>
+  </data>
+  <data name="EventDatesPublishingHelp" xml:space="preserve">
+    <value>Primer punto de visibilidad. La publicación puede ocurrir antes de la preventa o venta, pero no abre la compra por sí sola.</value>
+  </data>
+  <data name="EventDatesAccessHelp" xml:space="preserve">
+    <value>Horario de acceso para asistentes. Pertenece cerca del evento y no abre ni cierra ventas.</value>
+  </data>
+  <data name="EventDatesTimelineTitle" xml:space="preserve">
+    <value>Línea de tiempo de fechas</value>
+  </data>
+  <data name="EventDatesTimelineTooltip" xml:space="preserve">
+    <value>Ver línea de tiempo de fechas</value>
+  </data>
+  <data name="EventDatesTimelineOverview" xml:space="preserve">
+    <value>Lee de arriba hacia abajo: la publicación controla visibilidad, la preventa marca la fase temprana, la venta abre la compra pública, el acceso indica cuándo entran los asistentes y el horario indica cuándo ocurre el evento.</value>
+  </data>
+  <data name="EventDatesTimelinePublishLabel" xml:space="preserve">
+    <value>Publicación</value>
+  </data>
+  <data name="EventDatesTimelinePublishDescription" xml:space="preserve">
+    <value>La página puede volverse visible.</value>
+  </data>
+  <data name="EventDatesTimelinePreSaleLabel" xml:space="preserve">
+    <value>Preventa</value>
+  </data>
+  <data name="EventDatesTimelinePreSaleDescription" xml:space="preserve">
+    <value>Fase temprana opcional antes de la venta pública.</value>
+  </data>
+  <data name="EventDatesTimelineSaleLabel" xml:space="preserve">
+    <value>Venta</value>
+  </data>
+  <data name="EventDatesTimelineSaleDescription" xml:space="preserve">
+    <value>Ventana pública de compra.</value>
+  </data>
+  <data name="EventDatesTimelineAccessLabel" xml:space="preserve">
+    <value>Acceso</value>
+  </data>
+  <data name="EventDatesTimelineAccessDescription" xml:space="preserve">
+    <value>Horario de entrada de asistentes.</value>
+  </data>
+  <data name="EventDatesTimelineEventLabel" xml:space="preserve">
+    <value>Evento</value>
+  </data>
+  <data name="EventDatesTimelineEventDescription" xml:space="preserve">
+    <value>Inicio y fin reales del evento.</value>
   </data>
 </root>

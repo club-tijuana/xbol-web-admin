@@ -74,6 +74,7 @@ public static class AdminPermissions
         public const string Create = "orders.create";
         public const string Update = "orders.update";
         public const string Cancel = "orders.cancel";
+        public const string OverrideSaleWindow = "orders.override_sale_window";
     }
 
     public static class Prices

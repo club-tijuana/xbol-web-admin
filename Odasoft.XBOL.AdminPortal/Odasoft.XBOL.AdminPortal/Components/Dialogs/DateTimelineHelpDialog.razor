@@ -1,0 +1,21 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <DateTimelineHelp Overview="@Overview" Items="Items" />
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Overview { get; set; } = string.Empty;
+
+    [Parameter]
+    public IReadOnlyList<DateTimelineStep> Items { get; set; } = [];
+}

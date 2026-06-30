@@ -28,7 +28,7 @@ builder.Services.ConfigureDataProtection(builder.Configuration, builder.Environm
 builder.Services.ConfigureAuthentication();
 
 // Localization
-builder.Services.ConfigureLocalization();
+builder.Services.ConfigureLocalization(builder.Configuration);
 
 // Application
 builder.Services.ConfigureServices();

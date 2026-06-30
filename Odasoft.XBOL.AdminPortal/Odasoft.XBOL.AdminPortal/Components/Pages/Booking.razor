@@ -118,9 +118,19 @@
     private List<ConflictedSeat> _conflictedSeats = [];
     private bool _preserveRenewalSeats;
     private bool _renewalRequiresSeatSelection;
+    private bool _canOverrideSaleWindow;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        if (AuthenticationStateTask is not null)
+        {
+            var authState = await AuthenticationStateTask;
+            _canOverrideSaleWindow = AdminPermissionScopes.HasPermission(authState.User, AdminPermissions.Orders.OverrideSaleWindow);
+        }
+
         _successUrl = Navigation.Uri.Contains("/season-pass/")
             ? $"./season-pass/{Id}"
             : "./events";
@@ -213,7 +223,8 @@
                         bundle.PreviousBundleId.HasValue,
                         bundle.RenewalEndDate,
                         bundle.IsBookable == true,
-                        now));
+                        now,
+                        _canOverrideSaleWindow));
 
             if (isAllowed)
             {
@@ -405,6 +416,7 @@
                 IsSelected = true,
                 IsSold = item.IsRenewed ?? false,
                 SourceOrderItemId = item.ItemId,
+                PriceListItemId = item.PriceListItemId ?? 0
             })
             .ToList();
 

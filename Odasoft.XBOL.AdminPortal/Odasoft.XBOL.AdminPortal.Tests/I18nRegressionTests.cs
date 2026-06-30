@@ -59,7 +59,11 @@ public sealed class I18nRegressionTests
             "GalleryUploadHint",
             "GalleryUploadHintDetails",
             "GalleryPreview",
-            "Clear"
+            "Clear",
+            "ImageTooSmall",
+            "ErrorSavingMedia",
+            "ProcessingImages",
+            "SavingImages"
         ];
 
         foreach (var key in keys)
@@ -69,6 +73,63 @@ public sealed class I18nRegressionTests
         }
 
         Assert.Equal("Car\u00e1tula del evento", ResourceValue("Resources/Components/Pages/BundleCreate.es.resx", "EventBanner"));
+    }
+
+    [Fact]
+    public void Date_help_copy_is_localized()
+    {
+        string[] eventKeys =
+        [
+            "EventDatesScheduleHelp",
+            "EventDatesPreSaleHelp",
+            "EventDatesSaleHelp",
+            "EventDatesPublishingHelp",
+            "EventDatesAccessHelp"
+        ];
+        string[] bundleKeys =
+        [
+            "BundleDatesScheduleHelp",
+            "BundleDatesSaleHelp",
+            "BundleDatesPublishingHelp",
+            "BundleDatesRenewalHelp"
+        ];
+
+        foreach (var key in eventKeys)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/EventEdit.en.resx", key)));
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/EventEdit.es.resx", key)));
+        }
+
+        foreach (var key in bundleKeys)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/BundleCreate.en.resx", key)));
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/BundleCreate.es.resx", key)));
+        }
+
+        AssertDateHelpCopyAvoidsInternalImplementationWording(ResourceValue("Resources/Components/Pages/EventEdit.en.resx", "EventDatesPreSaleHelp"));
+        AssertDateHelpCopyAvoidsInternalImplementationWording(ResourceValue("Resources/Components/Pages/EventEdit.es.resx", "EventDatesPreSaleHelp"));
+        AssertDateHelpCopyAvoidsInternalImplementationWording(ResourceValue("Resources/Components/Pages/BundleCreate.en.resx", "BundleDatesPublishingHelp"));
+        AssertDateHelpCopyAvoidsInternalImplementationWording(ResourceValue("Resources/Components/Pages/BundleCreate.es.resx", "BundleDatesPublishingHelp"));
+    }
+
+    [Fact]
+    public void Bundle_create_events_builder_copy_is_localized()
+    {
+        string[] keys =
+        [
+            "BundleLineup",
+            "BundleLineupHelp",
+            "AvailableEventsToAdd",
+            "AvailableEventsToAddHelp",
+            "NoEventsSelected",
+            "NoEventsSelectedHelp"
+        ];
+
+        foreach (var key in keys)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/BundleCreate.en.resx", key)));
+            Assert.False(string.IsNullOrWhiteSpace(ResourceValue("Resources/Components/Pages/BundleCreate.es.resx", key)));
+        }
     }
 
     [Fact]
@@ -119,5 +180,16 @@ public sealed class I18nRegressionTests
             relativePath));
 
         return File.ReadAllText(path);
+    }
+
+    private static void AssertDateHelpCopyAvoidsInternalImplementationWording(string? copy)
+    {
+        Assert.NotNull(copy);
+
+        Assert.DoesNotContain("saved today", copy, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("reference today", copy, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("referencia", copy, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("ruta p\u00fablica separada", copy, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("separate public buying path", copy, StringComparison.OrdinalIgnoreCase);
     }
 }
