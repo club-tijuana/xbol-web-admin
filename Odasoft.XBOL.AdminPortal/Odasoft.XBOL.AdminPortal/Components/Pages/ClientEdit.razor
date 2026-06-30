@@ -58,7 +58,7 @@
                 </MudItem>
                 <MudItem xs="12" md="6" lg="3">
                     <MudSelect T="ClientType?" Label="@L["ClientType"]" Margin="Margin.Dense" Variant="Variant.Outlined"
-                               @bind-Value="model.PersonTypeId" For="@(() => model.PersonTypeId)" Clearable>
+                               @bind-Value="model.PersonTypeId" For="@(() => model.PersonTypeId)" Disabled>
                         @foreach (var clientType in _clientTypes)
                         {
                             <MudSelectItem T="ClientType?" Value="@clientType">
@@ -71,7 +71,7 @@
                     <MudText Typo="Typo.subtitle2">Dirección y contacto</MudText>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="3">
-                    <MudTextField @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Outlined"
+                    <MudTextField @bind-Value="model.Country" For="@(() => model.Country)" Variant="Variant.Outlined"
                                   Margin="Margin.Dense" Label="@L["Country"]">
                     </MudTextField>
                 </MudItem>
@@ -381,6 +381,20 @@
         LoadingState.Show();
         try
         {
+            if (string.IsNullOrWhiteSpace(model.PhoneNumber) || model.PhoneRegionCodeId.HasValue == false)
+            {
+                _snackbar.Add("Lada y teléfono requerido.", Severity.Warning);
+                return;
+            }
+
+            var client = await _clientService.SearchClientAsync(model.PhoneRegionCodeId, model.PhoneNumber ?? "", "");
+
+            if (client is not null && client.Id != Id)
+            {
+                _snackbar.Add($"Ya existe un cliente con ese teléfono.", Severity.Warning);
+                return;
+            }
+
             model.LegalRep.Birthday = LegalRepDOB;
             model.Credit.StartDate = CreditStartDate.HasValue ? CreditStartDate.Value : default;
 

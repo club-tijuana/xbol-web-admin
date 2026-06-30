@@ -73,7 +73,7 @@
                            Margin="Margin.Dense" Variant="Variant.Outlined"
                            @bind-Value="model.PersonTypeId"
                            For="@(() => model.PersonTypeId)"
-                           Clearable>
+                           Disabled>
                     @foreach (var clientType in _clientTypes)
                     {
                         <MudSelectItem T="ClientType?" Value="@clientType">
@@ -87,8 +87,8 @@
             </MudItem>
             <MudItem xs="12" md="6" lg="3">
                 <MudTextField
-                    @bind-Value="model.City"
-                    For="@(() => model.City)"
+                    @bind-Value="model.Country"
+                    For="@(() => model.Country)"
                     Variant="Variant.Outlined"
                     Margin="Margin.Dense"
                     Label="@L["Country"]">
@@ -386,6 +386,7 @@
 
         _phoneRegionCodes = await _catalogsService.GetPhoneRegionCodesAsync();
 
+        model.PersonTypeId = ClientType.Business;
         model.LegalRep = new();
         model.Credit = new();
 
@@ -424,8 +425,23 @@
 
         _isSubmitting = true;
         LoadingState.Show();
+
         try
         {
+            if (string.IsNullOrWhiteSpace(model.PhoneNumber) || model.PhoneRegionCodeId.HasValue == false)
+            {
+                _snackbar.Add("Lada y teléfono requerido.", Severity.Warning);
+                return;
+            }
+
+            var client = await _clientService.SearchClientAsync(model.PhoneRegionCodeId, model.PhoneNumber ?? "", "");
+
+            if(client is not null)
+            {
+                _snackbar.Add($"Ya existe un cliente con ese teléfono.", Severity.Warning);
+                return;
+            }
+
             model.LegalRep.Birthday = LegalRepDOB;
             model.Credit.StartDate = CreditStartDate.HasValue ? CreditStartDate.Value : default;
 
@@ -438,7 +454,7 @@
         {
             Logger.LogError(ex, "Failed to create client");
             _snackbar.Add(L["CreateError", L["Client"]], Severity.Error);
-    }
+        }
         finally
         {
             _isSubmitting = false;
