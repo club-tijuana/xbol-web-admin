@@ -309,7 +309,7 @@
             {
                 if (_orderInfoResponse.ClientId.HasValue)
                 {
-                    await _clientService.UpdateClientAsync(_orderInfoResponse.ClientId.Value, clientRequest);
+                    await _clientService.UpdateClientFromSupportAsync(_orderInfoResponse.ClientId.Value, clientRequest);
                     _selectedItems.Clear();
                     await PerformOrderActionAsync(OrderAction.UpdateOrderHolder);
                     await SearchOrderAsync();

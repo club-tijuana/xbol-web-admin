@@ -35,6 +35,11 @@ namespace Odasoft.XBOL.Business.Services
             await _adminClient.UpdateClientAsync(clientId, clientForm);
         }
 
+        public async Task UpdateClientFromSupportAsync(long clientId, UpdateClientRequest clientForm)
+        {
+            await _adminClient.UpdateClientFromSupportAsync(clientId, clientForm);
+        }
+
         public async Task DeleteClientAsync(long clientId)
         {
             await _adminClient.DeleteClientAsync(clientId);
