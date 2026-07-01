@@ -270,4 +270,7 @@
   <data name="PackagesTitle" xml:space="preserve">
     <value>Paquete</value>
   </data>
+  <data name="PreviewSeats" xml:space="preserve">
+    <value>Ver asientos</value>
+  </data>
 </root>

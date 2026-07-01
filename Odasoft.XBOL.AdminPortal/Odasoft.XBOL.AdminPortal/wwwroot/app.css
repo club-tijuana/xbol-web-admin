@@ -207,3 +207,8 @@ h1:focus {
     content: "*";
     color: var(--mud-palette-error);
 }
+
+.mud-popover-provider .preview-map-popover {
+    position: fixed !important;
+    margin-left: -16px !important;
+}

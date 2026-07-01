@@ -31,7 +31,7 @@ export function destroyChart(chart) {
  * @param {string} seatId
  */
 export function focusSeat(chart, seatId) {
-  chart?.zoomToSelectedObjects([seatId]);
+  chart?.zoomToObjects([seatId]);
   chart?.pulse([seatId]);
 }
 

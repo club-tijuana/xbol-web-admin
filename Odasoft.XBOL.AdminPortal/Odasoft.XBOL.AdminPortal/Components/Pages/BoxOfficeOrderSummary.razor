@@ -45,7 +45,7 @@
     <MudList T="string" Dense="true" Gutters="false">
         @foreach (var item in CartState.SelectedSeats)
         {
-            <MudListItem T="string" Class="@($"order-item{(_previousFocusedSeatId == item.SeatId ? " selected" : "")} {(AllowRemoval && !IsPreviousOrder ? "py-2 pl-4 pr-3" : !IsPreviousOrder ? "py-2 px-4" : "py-0 px-4")}")" Value="@item.SeatId">
+            <MudListItem T="string" Class="@($"order-item{(_previousFocusedSeatId == item.SeatId ? " selected" : "")} {(AllowRemoval && !IsPreviousOrder ? "py-2 pl-4 pr-3" : !IsPreviousOrder ? "py-2 px-4" : "py-0 px-4")}")" Value="@item.SeatId" OnClick="() => _focusedSeatId = item.SeatId">
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                     <MudStack Row AlignItems="AlignItems.Center">
                         @if (IsPreviousOrder)
@@ -112,9 +112,13 @@
     }
 </MudPaper>
 
-@code {
+    @code {
     [Parameter]
     public SeatingChart? Chart { get; set; }
+
+    [Parameter]
+    public SpotlightSeatMap? Spotlight { get; set; }
+
     [Parameter]
     public bool AllowRemoval { get; set; } = true;
 
@@ -179,6 +183,18 @@
                 await Chart.FocusSeatAsync(newSeatId);
             }
         }
+
+        if (Spotlight is not null)
+        {
+            if (oldSeatId != null)
+            {
+                await Spotlight.UnfocusSeatAsync(oldSeatId);
+            }
+            if (newSeatId != null)
+            {
+                await Spotlight.FocusSeatAsync(newSeatId);
+            }
+        }
     }
 
     private async Task RemoveSeat(string seatId)
@@ -195,6 +211,10 @@
         else
         {
             CartState.RemoveSelectedSeat(seatId);
+            if (Spotlight is not null)
+            {
+                await Spotlight.DeselectSeatAsync(seatId);
+            }
         }
     }
 
@@ -213,6 +233,11 @@
             {
                 CartState.RemoveSelectedSeat(item);
             }
+
+            if (Spotlight is not null)
+            {
+                await Spotlight.DeselectSeatsAsync(seats.ToArray());
+            }
         }
     }
 
@@ -224,10 +249,7 @@
         {
             var json = JsonSerializer.Serialize(CartState.SelectedSeats);
             var seats = JsonSerializer.Deserialize<List<SeatInfo>>(json) ?? [];
-            foreach (var item in seats)
-            {
-                await AddSeat(item);
-            }
+            await AddSeats(seats);
         }
         else if (isChecked == false)
         {
@@ -251,6 +273,38 @@
         else
         {
             CartState.AddSelectedSeat(seat);
+            if (Spotlight is not null)
+            {
+                await Spotlight.DoSelectObjects([seat.SeatId]);
+            }
+        }
+    }
+
+    private async Task AddSeats(List<SeatInfo> seats)
+    {
+        if (Chart is not null)
+        {
+            await Chart.TrySelectObjectsAsync(seats.Select(s => s.SeatId).ToArray());
+            // if (string.IsNullOrWhiteSpace(seat.SelectedTicketType))
+            // {
+            //     await Chart.TrySelectObjectsAsync([seat.SeatId]);
+            // }
+            // else
+            // {
+            //     await Chart.TrySelectObjectsAsync([new { label = seat.SeatId, ticketType = seat.SelectedTicketType }]);
+            // }
+        }
+        else
+        {
+            foreach (var item in seats)
+            {
+                CartState.AddSelectedSeat(item);
+            }
+            
+            if (Spotlight is not null)
+            {
+                await Spotlight.DoSelectObjects(seats.Where(x => !x.IsSelected).Select(s => s.SeatId).ToArray());
+            }
         }
     }
 

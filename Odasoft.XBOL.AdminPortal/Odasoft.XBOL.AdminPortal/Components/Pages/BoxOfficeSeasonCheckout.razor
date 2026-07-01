@@ -145,9 +145,42 @@
         </MudItem>
         <MudItem xs="4">
             <MudStack>
-                <MudText Typo="Typo.h5" Class="text-primary-darken">@L["Summary"]</MudText>
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h5" Class="text-primary-darken">@L["Summary"]</MudText>
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Map"
+                               Color="MudBlazor.Color.Secondary"
+                               OnClick="@TogglePopover"
+                               Size="Size.Small">
+                        @L["PreviewSeats"]
+                    </MudButton>
+                </MudStack>
                 <MudText Typo="Typo.body1" Class="text-secondary-darken">@L["SelectSeatsMessage"]:</MudText>
-                <BoxOfficeOrderSummary></BoxOfficeOrderSummary>
+
+                <MudPopover Open="@_isOpen"
+                            AnchorOrigin="Origin.TopLeft"
+                            TransformOrigin="Origin.TopRight"
+                            Class="preview-map-popover">
+                    <MudPaper Class="d-flex flex-column gap-2" MinHeight="300px" Width="500px">
+                        <MudIconButton 
+                            Icon="@Icons.Material.Filled.Close"
+                            Style="padding:0;"
+                            Color="Color.Dark"
+                            OnClick="@TogglePopover"
+                            Class="align-self-end mr-2 mt-2" />
+                        <SpotlightSeatMap 
+                            @ref="_spotlight"
+                            PublicKey="@_publicKey" 
+                            EventKeys="EventKeys"
+                            SelectedSeats="_cartState.SelectedSeatsKeys"
+                            EventId="EventId"
+                            Height="600px"
+                            OnChartRendered="HandleChartReadyAsync"
+                            Prices="_eventInfo.Prices">
+                        </SpotlightSeatMap>
+                    </MudPaper>
+                </MudPopover>
+                <BoxOfficeOrderSummary Spotlight="@_spotlight"></BoxOfficeOrderSummary>
             </MudStack>
         </MudItem>
         <MudItem xs="3">
@@ -378,6 +411,9 @@
     public string[] EventKeys { get; set; }
 
     [Parameter]
+    public long EventId { get; set; }
+
+    [Parameter]
     public EventCallback OnReturn { get; set; }
 
     [Parameter]
@@ -387,6 +423,7 @@
     public OrderRenewalInfoResponse? OrderInfo { get; set; }
 
     MudForm _form = default!;
+    private SpotlightSeatMap? _spotlight;
 
     private bool _isSubmitting = false;
     private bool _successfulPurchase = false;
@@ -457,10 +494,24 @@
     private bool _validateClientHasCredit = false;
     private bool _clientHasCredit = false;
 
+    private string _publicKey = string.Empty;
+    private bool _isOpen;
+
+    private void TogglePopover()
+    {
+        _isOpen = !_isOpen;
+
+        if(_isOpen == true)
+        {
+            _loadingState.Show();
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         _cartState.OnChange += HandleCartChange;
 
+        _publicKey = SeatsOptions.Value.PublicKey;
         try
         {
             var exchangeRateTask = _exchangeRateService.GetExchangeRateBySeasonAsync(_cartState.CurrentEventId.Value);
@@ -488,6 +539,7 @@
                 _request.Birthday = DateTimeHelpers.ToNullableDateTime(OrderInfo.Dob);
                 _clientHasCredit = OrderInfo.HasCredit ?? false;
             }
+
         }
         catch (Exception)
         {
@@ -942,6 +994,12 @@
         var expiration = PaymentLinkDateTime.CreateDefaultExpiration(PaymentLinkOptions.Value, LocalizationOptions.Value);
         _request.PaymentLinkExpiresAt = expiration;
         ExpirationDate = PaymentLinkDateTime.ToDisplayDateTime(expiration, LocalizationOptions.Value);
+    }
+
+    private async Task HandleChartReadyAsync()
+    {
+        _loadingState.Hide();
+        StateHasChanged();
     }
 
     public async ValueTask DisposeAsync()
