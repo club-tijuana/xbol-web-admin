@@ -41,6 +41,11 @@ public static class AdminPermissions
         public const string Delete = "credit_transactions.delete";
     }
 
+    public static class CreditSettings
+    {
+        public const string Read = "credit_settings.read";
+    }
+
     public static class LegalRepresentatives
     {
         public const string Read = "legal_representatives.read";
@@ -255,6 +260,7 @@ public static class AdminPermissions
         Definition(CreditTransactions.Create),
         Definition(CreditTransactions.Update),
         Definition(CreditTransactions.Delete),
+        Definition(CreditSettings.Read),
         Definition(LegalRepresentatives.Read),
         Definition(LegalRepresentatives.Create),
         Definition(LegalRepresentatives.Update),

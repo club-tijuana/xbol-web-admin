@@ -52,6 +52,32 @@ public sealed class AdminCheckoutBookingSeatPayloadTests
         AssertBookingSeatsArray(handler, "/api/bookings/season/book-season");
     }
 
+    [Theory]
+    [InlineData("Components/Shared/CheckoutPanel.razor")]
+    [InlineData("Components/Pages/BoxOfficeSeasonCheckout.razor")]
+    public void Checkout_credit_controls_require_credit_transaction_permission(string componentPath)
+    {
+        var source = File.ReadAllText(GetSourcePath(componentPath));
+
+        Assert.Contains("AdminPermissions.CreditTransactions.Create", source);
+        Assert.Contains("AdminPermissions.CreditSettings.Read", source);
+        Assert.Contains("AdminPermissionScopes.HasPermission", source);
+        Assert.Contains("!_canSellOnCredit || !_canReadCreditSettings", source);
+        Assert.DoesNotContain("GetQrCodeSettingsAsync", source);
+        Assert.DoesNotContain("AdminPermissions.Orders.OverrideSaleWindow", source);
+    }
+
+    [Fact]
+    public void AdminApi_contract_does_not_expose_qr_secret_key()
+    {
+        var contract = JObject.Parse(File.ReadAllText(GetBusinessPath("OpenAPIs/admin-api.json")));
+        var qrEndpoint = contract["paths"]?["/api/settings/qr-code"]?["get"];
+        var schemaRef = (string?)qrEndpoint?["responses"]?["200"]?["content"]?["application/json"]?["schema"]?["$ref"];
+
+        Assert.Equal("#/components/schemas/QrCodeSettingsResponse", schemaRef);
+        Assert.Null(contract["components"]?["schemas"]?["QrCodeSettingsResponse"]?["properties"]?["secretKey"]);
+    }
+
     private static AdminClient CreateAdminClient(CapturingHandler handler)
     {
         var httpClient = new HttpClient(handler)
@@ -146,6 +172,34 @@ public sealed class AdminCheckoutBookingSeatPayloadTests
         Assert.Equal("B-1-2", (string?)seats[1]?["seatKey"]);
         Assert.Equal(425m, (decimal?)seats[1]?["seatPrice"]);
         Assert.Equal(502, (long?)seats[1]?["priceListItemId"]);
+    }
+
+    private static string GetSourcePath(string relativePath)
+    {
+        var baseDirectory = AppContext.BaseDirectory;
+        var sourceRoot = Path.GetFullPath(Path.Combine(
+            baseDirectory,
+            "..",
+            "..",
+            "..",
+            "..",
+            "Odasoft.XBOL.AdminPortal"));
+
+        return Path.Combine(sourceRoot, relativePath);
+    }
+
+    private static string GetBusinessPath(string relativePath)
+    {
+        var baseDirectory = AppContext.BaseDirectory;
+        var businessRoot = Path.GetFullPath(Path.Combine(
+            baseDirectory,
+            "..",
+            "..",
+            "..",
+            "..",
+            "Odasoft.XBOL.Business"));
+
+        return Path.Combine(businessRoot, relativePath);
     }
 
     private sealed class CapturingHandler : HttpMessageHandler

@@ -3,6 +3,7 @@
 @using Odasoft.XBOL.AdminPortal.Helpers
 @using Odasoft.XBOL.AdminPortal.States;
 @using Odasoft.XBOL.AdminPortal.Validators
+@using Odasoft.XBOL.Auth
 @using Odasoft.XBOL.Business;
 @using Odasoft.XBOL.Business.Services;
 @using Odasoft.XBOL.Common.Constants;
@@ -493,6 +494,11 @@
     private List<PhoneRegionCodeResponse> _phoneRegionCodes = [];
     private bool _validateClientHasCredit = false;
     private bool _clientHasCredit = false;
+    private bool _canSellOnCredit = false;
+    private bool _canReadCreditSettings = false;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
     private string _publicKey = string.Empty;
     private bool _isOpen;
@@ -512,11 +518,21 @@
         _cartState.OnChange += HandleCartChange;
 
         _publicKey = SeatsOptions.Value.PublicKey;
+
+        if (AuthenticationStateTask is not null)
+        {
+            var authState = await AuthenticationStateTask;
+            _canSellOnCredit = AdminPermissionScopes.HasPermission(authState.User, AdminPermissions.CreditTransactions.Create);
+            _canReadCreditSettings =
+                AdminPermissionScopes.HasPermission(authState.User, AdminPermissions.CreditSettings.Read) ||
+                AdminPermissionScopes.HasPermission(authState.User, AdminPermissions.Settings.Read);
+        }
+
         try
         {
             var exchangeRateTask = _exchangeRateService.GetExchangeRateBySeasonAsync(_cartState.CurrentEventId.Value);
             var phoneTask = _catalogsService.GetPhoneRegionCodesAsync();
-            var creditSettingsTask = _settingsService.GetClientCreditSettingsAsync();
+            var creditSettingsTask = GetClientCreditSettingsIfAllowedAsync();
 
             await Task.WhenAll(exchangeRateTask, phoneTask, creditSettingsTask);
 
@@ -546,6 +562,16 @@
             _snackbar.Add(L["ErrorBookingTickets"], MudBlazor.Severity.Error);
             await OnReturn.InvokeAsync();
         }
+    }
+
+    private async Task<ClientCreditSettings?> GetClientCreditSettingsIfAllowedAsync()
+    {
+        if (!_canSellOnCredit || !_canReadCreditSettings)
+        {
+            return null;
+        }
+
+        return await _settingsService.GetClientCreditSettingsAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -621,6 +647,11 @@
 
     private bool CreditAmountIsDisable()
     {
+        if (!_canSellOnCredit)
+        {
+            return true;
+        }
+
         if (_validateClientHasCredit)
         {
             return (!_clientHasCredit);
@@ -735,6 +766,12 @@
     {
         ClearAmountsAsync();
 
+        if (!_canSellOnCredit)
+        {
+            _request.CreditAmount = 0;
+            return;
+        }
+
         if (_validateClientHasCredit)
         {
             _request.CreditAmount = _clientHasCredit ? _cartState.TotalPrice : 0;
@@ -790,7 +827,7 @@
         if (_isSubmitting)
             return;
 
-        if (_validateClientHasCredit && !_clientHasCredit)
+        if (!_canSellOnCredit || (_validateClientHasCredit && !_clientHasCredit))
         {
             _request.CreditAmount = 0;
         }
